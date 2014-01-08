@@ -1,0 +1,285 @@
+.container {
+    width: auto;
+}
+
+#inner-container {
+    padding-top: 10px;
+}
+
+#alerts-panel {
+    position: absolute;
+    top: 0;
+    width: 66%;
+    left: 17%;
+}
+
+#alerts-panel .alert-warning {
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.style-slider .slider-horizontal {
+    width: 100% !important;
+}
+
+#btn-group-layout .layout-bar {
+    width: 210px !important;
+}
+
+.btn-group .dropdown-menu {
+    left: auto;
+    right: 0;
+}
+
+#cutoff-bar {
+    position: absolute;
+    z-index: 100;
+    right: 23px;
+    bottom: 203px;
+    height: 250px;
+}
+
+button:hover {
+    background: none;
+    background-image: none;
+}
+
+#zoom-box {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    padding: 10px;
+}
+
+#zoom-box > * {
+    display: block;
+    margin-top: 5px;
+}
+
+#search-bar {
+    position: absolute;
+    width: 389px;
+    z-index: 100;
+    padding: 10px;
+}
+
+#menu-bar {
+    position: absolute;
+    z-index: 100;
+    padding: 10px;
+    right: 0;
+}
+
+#menu-bar > * {
+    margin: 0px 5px;
+}
+
+.input-group .glyphicon {
+    top: 0px;
+}
+
+.sigma-parent {
+    border-radius: 4px 4px 4px 4px;
+    min-height: 400px;
+    height: 100%;
+    position: relative;
+}
+
+.sigma-expand {
+    background: #222222 url('../img/boone_lab_logo_small.png') 10px 98% no-repeat;
+    border-radius: 8px;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.menu-container {
+    position: absolute;
+    width: 150px;
+    z-index: 100;
+}
+
+#menu-container li.ui-menu-item, #menu-container li.ui-menu-divider {
+    display: none;
+    overflow: hidden;
+}
+
+#menu-container {
+    top: 260px;
+    left: 10px;
+    transition: width .3s ease-out, height .3s;
+    -webkit-transition: width .3s ease-out, height .3s; /* Safari */
+    width: 60px;
+    height: 20px;
+    z-index: 101;
+}
+
+#menu-container:hover li.ui-menu-item, #menu-container:hover li.ui-menu-divider {
+    display: block;
+}
+
+#menu-container:hover {
+    width: 150px;
+    height: auto;
+}
+
+#selection-menu-container {
+    bottom: 0;
+    left: 0;
+}
+
+#selection-menu-container .selected-node-item {
+    line-height: 1;
+    font-weight: 200;
+    padding: 1px 0.4em;
+}
+
+.ui-menu .menu-title {
+    text-align: center;
+    border-bottom: 1px black;
+    padding: 2px 0px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.ui-menu li input {
+    width: 100%;
+}
+
+.ui-menu li span, .ui-menu li input {
+    display: block;
+    font-weight: 400;
+    line-height: 1.5;
+    min-height: 0;
+    padding: 2px 0.4em;
+    text-decoration: none;
+}
+
+.ui-dialog textarea {
+    width: 100%;
+    height: 180px;
+    padding: 5px;
+}
+
+input.labelText, textarea.labelText {
+    color:#AAA;
+}
+
+.ui-autocomplete {
+    z-index: 666;
+}
+
+.ui-icon-carat-1-e {
+    width: 8px;
+}
+
+input[type=color] {
+    width: 100%;
+    height: 20px;
+    padding: 0px;
+}
+
+.ui-menu input[type=color] {
+    float: right;
+}
+
+#contextmenu-container {
+    width: 150px;
+    position: absolute;
+    z-index: 100;
+}
+
+#navigation {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 60px;
+    z-index: 1;
+}
+
+#neighbours {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 60px;
+    z-index: 1;
+}
+
+.slider-vertical {
+    height: 200px;
+    margin: 0px auto;
+}
+
+.slider-label {
+    margin: 0px auto;
+    padding: 5px;
+    margin-top: 8px;
+    text-align: center;
+    height: 21px;
+}
+
+.ui-slider-handle {
+    transition: width .3s;
+    -webkit-transition: width .3s; /* Safari */
+    width: 20px;
+    height: 20px;
+}
+
+.ui-slider-handle:hover {
+    width: 30px;
+}
+
+/* To override grappelli stuff */
+.ui-menu .ui-menu-item a.ui-state-hover, 
+.ui-menu .ui-menu-item a.ui-state-active {
+    border: 1px solid #fbd850 !important;
+}
+
+#content {
+    margin: 0;
+}
+
+.selectable .ui-selecting {
+    background: #FECA40;
+}
+
+.selectable .ui-selected {
+    background: #F39814;
+    color: white;
+}
+
+#modal-overlay {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 500;
+}
+
+.dialog-field {
+    margin: 2px 0px;
+}
+
+#legend input[type=color], #legend .sp-replacer {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+#legend .sp-replacer {
+    width: 15px; /* 15+1border+4padding=20px */
+    height: 15px; 
+    border: 1px #ccc solid;
+    border-radius: 3px;
+    background-color: white;
+}
+
+#legend .sp-preview {
+    border: none;
+    float: none;
+    margin: 0;
+    width: auto;
+    height: 100%;
+}

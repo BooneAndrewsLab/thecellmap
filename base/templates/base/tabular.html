@@ -1,0 +1,48 @@
+{% extends "_layouts/base.html" %}
+
+{% load staticfiles crispy_forms_tags %}
+
+{% block css %}
+{{ block.super }}
+<style>
+.asteriskField {
+    display: none;
+}
+
+label {
+    font-weight: normal;
+}
+</style>
+{% endblock css %}
+
+{% block js %}
+{{ block.super }}
+  <script type="text/javascript">
+    $(document).ready(function() {
+        $("#id_genes_as_3").change(function() {
+            var others = $('[id^="id_genes_as_"]:not(#id_genes_as_3)');
+            
+            if ($(this).prop('checked')) {
+                others.each(function() {
+                    $(this).attr('data-state', $(this).prop('checked'));
+                }).prop('disabled', true).prop('checked', false);
+                $('#id_cutoff_1').prop('checked', true);
+            } else {
+                others.each(function() {
+                    console.log(!!$(this).attr('data-state'));
+                    $(this).prop('checked', !!$(this).attr('data-state'));
+                }).prop('disabled', false);
+                
+            }
+        });
+    });
+  </script>
+{% endblock js %}
+
+{% block page_title_suffix %} - Tabular{% endblock %}
+{% block content %}
+  <div class="container">
+    <h2>Search genetic interactions</h2>
+    {% crispy form %}
+  </div>
+{% endblock %}
