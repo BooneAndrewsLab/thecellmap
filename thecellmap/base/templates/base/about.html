@@ -1,0 +1,26 @@
+{% extends "_layouts/base.html" %}
+
+{% load staticfiles %}
+
+{% block css %}
+{{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/social.css' %}">
+{% endblock css %}
+
+{% block page_title_suffix %} - About{% endblock %}
+{% block content %}
+  <div class="container">
+    <h2>Developed by</h2>
+    <ul>
+        <li><a href="mailto:m.usaj@thecellmap.org">Matej Usaj</a></li>
+    </ul>
+    
+    <h2>References</h2>
+    <ul>
+        <li><a href="http://getbootstrap.com/">Bootstrap</a> - User interface framework</li>
+        <li><a href="http://glyphicons.com/">Glyphicons PRO</a> - Icon set</li>
+        <li><a href="http://sigmajs.org/">sigma.js</a> - Graph visualization library</li>
+    </ul>
+    
+  </div>
+{% endblock %}
