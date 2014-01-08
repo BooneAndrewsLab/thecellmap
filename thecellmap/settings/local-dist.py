@@ -34,7 +34,7 @@ DATABASES = {
 
 # Recipients of traceback emails and other notifications.
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    # ('Matej Usaj', 'm.usaj@thecellmap.org'),
 )
 MANAGERS = ADMINS
 
@@ -86,4 +86,11 @@ LOGGING = {
     }
 }
 
-INTERNAL_IPS = ('127.0.0.1')
+INTERNAL_IPS = ('127.0.0.1', '192.168.0.18')
+
+BOONELAB_MANAGEMENT_DB = {
+    'host': '',
+    'username': '',
+    'password': '',
+    'database': ''
+}

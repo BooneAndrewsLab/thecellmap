@@ -18,3 +18,4 @@ pep8
 pylint
 ipython
 django-extensions
+matplotlib
