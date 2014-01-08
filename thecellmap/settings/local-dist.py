@@ -57,7 +57,7 @@ DEV = True
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.thecellmap.org.']
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Hardcoded values can leak through source control. Consider loading
