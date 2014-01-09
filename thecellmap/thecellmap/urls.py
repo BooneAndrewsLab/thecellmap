@@ -2,6 +2,7 @@
 
 from django.conf.urls import include, patterns, url
 from django.contrib import admin
+from django.conf import settings
 admin.autodiscover()
 
 
@@ -18,3 +19,8 @@ urlpatterns = patterns('',
     url(r'', include('base.urls')),
 )
 
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += patterns('',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )
