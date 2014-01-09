@@ -46,7 +46,7 @@ INSTALLED_APPS = (
 
     # Third-party apps, patches, fixes
     'djcelery',
-    'debug_toolbar',
+#     'debug_toolbar',
     'compressor',
 
     # Database migrations
@@ -139,7 +139,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+#     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = [
@@ -168,23 +168,20 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
-
-def custom_show_toolbar(request):
-    """ Only show the debug toolbar to users with the superuser flag. """
-    return request.user.is_superuser
-
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
-    'SHOW_TOOLBAR_CALLBACK': 'thecellmap.settings.base.custom_show_toolbar',
-    'HIDE_DJANGO_SQL': True,
-    'TAG': 'body',
-    'SHOW_TEMPLATE_CONTEXT': True,
-    'ENABLE_STACKTRACES': True,
-}
-
-DEBUG_TOOLBAR_PANELS = (
+# def custom_show_toolbar(request):
+#     """ Only show the debug toolbar to users with the superuser flag. """
+#     return request.user.is_superuser
+# 
+# DEBUG_TOOLBAR_CONFIG = {
+#     'INTERCEPT_REDIRECTS': False,
+#     'SHOW_TOOLBAR_CALLBACK': 'thecellmap.settings.base.custom_show_toolbar',
+#     'HIDE_DJANGO_SQL': True,
+#     'TAG': 'body',
+#     'SHOW_TEMPLATE_CONTEXT': True,
+#     'ENABLE_STACKTRACES': True,
+# }
+# 
+# DEBUG_TOOLBAR_PANELS = (
 #     'debug_toolbar_user_panel.panels.UserPanel',
 #     'debug_toolbar.panels.version.VersionDebugPanel',
 #     'debug_toolbar.panels.timer.TimerDebugPanel',
@@ -195,7 +192,7 @@ DEBUG_TOOLBAR_PANELS = (
 #     'debug_toolbar.panels.sql.SQLDebugPanel',
 #     'debug_toolbar.panels.signals.SignalDebugPanel',
 #     'debug_toolbar.panels.logger.LoggingPanel',
-)
+# )
 
 # Specify a custom user model to use
 #AUTH_USER_MODEL = 'accounts.MyUser'
