@@ -15,11 +15,16 @@ from django.http.response import HttpResponse
 from django.utils.datastructures import SortedDict
 import openpyxl
 from openpyxl.styles.fills import Fill
+from xlwt import Style
 import xlwt
 
 from base.models import Gene
-from xlwt import Style
 
+
+xlwt.add_palette_colour("red_stringent", 0x21)
+xlwt.add_palette_colour("red_lenient", 0x22)
+xlwt.add_palette_colour("green_stringent", 0x23)
+xlwt.add_palette_colour("green_lenient", 0x24)
 
 STYLE_NEG_STRINGENT = '-str'
 STYLE_NEG_SIGNIFICANT = '-sig'
@@ -28,10 +33,10 @@ STYLE_POS_SIGNIFICANT = '+sig'
 STYLE_BOLD = 'bold'
 
 STYLES = {
-    STYLE_NEG_STRINGENT: ('dark_red', 'FFBF0000'),
-    STYLE_NEG_SIGNIFICANT: ('red', 'FFFF0000'),
-    STYLE_POS_STRINGENT: ('dark_green', 'FF00BF00'),
-    STYLE_POS_SIGNIFICANT: ('green', 'FF00FF00'),
+    STYLE_NEG_STRINGENT: ('red_stringent', 'FFBF0000'),
+    STYLE_NEG_SIGNIFICANT: ('red_lenient', 'FFFF0000'),
+    STYLE_POS_STRINGENT: ('green_stringent', 'FF00BF00'),
+    STYLE_POS_SIGNIFICANT: ('green_lenient', 'FF00FF00'),
 }
 
 def get_xlwt_style(color):
@@ -231,7 +236,12 @@ class XlsWriter(GenericXlsWriter):
     mime = 'application/vnd.ms-excel'
     
     def _create_wb(self):
-        return xlwt.Workbook()
+        wb = xlwt.Workbook()
+        wb.set_colour_RGB(0x21, 204, 51, 51)
+        wb.set_colour_RGB(0x22, 255, 153, 153)
+        wb.set_colour_RGB(0x23, 0, 153, 51)
+        wb.set_colour_RGB(0x24, 153, 204, 153)
+        return wb
     
     def _add_sheet(self, name):
         ws = self.workbook.add_sheet(name) 
