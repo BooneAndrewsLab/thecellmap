@@ -2,13 +2,11 @@
 
 import datetime
 
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.urlresolvers import reverse
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 
 from base.download import prepare_nodes
-from base.forms import TabularForm
 from base.models import Dataset
 from base.utils import print_queries, is_integer
 
@@ -29,11 +27,6 @@ def dataset(request, dataset_id):
     
     return render(request, 'base/network.html', {
             'dataset': ds,
-      })
-
-def tabular(request):
-    return render(request, 'base/tabular.html', {
-            'form': TabularForm()
       })
 
 @print_queries

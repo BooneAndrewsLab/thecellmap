@@ -18,6 +18,7 @@ from openpyxl.styles.fills import Fill
 import xlwt
 
 from base.models import Gene
+from xlwt import Style
 
 
 STYLE_NEG_STRINGENT = '-str'
@@ -175,7 +176,7 @@ class GenericXlsWriter():
         sheet = self.sheets[sheet]
         self._write_cell(sheet['sheet'], row, col, value, **kwargs)
     
-    def write_row(self, values, sheet=None, **kwargs):
+    def _write_get_sheet(self, sheet):
         sheet = self._format_sheet_name(sheet)
         
         if isinstance(sheet, (int, )):
@@ -186,13 +187,29 @@ class GenericXlsWriter():
         if sheet not in self.sheets:
             raise Exception('Sheet %s not in existing sheets' % sheet)
         
-        sheet = self.sheets[sheet]
-        
+        return self.sheets[sheet]
+    
+    def write_row(self, values, sheet=None, **kwargs):
+        sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
             self._write_cell(sheet['sheet'], sheet['row'], col, val, **kwargs)
         sheet['row'] += 1
     
     writerow = write_row
+    
+    CORRELATION_FORMATS = (None, None, '0.000')
+    def write_correlation_row(self, values, sheet=None, **kwargs):
+        sheet = self._write_get_sheet(sheet)
+        for col, val in enumerate(values):
+            self._write_cell(sheet['sheet'], sheet['row'], col, val, number_format=self.CORRELATION_FORMATS[col], **kwargs)
+        sheet['row'] += 1
+    
+    SCORE_FORMATS = (None, None, '0.000', '0.00E+00')
+    def write_score_row(self, values, sheet=None, **kwargs):
+        sheet = self._write_get_sheet(sheet)
+        for col, val in enumerate(values):
+            self._write_cell(sheet['sheet'], sheet['row'], col, val, number_format=self.SCORE_FORMATS[col], **kwargs)
+        sheet['row'] += 1
     
     def save(self, seek=None):
         self._save()
@@ -221,11 +238,12 @@ class XlsWriter(GenericXlsWriter):
         ws.paper_size_code = 1 # US Letter
         return ws
     
-    def _write_cell(self, sheet, row, col, value, style=None):
-        if style:
-            sheet.write(row, col, value, STYLES[style][0])
-        else:
-            sheet.write(row, col, value)
+    def _write_cell(self, sheet, row, col, value, style=None, number_format=None):
+        style = style and STYLES[style][0] or Style.default_style
+        if number_format:
+            style.num_format_str = number_format
+        
+        sheet.write(row, col, value, style)
     
     def _save(self):
         self.workbook.save(self.fd)
@@ -245,7 +263,7 @@ class XlsxWriter(GenericXlsWriter):
         ws.title = name
         return ws
     
-    def _write_cell(self, sheet, row, col, value, style=None):
+    def _write_cell(self, sheet, row, col, value, style=None, number_format=None):
         cell = sheet.cell(row=row, column=col)
         cell.value = value
         
