@@ -559,13 +559,13 @@
             }
             
             function downloadShownData() {
-                var data = ['Gene A ORF\tGene A Name\tGene A allele\tGene B ORF\tGene B Name\tGene B allele\tvalue\n'];
+                var data = ['Gene A ORF\tGene A allele\tGene B ORF\tGene B allele\tCorrelation\n'];
                 var src, trg;
                 
                 iterShownEdges(function(edge) {
                     src = getStrain(edge.source.id);
                     trg = getStrain(edge.target.id);
-                    data.push([src.orf, src.name, src.alel, trg.orf, trg.name, trg.alel, edge.weight].join('\t') + '\n');
+                    data.push([src.orf, src.a || src.n || '', trg.orf, trg.a || trg.n || '', edge.weight.toFixed(3)].join('\t') + '\n');
                 });
                 
                 var blob = new Blob(data, {type: "text/tab-separated-values;charset=utf-8"});
@@ -581,26 +581,47 @@
                 v.writeAttributeString('id','test');
                 v.writeAttributeString('xmlns', "http://www.cs.rpi.edu/XGMML");
                 
+                v.writeStartElement('graphics');
+                v.writeStartElement('att');
+                v.writeAttributeString('name', 'NETWORK_BACKGROUND_PAINT');
+                v.writeAttributeString('value', '#000000');
+                v.writeAttributeString('type', 'string');
+                v.writeEndElement();
+                v.writeEndElement();
+                
                 iterVisibleNodes(function(node) {
                     var strain = getStrain(node.id);
-                    v.writeStartElement('node')
+                    v.writeStartElement('node');
                     v.writeAttributeString('id', node.id);
                     v.writeAttributeString('label', node.label);
                     
-                    [['orf', 'Orf'], ['name', 'Name'], ['alel', 'Allele']].forEach(function(key) {
-                        v.writeStartElement('att');
-                        v.writeAttributeString('name', key[1]);
-                        v.writeAttributeString('value', strain[key[0]] || '');
-                        v.writeAttributeString('type', 'string');
-                        v.writeEndElement();
-                    });
+                    v.writeStartElement('att');
+                    v.writeAttributeString('name', 'ORF');
+                    v.writeAttributeString('value', strain.orf);
+                    v.writeAttributeString('type', 'string');
+                    v.writeEndElement();
+
+                    v.writeStartElement('att');
+                    v.writeAttributeString('name', 'Allele');
+                    v.writeAttributeString('value', strain.a || strain.n || '');
+                    v.writeAttributeString('type', 'string');
+                    v.writeEndElement();
                     
                     v.writeStartElement('graphics');
                     v.writeAttributeString('x', node.x);
                     v.writeAttributeString('y', node.y);
+                    v.writeAttributeString('type', 'ELLIPSE');
+                    v.writeAttributeString('width', '0');
+                    v.writeAttributeString('fill', '#ffffff');
+                    
+                    v.writeStartElement('att');
+                    v.writeAttributeString('name', 'NODE_BORDER_TRANSPARENCY');
+                    v.writeAttributeString('value', '0');
+                    v.writeAttributeString('type', 'string');
                     v.writeEndElement();
                     
-                    v.writeEndElement();
+                    v.writeEndElement(); // graphics
+                    v.writeEndElement(); // node
                 });
                 
                 iterShownEdges(function(edge) {
