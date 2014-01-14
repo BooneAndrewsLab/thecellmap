@@ -84,6 +84,7 @@ class Command(CellMapCommand):
             StrainData.objects.create(
                 dataset=ds,
                 strain=array,
+                type=StrainData.ARRAY,
                 scores=tscores.ix[array],
                 pvalues=tpvals.ix[array],
                 correlations=correlations[array]
