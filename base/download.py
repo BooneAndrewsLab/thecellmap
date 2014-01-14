@@ -16,8 +16,16 @@ import numpy as np
 ONLY = (
     'strain__gene__orf',
     'strain__gene__name',
+    'strain__boonelab_id',
     'strain__allele',
 )
+
+def _allele_col(orf, name, strainid, allele):
+    suffix = 'damp' in strainid.lower() and '_damp' or ''
+    allele_col = allele or name or ''
+    if suffix:
+        allele_col = '%s%s' % (allele_col or orf, suffix)
+    return allele_col.lower()
 
 def prepare_nodes(ds, nodes, filename):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
@@ -31,6 +39,9 @@ def prepare_nodes(ds, nodes, filename):
     
     if not nodes:
         output.add_sheet('EMPTY')
+    else:
+        output.add_sheet('Instructions')
+        output.write_row(['HELLO WORLD'])
     
     for node in nodes:
         strains = nodes_inv[int(node)]
@@ -57,9 +68,10 @@ def prepare_nodes(ds, nodes, filename):
         correlations = correlations.groupby('strainB').mean().reset_index() # .drop((s.gene.orf, s.gene.name, s.allele))
         correlations = correlations.dropna().sort('correlation', ascending=False)
         
-        output.add_sheet('%s correlations' % s.basic_id(), ['Strain B ORF', 'Strain B Name', 'Strain B allele', 'correlation'])
+        output.add_sheet('%s correlations' % s.basic_id(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
-            output.write_row(strainB + (correlation, ), style=correlation >= .2 and STYLE_POS_SIGNIFICANT)
+            orf = strainB[0]
+            output.write_correlation_row((orf, _allele_col(*strainB), correlation, ), style=correlation >= .2 and STYLE_POS_SIGNIFICANT)
         
         scores = scores.groupby('target').agg({
                             'score': np.mean,
@@ -67,8 +79,9 @@ def prepare_nodes(ds, nodes, filename):
                         }).reset_index()
         scores = scores.dropna().sort('score')
         
-        output.add_sheet('%s scores' % s.basic_id(), ['Strain B ORF', 'Strain B Name', 'Strain B allele', 'score', 'pvalue'])
+        output.add_sheet('%s scores' % s.basic_id(), ['ORF', 'Allele', 'Score', 'p-value'])
         for strainB, pval, score in scores.itertuples(index=False):
+            orf = strainB[0]
             style = None
             if score <= -.16:
                 style = STYLE_NEG_STRINGENT
@@ -79,6 +92,6 @@ def prepare_nodes(ds, nodes, filename):
             elif score >= .08:
                 style = STYLE_POS_SIGNIFICANT
             
-            output.write_row(strainB + (score, pval), style=style)
+            output.write_score_row((orf, _allele_col(*strainB), score, pval), style=style)
     
     return output
