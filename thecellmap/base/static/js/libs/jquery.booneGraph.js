@@ -197,7 +197,6 @@
                 mouseY = event.pageY;
             }
             
-            var selected = [];
             function getSelected() {
                 return $("input.gene-search-input").select2('val');
             }
@@ -398,6 +397,14 @@
             
             function applyNeighbourhood(level) {
                 neighbourhoodLevel = level;
+                
+                /* Resets big red nodes */
+                var selected = getSelected();
+                selected.forEach(function (id){
+                    var node = getNode(id);
+                    node.size = node.size_init;
+                });
+                
                 applyNetwork();
             };
             
@@ -565,6 +572,59 @@
                 saveAs(blob, 'network_data.tsv');
             };
             
+            function downloadXGMML() {
+                var v = new  XMLWriter();
+                v.writeStartDocument();
+                
+                v.writeStartElement('graph');
+                v.writeAttributeString('directed','0');
+                v.writeAttributeString('id','test');
+                v.writeAttributeString('xmlns', "http://www.cs.rpi.edu/XGMML");
+                
+                iterVisibleNodes(function(node) {
+                    var strain = getStrain(node.id);
+                    v.writeStartElement('node')
+                    v.writeAttributeString('id', node.id);
+                    v.writeAttributeString('label', node.label);
+                    
+                    [['orf', 'Orf'], ['name', 'Name'], ['alel', 'Allele']].forEach(function(key) {
+                        v.writeStartElement('att');
+                        v.writeAttributeString('name', key[1]);
+                        v.writeAttributeString('value', strain[key[0]] || '');
+                        v.writeAttributeString('type', 'string');
+                        v.writeEndElement();
+                    });
+                    
+                    v.writeStartElement('graphics');
+                    v.writeAttributeString('x', node.x);
+                    v.writeAttributeString('y', node.y);
+                    v.writeEndElement();
+                    
+                    v.writeEndElement();
+                });
+                
+                iterShownEdges(function(edge) {
+                    v.writeStartElement('edge')
+                    v.writeAttributeString('source', edge.source.id);
+                    v.writeAttributeString('target', edge.target.id);
+                    v.writeAttributeString('cy:directed', 0);
+                    
+                    v.writeStartElement('att');
+                    v.writeAttributeString('name', 'interaction');
+                    v.writeAttributeString('value', edge.weight);
+                    v.writeAttributeString('type', 'string');
+                    v.writeEndElement();
+                    
+                    v.writeEndElement();
+                });
+                
+                v.writeEndElement();
+                v.writeEndDocument();
+                
+                var blob = new Blob([v.flush()], {type: "application/xgmml;charset=utf-8"});
+                saveAs(blob, 'network_data.xgmml');
+            }
+            
             function initElements() {
                 $(rootElement).append('<div id="search-bar" class="input-group"> \
                           <span class="input-group-addon glyphicon glyphicon-search"></span> \
@@ -633,6 +693,41 @@
                     });
                 }
                 
+                menuBar.append('<div id="btn-group-download" class="btn-group"> \
+                        <button id="btn-download" type="button" class="btn btn-primary">Download</button> \
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
+                          <span class="caret"></span> \
+                          <span class="sr-only">Toggle Dropdown</span> \
+                        </button> \
+                        <ul class="dropdown-menu" role="menu"> \
+                            <li><a id="download-visible" href="#">Download visible network</a></li> \
+                            <li><a id="download-selected" href="#">Download data for selected genes</a></li> \
+                            <li><a id="download-dataset" href="#">Download dataset</a></li> \
+                            <li class="divider"></li> \
+                            <li><a id="download-xgmml" href="#">Export visible network to xgmml</a></li> \
+                        </ul> \
+                      </div>');
+                menuBar.find("#download-selected").toggleClass('disabled');
+                
+                menuBar.find("#btn-group-download a, #btn-group-download button").click(function() {
+                    switch ($(this).attr('id')) {
+                    case "btn-download":
+                    case "download-visible":
+                        downloadShownData();
+                        break;
+                    case "download-selected":
+                        var selected = getSelected();
+                        window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                        break;
+                    case "download-dataset":
+                        window.open('dl/','_blank');
+                        break;
+                    case "download-xgmml":
+                        downloadXGMML();
+                        break;
+                    }
+                });
+                
                 menuBar.append('<div id="btn-group-layout" class="btn-group"> \
                         <button id="btn-layout" type="button" class="btn btn-primary">Layout</button> \
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
@@ -700,6 +795,7 @@
                 $('body').append('<div id="contextmenu-container" class="dropdown clearfix" style="display: none;"> \
                         <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;"> \
                           <li><a id="context-info" tabindex="-1" href="#"><span class="glyphicon glyphicon-info-sign"></span> Show info</a></li> \
+                          <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li> \
                           <li class="divider"></li> \
                           <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li> \
                           <li><a id="context-rename" tabindex="-1" href="#"><span class="glyphicon glyphicon-pencil"></span> Rename node</a></li> \
@@ -842,11 +938,19 @@
                     
                     var position = sigInst.position();
                     var size = sigInst.size();
+                    console.log(size, position.ratio);
                     
                     var x = -(mmx.ax + mmx.zx - (2 * position.stageX) - size.w) / 2;
                     var y = -(mmx.ay + mmx.zy - (2 * position.stageY) - size.h) / 2;
                     
+                    console.log(x, y);
                     sigInst.goTo(x, y).draw();
+//                    
+//                    position = sigInst.position();
+//                    size = sigInst.size();
+//                    console.log(size);
+//                    
+//                    sigInst.goTo(0, 0, 1).draw();
                 });
                 $('#btn-fullscreen').click(function() {
                     console.log($().isFullScreen());
@@ -904,6 +1008,10 @@
                         console.log(opts.nodeInfo(node, strain));
                         
                         alertUser('Node info', opts.nodeInfo(node, strain))
+                        break
+                    case "context-dl":
+                        var node = getNode(hoveredTargets[0]), strain = getStrain(node.id);
+                        window.location.href = 'dl/?n=' + node.id;
                         break
                     case "context-hide":
                         hoveredTargets.forEach(function(node) {
@@ -1117,12 +1225,12 @@
                                 if (query.term.length == 0){
                                     data.results.push({id: node.id, text: node.value });
                                 } else {
-                                    node.tokens.forEach(function(token) {
-                                        if (token.toLowerCase().indexOf(term) !== -1) {
+                                    for (var x in node.tokens) {
+                                        if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
                                             data.results.push({id: node.id, text: node.value });
-                                            return;
+                                            break;
                                         }
-                                    });
+                                    }
                                 }
                             });
                             
@@ -1143,7 +1251,7 @@
                         sigInst.iterNodes(function(node) {
                             if ($.inArray(node.id, selected) >= 0) {
                                 setNodeColor(node, "#FF0000");
-                                node.size *= 3;
+                                node.size = node.size_init * 3;
                                 
                                 if (node.hidden) {
                                     messageUser('Gene you\'re looking for is below current threshold.')
@@ -1160,6 +1268,7 @@
                         
                         $('#btn-group-neighbourhood').toggleClass('hidden', selected.length == 0);
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
+                        $('#download-selected').toggleClass('disabled', selected.length == 0);
                         
                         if (!tokenizing) {
                             applyNetwork();

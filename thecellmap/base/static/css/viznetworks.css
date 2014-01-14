@@ -1,3 +1,8 @@
+a.disabled {
+    pointer-events: none;
+    color: gray !important;
+}
+
 .container {
     width: auto;
 }
@@ -87,7 +92,7 @@ button:hover {
 }
 
 .sigma-expand {
-    background: #222222 url('../img/boone_lab_logo_small.png') 10px 98% no-repeat;
+    background: #222222;
     border-radius: 8px;
     height: 100%;
     left: 0;

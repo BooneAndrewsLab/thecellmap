@@ -33,7 +33,13 @@ class Strain(models.Model):
     description = models.TextField()
     
     def __unicode__(self):
+        return self.full_id()
+    
+    def full_id(self):
         return '%s%s - %s' % (self.gene, self.allele and ' - %s' % self.allele or '', self.boonelab_id)
+    
+    def basic_id(self):
+        return '%s%s' % (self.gene, self.allele and ' - %s' % self.allele or '')
 
 class Dataset(models.Model):
     name = models.CharField(max_length=64, unique=True)
@@ -46,15 +52,25 @@ class Dataset(models.Model):
     def __unicode__(self):
         return self.name
     
-    def static_path(self):
-        return os.path.join(settings.STATIC_ROOT, 'visualization', self.name)
+    def static_path(self, *args):
+        return os.path.join(settings.STATIC_ROOT, 'visualization', self.name, *args)
     
-    def static_url(self):
-        return os.path.join(settings.STATIC_URL, 'visualization', self.name)
+    def static_url(self, *args):
+        return os.path.join(settings.STATIC_URL, 'visualization', self.name, *args)
+    
+    def correlation_axis_qs(self):
+        return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
 
 class StrainData(models.Model):
+    QUERY = 'Q'
+    ARRAY = 'A'
+    TYPE_CHOICES = (
+        (QUERY, 'Query'),
+        (ARRAY, 'Array'),
+    )
     dataset = models.ForeignKey(Dataset, related_name='data')
     strain = models.ForeignKey(Strain)
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=QUERY)
     scores = dbarray.FloatArrayField()
     pvalues = dbarray.FloatArrayField()
     correlations = dbarray.FloatArrayField()

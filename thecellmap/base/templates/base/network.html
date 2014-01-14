@@ -32,12 +32,15 @@
   <script src="{% static 'js/libs/utils.js' %}"></script>
   <script src="{% static 'js/libs/spectrum.min.js' %}"></script>
   <script src="{% static 'js/libs/jquery.booneGraph.js' %}"></script>
-  <script src="{% static 'js/libs/typeahead.min.js' %}"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.9.3/typeahead.min.js"></script>
+  <script>jQuery.fn.typeahead || document.write('<script src="{% static "js/libs/typeahead.min.js" %}"><\/script>')</script>
   <script src="{% static 'js/libs/viz-jquery-ui-1.10.3.custom.min.js' %}"></script>
-  <script src="{% static 'js/libs/select2.min.js' %}"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.js"></script>
+  <script>jQuery.fn.select2 || document.write('<script src="{% static "js/libs/select2.min.js" %}"><\/script>')</script>
   <script src="{% static 'js/libs/FileSaver.js' %}"></script>
   <script src="{% static 'js/libs/Blob.js' %}"></script>
   <script src="{% static 'js/libs/canvas-toBlob.js' %}"></script>
+  <script src="{% static 'js/libs/XMLWriter-1.0.0-min.js' %}"></script>
 
   <script type="text/javascript">
   (function($) {

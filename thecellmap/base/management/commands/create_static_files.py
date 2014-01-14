@@ -38,6 +38,7 @@ class Command(CellMapCommand):
         
         nodes = {}
         nodes_map = {}
+        nodes_inverse_map = {}
         for id, orf, name, allele, strain_id in Strain.objects.filter(
                     Q(as_query=dataset) |
                     Q(as_array=dataset) |
@@ -58,14 +59,17 @@ class Command(CellMapCommand):
                         'orf': orf,
                         'name': name,
                         'alel': allele,
-                        'label': label
+                        'label': label,
                     }
+            
             nodes_map[id] = nodes[label]['id']
+            nodes_inverse_map.setdefault(nodes[label]['id'], []).append(id)
         
         nodes = nodes.values()
         
         cPickle.dump(nodes, open(os.path.join(outpath, 'nodes.pickle'), 'wb'))
-        self._dump_clean_json(nodes, os.path.join(outpath, 'nodes.json'))
+        cPickle.dump(nodes_inverse_map, open(os.path.join(outpath, 'nodes_inv.pickle'), 'wb'))
+        self._dump_clean_json({'nodes': nodes}, os.path.join(outpath, 'nodes.json'))
         
         dataset.correlation_axis.through.objects.order_by('id').values_list('strain_id')
         

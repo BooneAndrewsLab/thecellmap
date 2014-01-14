@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="{% static 'css/social.css' %}">
 {% endblock css %}
 
+{% block js %}
+{{ block.super }}
+  <script type="text/javascript">
+    (function($) {
+        $(document).ready(function() {
+            $("#mmtest").click(function() {
+                $('#mmtest').after('CLIJK');
+            });
+            $("#mmtest").scroll(function() {
+                $('#mmtest').after('wooooooot');
+            });
+        });
+    })(jQuery);
+  </script>
+{% endblock js %}
+
 {% block page_title_suffix %} - About{% endblock %}
 {% block content %}
   <div class="container">
@@ -22,5 +38,6 @@
         <li><a href="http://sigmajs.org/">sigma.js</a> - Graph visualization library</li>
     </ul>
     
+    <div id="mmtest" style="height: 100px; width: 100px; background: #438523;"></div>
   </div>
 {% endblock %}

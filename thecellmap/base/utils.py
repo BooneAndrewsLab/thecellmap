@@ -3,11 +3,49 @@ Created on Dec 13, 2013
 
 @author: matej
 '''
-from django.core.management.base import BaseCommand, CommandError
+from StringIO import StringIO
 import fileinput
 import os
-from base.models import Gene
+import re
 import time
+from types import NoneType
+
+from django.core.management.base import BaseCommand, CommandError
+from django.http.response import HttpResponse
+from django.utils.datastructures import SortedDict
+import openpyxl
+from openpyxl.styles.fills import Fill
+import xlwt
+
+from base.models import Gene
+
+
+STYLE_NEG_STRINGENT = '-str'
+STYLE_NEG_SIGNIFICANT = '-sig'
+STYLE_POS_STRINGENT = '+str'
+STYLE_POS_SIGNIFICANT = '+sig'
+STYLE_BOLD = 'bold'
+
+STYLES = {
+    STYLE_NEG_STRINGENT: ('dark_red', 'FFBF0000'),
+    STYLE_NEG_SIGNIFICANT: ('red', 'FFFF0000'),
+    STYLE_POS_STRINGENT: ('dark_green', 'FF00BF00'),
+    STYLE_POS_SIGNIFICANT: ('green', 'FF00FF00'),
+}
+
+def get_xlwt_style(color):
+    style = xlwt.XFStyle()
+    pattern = xlwt.Pattern()
+    pattern.pattern = xlwt.Pattern.SOLID_PATTERN
+    pattern.pattern_fore_colour = xlwt.Style.colour_map[color]
+    style.pattern = pattern
+    return style
+
+for typ in STYLES.keys():
+    xc, xxc = STYLES[typ]
+    STYLES[typ] = (get_xlwt_style(xc), xxc)
+
+STYLES[STYLE_BOLD] = (xlwt.easyxf("font: bold on;"), STYLE_BOLD)
 
 class CellMapCommand(BaseCommand):
     def get_path(self, filepath, required=True):
@@ -93,3 +131,149 @@ def colored(text, color=None):
             text = fmt_str % (COLORS[color], text)
         text += RESET
     return text
+
+class GenericXlsWriter():
+    def __init__(self, fd):
+        self.workbook = self._create_wb()
+        self.sheets = SortedDict()
+        self.active_sheet = None
+        self.fd = fd
+    
+    def _format_sheet_name(self, name):
+        return name and name.replace(':', '-')[:31] or None
+    
+    def set_cur_sheet(self, sheet):
+        self.active_sheet = sheet
+    def get_cur_sheet(self):
+        return self.active_sheet
+    cur_sheet = property(get_cur_sheet, set_cur_sheet)
+    
+    def add_sheet(self, name, headers=None):
+        name = self._format_sheet_name(name)
+        
+        if name in self.sheets:
+            raise Exception('Sheet %s exists' % name)
+        
+        # TODO: name length fix and give warning as return value
+        self.sheets[name] = {'sheet': self._add_sheet(name), 'row': 0}
+        self.active_sheet = name
+        
+        if headers:
+            self.write_row(headers, sheet=name, style=STYLE_BOLD)
+    
+    def write(self, row, col, value, sheet=None, **kwargs):
+        sheet = self._format_sheet_name(sheet)
+        
+        if isinstance(sheet, (int, )):
+            sheet = self.sheets.keys()[sheet]
+        elif isinstance(sheet, (NoneType, )):
+            sheet = self.active_sheet
+        
+        if sheet not in self.sheets:
+            raise Exception('Sheet %s not in existing sheets' % sheet)
+        
+        sheet = self.sheets[sheet]
+        self._write_cell(sheet['sheet'], row, col, value, **kwargs)
+    
+    def write_row(self, values, sheet=None, **kwargs):
+        sheet = self._format_sheet_name(sheet)
+        
+        if isinstance(sheet, (int, )):
+            sheet = self.sheets.keys()[sheet]
+        elif isinstance(sheet, (NoneType, )):
+            sheet = self.active_sheet
+        
+        if sheet not in self.sheets:
+            raise Exception('Sheet %s not in existing sheets' % sheet)
+        
+        sheet = self.sheets[sheet]
+        
+        for col, val in enumerate(values):
+            self._write_cell(sheet['sheet'], sheet['row'], col, val, **kwargs)
+        sheet['row'] += 1
+    
+    writerow = write_row
+    
+    def save(self, seek=None):
+        self._save()
+        if isinstance(seek, (int, )):
+            self.fd.seek(seek)
+        return self.fd
+    
+    def as_response(self):
+        response = HttpResponse(mimetype=self.mime)
+        response['Content-Disposition'] = 'attachment; filename=%s' % (self.fd, )
+        self.fd = response
+        self.save()
+        return response
+    
+    def sheets(self):
+        return self.sheets.keys()
+
+class XlsWriter(GenericXlsWriter):
+    mime = 'application/vnd.ms-excel'
+    
+    def _create_wb(self):
+        return xlwt.Workbook()
+    
+    def _add_sheet(self, name):
+        ws = self.workbook.add_sheet(name) 
+        ws.paper_size_code = 1 # US Letter
+        return ws
+    
+    def _write_cell(self, sheet, row, col, value, style=None):
+        if style:
+            sheet.write(row, col, value, STYLES[style][0])
+        else:
+            sheet.write(row, col, value)
+    
+    def _save(self):
+        self.workbook.save(self.fd)
+
+class XlsxWriter(GenericXlsWriter):
+    mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    
+    def _create_wb(self):
+        wb = openpyxl.workbook.Workbook()
+        wb.remove_sheet(wb.get_active_sheet())
+        return wb
+    
+    def _add_sheet(self, name):
+        ws = self.workbook.create_sheet()
+        ws.set_printer_settings(ws.PAPERSIZE_LETTER, ws.ORIENTATION_PORTRAIT) # leave this here just in case... 
+        ws.page_setup.paperSize = ws.PAPERSIZE_LETTER # this actually sets the size
+        ws.title = name
+        return ws
+    
+    def _write_cell(self, sheet, row, col, value, style=None):
+        cell = sheet.cell(row=row, column=col)
+        cell.value = value
+        
+        if style == STYLE_BOLD:
+            cell.style.font.bold = True
+        elif style:
+            cell.style.fill.fill_type = Fill.FILL_SOLID
+            cell.style.fill.start_color.index = STYLES[style][1]
+    
+    def _save(self):
+        self.workbook.save(self.fd)
+
+def write_excel_file(fd=None, type='xls', override_ext=False):
+    if isinstance(fd, (str, unicode)) and not override_ext:
+        type = os.path.splitext(fd)[1].strip('.')
+    elif fd == None:
+        fd = StringIO()
+    
+    type = type.lower()
+    
+    if type == 'xls':
+        return XlsWriter(fd)
+    elif type == 'xlsx':
+        return XlsxWriter(fd)
+    
+    raise BadXlsFile()
+
+class BadXlsFile(Exception): pass
+class XlsError(Exception): pass
+
+is_integer = lambda x: not not re.match('\d+', x)

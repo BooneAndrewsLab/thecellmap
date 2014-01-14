@@ -38,3 +38,5 @@ South
 https://github.com/ecometrica/django-dbarray/archive/master.zip
 pandas
 django-crispy-forms
+openpyxl
+xlwt
