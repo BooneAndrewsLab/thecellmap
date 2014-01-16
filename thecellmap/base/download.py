@@ -52,9 +52,9 @@ def prepare_nodes(ds, nodes, filename):
             s = data.strain
             correlations[s.id] = data.correlations
             
-            if data.type == StrainData.QUERY:
+            if data.type == StrainData.TYPE_QUERY:
                 scores_axis = arrays
-            elif data.type == StrainData.ARRAY:
+            elif data.type == StrainData.TYPE_ARRAY:
                 scores_axis = queries
             
             scores = scores.append(DataFrame({'target': scores_axis, 'score': data.scores, 'pval': data.pvalues}), ignore_index=True)

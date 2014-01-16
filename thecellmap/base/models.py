@@ -1,9 +1,12 @@
 """ Basic models, such as user profile """
 
-from django.db import models
-import dbarray
-from thecellmap import settings
 import os
+
+import dbarray
+from django.db import models
+
+from thecellmap import settings
+
 
 class Gene(models.Model):
     primary_sgdid = models.CharField(max_length=10, help_text='Primary SGDID', unique=True, db_index=True)
@@ -62,19 +65,31 @@ class Dataset(models.Model):
         return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
 
 class StrainData(models.Model):
-    QUERY = 'Q'
-    ARRAY = 'A'
+    TYPE_QUERY = 'Q'
+    TYPE_ARRAY = 'A'
     TYPE_CHOICES = (
-        (QUERY, 'Query'),
-        (ARRAY, 'Array'),
+        (TYPE_QUERY, 'Query'),
+        (TYPE_ARRAY, 'Array'),
     )
+    
+#     ARRAY_FG = 'FG'
+#     ARRAY_TS = 'TS'
+#     ARRAY_CHOICES = (
+#         (ARRAY_FG, 'Non-essential'),
+#         (ARRAY_TS, 'Essential'),
+#     )
+    
     dataset = models.ForeignKey(Dataset, related_name='data')
     strain = models.ForeignKey(Strain)
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=QUERY)
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_QUERY)
+#     array = models.CharField(max_length=2, choices=ARRAY_CHOICES, default=ARRAY_FG)
     scores = dbarray.FloatArrayField()
     pvalues = dbarray.FloatArrayField()
-    correlations = dbarray.FloatArrayField()
+    correlations = dbarray.FloatArrayField(null=True)
     
     def __unicode__(self):
         return '%s @ %s' % (self.strain, self.dataset)
+    
+#     class Meta:
+#         unique_together = (('dataset', 'strain', 'array'), )
     
