@@ -1,0 +1,20 @@
+[uwsgi]
+# socket = /home/thecellmap/thecellmap/run/thecellmap.sock
+socket=127.0.0.1:8000
+master = true
+pidfile = /home/thecellmap/thecellmap/run/uwsgi.pid
+vacuum = True
+processes = 4
+max-requests = 1000
+harakiri = 30
+#post-buffering = 8192
+logto = /home/thecellmap/thecellmap/log/uwsgi.log
+#reaper = true
+#disable-logging = true
+#chmod-socket = 666
+plugins = python
+env = DJANGO_SETTINGS_MODULE=thecellmap.settings
+module = thecellmap.wsgi:application
+#pythonpath = /home/thecellmap/thecellmap
+chdir = /home/thecellmap/thecellmap
+
