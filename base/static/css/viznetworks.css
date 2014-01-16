@@ -69,6 +69,13 @@ button:hover {
     padding: 10px;
 }
 
+#download-bar {
+    position: absolute;
+    z-index: 100;
+    padding: 10px;
+    left: 389px;
+}
+
 #menu-bar {
     position: absolute;
     z-index: 100;

@@ -68,12 +68,16 @@ class Command(CellMapCommand):
          
         for query, row in scores.iterrows():
             ds.queries.add(query)
+            c = None
+            if query in correlations.columns:
+                c = correlations[query]
+            
             StrainData.objects.create(
                 dataset=ds,
                 strain=query,
                 scores=row['score'],
                 pvalues=row['pval'],
-                correlations=correlations[query]
+                correlations=c
             )
          
         tscores = scores.score.T
@@ -81,13 +85,17 @@ class Command(CellMapCommand):
          
         for array in tscores.index:
             ds.arrays.add(array)
+            c = None
+            if array in correlations.columns:
+                c = correlations[array]
+            
             StrainData.objects.create(
                 dataset=ds,
                 strain=array,
-                type=StrainData.ARRAY,
+                type=StrainData.TYPE_ARRAY,
                 scores=tscores.ix[array],
                 pvalues=tpvals.ix[array],
-                correlations=correlations[array]
+                correlations=c
             )
         
         for c in correlations.index:
@@ -125,16 +133,16 @@ class Command(CellMapCommand):
         corr.index = indices.index
         corr.columns = indices.index
         
-        nanmask = np.isnan(corr)
-        tnanmask = np.isnan(corr.T)
-        
-#         if (~nanmask & ~tnanmask).sum().sum() > 0:
-#             # We would sum reciprocal values!! Check that each pair appears only once
-#             raise CommandError("Problem with correlation matrix.")
+#         nanmask = np.isnan(corr)
+#         tnanmask = np.isnan(corr.T)
 #         
-        corr[nanmask] = 0
-        corr += corr.T
-        corr[nanmask & tnanmask] = np.nan
+# #         if (~nanmask & ~tnanmask).sum().sum() > 0:
+# #             # We would sum reciprocal values!! Check that each pair appears only once
+# #             raise CommandError("Problem with correlation matrix.")
+# #         
+#         corr[nanmask] = 0
+#         corr += corr.T
+#         corr[nanmask & tnanmask] = np.nan
         
         return corr
     
@@ -146,6 +154,12 @@ class Command(CellMapCommand):
                         names=['qorf', 'aorf', 'score', 'pval'],
                         usecols=[0, 2, 5, 7],
                     )
+        
+        """ TODO: TEMPORARY CODE """
+        scores['abssc'] = scores.score.abs()
+        scores = scores.sort('abssc', ascending=False).groupby(('qorf', 'aorf'), as_index=False).first()
+        scores = scores.drop('abssc', axis=1)
+        """ TODO: TEMPORARY CODE """
         
         scores = scores.pivot('qorf', 'aorf')
         

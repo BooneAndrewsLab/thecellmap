@@ -651,6 +651,8 @@
                           <span class="input-group-addon glyphicon glyphicon-search"></span> \
                           <input class="gene-search-input form-control" type="hidden"> \
                       </div>');
+                $(rootElement).append('<div id="download-bar" class="input-group"> \
+                    </div>');
                 
                 $(rootElement).append('<div id="cutoff-bar"></div>');
                 
@@ -714,7 +716,8 @@
                     });
                 }
                 
-                menuBar.append('<div id="btn-group-download" class="btn-group"> \
+                var download_bar = $(rootElement).find('#download-bar');
+                download_bar.append('<div id="btn-group-download" class="btn-group"> \
                         <button id="btn-download" type="button" class="btn btn-primary">Download</button> \
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
                           <span class="caret"></span> \
@@ -728,9 +731,9 @@
                             <li><a id="download-xgmml" href="#">Export visible network to xgmml</a></li> \
                         </ul> \
                       </div>');
-                menuBar.find("#download-selected").toggleClass('disabled');
+                download_bar.find("#download-selected").toggleClass('disabled');
                 
-                menuBar.find("#btn-group-download a, #btn-group-download button").click(function() {
+                download_bar.find("#btn-group-download a, #btn-group-download button").click(function() {
                     switch ($(this).attr('id')) {
                     case "btn-download":
                     case "download-visible":
