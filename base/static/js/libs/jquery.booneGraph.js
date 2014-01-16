@@ -116,12 +116,12 @@
             
             function messageUser(text) {
                 var alert = $('<div class="alert alert-warning fade in"> \
-                        <button class="close" aria-hidden="true" data-dismiss="alert" type="button">×</button> \
+                        <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
                         ' + text + ' \
                       </div>');
                 $('#alerts-panel').append(alert);
                 alert.alert();
-                setTimeout(function() { alert.alert('close') }, 2000);
+                setTimeout(function() { alert.alert('close') }, 3000);
             }
             
             function modalInput(title, text, label, type, callback) {
@@ -724,11 +724,11 @@
                           <span class="sr-only">Toggle Dropdown</span> \
                         </button> \
                         <ul class="dropdown-menu" role="menu"> \
-                            <li><a id="download-visible" href="#">Download visible network</a></li> \
-                            <li><a id="download-selected" href="#">Download data for selected genes</a></li> \
-                            <li><a id="download-dataset" href="#">Download dataset</a></li> \
+                            <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span>Download visible network</a></li> \
+                            <li><a id="download-selected" href="#"><span class="filetype-icon xls"></span>Download data for selected genes</a></li> \
+                            <li><a id="download-dataset" href="#"><span class="filetype-icon csv"></span>Download dataset</a></li> \
                             <li class="divider"></li> \
-                            <li><a id="download-xgmml" href="#">Export visible network to xgmml</a></li> \
+                            <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span>Export visible network to xgmml</a></li> \
                         </ul> \
                       </div>');
                 download_bar.find("#download-selected").toggleClass('disabled');
@@ -1267,7 +1267,7 @@
                             var strain = getStrain(evt.val);
                             
                             messageUser('Gene <strong>' + strain.verboseName + '</strong> was screened but is below the lowest threshold');
-                            evt.preventDefault();
+//                            evt.preventDefault();
                         }
                     }).on('change', function(evt) {
                         var selected = getSelected();

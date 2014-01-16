@@ -16,6 +16,7 @@ a.disabled {
     top: 0;
     width: 66%;
     left: 17%;
+    z-index: 1040;
 }
 
 #alerts-panel .alert-warning {
