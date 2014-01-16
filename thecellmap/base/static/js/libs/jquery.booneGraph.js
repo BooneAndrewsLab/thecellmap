@@ -402,7 +402,7 @@
                 var selected = getSelected();
                 selected.forEach(function (id){
                     var node = getNode(id);
-                    node.size = node.size_init;
+                    if (node != undefined) node.size = node.size_init;
                 });
                 
                 applyNetwork();
@@ -436,8 +436,10 @@
                     var localSelected = {};
                     getSelected().forEach(function(id) {
                         var node = getNode(id);
-                        node.hidden = false;
-                        localSelected[node.id] = true;
+                        if (node != undefined) {
+                            node.hidden = false;
+                            localSelected[node.id] = true;
+                        }
                     });
                     
                     for (var level = 0; level < neighbourhoodLevel; level++) {
@@ -491,8 +493,10 @@
                     var localSelected = {};
                     getSelected().forEach(function(id) {
                         var node = getNode(id);
-                        node.hidden = false;
-                        localSelected[node.id] = true;
+                        if (node != undefined) {
+                            node.hidden = false;
+                            localSelected[node.id] = true;
+                        }
                     });
                     
                     for (var level = 0; level < neighbourhoodLevel; level++) {
