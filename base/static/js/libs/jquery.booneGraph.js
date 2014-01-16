@@ -1095,7 +1095,7 @@
                     nodeColor : opts.defaultNodeColor,
                     defaultEdgeArrow: opts.arrows ? 'target' : 'none',
                 }).graphProperties(graphProperties).mouseProperties({
-                    drawHoverEdges: true,
+                    drawHoverEdges: false,
                     maxRatio : 64
                 }).bind('rightclicknodes', onNodesContext
                  ).bind('ctrlclicknodes', onNodesCtrlClick
