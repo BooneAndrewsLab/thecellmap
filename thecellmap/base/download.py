@@ -9,7 +9,7 @@ from pandas.core.frame import DataFrame
 
 from base.models import StrainData
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
-    STYLE_POS_SIGNIFICANT
+    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT
 import numpy as np
 
 
@@ -40,8 +40,9 @@ def prepare_nodes(ds, nodes, filename):
     if not nodes:
         output.add_sheet('EMPTY')
     else:
-        output.add_sheet('Instructions')
-        output.write_row(['HELLO WORLD'])
+        output.add_instructions_sheet()
+    
+    instructions_content = []
     
     for node in nodes:
         strains = nodes_inv[int(node)]
@@ -58,6 +59,7 @@ def prepare_nodes(ds, nodes, filename):
                 scores_axis = queries
             
             scores = scores.append(DataFrame({'target': scores_axis, 'score': data.scores, 'pval': data.pvalues}), ignore_index=True)
+        instructions_content.append(s.basic_id())
         
         """
             Correlations
@@ -71,27 +73,22 @@ def prepare_nodes(ds, nodes, filename):
         output.add_sheet('%s correlations' % s.basic_id(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
             orf = strainB[0]
-            output.write_correlation_row((orf, _allele_col(*strainB), correlation, ), style=correlation >= .2 and STYLE_POS_SIGNIFICANT)
+            output.write_correlation_row((orf, _allele_col(*strainB), correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
         
         scores = scores.groupby('target').agg({
                             'score': np.mean,
                             'pval': np.max
                         }).reset_index()
-        scores = scores.dropna().sort('score')
+        scores = scores.dropna()
         
-        output.add_sheet('%s scores' % s.basic_id(), ['ORF', 'Allele', 'Score', 'p-value'])
-        for strainB, pval, score in scores.itertuples(index=False):
-            orf = strainB[0]
-            style = None
-            if score <= -.16:
-                style = STYLE_NEG_STRINGENT
-            elif score <= -.08:
-                style = STYLE_NEG_SIGNIFICANT
-            elif score >= .16:
-                style = STYLE_POS_STRINGENT
-            elif score >= .08:
-                style = STYLE_POS_SIGNIFICANT
-            
-            output.write_score_row((orf, _allele_col(*strainB), score, pval), style=style)
+        output.add_sheet('%s scores' % s.basic_id(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
+        for strainB, pval, score in scores[scores.score <= 0].sort('score').itertuples(index=False):
+            output.write_score_row_neg((orf, _allele_col(*strainB), score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
+        
+        output.reset_row(1)
+        for strainB, pval, score in scores[scores.score > 0].sort('score', ascending=False).itertuples(index=False):
+            output.write_score_row_pos((orf, _allele_col(*strainB), score, pval), style=(score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None)
+    
+    output.write_instructions(', '.join(instructions_content))
     
     return output

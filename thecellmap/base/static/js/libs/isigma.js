@@ -2679,25 +2679,25 @@ function Sigma(root, id) {
       return;
     }
 
-    targeted = self.graph.edges.filter(function(e) {
-      return !!e['hover'];
-    }).map(function(e) {
-      return e.id;
-    });
-
-    if (targeted.length) {
-      eventType = 'upedges';
-      if(e['type'] == 'ctrlclick') {
-        eventType = 'ctrlclickedges';
-      } else if(e['type'] == 'mousedown') {
-        eventType = 'downedges';
-      }
-
-      self.dispatch(
-        eventType,
-        targeted
-      );
-    }
+//    targeted = self.graph.edges.filter(function(e) {
+//      return !!e['hover'];
+//    }).map(function(e) {
+//      return e.id;
+//    });
+//
+//    if (targeted.length) {
+//      eventType = 'upedges';
+//      if(e['type'] == 'ctrlclick') {
+//        eventType = 'ctrlclickedges';
+//      } else if(e['type'] == 'mousedown') {
+//        eventType = 'downedges';
+//      }
+//
+//      self.dispatch(
+//        eventType,
+//        targeted
+//      );
+//    }
   }).bind('rightclick dblclick', function(e) {
     targeted = self.graph.nodes.filter(function(n) {
       return !!n['hover'];
@@ -2723,19 +2723,19 @@ function Sigma(root, id) {
 //            self.mousecaptor.ratio,
 //            self.plotter.p.defaultEdgeType
 //          );
-    targeted = self.graph.edges.filter(function(e) {
-      return !!e['hover'];
-    }).map(function(e) {
-      return e.id;
-    });
-
-    if (targeted.length) {
-      eventType = (e['type'] == 'dblclick') ? 'dblclickedges' : 'rightclickedges';
-      self.dispatch(
-        eventType,
-        targeted
-      );
-    }
+//    targeted = self.graph.edges.filter(function(e) {
+//      return !!e['hover'];
+//    }).map(function(e) {
+//      return e.id;
+//    });
+//
+//    if (targeted.length) {
+//      eventType = (e['type'] == 'dblclick') ? 'dblclickedges' : 'rightclickedges';
+//      self.dispatch(
+//        eventType,
+//        targeted
+//      );
+//    }
   }).bind('move', function(e) {
     // console.log(eventType);
     if (eventType == 'downgraph' || eventType == 'downedges') {
@@ -3088,20 +3088,20 @@ function Sigma(root, id) {
       );
     }
     
-    if (self.p.drawHoverEdges) {
-      self.graph.checkHoverEdge(
-        self.mousecaptor.mouseX,
-        self.mousecaptor.mouseY,
-        self.mousecaptor.ratio,
-        self.plotter.p.defaultEdgeType
-      );
-
-      self.graph.edges.forEach(function(edge) {
-        if (edge.hover && !edge.active) {
-          self.plotter.drawHoverEdge(edge);
-        }
-      });
-    }
+//    if (self.p.drawHoverEdges) {
+//      self.graph.checkHoverEdge(
+//        self.mousecaptor.mouseX,
+//        self.mousecaptor.mouseY,
+//        self.mousecaptor.ratio,
+//        self.plotter.p.defaultEdgeType
+//      );
+//
+//      self.graph.edges.forEach(function(edge) {
+//        if (edge.hover && !edge.active) {
+//          self.plotter.drawHoverEdge(edge);
+//        }
+//      });
+//    }
 
     if (self.p.drawHoverNodes) {
       self.graph.nodes.forEach(function(node) {

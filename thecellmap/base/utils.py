@@ -19,17 +19,20 @@ from xlwt import Style
 import xlwt
 
 from base.models import Gene
+import datetime
 
 
 xlwt.add_palette_colour("red_stringent", 0x21)
 xlwt.add_palette_colour("red_lenient", 0x22)
 xlwt.add_palette_colour("green_stringent", 0x23)
 xlwt.add_palette_colour("green_lenient", 0x24)
+xlwt.add_palette_colour("correlation", 0x25)
 
 STYLE_NEG_STRINGENT = '-str'
 STYLE_NEG_SIGNIFICANT = '-sig'
 STYLE_POS_STRINGENT = '+str'
 STYLE_POS_SIGNIFICANT = '+sig'
+STYLE_COR_SIGNIFICANT = 'cor'
 STYLE_BOLD = 'bold'
 
 STYLES = {
@@ -37,6 +40,7 @@ STYLES = {
     STYLE_NEG_SIGNIFICANT: ('red_lenient', 'FFFF0000'),
     STYLE_POS_STRINGENT: ('green_stringent', 'FF00BF00'),
     STYLE_POS_SIGNIFICANT: ('green_lenient', 'FF00FF00'),
+    STYLE_COR_SIGNIFICANT: ('correlation', 'FFFFCC99'),
 }
 
 def get_xlwt_style(color):
@@ -154,6 +158,9 @@ class GenericXlsWriter():
         return self.active_sheet
     cur_sheet = property(get_cur_sheet, set_cur_sheet)
     
+    def reset_row(self, row=0, sheet=None):
+        self._write_get_sheet(sheet)['row'] = row
+    
     def add_sheet(self, name, headers=None):
         name = self._format_sheet_name(name)
         
@@ -210,11 +217,42 @@ class GenericXlsWriter():
         sheet['row'] += 1
     
     SCORE_FORMATS = (None, None, '0.000', '0.00E+00')
-    def write_score_row(self, values, sheet=None, **kwargs):
+    def write_score_row(self, values, sheet=None, col_offset=0, **kwargs):
         sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
-            self._write_cell(sheet['sheet'], sheet['row'], col, val, number_format=self.SCORE_FORMATS[col], **kwargs)
+            self._write_cell(sheet['sheet'], sheet['row'], col + col_offset, val, number_format=self.SCORE_FORMATS[col], **kwargs)
         sheet['row'] += 1
+    
+    def write_score_row_neg(self, values, sheet=None, **kwargs):
+        self.write_score_row(values, sheet, col_offset=0, **kwargs)
+    
+    def write_score_row_pos(self, values, sheet=None, **kwargs):
+        self.write_score_row(values, sheet, col_offset=5, **kwargs)
+    
+    def add_instructions_sheet(self):
+        self.add_sheet('Instructions')
+    
+    def write_instructions(self, content):
+        sheet = self._write_get_sheet('Instructions')
+        self._write_cell(sheet['sheet'], 0, 0, 'Source', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 0, 1, 'thecellmap.org')
+        self._write_cell(sheet['sheet'], 1, 0, 'Downloaded on', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now())
+        self._write_cell(sheet['sheet'], 2, 0, 'Content', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (Scores) and similarity of genetic interaction profiles (Correlations) for genes %s' % content)
+        
+        self._write_cell(sheet['sheet'], 4, 0, 'Legend:', style=STYLE_BOLD)
+        
+        self._write_cell(sheet['sheet'], 5, 0, 'A', style=STYLE_COR_SIGNIFICANT)
+        self._write_cell(sheet['sheet'], 5, 1, 'Significant correlations (Pearson correlation coefficients > 0.2)')
+        self._write_cell(sheet['sheet'], 6, 0, 'B', style=STYLE_NEG_STRINGENT)
+        self._write_cell(sheet['sheet'], 6, 1, 'Significant negative genetic interactions (stringent cutoff: score < -0.12, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 7, 0, 'C', style=STYLE_NEG_SIGNIFICANT)
+        self._write_cell(sheet['sheet'], 7, 1, 'Significant negative genetic interactions (intermediate cutoff: score < -0.08, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 8, 0, 'D', style=STYLE_POS_STRINGENT)
+        self._write_cell(sheet['sheet'], 8, 1, 'Significant positive genetic interactions (stringent cutoff: score > 0.16, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 9, 0, 'E', style=STYLE_POS_SIGNIFICANT)
+        self._write_cell(sheet['sheet'], 9, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
     
     def save(self, seek=None):
         self._save()
@@ -241,6 +279,7 @@ class XlsWriter(GenericXlsWriter):
         wb.set_colour_RGB(0x22, 255, 153, 153)
         wb.set_colour_RGB(0x23, 0, 153, 51)
         wb.set_colour_RGB(0x24, 153, 204, 153)
+        wb.set_colour_RGB(0x25, 255, 204, 153)
         return wb
     
     def _add_sheet(self, name):
