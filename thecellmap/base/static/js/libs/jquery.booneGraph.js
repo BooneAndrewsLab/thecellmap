@@ -735,13 +735,16 @@
                 
                 download_bar.find("#btn-group-download a, #btn-group-download button").click(function() {
                     switch ($(this).attr('id')) {
-                    case "btn-download":
                     case "download-visible":
                         downloadShownData();
                         break;
+                    case "btn-download":
                     case "download-selected":
                         var selected = getSelected();
-                        window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                        if (selected.length > 0) 
+                            window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                        else
+                            alertUser('Selection required', 'Please select one ore more genes to download');
                         break;
                     case "download-dataset":
                         window.open('dl/','_blank');
