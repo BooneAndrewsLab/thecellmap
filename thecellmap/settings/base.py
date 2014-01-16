@@ -276,10 +276,11 @@ SYSTEM_EMAIL_PREFIX = "[thecellmap]"
 
 ## Log settings
 
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 HAS_SYSLOG = True
 SYSLOG_TAG = "http_app_thecellmap"  # Make this unique to your project.
 # Remove this configuration variable to use your custom logging configuration
+"""
 LOGGING_CONFIG = None
 LOGGING = {
     'version': 1,
@@ -289,7 +290,7 @@ LOGGING = {
         }
     }
 }
-
+"""
 # Common Event Format logging parameters
 #CEF_PRODUCT = 'thecellmap'
 #CEF_VENDOR = 'Your Company'
