@@ -21,11 +21,17 @@ ONLY = (
 )
 
 def _allele_col(orf, name, strainid, allele):
-    suffix = 'damp' in strainid.lower() and '_damp' or ''
-    allele_col = allele or name or ''
+    strainid = strainid.lower()
+    suffix = 'damp' in strainid and '_damp' or ''
+    allele_col = (allele or name or orf).lower()
+    
+    if 'ts' not in strainid and 'damp' not in strainid:
+        suffix = u'\u0394'
+    
     if suffix:
-        allele_col = '%s%s' % (allele_col or orf, suffix)
-    return allele_col.lower()
+        allele_col = '%s%s' % (allele_col, suffix)
+    
+    return allele_col
 
 def prepare_nodes(ds, nodes, filename):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
