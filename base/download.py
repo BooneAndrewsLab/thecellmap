@@ -78,8 +78,7 @@ def prepare_nodes(ds, nodes, filename):
         
         output.add_sheet('%s correlations' % s.basic_id(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
-            orf = strainB[0]
-            output.write_correlation_row((orf, _allele_col(*strainB), correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
+            output.write_correlation_row((strainB[0], _allele_col(*strainB), correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
         
         scores = scores.groupby('target').agg({
                             'score': np.mean,
@@ -89,11 +88,11 @@ def prepare_nodes(ds, nodes, filename):
         
         output.add_sheet('%s scores' % s.basic_id(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
         for strainB, pval, score in scores[scores.score <= 0].sort('score').itertuples(index=False):
-            output.write_score_row_neg((orf, _allele_col(*strainB), score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
+            output.write_score_row_neg((strainB[0], _allele_col(*strainB), score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
         
         output.reset_row(1)
         for strainB, pval, score in scores[scores.score > 0].sort('score', ascending=False).itertuples(index=False):
-            output.write_score_row_pos((orf, _allele_col(*strainB), score, pval), style=(score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None)
+            output.write_score_row_pos((strainB[0], _allele_col(*strainB), score, pval), style=(score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None)
     
     output.write_instructions(', '.join(instructions_content))
     
