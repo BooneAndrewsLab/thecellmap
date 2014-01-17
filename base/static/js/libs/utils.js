@@ -3,6 +3,10 @@ function isFunction(functionToCheck) {
     return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }
 
+function isEmpty( el ){
+    return !$.trim(el.html())
+}
+
 function isString(obj) {
     var getType = {};
     return obj && getType.toString.call(obj) == '[object String]';

@@ -1,48 +1,121 @@
 {% extends "_layouts/base.html" %}
 
-{% load staticfiles crispy_forms_tags %}
+{% load staticfiles base_extras %}
+
+{% block page_title_suffix %} - Tabular view{% endblock %}
 
 {% block css %}
 {{ block.super }}
-<style>
-.asteriskField {
-    display: none;
-}
-
-label {
-    font-weight: normal;
-}
-</style>
+  <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
+  <link href="{% static 'css/filetypes.css' %}" rel="stylesheet">
+  <link href="{% static 'css/bootstrap-sortable.css' %}" rel="stylesheet">
 {% endblock css %}
+
+{% block cdn_css %}
+{{ block.super }}
+{% endblock cdn_css %}
+
+{% block cdn_js %}
+{{ block.super }}
+{% endblock cdn_js %}
 
 {% block js %}
 {{ block.super }}
+  <script src="{% static 'js/libs/utils.js' %}"></script>
+  <script src="{% static 'js/libs/moment.min.js' %}"></script>
+  <script src="{% static 'js/libs/bootstrap-sortable.js' %}"></script>
   <script type="text/javascript">
-    $(document).ready(function() {
-        $("#id_genes_as_3").change(function() {
-            var others = $('[id^="id_genes_as_"]:not(#id_genes_as_3)');
-            
-            if ($(this).prop('checked')) {
-                others.each(function() {
-                    $(this).attr('data-state', $(this).prop('checked'));
-                }).prop('disabled', true).prop('checked', false);
-                $('#id_cutoff_1').prop('checked', true);
-            } else {
-                others.each(function() {
-                    console.log(!!$(this).attr('data-state'));
-                    $(this).prop('checked', !!$(this).attr('data-state'));
-                }).prop('disabled', false);
+  (function($) {
+    function load_strain(target) {
+        if (isEmpty(target) && !target.hasClass('data-loading')) {
+            var node_id = target.attr('data-node');
+            target.addClass('data-loading');
+            $.get(node_id + "/", function(d) {
+                target.append('<ul class="nav nav-pills nav-justified"> \
+                        <li class="active"><a href="#c' + node_id + '" data-toggle="tab">Correlations</a></li> \
+                        <li><a href="#s' + node_id + '" data-toggle="tab">Scores</a></li> \
+                    </ul>');
                 
-            }
+                target.append('<div class="tab-content"> \
+                        <div class="tab-pane active" id="c' + node_id + '"> \
+                            <table class="table table-condensed"> \
+                                <thead> \
+                                    <tr> \
+                                        <th data-defaultsort="disabled">ORF</th> \
+                                        <th data-defaultsort="disabled">Allele</th> \
+                                        <th data-mainsort="true">Correlation</th> \
+                                    </tr> \
+                                </thead> \
+                                <tbody></tbody> \
+                            </table> \
+                        </div> \
+                        <div class="tab-pane" id="s' + node_id + '"> \
+                            <table class="table table-condensed"> \
+                                <thead> \
+                                    <tr> \
+                                        <th data-defaultsort="disabled">ORF</th> \
+                                        <th data-defaultsort="disabled">Allele</th> \
+                                        <th data-mainsort="true">Score</th> \
+                                        <th>p-value</th> \
+                                    </tr> \
+                                </thead> \
+                                <tbody></tbody> \
+                            </table> \
+                        </div> \
+                    </div>');
+                
+                var row, cls;
+                d.correlations.forEach(function (line) {
+                    setTimeout(function() {
+                        row = '';
+                        line.forEach(function(val) {
+                            row += '<td>' + val + '</td>';
+                        });
+                        $('#c' + node_id + ' tbody').append('<tr' + (line[2] > .2 ? ' class="success"' : '') + '>' + row + '</tr>');
+                    }, 0);
+                });
+                
+                d.scores.forEach(function (line) {
+                    setTimeout(function() {
+                        row = '';
+                        line.forEach(function(val){
+                            row +='<td>' + val + '</td>';
+                        });
+                        cls = '';
+                        if (line[2] > 0.08) cls = ' class="success"';
+                        else if (line[2] < -0.08) cls = ' class="danger"';
+                        $('#s' + node_id + ' tbody').append('<tr' + cls + '>' + row + '</tr>');
+                    }, 0);
+                });
+                
+                target.removeClass('data-loading');
+            });
+        }
+    };
+    
+    $(document).ready(function() {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            load_strain($($(e.target).attr('href')));
         });
+        load_strain($(".container .tab-pane.active"));
     });
+  })(jQuery);
   </script>
 {% endblock js %}
 
-{% block page_title_suffix %} - Tabular{% endblock %}
 {% block content %}
-  <div class="container">
-    <h2>Search genetic interactions</h2>
-    {% crispy form %}
+<div class="container">
+  <ul class="nav nav-pills nav-justified">
+    {% for node, strain in strains %}
+    <li{% if forloop.first %} class="active"{% endif %}><a href="#tab{{ node }}" data-toggle="tab">{{ strain.basic_id }}</a></li>
+    {% endfor %}
+  </ul>
+  <div class="tab-content">
+    {% for node, strain in strains %}
+    <div class="tab-pane{% if forloop.first %} active{% endif %}" id="tab{{ node }}" data-node="{{ node }}"></div>
+    {% endfor %}
   </div>
-{% endblock %}
+</div>
+{% endblock content %}
+
+{% block footer %}{% endblock footer %}

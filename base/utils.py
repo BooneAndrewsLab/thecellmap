@@ -20,6 +20,7 @@ import xlwt
 
 from base.models import Gene
 import datetime
+import json
 
 
 xlwt.add_palette_colour("red_stringent", 0x21)
@@ -344,3 +345,7 @@ class BadXlsFile(Exception): pass
 class XlsError(Exception): pass
 
 is_integer = lambda x: not not re.match('\d+', x)
+
+class JsonResponse(HttpResponse):
+    def __init__(self, obj):
+        super(JsonResponse, self).__init__(json.dumps(obj), mimetype="application/json")
