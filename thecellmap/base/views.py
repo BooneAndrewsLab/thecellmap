@@ -3,12 +3,12 @@
 import datetime
 
 from django.core.urlresolvers import reverse
-from django.http.response import HttpResponseRedirect
+from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import render
 
-from base.download import prepare_nodes
+from base.download import nodes_xls, strains_for_nodes, nodes_data, format_allele_col
 from base.models import Dataset
-from base.utils import print_queries, is_integer
+from base.utils import print_queries, is_integer, JsonResponse
 
 
 def home(request):
@@ -37,8 +37,32 @@ def nodes_download(request, dataset_id):
     if not nodes:
         return HttpResponseRedirect(dataset.static_url('dataset.txt'))
     
-    return prepare_nodes(
+    return nodes_xls(
                  dataset, 
                  nodes, 
                  'thecellmap_data_%s.xls' % (datetime.datetime.now().strftime('%y%m%d'), )
         ).as_response()
+
+def tabular(request, dataset_id):
+    dataset = Dataset.objects.get(pk=dataset_id)
+    nodes = filter(is_integer, request.GET.getlist('n'))
+    
+    if not nodes:
+        raise Http404('No nodes selected')
+    
+    return render(request, 'base/tabular.html', {
+            'dataset': dataset,
+            'strains': list(strains_for_nodes(dataset, nodes))
+      })
+
+def tabular_data(request, dataset_id, node_id):
+    data = nodes_data(Dataset.objects.get(pk=dataset_id), [node_id])
+    response = {'correlations': [], 'scores': []}
+    
+    for strain, correlation in data[data.keys()[0]]['correlations'].itertuples(index=False):
+        response['correlations'].append([strain[0], format_allele_col(*strain), '%.3f' % correlation])
+    
+    for strain, pval, score in data[data.keys()[0]]['scores'].sort('score').itertuples(index=False):
+        response['scores'].append([strain[0], format_allele_col(*strain), '%.3f' % score, '%.2e' % pval])
+    
+    return JsonResponse(response)

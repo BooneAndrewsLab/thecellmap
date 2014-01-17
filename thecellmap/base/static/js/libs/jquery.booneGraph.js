@@ -764,6 +764,7 @@
                         </ul> \
                       </div>');
                 download_bar.find("#download-selected").toggleClass('disabled');
+                download_bar.find("#download-dataset").toggleClass('disabled');
                 
                 download_bar.find("#btn-group-download a, #btn-group-download button").click(function() {
                     switch ($(this).attr('id')) {
