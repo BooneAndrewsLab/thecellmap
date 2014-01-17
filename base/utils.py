@@ -237,7 +237,7 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 0, 0, 'Source', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 0, 1, 'thecellmap.org')
         self._write_cell(sheet['sheet'], 1, 0, 'Downloaded on', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now())
+        self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self._write_cell(sheet['sheet'], 2, 0, 'Content', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (Scores) and similarity of genetic interaction profiles (Correlations) for genes %s' % content)
         
