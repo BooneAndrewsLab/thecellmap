@@ -124,6 +124,34 @@
                 setTimeout(function() { alert.alert('close') }, 3000);
             }
             
+            function updateMissingMessage() {
+                var missing = [];
+                getSelected().forEach(function(sel) {
+                    if (getNode(sel) === undefined) {
+                        var strain = getStrain(sel);
+                        missing.push(strain.verboseName);
+                    }
+                });
+                
+                if (missing.length > 0) {
+                    var message = 'Correlations for gene' + (missing.length == 1 ? '' : 's') + ' \
+                        <strong>' + missing.join(', ') + '</strong> \
+                        are below the chosen threshold and, as a result, they do not appear on the correlation network. \
+                        You can, however, download the direct genetic interactions for them.'
+                    
+                    if ($('#alert-missing').length == 0) {
+                        var alert = $('<div id="alert-missing" class="alert alert-warning fade in"> \
+                                <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
+                                <span class="message">' + message + '</span> \
+                              </div>');
+                        $('#alerts-panel').append(alert);
+                        alert.alert();
+                    } else {
+                        $('#alert-missing .message').html(message);
+                    }
+                }
+            }
+            
             function modalInput(title, text, label, type, callback) {
                 $('body').append('<div class="modal fade" id="modal-input" tabindex="-1" role="dialog" aria-labelledby="modal-input-label" aria-hidden="true"> \
                         <div class="modal-dialog"> \
@@ -1270,12 +1298,12 @@
                         },
                         data: autocomp,
                     }).on('select2-selecting', function(evt) {
-                        if (getNode(evt.val) === undefined) {
-                            var strain = getStrain(evt.val);
-                            
-                            messageUser('Gene <strong>' + strain.verboseName + '</strong> was screened but is below the lowest threshold');
-//                            evt.preventDefault();
-                        }
+//                        if (getNode(evt.val) === undefined) {
+//                            var strain = getStrain(evt.val);
+//                            messageUser('Gene <strong>' + strain.verboseName + '</strong> was screened but is below the lowest threshold');
+//                            
+//                            
+//                        }
                     }).on('change', function(evt) {
                         var selected = getSelected();
                         
@@ -1302,6 +1330,7 @@
                         $('#download-selected').toggleClass('disabled', selected.length == 0);
                         
                         if (!tokenizing) {
+                            updateMissingMessage();
                             applyNetwork();
                             sigInst.draw();
                         }
