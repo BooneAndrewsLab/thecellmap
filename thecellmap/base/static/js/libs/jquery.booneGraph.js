@@ -703,8 +703,8 @@
                           <li><a href="#" data-toggle="download">1st neighbours</a></li> \
                           <li><a href="#" data-toggle="download">2nd neighbours</a></li> \
                           <li><a href="#" data-toggle="download">3rd neighbours</a></li> \
-                          <li class="divider neighbourhood-download"></li> \
-                          <li class="neighbourhood-download"><a href="#" data-toggle="download">Download</a></li> \
+                          <!-- <li class="divider neighbourhood-download"></li> \
+                          <li class="neighbourhood-download"><a href="#" data-toggle="download">Download</a></li> --> \
                         </ul> \
                       </div>');
                 menuBar.find('#btn-group-neighbourhood a').click(function(evt) {
@@ -750,17 +750,19 @@
                 
                 var download_bar = $(rootElement).find('#download-bar');
                 download_bar.append('<div id="btn-group-download" class="btn-group"> \
-                        <button id="btn-download" type="button" class="btn btn-primary">Download</button> \
+                        <button id="btn-view" type="button" class="btn btn-primary">Get the data</button> \
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
                           <span class="caret"></span> \
                           <span class="sr-only">Toggle Dropdown</span> \
                         </button> \
                         <ul class="dropdown-menu" role="menu"> \
-                            <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span>Download visible network</a></li> \
-                            <li><a id="download-selected" href="#"><span class="filetype-icon xls"></span>Download data for selected genes</a></li> \
-                            <li><a id="download-dataset" href="#"><span class="filetype-icon csv"></span>Download dataset</a></li> \
+                            <li><a id="view-tabular" href="#"><span class="glyphicons table"></span> View data in table form</a></li> \
                             <li class="divider"></li> \
-                            <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span>Export visible network to xgmml</a></li> \
+                            <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span> Download visible network</a></li> \
+                            <li><a id="download-selected" href="#"><span class="filetype-icon xls"></span> Download data for selected genes</a></li> \
+                            <li><a id="download-dataset" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li> \
+                            <li class="divider"></li> \
+                            <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li> \
                         </ul> \
                       </div>');
                 download_bar.find("#download-selected").toggleClass('disabled');
@@ -771,7 +773,14 @@
                     case "download-visible":
                         downloadShownData();
                         break;
-                    case "btn-download":
+                    case "btn-view":
+                    case "view-tabular":
+                        var selected = getSelected();
+                        if (selected.length > 0) 
+                            window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
+                        else
+                            alertUser('Selection required', 'Please select one ore more genes to view');
+                        break;
                     case "download-selected":
                         var selected = getSelected();
                         if (selected.length > 0) 
