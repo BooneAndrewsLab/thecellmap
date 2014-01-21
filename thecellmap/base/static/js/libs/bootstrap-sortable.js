@@ -94,7 +94,9 @@
         }
         else {
             $table.find('span.sign').remove();
+            $table.find('th.is-sorted').removeClass('is-sorted');
             $this.append('<span class="sign ' + localSignClass + '"></span>');
+            $this.addClass('is-sorted');
         }
 
         // sort direction
