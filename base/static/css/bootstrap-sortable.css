@@ -1,4 +1,4 @@
-﻿table.sortable span.sign {
+table.sortable span.sign {
     display: block;
     position: absolute;
     top: 50%;
@@ -81,4 +81,8 @@ table.sortable thead th:hover:not([data-defaultsort=disabled]) {
 
 table.sortable thead th div.mozilla {
     position: relative;
+}
+
+table.sortable thead th.is-sorted {
+    background: #f5f5f5;
 }
