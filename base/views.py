@@ -57,15 +57,21 @@ def tabular(request, dataset_id):
 
 def tabular_data(request, dataset_id, node_id):
     data = nodes_data(Dataset.objects.get(pk=dataset_id), [node_id])
-    response = {'correlations': [], 'scores': []}
+    response = {'correlations': [], 'scores_pos': [], 'scores_neg': []}
     data = data[data.keys()[0]]
     c = data['correlations']
+    c = c[c.correlation > .2]
+    
     s = data['scores']
+    s = s[(s.score.abs() > 0.08) & (s.pval < 0.05)]
         
-    for strain, correlation in c[c.correlation > .2].itertuples(index=False):
+    for strain, correlation in c.itertuples(index=False):
         response['correlations'].append([strain[0], format_allele_col(*strain), '%.3f' % correlation])
     
-    for strain, pval, score in s[(s.score.abs() > 0.08) & (s.pval < 0.05)].sort('score').itertuples(index=False):
-        response['scores'].append([strain[0], format_allele_col(*strain), '%.3f' % score, '%.2e' % pval])
+    for strain, pval, score in s[s.score < 0].sort('score').itertuples(index=False):
+        response['scores_neg'].append([strain[0], format_allele_col(*strain), '%.3f' % score, '%.2e' % pval])
+    
+    for strain, pval, score in s[s.score > 0].sort('score', ascending=False).itertuples(index=False):
+        response['scores_pos'].append([strain[0], format_allele_col(*strain), '%.3f' % score, '%.2e' % pval])
     
     return JsonResponse(response)

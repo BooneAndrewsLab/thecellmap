@@ -1,3 +1,15 @@
+#btn-group-download li:first-child {
+    height: 30px;
+}
+
+/* Stupid stupid stupid hack */
+.glyphicons.table {
+    width: auto;
+    margin-bottom: auto;
+    font-size: 19px;
+    padding-right: 8px;
+}
+
 a.disabled {
     pointer-events: none;
     color: gray !important;

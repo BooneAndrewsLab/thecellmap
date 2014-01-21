@@ -6,9 +6,27 @@
 
 {% block css %}
 {{ block.super }}
+  <link href="{% static 'css/progress.css' %}" rel="stylesheet">
   <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
   <link href="{% static 'css/filetypes.css' %}" rel="stylesheet">
   <link href="{% static 'css/bootstrap-sortable.css' %}" rel="stylesheet">
+  <style>
+    html {
+        overflow-y: scroll; 
+    }
+  
+    .tab-content {
+        padding-top: 15px;
+    }
+    
+    #spinner {
+        display: none;
+    }
+    
+    .table-empty {
+        text-align: center;
+    }
+  </style>
 {% endblock css %}
 
 {% block cdn_css %}
@@ -30,65 +48,147 @@
         if (isEmpty(target) && !target.hasClass('data-loading')) {
             var node_id = target.attr('data-node');
             target.addClass('data-loading');
+            target.append($('#spinner>div').clone());
+            
             $.get(node_id + "/", function(d) {
-                target.append('<ul class="nav nav-pills nav-justified"> \
-                        <li class="active"><a href="#c' + node_id + '" data-toggle="tab">Correlations</a></li> \
-                        <li><a href="#s' + node_id + '" data-toggle="tab">Scores</a></li> \
-                    </ul>');
-                
-                target.append('<div class="tab-content"> \
-                        <div class="tab-pane active" id="c' + node_id + '"> \
-                            <table class="table table-condensed"> \
-                                <thead> \
-                                    <tr> \
-                                        <th data-defaultsort="disabled">ORF</th> \
-                                        <th data-defaultsort="disabled">Allele</th> \
-                                        <th data-mainsort="true">Correlation</th> \
-                                    </tr> \
-                                </thead> \
-                                <tbody></tbody> \
-                            </table> \
+                target.append('<div class="row"> \
+                        <div class="col-md-2"> \
+                          <ul class="nav nav-pills nav-stacked data-type-menu"> \
+                            <li class="active"><a href="#c' + node_id + '" data-toggle="tab">Correlations</a></li> \
+                            <li><a href="#s' + node_id + '" data-toggle="tab">Scores</a></li> \
+                            <li class="dropdown"> \
+                              <a class="dropdown-toggle" data-toggle="dropdown" href="#"> \
+                                Download <span class="caret"></span> \
+                              </a> \
+                              <ul class="dropdown-menu download-data"> \
+                                <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Current gene</a></li> \
+                                {% if strains|length > 1 %}<li><a href="#" data-downloadtype="all">All genes</a></li>{% endif %} \
+                              </ul> \
+                            </li> \
+                          </ul> \
                         </div> \
-                        <div class="tab-pane" id="s' + node_id + '"> \
-                            <table class="table table-condensed"> \
-                                <thead> \
-                                    <tr> \
-                                        <th data-defaultsort="disabled">ORF</th> \
-                                        <th data-defaultsort="disabled">Allele</th> \
-                                        <th data-mainsort="true">Score</th> \
-                                        <th>p-value</th> \
-                                    </tr> \
-                                </thead> \
-                                <tbody></tbody> \
-                            </table> \
+                        <div class="col-md-10"> \
+                          <div class="tab-content"> \
+                            <div class="tab-pane active" id="c' + node_id + '"> \
+                              <div class="row"> \
+                                <div class="col-md-6 col-md-offset-3"> \
+                                  <div class="panel panel-default"> \
+                                    <div class="panel-heading"><h3 class="panel-title">Correlations</h3></div> \
+                                    <div class="panel-body"> \
+                                      <table class="table table-condensed table-striped sortable"> \
+                                        <thead> \
+                                          <tr> \
+                                            <th>ORF</th> \
+                                            <th>Allele</th> \
+                                            <th data-mainsort="true">Correlation</th> \
+                                          </tr> \
+                                        </thead> \
+                                        <tbody></tbody> \
+                                      </table> \
+                                    </div> \
+                                  </div> \
+                                </div> \
+                              </div> \
+                            </div> <!-- End of correlation tab pane --> \
+                            <div class="tab-pane" id="s' + node_id + '"> \
+                              <div class="row"> \
+                                <div class="col-md-6"> \
+                                  <div class="panel panel-danger"> \
+                                    <div class="panel-heading"><h3 class="panel-title">Significant negative genetic interactions</h3></div> \
+                                    <div class="panel-body"> \
+                                      <table class="table table-condensed table-striped score-neg sortable"> \
+                                        <thead> \
+                                          <tr> \
+                                            <th>ORF</th> \
+                                            <th>Allele</th> \
+                                            <th>Score</th> \
+                                            <th data-defaultsort="disabled">p-value</th> \
+                                          </tr> \
+                                        </thead> \
+                                        <tbody></tbody> \
+                                      </table> \
+                                    </div> \
+                                  </div> \
+                                </div> \
+                                <div class="col-md-6"> \
+                                  <div class="panel panel-success"> \
+                                    <div class="panel-heading"><h3 class="panel-title">Significant positive genetic interactions</h3></div> \
+                                    <div class="panel-body"> \
+                                      <table class="table table-condensed table-striped score-pos sortable"> \
+                                        <thead> \
+                                          <tr> \
+                                            <th>ORF</th> \
+                                            <th>Allele</th> \
+                                            <th>Score</th> \
+                                            <th data-defaultsort="disabled">p-value</th> \
+                                          </tr> \
+                                        </thead> \
+                                        <tbody></tbody> \
+                                      </table> \
+                                    </div> \
+                                  </div> \
+                                </div> \
+                              </div> \
+                            </div> \
+                          </div> \
                         </div> \
-                    </div>');
+                      </div>');
                 
                 var row, cls;
+                if (d.correlations.length == 0) {
+                    $('#c' + node_id + ' tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant correlations found</td></tr>');
+                }
                 d.correlations.forEach(function (line) {
                     setTimeout(function() {
                         row = '';
                         line.forEach(function(val) {
-                            row += '<td>' + val + '</td>';
+                            row += '<td data-value="' + val + '">' + val + '</td>';
                         });
-                        $('#c' + node_id + ' tbody').append('<tr' + (line[2] > .2 ? ' class="success"' : '') + '>' + row + '</tr>');
+                        $('#c' + node_id + ' tbody').append('<tr>' + row + '</tr>');
                     }, 0);
                 });
                 
-                d.scores.forEach(function (line) {
+                d.scores_pos.forEach(function (line) {
                     setTimeout(function() {
                         row = '';
                         line.forEach(function(val){
-                            row +='<td>' + val + '</td>';
+                            row +='<td data-value="' + val + '">' + val + '</td>';
                         });
-                        cls = '';
-                        if (line[2] > 0.08) cls = ' class="success"';
-                        else if (line[2] < -0.08) cls = ' class="danger"';
-                        $('#s' + node_id + ' tbody').append('<tr' + cls + '>' + row + '</tr>');
+                        $('#s' + node_id + ' .score-pos tbody').append('<tr>' + row + '</tr>');
                     }, 0);
                 });
+                if (d.scores_pos.length == 0) {
+                    $('#s' + node_id + ' .score-pos tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant positive interactions found</td></tr>');
+                }
+                
+                d.scores_neg.forEach(function (line) {
+                    setTimeout(function() {
+                        row = '';
+                        line.forEach(function(val){
+                            row +='<td data-value="' + val + '">' + val + '</td>';
+                        });
+                        $('#s' + node_id + ' .score-neg tbody').append('<tr>' + row + '</tr>');
+                    }, 0);
+                });
+                if (d.scores_neg.length == 0) {
+                    $('#s' + node_id + ' .score-neg tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant negative interactions found</td></tr>');
+                }
                 
                 target.removeClass('data-loading');
+                target.find('.bubblingG').remove();
+                $.bootstrapSortable(true);
+                $(".download-data a").click(function(evt) {
+                    switch ($(this).attr('data-downloadtype')) {
+                        case "all":
+                            window.location.href = '../dl/' + location.search;
+                            break;
+                        case "node":
+                            window.location.href = '../dl/?n=' + $(this).attr('data-node');
+                            break
+                    }
+                    
+                    evt.preventDefault();
+                });
             });
         }
     };
@@ -105,16 +205,32 @@
 
 {% block content %}
 <div class="container">
-  <ul class="nav nav-pills nav-justified">
-    {% for node, strain in strains %}
-    <li{% if forloop.first %} class="active"{% endif %}><a href="#tab{{ node }}" data-toggle="tab">{{ strain.basic_id }}</a></li>
-    {% endfor %}
-  </ul>
+  <div class="row">
+    <div class="col-md-offset-2 col-md-10">
+      <ul class="nav nav-pills nav-justified">
+        {% for node, strain in strains %}
+        <li{% if forloop.first %} class="active"{% endif %}><a href="#tab{{ node }}" data-toggle="tab">{{ strain.basic_id }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
   <div class="tab-content">
     {% for node, strain in strains %}
     <div class="tab-pane{% if forloop.first %} active{% endif %}" id="tab{{ node }}" data-node="{{ node }}"></div>
     {% endfor %}
   </div>
+</div>
+
+<div id="spinner">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="bubblingG center-block">
+          <span id="bubblingG_1"></span>
+          <span id="bubblingG_2"></span>
+          <span id="bubblingG_3"></span>
+        </div>
+      </div>
+    </div>
 </div>
 {% endblock content %}
 
