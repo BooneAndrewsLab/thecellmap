@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import render
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data, format_allele_col
+from base.download import nodes_xls, strains_for_nodes, nodes_data
 from base.models import Dataset
 from base.utils import print_queries, is_integer, JsonResponse
 
@@ -66,12 +66,12 @@ def tabular_data(request, dataset_id, node_id):
     s = s[(s.score.abs() > 0.08) & (s.pval < 0.05)]
         
     for strain, correlation in c.itertuples(index=False):
-        response['correlations'].append([strain[0], format_allele_col(*strain), '%.3f' % correlation])
+        response['correlations'].append(strain + ('%.3f' % correlation, ))
     
     for strain, pval, score in s[s.score < 0].sort('score').itertuples(index=False):
-        response['scores_neg'].append([strain[0], format_allele_col(*strain), '%.3f' % score, '%.2e' % pval])
+        response['scores_neg'].append(strain + ('%.3f' % score, '%.2e' % pval, ))
     
     for strain, pval, score in s[s.score > 0].sort('score', ascending=False).itertuples(index=False):
-        response['scores_pos'].append([strain[0], format_allele_col(*strain), '%.3f' % score, '%.2e' % pval])
+        response['scores_pos'].append(strain + ('%.3f' % score, '%.2e' % pval))
     
     return JsonResponse(response)
