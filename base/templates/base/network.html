@@ -54,6 +54,13 @@
   <script type="text/javascript">
   (function($) {
     $(document).ready(function() {
+        $(".refresh-network").hide().removeClass('hidden').click(function() {
+            location.reload();
+        });
+        $(document).on('networkModified', function() {
+            $(".refresh-network").fadeIn(2000);
+        });
+        
         $( window ).resize(function() {
             $('.sigma-parent').css('height', $(window).height() - $(".navbar").height() - 30);
         }).resize();
@@ -103,5 +110,11 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block navbar_items %}
+<ul class="nav navbar-nav refresh-network hidden">
+  <li><a href="#"><span class="glyphicon glyphicon-refresh"></span></a></li>
+</ul>
+{% endblock %}
 
 {% block footer %}{% endblock footer %}

@@ -45,7 +45,8 @@
                         table.find('tbody').append('<tr><td>SGD url</td><td><a href="' + url + '">' + url + '</a></td></tr>');
                         
                         return table.wrap('<div>').parent().html();
-                    }
+                    },
+                    modifiedCallback: null
             };
             
             var sliderProperties = $.extend({}, DEFAULTS.slider, o.slider || {});
@@ -873,6 +874,7 @@
                       </div>');
                 
                 menuBar.append('<button id="btn-style" type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-style">Style</button>');
+                menuBar.find('#btn-style').click(function() { $.event.trigger('networkModified'); });
                 
                 $(rootElement).append(menuBar);
                 
@@ -977,6 +979,7 @@
                         $("#cutoff-bar .ui-slider-handle").tooltip('show')
                     },
                     change : function(data) {
+                        $.event.trigger('networkModified');
                         applyCutoff($("#cutoff-bar").slider("value"));
                     }
                 });
@@ -1118,6 +1121,14 @@
                         break
                     }
                     
+                    switch ($(this).attr('id')) {
+                    case "context-hide":
+                    case "context-rename":
+                    case "context-color":
+                        $.event.trigger('networkModified');
+                        break;
+                    }
+                    
                     $("#contextmenu-container").hide();
                 });
             }
@@ -1138,9 +1149,7 @@
                 }).bind('rightclicknodes', onNodesContext
                  ).bind('ctrlclicknodes', onNodesCtrlClick
                  ).bind('dblclicknodes', onNodesClick
-                 ).bind('dblclickedges', function(e) {
-                    console.log('EDGE', e);
-                });
+                );
                 
                 initElements();
                 
@@ -1315,6 +1324,7 @@
 //                            
 //                        }
                     }).on('change', function(evt) {
+                        $.event.trigger('networkModified');
                         var selected = getSelected();
                         
                         sigInst.iterNodes(function(node) {
