@@ -15,7 +15,7 @@ a.disabled {
     color: gray !important;
 }
 
-.container {
+.content .container {
     width: auto;
 }
 
