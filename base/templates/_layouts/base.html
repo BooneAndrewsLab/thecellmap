@@ -68,6 +68,12 @@
           <a class="navbar-brand" href="{% url 'home' %}">TheCellMap</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="{% url 'about' %}">About</a></li>
+          </ul>
+          <ul class="nav navbar-nav refresh-network hidden">
+            <li><a href="#" title="Reload this network"><span class="glyphicon glyphicon-refresh"></span></a></li>
+          </ul>
           {% block navbar_items %}{% endblock %}
         </div>
       </div>
@@ -75,7 +81,7 @@
     {% block header %}{% endblock %}
   </header>
 
-  <div role="main">
+  <div class="content" role="main">
     {% block content %}{% endblock %}
   </div>
 
@@ -83,7 +89,7 @@
     {% block footer %}
     <div class="container">
       <hr>
-      <p>&copy; Boone Lab {% now "Y" %}</p>
+      <p>&copy; <a href="http://boonelab.ccbr.utoronto.ca">Boone Lab</a> {% now "Y" %}</p>
     </div>
     {% endblock footer %}
   </footer>

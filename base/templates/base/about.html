@@ -9,18 +9,6 @@
 
 {% block js %}
 {{ block.super }}
-  <script type="text/javascript">
-    (function($) {
-        $(document).ready(function() {
-            $("#mmtest").click(function() {
-                $('#mmtest').after('CLIJK');
-            });
-            $("#mmtest").scroll(function() {
-                $('#mmtest').after('wooooooot');
-            });
-        });
-    })(jQuery);
-  </script>
 {% endblock js %}
 
 {% block page_title_suffix %} - About{% endblock %}
@@ -31,13 +19,22 @@
         <li><a href="mailto:m.usaj@thecellmap.org">Matej Usaj</a></li>
     </ul>
     
-    <h2>References</h2>
+    <h2>Thanks to the following libraries and their developers</h2>
     <ul>
-        <li><a href="http://getbootstrap.com/">Bootstrap</a> - User interface framework</li>
-        <li><a href="http://glyphicons.com/">Glyphicons PRO</a> - Icon set</li>
-        <li><a href="http://sigmajs.org/">sigma.js</a> - Graph visualization library</li>
+        <li><a href="https://www.djangoproject.com/">Django</a></li>
+        <li><a href="http://getbootstrap.com/">Bootstrap</a></li>
+        <li><a href="http://jquery.com/">jQuery</a></li>
+        <li><a href="http://glyphicons.com/">Glyphicons PRO</a></li>
+        <li><a href="http://sigmajs.org/">sigma.js</a></li>
     </ul>
-    
-    <div id="mmtest" style="height: 100px; width: 100px; background: #438523;"></div>
+    <a href="http://ivaynberg.github.io/select2/">select2</a>, 
+    <a href="http://bgrins.github.io/spectrum/">spectrum</a>, 
+    <a href="http://twitter.github.io/typeahead.js/">typeahead.js</a>, 
+    <a href="http://medialize.github.io/jQuery-contextMenu/">jQuery-contextMenu</a>, 
+    <a href="http://davidwalsh.name/fullscreen">fullscreen</a>, 
+    <a href="https://github.com/eligrey/FileSaver.js">FileSaver.js</a>, 
+    <a href="https://github.com/eligrey/Blob.js">Blob.js</a>, 
+    <a href="https://github.com/eligrey/canvas-toBlob.js">canvas-toBlob.js</a>, 
+    <a href="http://flesler.blogspot.ca/2008/03/xmlwriter-for-javascript.html">XMLWriter</a>
   </div>
 {% endblock %}
