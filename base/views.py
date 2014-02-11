@@ -2,7 +2,6 @@
 
 import datetime
 
-from django.core.urlresolvers import reverse
 from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import render
 
@@ -11,23 +10,19 @@ from base.models import Dataset
 from base.utils import print_queries, is_integer, JsonResponse
 
 
-def home(request):
-    ds = Dataset.objects.filter(is_default=True)
-    if not ds.count():
-        # fallback
-        ds = Dataset.objects.all()
-    
-    return HttpResponseRedirect(reverse('dataset', args=(ds[0].pk, )))
+def _serve_dataset(request, dataset=None):
+    return render(request, 'base/network.html', {
+            'dataset': dataset or Dataset.get_default(),
+      })
 
 def about(request):
     return render(request, 'base/about.html')
 
+def home(request):
+    return _serve_dataset(request)
+
 def dataset(request, dataset_id):
-    ds = Dataset.objects.get(pk=dataset_id)
-    
-    return render(request, 'base/network.html', {
-            'dataset': ds,
-      })
+    return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
 
 @print_queries
 def nodes_download(request, dataset_id):
@@ -43,8 +38,8 @@ def nodes_download(request, dataset_id):
                  'thecellmap_data_%s.xls' % (datetime.datetime.now().strftime('%y%m%d'), )
         ).as_response()
 
-def tabular(request, dataset_id):
-    dataset = Dataset.objects.get(pk=dataset_id)
+def tabular(request, dataset_id=None):
+    dataset = dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default()
     nodes = filter(is_integer, request.GET.getlist('n'))
     
     if not nodes:
@@ -55,8 +50,9 @@ def tabular(request, dataset_id):
             'strains': list(strains_for_nodes(dataset, nodes))
       })
 
-def tabular_data(request, dataset_id, node_id):
-    data = nodes_data(Dataset.objects.get(pk=dataset_id), [node_id])
+def tabular_data(request, dataset_id=None, node_id=None):
+    if not node_id: raise Http404('Node ID is required')
+    data = nodes_data(dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default(), [node_id])
     response = {'correlations': [], 'scores_pos': [], 'scores_neg': []}
     data = data[data.keys()[0]]
     c = data['correlations']

@@ -63,6 +63,14 @@ class Dataset(models.Model):
     
     def correlation_axis_qs(self):
         return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
+    
+    @staticmethod
+    def get_default():
+        ds = Dataset.objects.order_by('-pk').filter(is_default=True)
+        if ds.count(): return ds[0]
+        ds = Dataset.objects.order_by('-pk')
+        if ds.count(): return ds[0]
+        raise Dataset.DoesNotExist()
 
 class StrainData(models.Model):
     TYPE_QUERY = 'Q'
