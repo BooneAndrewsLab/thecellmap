@@ -274,8 +274,7 @@
                     vizdata['edges'] = {};
                     
                     if (sliderProperties.updateLimits) {
-                        $("#cutoff-bar").slider( "option", "max", maxWeight);
-                        $("#cutoff-bar").slider( "option", "min", minWeight);
+                        $("#cutoff-bar").noUiSlider({range: [minWeight, maxWeight]}, true);
                     }
                     
                     sigInst.draw();
@@ -417,8 +416,8 @@
                         callback: function() {
                                 _setRunningLayout(false);
                             },
-                        attraction_multiplier: $("#attraction-bar").slider('value'),
-                        repulsion_multiplier: $("#repulsion-bar").slider('value'),
+                        attraction_multiplier: $("#layout-slider-att").val(),
+                        repulsion_multiplier: $("#layout-slider-rep").val(),
                     });
                     _setRunningLayout(true);
                 }
@@ -688,6 +687,7 @@
                     </div>');
                 
                 $(rootElement).append('<div id="cutoff-bar"></div>');
+                $(rootElement).append('<div id="cutoff-label"></div>');
                 
                 var menuBar = $('<div id="menu-bar">');
                 
@@ -751,7 +751,7 @@
                 
                 var download_bar = $(rootElement).find('#download-bar');
                 download_bar.append('<div id="btn-group-download" class="btn-group"> \
-                        <button id="btn-view" type="button" class="btn btn-primary">Get the data</button> \
+                        <button id="btn-view" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button> \
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
                           <span class="caret"></span> \
                           <span class="sr-only">Toggle Dropdown</span> \
@@ -805,8 +805,8 @@
                           <span class="sr-only">Toggle Dropdown</span> \
                         </button> \
                         <ul class="dropdown-menu" role="menu"> \
-                          <li><a href="#">Attraction:<div id="attraction-bar" class="layout-bar"></div></a></li> \
-                        <li><a href="#">Repulsion:<div id="repulsion-bar" class="layout-bar"></div></a></li> \
+                          <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li> \
+                        <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li> \
                         </ul> \
                       </div>');
                 
@@ -832,19 +832,20 @@
                                 <div class="tab-content"> \
                                   <div class="tab-pane fade in active" id="style-node"> \
                                     <ul class="list-group"> \
-                                      <li class="list-group-item">Node size:<div id="node-size-bar" class="style-slider"></div></li> \
-                                      <li class="list-group-item">Label size:<div id="label-size-bar" class="style-slider"></div></li> \
-                                      <li class="list-group-item">Label threshold:<div id="show-label-bar" class="style-slider"></div></li> \
+                                      <li class="list-group-item">Node size: <div id="style-slider-nsize"></div></li> \
+                                      <li class="list-group-item">Label size: <div id="style-slider-lsize"></div></li> \
+                                      <li class="list-group-item">Label threshold: <div id="style-slider-lthresh"></div></li> \
+                                      <li class="list-group-item">Label color: <input id="style-label-color" value="fff" name="label-color" class="pick-a-color"></li> \
                                     </ul> \
                                   </div> \
                                   <div class="tab-pane fade" id="style-edge"> \
                                     <ul class="list-group"> \
-                                      <li class="list-group-item">Edge width:<div id="edge-size-bar" class="style-slider"></div></li> \
+                                      <li class="list-group-item">Edge width: <div id="style-slider-esize"></div></li> \
                                     </ul> \
                                   </div> \
                                   <div class="tab-pane fade" id="style-general"> \
                                     <ul class="list-group"> \
-                                      <li class="list-group-item">Background color: <input type="color" id="background-color" value="#222222"></li> \
+                                      <li class="list-group-item">Background color: <input id="background-color" value="222222" name="background-color" class="pick-a-color"></li> \
                                     </ul> \
                                   </div> \
                                 </div> \
@@ -894,101 +895,104 @@
                 
                 $('[data-toggle="tooltip"]').tooltip();
                 
-                $("#label-size-bar").slider({
-                    min : 1,
-                    step : 1,
-                    value : sigInst._core.plotter.p.defaultLabelSize,
-                    max : 30,
-                    range : "max",
-                    change : function(data) {
-                        sigInst.drawingProperties({defaultLabelSize: $("#label-size-bar").slider('value')}).draw(-1, -1, 1);
-                    }
-                });
+                /*
+                 * Style modal stuff
+                 */
                 
-                $("#show-label-bar").slider({
-                    min : 0,
-                    step : 1,
-                    value : sigInst._core.plotter.p.labelThreshold,
-                    max : 20,
-                    range : "max",
-                    change : function(data) {
-                        sigInst.drawingProperties({labelThreshold: $("#show-label-bar").slider('value')}).draw(-1, -1, 1);
+                var styleSliders = {
+                    nsize: {
+                        range: [.1, 10],
+                        step: .2,
+                        start: 2,
+                        handles: 1,
+                        connect: "lower",
+                        set: function() {
+                            sigInst.graphProperties({maxNodeSize: $(this).val()}).draw();
+                        }
+                    },
+                    lsize: {
+                        range: [1, 30],
+                        step: 1,
+                        start: sigInst._core.plotter.p.defaultLabelSize,
+                        handles: 1,
+                        connect: "lower",
+                        set: function() {
+                            sigInst.drawingProperties({defaultLabelSize: $(this).val()}).draw(-1, -1, 1);
+                        }
+                    },
+                    lthresh: {
+                        range: [0, 20],
+                        step: 1,
+                        start: sigInst._core.plotter.p.labelThreshold,
+                        handles: 1,
+                        connect: "lower",
+                        set: function() {
+                            sigInst.drawingProperties({labelThreshold: $(this).val()}).draw(-1, -1, 1);
+                        }
+                    },
+                    esize: {
+                        range: [1, 30],
+                        step: 1,
+                        start: 1,
+                        handles: 1,
+                        connect: "lower",
+                        set: function() {
+                            sigInst.graphProperties({maxEdgeSize: $(this).val()}).draw();
+                        }
                     }
-                });
+                } 
                 
-                $("#node-size-bar").slider({
-                    min : 1,
-                    step : 1,
-                    value : 2,
-                    max : 30,
-                    range : "max",
-                    change : function(data) {
-                        var val = $("#node-size-bar").slider('value');
-                        sigInst.iterNodes(function(node) {
-                            node.size = val;
-                        }).draw(1);
-                    }
-                });
-                
-                $("#edge-size-bar").slider({
-                    min : 1,
-                    step : 1,
-                    value : 1,
-                    max : 30,
-                    range : "max",
-                    change : function(data) {
-                        var val = $("#edge-size-bar").slider('value');
-                        sigInst.graphProperties({maxEdgeSize: val});
-                        sigInst.draw();
-                    }
-                });
-                
-                $('.style-slider').each(function() { 
-                    $(this).attr('data-slider-default', $(this).slider('value'));
-                });
+                for (slider in styleSliders) {
+                    $('#style-slider-' + slider).noUiSlider(styleSliders[slider]);
+                    $('#style-slider-' + slider).attr('data-slider-default', $('#style-slider-' + slider).val());
+                }
                 
                 $('#btn-style-default').click(function() {
-                    $('.style-slider').each(function() { 
-                        $(this).slider('value', $(this).attr('data-slider-default'));
-                    });
+                    for (slider in styleSliders) {
+                        $('#style-slider-' + slider).val($('#style-slider-' + slider).attr('data-slider-default'), true);
+                    }
                     $('#background-color').val('#222222').change();
                 });
                 
-                $('#attraction-bar').slider({
-                    min: 1,
-                    max: 100,
-                    step: 1,
-                    value: 50
-                });
+                /*
+                 * Other sliders
+                 */
                 
-                $('#repulsion-bar').slider({
-                    min: 1,
-                    max: 100,
-                    step: 1,
-                    value: 1,
-                });
-                
-                $("#cutoff-bar").slider({
-                    orientation : "vertical",
-                    min : sliderProperties.min,
-                    step : sliderProperties.step,
-                    value : sliderProperties.value,
-                    max : sliderProperties.max,
-                    range : "max",
-                    slide : function() {
-                        $("#cutoff-bar .ui-slider-handle").tooltip('show')
+                var layoutSliders = {
+                    att: {
+                        range: [1, 100],
+                        step: 1,
+                        start: 50,
+                        handles: 1,
+                        connect: "lower",
                     },
-                    change : function(data) {
-                        $.event.trigger('networkModified');
-                        applyCutoff($("#cutoff-bar").slider("value"));
+                    rep: {
+                        range: [1, 100],
+                        step: 1,
+                        start: 1,
+                        handles: 1,
+                        connect: "lower"
                     }
-                });
-                $("#cutoff-bar .ui-slider-handle").tooltip({
-                    placement: 'left',
-                    animation: false,
-                    container: rootElement,
-                    title: function() {
-                        return $("#cutoff-bar").slider("value");
+                }
+                
+                for (slider in layoutSliders) {
+                    $('#layout-slider-' + slider).noUiSlider(layoutSliders[slider]);
+                }
+                
+                $("#cutoff-bar").noUiSlider({
+                    range: [sliderProperties.min, sliderProperties.max],
+                    step: sliderProperties.step,
+                    start: sliderProperties.value,
+                    handles: 1,
+                    connect: "upper",
+                    direction: "rtl",
+                    orientation: "vertical",
+                    set: function() {
+                        $.event.trigger('networkModified');
+                        applyCutoff($(this).val());
+                    },
+                    serialization: {
+                        to: [$("#cutoff-label"), 'html']
                     }
                 });
                 
@@ -1048,7 +1052,11 @@
                 });
                 
                 $('#background-color').change(function() {
-                    $(rootElement).css('background-color', $(this).val());
+                    $(rootElement).css('background-color', "#" + $(this).val());
+                });
+                
+                $('#style-label-color').change(function() {
+                    sigInst.drawingProperties({defaultLabelColor: $(this).val()}).draw(-1, -1, 1);
                 });
                 
                 /*
@@ -1131,6 +1139,8 @@
                     
                     $("#contextmenu-container").hide();
                 });
+                
+                $(".pick-a-color").pickAColor();
             }
             
             function init() {
