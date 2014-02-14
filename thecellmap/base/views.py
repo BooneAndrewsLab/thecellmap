@@ -25,8 +25,8 @@ def dataset(request, dataset_id):
     return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
 
 @print_queries
-def nodes_download(request, dataset_id):
-    dataset = Dataset.objects.get(pk=dataset_id)
+def nodes_download(request, dataset_id=None):
+    dataset = dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default()
     nodes = filter(is_integer, request.GET.getlist('n'))
     
     if not nodes:
@@ -60,7 +60,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
     
     s = data['scores']
     s = s[(s.score.abs() > 0.08) & (s.pval < 0.05)]
-        
+    
     for strain, correlation in c.itertuples(index=False):
         response['correlations'].append(strain + ('%.3f' % correlation, ))
     
