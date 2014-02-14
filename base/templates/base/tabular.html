@@ -54,8 +54,8 @@
                 target.append('<div class="row"> \
                         <div class="col-md-2"> \
                           <ul class="nav nav-pills nav-stacked data-type-menu"> \
-                            <li class="active"><a href="#c' + node_id + '" data-toggle="tab">Correlations</a></li> \
-                            <li><a href="#s' + node_id + '" data-toggle="tab">Scores</a></li> \
+                            <li class="active"><a href="#c' + node_id + '" data-toggle="tab" title="">Correlations</a></li> \
+                            <li><a href="#s' + node_id + '" data-toggle="tab" title="">Genetic interactions</a></li> \
                             <li class="dropdown"> \
                               <a class="dropdown-toggle" data-toggle="dropdown" href="#"> \
                                 Download <span class="caret"></span> \
@@ -137,16 +137,20 @@
                 var row, cls;
                 if (d.correlations.length == 0) {
                     $('#c' + node_id + ' tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant correlations found</td></tr>');
-                }
-                d.correlations.forEach(function (line) {
+                } else {
+                    d.correlations.forEach(function (line) {
+                        setTimeout(function() {
+                            row = '';
+                            line.forEach(function(val) {
+                                row += '<td data-value="' + val + '">' + val + '</td>';
+                            });
+                            $('#c' + node_id + ' tbody').append('<tr>' + row + '</tr>');
+                        }, 0);
+                    });
                     setTimeout(function() {
-                        row = '';
-                        line.forEach(function(val) {
-                            row += '<td data-value="' + val + '">' + val + '</td>';
-                        });
-                        $('#c' + node_id + ' tbody').append('<tr>' + row + '</tr>');
+                        $('#c' + node_id + ' tbody').append('<tr><td colspan="4">Other correlations are below the threshold...</td></tr>');
                     }, 0);
-                });
+                }
                 
                 d.scores_pos.forEach(function (line) {
                     setTimeout(function() {
