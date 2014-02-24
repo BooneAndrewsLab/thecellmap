@@ -401,6 +401,14 @@
                 }, 200); // delay 500 ms
             }
             
+            function onNodeClick(targets) {
+        		$("input.gene-search-input").select2("val", targets.content, true);
+            }
+            
+            function onNodesShiftClick(targets) {
+            	$("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
+            }
+            
             function _setRunningLayout(bool) {
                 opts.runningLayout = bool;
                 $('#btn-layout').toggleClass('btn-primary', !bool);
@@ -1158,7 +1166,9 @@
                     maxRatio : 64
                 }).bind('rightclicknodes', onNodesContext
                  ).bind('ctrlclicknodes', onNodesCtrlClick
-                 ).bind('dblclicknodes', onNodesClick
+                 ).bind('shiftclicknodes', onNodesShiftClick
+//                 ).bind('dblclicknodes', onNodesClick
+        		 ).bind('downnodes', onNodeClick
                 );
                 
                 initElements();
@@ -1194,22 +1204,15 @@
                         if (!!strain.a) tokens.push(strain.a);
                         
                         strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
+                        strain.terms = strain.terms || tokens;
                         
                         vizdata.index[strain.id] = i;
                         
-                        if (strain.terms != undefined) {
-                            autocomp.push({
-                                value: strain.verboseName,
-                                tokens: strain.terms,
-                                id: strain.id
-                              });
-                        } else {
-                            autocomp.push({
-                                value: strain.verboseName,
-                                tokens: tokens,
-                                id: strain.id
-                              });
-                        }
+                        autocomp.push({
+                            value: strain.verboseName,
+                            tokens: strain.terms,
+                            id: strain.id
+                          });
                     }
                     
                     var tokenizing = false;
@@ -1221,6 +1224,21 @@
                         allowClear: true,
                         width: '350px',
                         tokenSeparators: [",", " ", "\t", "\n"],
+                        initSelection: function (element, callback) {
+                        	var id = $(element).val(), strain, result = [];
+                        	
+                        	id.split(",").forEach(function(x) {
+                                if (x !== "") {
+                                	strain = getStrain(x);
+                                	result.push({
+                                        text: strain.verboseName,
+                                        id: strain.id
+                                    });
+                                }
+                        	});
+                        	
+                        	callback(result);
+                        },
                         tokenizer: function (input, selection, selectCallback, opts) {
                             var original = input, // store the original so we can compare and know if we need to tell the search to update its text
                             dupe = false, // check for whether a token we extracted represents a duplicate selected choice
