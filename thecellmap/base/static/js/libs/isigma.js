@@ -2645,7 +2645,7 @@ function Sigma(root, id) {
     } else {
         self.dispatch('nodesonscreen');
     }
-  }).bind('mousedown mouseup ctrlclick', function(e) {
+  }).bind('mousedown mouseup ctrlclick shiftclick', function(e) {
     eventType = (e['type'] == 'mousedown') ? 'downgraph' : 'upgraph';
     self.dispatch(eventType);
 
@@ -2658,6 +2658,8 @@ function Sigma(root, id) {
     if (targeted.length) {
       if(e['type'] == 'ctrlclick') {
         eventType = 'ctrlclicknodes';
+      } else if(e['type'] == 'shiftclick') {
+        eventType = 'shiftclicknodes';
       } else if(e['type'] == 'mousedown') {
         eventType = 'downnodes';
       } else {
@@ -3337,6 +3339,8 @@ function MouseCaptor(dom) {
 
     if(event.ctrlKey || event.metaKey){
       self.dispatch('ctrlclick');
+    } else if(event.shiftKey) {
+      self.dispatch('shiftclick');
     } else {
       switch (event.which) {
         case 1:
@@ -3815,7 +3819,7 @@ function SigmaPublic(sigmaInstance) {
   };
 
   // Events
-  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen', function(e) {
+  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen', function(e) {
     // console.log(e.type, e.content);
     self.dispatch(e.type, e.content);
   });
