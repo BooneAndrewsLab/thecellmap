@@ -605,7 +605,7 @@
                 iterShownEdges(function(edge) {
                     src = getStrain(edge.source.id);
                     trg = getStrain(edge.target.id);
-                    data.push([src.orf, src.a || src.n || '', trg.orf, trg.a || trg.n || '', edge.weight.toFixed(3)].join('\t') + '\n');
+                    data.push([src.orf, src.a || src.n || src.orf.toLowerCase(), trg.orf, trg.a || trg.n || trg.orf.toLowerCase(), edge.weight.toFixed(3)].join('\t') + '\n');
                 });
                 
                 var blob = new Blob(data, {type: "text/tab-separated-values;charset=utf-8"});
