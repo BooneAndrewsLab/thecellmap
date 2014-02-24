@@ -1358,7 +1358,7 @@
                         sigInst.iterNodes(function(node) {
                             if ($.inArray(node.id, selected) >= 0) {
                                 setNodeColor(node, "#FF0000");
-                                node.size = node.size_init * 3;
+                                node.size = node.size_init; // * 3;
                                 
                                 if (node.hidden) {
                                     messageUser('Gene you\'re looking for is below current threshold.')
