@@ -13,7 +13,7 @@
                     datasets: [],
                     hideLayouts: false,
                     annotations: [],
-                    layoutAlgo: ['fa2', 'fr', 'fl'],
+                    layoutAlgo: ['fl'],
                     layoutButtonHide: true,
                     debug: false,
                     arrows: false,
@@ -63,8 +63,87 @@
             var vizdata = {};
             var mouseX, mouseY;
             var hoveredTargets = null;
-            var neighbourhoodLevel = -1;
-            var networkCutoff = sliderProperties.value;
+            
+            var state = {
+                    selection: [],
+                    cutoff: sliderProperties.value,
+                    style: {
+                        node: {
+                            nsize: 2,
+                            lsize: 14,
+                            lthr: 6,
+                            lcol: "#ffffff"
+                        },
+                        edge: {
+                            width: 1
+                        },
+                        global: {
+                            background: "#222222"
+                        }
+                    },
+                    layout: {
+                        attraction: 50,
+                        repulsion: 1
+                    },
+                    annotation: 1, // TODO: unused
+                    neighbourhood: -1
+            };
+            var undo = new Undo('style', $.extend(true, {}, state));
+            var autoState = false;
+            
+            function _updateNavigation() {
+                $(".undo-network").toggleClass('disabled', !undo.hasUndo());
+                $(".redo-network").toggleClass('disabled', !undo.hasRedo());
+            };
+            
+            function _showNavigation() {
+                if (!$(".changed-network").is(":visible")) {
+                    $(".changed-network").fadeIn(2000);
+                }
+                _updateNavigation();
+            }
+            
+            function setState(newState) {
+                autoState = true;
+                
+                ns = newState.state;
+                
+                console.log(ns.style.node.nsize, state.style.node.nsize, ns.style.node.nsize != state.style.node.nsize);
+                
+                if (!($(ns.selection).not(state.selection).length == 0 && $(state.selection).not(ns.selection).length == 0)) {
+                    $("input.gene-search-input").select2("val", ns.selection, true);
+                } if (ns.cutoff != state.cutoff) {
+                    $("#cutoff-bar").val(ns.cutoff, true);
+                } if (ns.style.node.nsize != state.style.node.nsize) {
+                    $('#style-slider-nsize').val(ns.style.node.nsize, true);
+                } if (ns.style.node.lsize != state.style.node.lsize) {
+                    $('#style-slider-lsize').val(ns.style.node.lsize, true);
+                } if (ns.style.node.lthr != state.style.node.lthr) {
+                    $('#style-slider-lthresh').val(ns.style.node.lthr, true);
+                } if (ns.style.node.lcol != state.style.node.lcol) {
+//                    sigInst.drawingProperties({defaultLabelColor: ns.style.node.lcol}).draw(-1, -1, 1);
+                } if (ns.style.edge.width != state.style.edge.width) {
+                    $('#style-slider-esize').val(ns.style.edge.width, true);
+//                } if (ns.style.node.lcol != state.style.node.lcol) {
+//                    $('#style-label-color').val(ns.style.node.lcol).change();
+//                } if (ns.selection != state.selection) {
+//                    $('#background-color').val(ns.style.node.background).change();
+                }
+                autoState = false;
+            };
+            
+            function changeState() {
+                if (!autoState) {
+                    undo.addChange('style', $.extend(true, {}, state));
+                    _showNavigation();
+                }
+            };
+            
+            function changeNodesState() {
+                if (!autoState) {
+                    _showNavigation();
+                }
+            };
             
             function log(msg) {
                 if (opts.debug) console.log(msg);
@@ -232,6 +311,7 @@
             
             function clearSelection() {
                 $("input.gene-search-input").select2('val', "", true);
+                state.selection = [];
             }
             
             function getParser(type) {
@@ -402,17 +482,20 @@
             }
             
             function onNodeClick(targets) {
-        		$("input.gene-search-input").select2("val", targets.content, true);
+                $("input.gene-search-input").select2("val", targets.content, true);
             }
             
             function onNodesShiftClick(targets) {
-            	$("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
+                $("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
             }
             
             function _setRunningLayout(bool) {
                 opts.runningLayout = bool;
                 $('#btn-layout').toggleClass('btn-primary', !bool);
                 $('#btn-layout').toggleClass('btn-danger', bool);
+                if (!bool) {
+                    changeNodesState();
+                }
             }
             
             function toggleLayout(justStop) {
@@ -432,7 +515,7 @@
             }
             
             function applyNeighbourhood(level) {
-                neighbourhoodLevel = level;
+                state.neighbourhood = level;
                 
                 /* Resets big red nodes */
                 var selected = getSelected();
@@ -445,7 +528,7 @@
             };
             
             function applyCutoff(cutoff) {
-                networkCutoff = cutoff;
+                state.cutoff = cutoff;
                 applyNetwork();
             };
             
@@ -454,21 +537,21 @@
              */
             function applyFilterEdges() {
                 // reset all nodes
-                var hidden = neighbourhoodLevel != -1;
+                var hidden = state.neighbourhood != -1;
                 sigInst.iterNodes(function(node) {
                     node.hidden = hidden;
                     node.visibleDegree = node.degree;
                 });
                 
                 sigInst.iterEdges(function(edge) {
-                    edge.hidden = Math.abs(edge.weight) < networkCutoff;
+                    edge.hidden = Math.abs(edge.weight) < state.cutoff;
                     if (edge.hidden) {
                         edge.source.visibleDegree--;
                         edge.target.visibleDegree--;
                     }
                 });
                 
-                if (neighbourhoodLevel != -1) {
+                if (state.neighbourhood != -1) {
                     var localSelected = {};
                     getSelected().forEach(function(id) {
                         var node = getNode(id);
@@ -478,7 +561,7 @@
                         }
                     });
                     
-                    for (var level = 0; level < neighbourhoodLevel; level++) {
+                    for (var level = 0; level < state.neighbourhood; level++) {
                         console.log('level', level);
                         var tmpSelected = {};
                         
@@ -503,11 +586,11 @@
             }
             
             function applyFilterNodes() {
-                var hidden = neighbourhoodLevel != -1;
+                var hidden = state.neighbourhood != -1;
                 
                 // re-apply cutoff
                 sigInst.iterNodes(function(node) {
-                    if (node.degree > networkCutoff) {
+                    if (node.degree > state.cutoff) {
                         node.visibleDegree = 0;
                         node.hidden = true;
                     } else {
@@ -525,7 +608,7 @@
                 
                 // ^^ cutoff applied here ^^
                 
-                if (neighbourhoodLevel != -1) {
+                if (state.neighbourhood != -1) {
                     var localSelected = {};
                     getSelected().forEach(function(id) {
                         var node = getNode(id);
@@ -535,7 +618,7 @@
                         }
                     });
                     
-                    for (var level = 0; level < neighbourhoodLevel; level++) {
+                    for (var level = 0; level < state.neighbourhood; level++) {
                         console.log('level', level);
                         var tmpSelected = {};
                         
@@ -564,7 +647,7 @@
             }
             
             function applyNetwork() {
-                console.log("Applying changes to network: cutoff=", networkCutoff, "neighbourhood level=", neighbourhoodLevel);
+                console.log("Applying changes to network: cutoff=", state.cutoff, "neighbourhood level=", state.neighbourhood);
                 
                 switch(sliderProperties.filter) {
                 case 'edges':
@@ -686,19 +769,16 @@
                 saveAs(blob, 'network_data.xgmml');
             }
             
-            function initElements() {
+            function buildUI() {
+                $(".changed-network").hide().removeClass('hidden');
                 $(rootElement).append('<div id="search-bar" class="input-group"> \
                           <span class="input-group-addon glyphicon glyphicon-search"></span> \
                           <input class="gene-search-input form-control" type="hidden"> \
                       </div>');
-                $(rootElement).append('<div id="download-bar" class="input-group"> \
-                    </div>');
-                
                 $(rootElement).append('<div id="cutoff-bar"></div>');
                 $(rootElement).append('<div id="cutoff-label"></div>');
                 
                 var menuBar = $('<div id="menu-bar">');
-                
                 menuBar.append('<div id="btn-group-neighbourhood" class="hidden btn-group"> \
                         <button type="button" class="btn btn-primary">Neighbourhood</button> \
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
@@ -712,27 +792,9 @@
                           <li><a href="#" data-toggle="download">1st neighbours</a></li> \
                           <li><a href="#" data-toggle="download">2nd neighbours</a></li> \
                           <li><a href="#" data-toggle="download">3rd neighbours</a></li> \
-                          <!-- <li class="divider neighbourhood-download"></li> \
                           <li class="neighbourhood-download"><a href="#" data-toggle="download">Download</a></li> --> \
                         </ul> \
                       </div>');
-                menuBar.find('#btn-group-neighbourhood a').click(function(evt) {
-                    $(".neighbourhood-download").toggle($(this).attr('data-toggle') == "download");
-                    
-                    switch (evt.target.text) {
-                    case "Download":
-                        downloadShownData();
-                        break;
-                    case "Remove selection":
-                        clearSelection();
-                        break;
-                    case "Selected genes only":
-                        applyNeighbourhood(0);
-                        break;
-                    default:
-                        applyNeighbourhood(parseInt(evt.target.text.charAt(0)));
-                    }
-                });
                 menuBar.find(".neighbourhood-download").hide();
                 
                 if (opts.annotations.length > 0) {
@@ -751,13 +813,24 @@
                     opts.annotations.forEach(function(annotation) {
                         menuBar.find('#btn-group-annotation .dropdown-menu').append('<li><a href="#">' + annotation.name + '</a></li>');
                     });
-                    
-                    menuBar.find('#btn-group-annotation a').click(function(evt) {
-                        loadAnnotation(evt.target.text);
-                    });
                 }
                 
-                var download_bar = $(rootElement).find('#download-bar');
+                menuBar.append('<div id="btn-group-layout" class="btn-group"> \
+                        <button id="btn-layout" type="button" class="btn btn-primary">Layout</button> \
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
+                          <span class="caret"></span> \
+                          <span class="sr-only">Toggle Dropdown</span> \
+                        </button> \
+                        <ul class="dropdown-menu" role="menu"> \
+                          <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li> \
+                        <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li> \
+                        </ul> \
+                      </div>');
+                menuBar.find('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide);
+                menuBar.append('<button id="btn-style" type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-style">Style</button>');
+                $(rootElement).append(menuBar);
+                
+                var download_bar = $('<div id="download-bar" class="input-group"></div>');
                 download_bar.append('<div id="btn-group-download" class="btn-group"> \
                         <button id="btn-view" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button> \
                         <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
@@ -776,54 +849,9 @@
                       </div>');
                 download_bar.find("#download-selected").toggleClass('disabled');
                 download_bar.find("#download-dataset").toggleClass('disabled');
+                $(rootElement).append(download_bar);
                 
-                download_bar.find("#btn-group-download a, #btn-group-download button").click(function() {
-                    switch ($(this).attr('id')) {
-                    case "download-visible":
-                        downloadShownData();
-                        break;
-                    case "btn-view":
-                    case "view-tabular":
-                        var selected = getSelected();
-                        if (selected.length > 0) 
-                            window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
-                        else
-                            alertUser('Selection required', 'Please select one ore more genes to view');
-                        break;
-                    case "download-selected":
-                        var selected = getSelected();
-                        if (selected.length > 0) 
-                            window.location.href = 'dl/?' + $.param({'n': selected}, true);
-                        else
-                            alertUser('Selection required', 'Please select one ore more genes to download');
-                        break;
-                    case "download-dataset":
-                        window.open('dl/','_blank');
-                        break;
-                    case "download-xgmml":
-                        downloadXGMML();
-                        break;
-                    }
-                });
-                
-                menuBar.append('<div id="btn-group-layout" class="btn-group"> \
-                        <button id="btn-layout" type="button" class="btn btn-primary">Layout</button> \
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
-                          <span class="caret"></span> \
-                          <span class="sr-only">Toggle Dropdown</span> \
-                        </button> \
-                        <ul class="dropdown-menu" role="menu"> \
-                          <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li> \
-                        <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li> \
-                        </ul> \
-                      </div>');
-                
-                menuBar.find('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide);
-                menuBar.find('#btn-layout').click(toggleLayout);
-                
-                $('body').append('<div id="alerts-panel"> \
-                        </div>');
-                
+                $('body').append('<div id="alerts-panel"></div>');
                 $('body').append('<div class="modal fade" id="modal-style" tabindex="-1" role="dialog" aria-labelledby="modal-style-label" aria-hidden="true"> \
                             <div class="modal-dialog"> \
                             <div class="modal-content"> \
@@ -866,11 +894,6 @@
                           </div><!-- /.modal-dialog --> \
                         </div><!-- /.modal -->');
                 
-                $('#style-tabs a').click(function (e) {
-                    e.preventDefault();
-                    $(this).tab('show');
-                });
-                
                 $('body').append('<div id="contextmenu-container" class="dropdown clearfix" style="display: none;"> \
                         <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;"> \
                           <li><a id="context-info" tabindex="-1" href="#"><span class="glyphicon glyphicon-info-sign"></span> Show info</a></li> \
@@ -881,11 +904,6 @@
                           <li><a id="context-color" tabindex="-1" href="#"><span class="glyphicon glyphicon-tint"></span> Color node</a></li> \
                         </ul> \
                       </div>');
-                
-                menuBar.append('<button id="btn-style" type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-style">Style</button>');
-                menuBar.find('#btn-style').click(function() { $.event.trigger('networkModified'); });
-                
-                $(rootElement).append(menuBar);
                 
                 $(rootElement).append('<div id="zoom-box">\
                           <div class="btn-group-vertical">\
@@ -900,8 +918,63 @@
                             <button id="btn-snapshot" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="500" title="Network snapshot"><span class="glyphicon glyphicon-camera"></span></button>\
                           </div>\
                         </div>');
-                
+            }
+            
+            function initUI() {
+                /*
+                 * CLICK handlers
+                 */
                 $('[data-toggle="tooltip"]').tooltip();
+                $('#btn-group-neighbourhood a').click(function(evt) {
+                    switch (evt.target.text) {
+                    case "Remove selection":
+                        clearSelection();
+                        break;
+                    case "Selected genes only":
+                        applyNeighbourhood(0);
+                        break;
+                    default:
+                        applyNeighbourhood(parseInt(evt.target.text.charAt(0)));
+                    }
+                    changeState();
+                });
+                
+                $('#btn-group-annotation a').click(function(evt) { loadAnnotation(evt.target.text); });
+                $('#btn-layout').click(toggleLayout);
+                
+                $("#btn-group-download a, #btn-group-download button").click(function() {
+                    switch ($(this).attr('id')) {
+                    case "download-visible":
+                        downloadShownData();
+                        break;
+                    case "btn-view":
+                    case "view-tabular":
+                        var selected = getSelected();
+                        if (selected.length > 0) 
+                            window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
+                        else
+                            alertUser('Selection required', 'Please select one ore more genes to view');
+                        break;
+                    case "download-selected":
+                        var selected = getSelected();
+                        if (selected.length > 0) 
+                            window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                        else
+                            alertUser('Selection required', 'Please select one ore more genes to download');
+                        break;
+                    case "download-dataset":
+                        window.open('dl/','_blank');
+                        break;
+                    case "download-xgmml":
+                        downloadXGMML();
+                        break;
+                    }
+                });
+                
+//                $('#style-tabs a').click(function (e) {
+//                    e.preventDefault();
+//                    $(this).tab('show');
+//                });
                 
                 /*
                  * Style modal stuff
@@ -916,6 +989,8 @@
                         connect: "lower",
                         set: function() {
                             sigInst.graphProperties({maxNodeSize: $(this).val()}).draw();
+                            state.style.node.nsize = $(this).val();
+                            changeState();
                         }
                     },
                     lsize: {
@@ -926,6 +1001,8 @@
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({defaultLabelSize: $(this).val()}).draw(-1, -1, 1);
+                            state.style.node.lsize = $(this).val();
+                            changeState();
                         }
                     },
                     lthresh: {
@@ -936,6 +1013,8 @@
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({labelThreshold: $(this).val()}).draw(-1, -1, 1);
+                            state.style.node.lthr = $(this).val();
+                            changeState();
                         }
                     },
                     esize: {
@@ -946,6 +1025,8 @@
                         connect: "lower",
                         set: function() {
                             sigInst.graphProperties({maxEdgeSize: $(this).val()}).draw();
+                            state.style.edge.width = $(this).val();
+                            changeState();
                         }
                     }
                 } 
@@ -973,13 +1054,15 @@
                         start: 50,
                         handles: 1,
                         connect: "lower",
+                        set: changeState
                     },
                     rep: {
                         range: [1, 100],
                         step: 1,
                         start: 1,
                         handles: 1,
-                        connect: "lower"
+                        connect: "lower",
+                        set: changeState
                     }
                 }
                 
@@ -996,15 +1079,13 @@
                     direction: "rtl",
                     orientation: "vertical",
                     set: function() {
-                        $.event.trigger('networkModified');
                         applyCutoff($(this).val());
+                        changeState();
                     },
                     serialization: {
                         to: [$("#cutoff-label"), 'html']
                     }
                 });
-                
-                networkCutoff = sliderProperties.value;
                 
                 /*
                  * Buttons
@@ -1060,11 +1141,15 @@
                 });
                 
                 $('#background-color').change(function() {
-                    $(rootElement).css('background-color', "#" + $(this).val());
+                    state.style.node.background = $(this).val();
+                    $(rootElement).css('background-color', state.style.node.background);
+                    changeState();
                 });
                 
                 $('#style-label-color').change(function() {
-                    sigInst.drawingProperties({defaultLabelColor: $(this).val()}).draw(-1, -1, 1);
+                    state.style.node.lcol = $(this).val();
+                    sigInst.drawingProperties({defaultLabelColor: state.style.node.lcol}).draw(-1, -1, 1);
+                    changeState();
                 });
                 
                 /*
@@ -1106,6 +1191,7 @@
                             getNode(node).hidden = true;
                         });
                         sigInst.draw();
+                        changeNodesState();
                         break
                     case "context-rename":
                         var node = getNode(hoveredTargets[0]);
@@ -1117,6 +1203,7 @@
                                 function(val) {
                                     node.label = val;
                                     sigInst.draw(-1, -1, 1);
+                                    changeNodesState();
                                 }
                             );
                         break
@@ -1131,34 +1218,43 @@
                                     console.log(val);
                                     node.color = val;
                                     sigInst.draw(1);
+                                    changeNodesState();
                                 }
                             );
                         updateColorInputs();
                         break
                     }
                     
-                    switch ($(this).attr('id')) {
-                    case "context-hide":
-                    case "context-rename":
-                    case "context-color":
-                        $.event.trigger('networkModified');
-                        break;
-                    }
-                    
                     $("#contextmenu-container").hide();
                 });
                 
                 $(".pick-a-color").pickAColor();
+                
+                $(".refresh-network").click(function() {
+                    location.reload();
+                });
+                $(".undo-network").click(function() {
+                    if (!$(this).hasClass('disabled'))
+                        setState(undo.undo());
+                    _updateNavigation();
+                    return false;
+                });
+                $(".redo-network").click(function() {
+                    if (!$(this).hasClass('disabled'))
+                        setState(undo.redo());
+                    _updateNavigation();
+                    return false;
+                });
             }
             
             function init() {
                 sigInst = sigma.init(rootElement).drawingProperties({
-                    defaultLabelSize: 14,
+                    defaultLabelSize: state.style.node.lsize,
                     defaultLabelHoverColor: '#000',
-                    labelThreshold: 6,
+                    labelThreshold: state.style.node.lthr,
                     font: 'Arial',
                     edgeColor : 'white',
-                    defaultLabelColor : 'white',
+                    defaultLabelColor : state.style.node.lcol,
                     nodeColor : opts.defaultNodeColor,
                     defaultEdgeArrow: opts.arrows ? 'target' : 'none',
                 }).graphProperties(graphProperties).mouseProperties({
@@ -1168,10 +1264,11 @@
                  ).bind('ctrlclicknodes', onNodesCtrlClick
                  ).bind('shiftclicknodes', onNodesShiftClick
 //                 ).bind('dblclicknodes', onNodesClick
-        		 ).bind('downnodes', onNodeClick
-                );
+                 ).bind('downnodes', onNodeClick
+                 );
                 
-                initElements();
+                buildUI();
+                initUI();
                 
                 if (opts.highlight) sigInst.hoverHighlight(opts);
                 
@@ -1352,7 +1449,6 @@
 //                            
 //                        }
                     }).on('change', function(evt) {
-                        $.event.trigger('networkModified');
                         var selected = getSelected();
                         
                         sigInst.iterNodes(function(node) {

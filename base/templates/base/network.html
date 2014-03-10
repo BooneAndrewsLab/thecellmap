@@ -45,6 +45,8 @@
   <script src="{% static 'js/libs/fullScreenApi.js' %}"></script>
   <script src="{% static 'js/libs/colors.js' %}"></script>
   <script src="{% static 'js/libs/utils.js' %}"></script>
+  <script src="{% static 'js/libs/graph/Undo.js' %}"></script>
+  
   <script src="{% static 'js/libs/jquery.booneGraph.js' %}"></script>
   <script src="{% static 'js/libs/FileSaver.js' %}"></script>
   <script src="{% static 'js/libs/Blob.js' %}"></script>
@@ -59,13 +61,6 @@
   <script type="text/javascript">
   (function($) {
     $(document).ready(function() {
-        $(".refresh-network").hide().removeClass('hidden').click(function() {
-            location.reload();
-        });
-        $(document).on('networkModified', function() {
-            $(".refresh-network").fadeIn(2000);
-        });
-        
         $( window ).resize(function() {
             $('.sigma-parent').css('height', $(window).height() - $(".navbar").height() - 30);
         }).resize();
@@ -118,6 +113,11 @@
 
 {% block navbar_items %}
 {{ block.super }}
+<ul class="nav navbar-nav changed-network hidden">
+  <li class="undo-network"><a href="#" title="Undo change"><span class="glyphicon glyphicon-backward"></span></a></li>
+  <li class="refresh-network"><a href="#" title="Reload this network"><span class="glyphicon glyphicon-refresh"></span></a></li>
+  <li class="redo-network"><a href="#" title="Redo change"><span class="glyphicon glyphicon-forward"></span></a></li>
+</ul>
 {% endblock %}
 
 {% block footer %}{% endblock footer %}
