@@ -2513,7 +2513,13 @@ function Sigma(root, id) {
    * @private
    */
   var targeted;
-
+  
+  /**
+   * Flag that helps us determine if a node was dragged
+   * @private
+   */
+  var draggedNode = false;
+  
   /**
    * Last drawHoverEdges value.
    * @private
@@ -2662,6 +2668,7 @@ function Sigma(root, id) {
         eventType = 'shiftclicknodes';
       } else if(e['type'] == 'mousedown') {
         eventType = 'downnodes';
+        draggedNode = false;
       } else {
         eventType = 'upnodes';
         self.draw(
@@ -2670,6 +2677,9 @@ function Sigma(root, id) {
           self.p.auto ? -1 : self.p.drawLabels,
           self.p.auto ? 1 : self.p.drawEdgeLabels
         );
+        if (draggedNode) {
+            self.dispatch('draggedNode', targeted);
+        }
       }
 
       self.dispatch(
@@ -2745,6 +2755,7 @@ function Sigma(root, id) {
       self.refresh();
     }
     else if (eventType == 'downnodes') {
+      draggedNode = true;
       self.graph.translateNodes(
         targeted.slice(0, 1),
         self.mousecaptor.mouseX,
@@ -3819,7 +3830,7 @@ function SigmaPublic(sigmaInstance) {
   };
 
   // Events
-  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen', function(e) {
+  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode', function(e) {
     // console.log(e.type, e.content);
     self.dispatch(e.type, e.content);
   });

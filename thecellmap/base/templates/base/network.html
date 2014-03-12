@@ -66,13 +66,13 @@
         }).resize();
         
         $("#network-container").booneGraph({
-            layouts: [{
+            layout: {
                     id: "{{ dataset.id }}",
                     url: "{{ dataset.static_url }}/layout.json",
                     name: "{{ dataset.name }}",
                     parser: "json",
                     dataset: 1
-                }],
+                },
             annotations: [],
             datasets: [{
                 id: "{{ dataset.id }}",
