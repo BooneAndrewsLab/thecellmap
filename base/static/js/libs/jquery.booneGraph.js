@@ -1,3 +1,12 @@
+// ELP* -> URM1 <-- 
+/*
+ * group1: elp2-3-4-5-iki1-iki3
+ * group2: urm1, uba4, ncs2, ncs6, tum1
+ * 
+ * green within and red between
+ */
+
+
 (function($) {
     $.extend($.fn, {
         /**
@@ -9,7 +18,7 @@
             var DEFAULTS = {
                     defaultNodeColor: '#E8E8E8',
                     runningLayout: null,
-                    layouts: [],
+                    layout: null,
                     datasets: [],
                     hideLayouts: false,
                     annotations: [],
@@ -72,13 +81,13 @@
                             nsize: 2,
                             lsize: 14,
                             lthr: 6,
-                            lcol: "#ffffff"
+                            lcol: "ffffff"
                         },
                         edge: {
                             width: 1
                         },
                         global: {
-                            background: "#222222"
+                            background: "222222"
                         }
                     },
                     layout: {
@@ -86,9 +95,8 @@
                         repulsion: 1
                     },
                     annotation: 1, // TODO: unused
-                    neighbourhood: -1
             };
-            var undo = new Undo('style', $.extend(true, {}, state));
+            var undo = null;
             var autoState = false;
             
             function _updateNavigation() {
@@ -105,10 +113,7 @@
             
             function setState(newState) {
                 autoState = true;
-                
-                ns = newState.state;
-                
-                console.log(ns.style.node.nsize, state.style.node.nsize, ns.style.node.nsize != state.style.node.nsize);
+                var ns = newState.style;
                 
                 if (!($(ns.selection).not(state.selection).length == 0 && $(state.selection).not(ns.selection).length == 0)) {
                     $("input.gene-search-input").select2("val", ns.selection, true);
@@ -121,26 +126,50 @@
                 } if (ns.style.node.lthr != state.style.node.lthr) {
                     $('#style-slider-lthresh').val(ns.style.node.lthr, true);
                 } if (ns.style.node.lcol != state.style.node.lcol) {
-//                    sigInst.drawingProperties({defaultLabelColor: ns.style.node.lcol}).draw(-1, -1, 1);
+                    $('#style-label-color').val(ns.style.node.lcol).focus().blur().change(); // Stupid but effective
                 } if (ns.style.edge.width != state.style.edge.width) {
                     $('#style-slider-esize').val(ns.style.edge.width, true);
-//                } if (ns.style.node.lcol != state.style.node.lcol) {
-//                    $('#style-label-color').val(ns.style.node.lcol).change();
-//                } if (ns.selection != state.selection) {
-//                    $('#background-color').val(ns.style.node.background).change();
+                } if (ns.style.global.background != state.style.global.background) {
+                    $('#canvas-background-color').val(ns.style.global.background).focus().blur().change(); // Stupid but effective
                 }
+                
+                if (newState.nodes != null) {
+                    var node, n;
+                    for (n in newState.nodes) {
+                        if (newState.nodes.hasOwnProperty(n)) {
+                            node = getNode(n);
+                            n = newState.nodes[n];
+                            node.x = n.x;
+                            node.y = n.y;
+                            node.hidden = n.hidden;
+                            node._hidden = n.hidden;
+                            node.color = n.color;
+                        }
+                    }
+                    applyCutoff(state.cutoff);
+                    $("input.gene-search-input").select2("val", ns.selection, true);
+                    sigInst.draw();
+                }
+                
                 autoState = false;
             };
             
             function changeState() {
-                if (!autoState) {
-                    undo.addChange('style', $.extend(true, {}, state));
+                if (!autoState && undo != null) {
+                    undo.addChange($.extend(true, {}, state));
                     _showNavigation();
                 }
             };
             
             function changeNodesState() {
-                if (!autoState) {
+                if (!autoState && undo != null) {
+                    var nodeState = {};
+                    
+                    sigInst._core.graph.nodes.filter(function(node) {
+                        nodeState[node.id] = {x: node.x, y: node.y, hidden: node._hidden, color: node.color};
+                    });
+                    
+                    undo.addChange($.extend(true, {}, state), nodeState);
                     _showNavigation();
                 }
             };
@@ -205,6 +234,8 @@
             }
             
             function updateMissingMessage() {
+                if (autoState) return;
+                
                 var missing = [];
                 getSelected().forEach(function(sel) {
                     if (getNode(sel) === undefined) {
@@ -368,7 +399,7 @@
             }
             
             function loadLayout(e) {
-                var layout = opts.layouts[0];
+                var layout = opts.layout;
                 var dataset = opts.datasets[0];
                 
                 opts.loadedDataset = null;
@@ -384,9 +415,20 @@
                         }
                     });
                     
+                    var nodesState = {};
                     sigInst._core.graph.nodes.forEach(function(node) {
                         node.size_init = node.size;
+                        node._hidden = node.hidden; // Our internal way to know if user hid the node manually or not
+                        nodesState[node.id] = {
+                             x: node.x,
+                             y: node.y,
+                             color: node.color,
+                             label: node.label,
+                             hidden: node.hidden
+                        }
                     });
+                    
+                    undo = new Undo($.extend(true, {}, state), nodesState);
                     
                     if (edges.length > 0) {
                         loadDataset({edges: edges, dataset: extraContext});
@@ -515,148 +557,47 @@
             }
             
             function applyNeighbourhood(level) {
-                state.neighbourhood = level;
-                
                 /* Resets big red nodes */
-                var selected = getSelected();
+                var selected = getSelected(), localSelected = {}, tmpSelected;
                 selected.forEach(function (id){
-                    var node = getNode(id);
-                    if (node != undefined) node.size = node.size_init;
+                    localSelected[id] = null;
                 });
                 
-                applyNetwork();
+                for (var l = 0; l < level; l++) {
+                    tmpSelected = {};
+                    sigInst.iterEdges(function(edge) {
+                        if ((!edge.source._hidden && !edge.target._hidden) && 
+                            (localSelected.hasOwnProperty(edge.source.id) || localSelected.hasOwnProperty(edge.target.id))) {
+                            tmpSelected[edge.source.id] = null;
+                            tmpSelected[edge.target.id] = null;
+                        }
+                    });
+                    localSelected = $.extend({}, localSelected, tmpSelected);
+                }
+                
+                sigInst.iterNodes(function(node) {
+                    if (!localSelected.hasOwnProperty(node.id)) {
+                        node._hidden = node.hidden = true;
+                    }
+                });
+                
+                applyCutoff(state.cutoff);
             };
             
             function applyCutoff(cutoff) {
                 state.cutoff = cutoff;
-                applyNetwork();
-            };
-            
-            /**
-             * Apply the cutoff/neighbourhood changes to the network.. aka. re-draw
-             */
-            function applyFilterEdges() {
-                // reset all nodes
-                var hidden = state.neighbourhood != -1;
+                
                 sigInst.iterNodes(function(node) {
-                    node.hidden = hidden;
                     node.visibleDegree = node.degree;
-                });
-                
-                sigInst.iterEdges(function(edge) {
+                }).iterEdges(function(edge) {
                     edge.hidden = Math.abs(edge.weight) < state.cutoff;
-                    if (edge.hidden) {
+                    if (edge.hidden || edge.source._hidden || edge.target._hidden) {
                         edge.source.visibleDegree--;
                         edge.target.visibleDegree--;
                     }
+                }).iterNodes(function(node) {
+                    node.hidden = node._hidden || node.visibleDegree <= 0; // either we manually hid the node or it's not connected to anything
                 });
-                
-                if (state.neighbourhood != -1) {
-                    var localSelected = {};
-                    getSelected().forEach(function(id) {
-                        var node = getNode(id);
-                        if (node != undefined) {
-                            node.hidden = false;
-                            localSelected[node.id] = true;
-                        }
-                    });
-                    
-                    for (var level = 0; level < state.neighbourhood; level++) {
-                        console.log('level', level);
-                        var tmpSelected = {};
-                        
-                        sigInst.iterEdges(function(edge) {
-                            if (!edge.hidden && (localSelected[edge.source.id] || localSelected[edge.target.id])) {
-                                edge.source.hidden = false;
-                                edge.target.hidden = false;
-                                tmpSelected[edge.source.id] = true;
-                                tmpSelected[edge.target.id] = true;
-                            }
-                        });
-                        
-                        localSelected = $.extend({}, localSelected, tmpSelected);
-                    }
-                    
-                    delete localSelected;
-                }
-                
-                sigInst.iterNodes(function(node) {
-                    if (!node.hidden && node.visibleDegree == 0) node.hidden = true;
-                })
-            }
-            
-            function applyFilterNodes() {
-                var hidden = state.neighbourhood != -1;
-                
-                // re-apply cutoff
-                sigInst.iterNodes(function(node) {
-                    if (node.degree > state.cutoff) {
-                        node.visibleDegree = 0;
-                        node.hidden = true;
-                    } else {
-                        node.visibleDegree = node.degree;
-                        node.hidden = hidden;
-                    }
-                });
-                
-                sigInst.iterEdges(function(edge){
-                    if (edge.source.visibleDegree < 1 || edge.target.visibleDegree < 1) {
-                        edge.source.visibleDegree--;
-                        edge.target.visibleDegree--;
-                    }
-                });
-                
-                // ^^ cutoff applied here ^^
-                
-                if (state.neighbourhood != -1) {
-                    var localSelected = {};
-                    getSelected().forEach(function(id) {
-                        var node = getNode(id);
-                        if (node != undefined) {
-                            node.hidden = false;
-                            localSelected[node.id] = true;
-                        }
-                    });
-                    
-                    for (var level = 0; level < state.neighbourhood; level++) {
-                        console.log('level', level);
-                        var tmpSelected = {};
-                        
-                        sigInst.iterEdges(function(edge) {
-                            if (edge.source.visibleDegree > 0 && edge.target.visibleDegree > 0 && 
-                                    (localSelected[edge.source.id] || localSelected[edge.target.id])) {
-                                edge.source.hidden = false;
-                                edge.target.hidden = false;
-                                tmpSelected[edge.source.id] = true;
-                                tmpSelected[edge.target.id] = true;
-                            }
-                        });
-                        
-                        localSelected = $.extend({}, localSelected, tmpSelected);
-                    }
-                    
-                    delete localSelected;
-                }
-                
-                // All good nodes are visible, hide them now
-                if (!hidden) {
-                    sigInst.iterNodes(function(node) {
-                        if (!node.hidden && node.visibleDegree < 1) node.hidden = true;
-                    });
-                }
-            }
-            
-            function applyNetwork() {
-                console.log("Applying changes to network: cutoff=", state.cutoff, "neighbourhood level=", state.neighbourhood);
-                
-                switch(sliderProperties.filter) {
-                case 'edges':
-                    applyFilterEdges();
-                    break;
-                case 'nodes':
-                    applyFilterNodes();
-                    break;
-                }
                 
                 sigInst.draw();
             };
@@ -723,7 +664,7 @@
                     v.writeAttributeString('value', strain.orf);
                     v.writeAttributeString('type', 'string');
                     v.writeEndElement();
-
+                    
                     v.writeStartElement('att');
                     v.writeAttributeString('name', 'Allele');
                     v.writeAttributeString('value', strain.a || strain.n || '');
@@ -792,10 +733,8 @@
                           <li><a href="#" data-toggle="download">1st neighbours</a></li> \
                           <li><a href="#" data-toggle="download">2nd neighbours</a></li> \
                           <li><a href="#" data-toggle="download">3rd neighbours</a></li> \
-                          <li class="neighbourhood-download"><a href="#" data-toggle="download">Download</a></li> --> \
                         </ul> \
                       </div>');
-                menuBar.find(".neighbourhood-download").hide();
                 
                 if (opts.annotations.length > 0) {
                     menuBar.append('<div id="btn-group-annotation" class="btn-group"> \
@@ -881,7 +820,7 @@
                                   </div> \
                                   <div class="tab-pane fade" id="style-general"> \
                                     <ul class="list-group"> \
-                                      <li class="list-group-item">Background color: <input id="background-color" value="222222" name="background-color" class="pick-a-color"></li> \
+                                      <li class="list-group-item">Background color: <input id="canvas-background-color" value="222222" name="background-color" class="pick-a-color"></li> \
                                     </ul> \
                                   </div> \
                                 </div> \
@@ -932,11 +871,14 @@
                         break;
                     case "Selected genes only":
                         applyNeighbourhood(0);
+                        changeNodesState();
                         break;
                     default:
                         applyNeighbourhood(parseInt(evt.target.text.charAt(0)));
+                        changeNodesState();
+                        break;
                     }
-                    changeState();
+                    
                 });
                 
                 $('#btn-group-annotation a').click(function(evt) { loadAnnotation(evt.target.text); });
@@ -1040,7 +982,7 @@
                     for (slider in styleSliders) {
                         $('#style-slider-' + slider).val($('#style-slider-' + slider).attr('data-slider-default'), true);
                     }
-                    $('#background-color').val('#222222').change();
+                    $('#canvas-background-color').val('#222222').change();
                 });
                 
                 /*
@@ -1140,9 +1082,9 @@
                     sigInst.goTo(size.w / 2, size.h / 2, position.ratio / 2).draw();
                 });
                 
-                $('#background-color').change(function() {
-                    state.style.node.background = $(this).val();
-                    $(rootElement).css('background-color', state.style.node.background);
+                $('#canvas-background-color').change(function() {
+                    state.style.global.background = $(this).val();
+                    $(rootElement).css('background-color', "#" + state.style.global.background);
                     changeState();
                 });
                 
@@ -1188,7 +1130,8 @@
                         break
                     case "context-hide":
                         hoveredTargets.forEach(function(node) {
-                            getNode(node).hidden = true;
+                            node = getNode(node);
+                            node.hidden = node._hidden = true;
                         });
                         sigInst.draw();
                         changeNodesState();
@@ -1213,9 +1156,8 @@
                                 'Color node', 
                                 'Coloring node <strong>' + node.label + '</strong>',
                                 'New color: ',
-                                'color',
+                                'text',
                                 function(val) {
-                                    console.log(val);
                                     node.color = val;
                                     sigInst.draw(1);
                                     changeNodesState();
@@ -1265,7 +1207,9 @@
                  ).bind('shiftclicknodes', onNodesShiftClick
 //                 ).bind('dblclicknodes', onNodesClick
                  ).bind('downnodes', onNodeClick
-                 );
+                 ).bind('draggedNode', function() {
+                     changeNodesState()
+                 });
                 
                 buildUI();
                 initUI();
@@ -1322,19 +1266,19 @@
                         width: '350px',
                         tokenSeparators: [",", " ", "\t", "\n"],
                         initSelection: function (element, callback) {
-                        	var id = $(element).val(), strain, result = [];
-                        	
-                        	id.split(",").forEach(function(x) {
+                            var id = $(element).val(), strain, result = [];
+                            
+                            id.split(",").forEach(function(x) {
                                 if (x !== "") {
-                                	strain = getStrain(x);
-                                	result.push({
+                                    strain = getStrain(x);
+                                    result.push({
                                         text: strain.verboseName,
                                         id: strain.id
                                     });
                                 }
-                        	});
-                        	
-                        	callback(result);
+                            });
+                            
+                            callback(result);
                         },
                         tokenizer: function (input, selection, selectCallback, opts) {
                             var original = input, // store the original so we can compare and know if we need to tell the search to update its text
@@ -1343,25 +1287,25 @@
                             index, // position at which the separator was found
                             i, l, // looping variables
                             separator; // the matched separator
-    
+                            
                             if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                             
                             tokenizing = true;
                             var addedNew = false;
                             while (true) {
                                 index = -1;
-    
+                                
                                 for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
                                     separator = opts.tokenSeparators[i];
                                     index = input.indexOf(separator);
                                     if (index >= 0) break;
                                 }
-    
+                                
                                 if (index < 0) break; // did not find any token separator in the input string, bail
-    
+                                
                                 token = input.substring(0, index);
                                 input = input.substring(index + separator.length);
-    
+                                
                                 if (token.length > 0) {
                                     var tokens = opts.createSearchChoice.call(this, token, selection);
                                     if (tokens !== undefined && tokens !== null) {
@@ -1377,7 +1321,7 @@
                                                         dupe = true; break;
                                                     }
                                                 }
-            
+                                                
                                                 if (!dupe) {
                                                     selectCallback(token);
                                                     addedNew = true;
@@ -1388,10 +1332,10 @@
                                 }
                             }
                             
-                            if (addedNew) {
-                                applyNetwork();
-                                sigInst.draw();
-                            }
+//                            if (addedNew) {
+//                                applyNetwork();
+//                                sigInst.draw();
+//                            }
                             
                             tokenizing = false;
                             if (original!==input) return input;
@@ -1465,18 +1409,18 @@
                             }
                         });
                         
-                        if (selected.length == 0) {
-                            neighbourhoodLevel = -1; // All nodes
-                        }
-                        
                         $('#btn-group-neighbourhood').toggleClass('hidden', selected.length == 0);
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
                         $('#download-selected').toggleClass('disabled', selected.length == 0);
                         
                         if (!tokenizing) {
                             updateMissingMessage();
-                            applyNetwork();
                             sigInst.draw();
+                            
+                            if (!($(selected).not(state.selection).length == 0 && $(state.selection).not(selected).length == 0)) {
+                                state.selection = getSelected();
+                                changeState();
+                            }
                         }
                     });
                     

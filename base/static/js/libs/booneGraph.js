@@ -1,5 +1,0 @@
-(function($) {
-    $.extend($.fn, {
-        
-    });
-})(jQuery);
