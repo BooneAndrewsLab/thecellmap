@@ -95,6 +95,7 @@
                         repulsion: 1
                     },
                     annotation: 1, // TODO: unused
+                    dataset: 0
             };
             var undo = null;
             var autoState = false;
@@ -131,6 +132,8 @@
                     $('#style-slider-esize').val(ns.style.edge.width, true);
                 } if (ns.style.global.background != state.style.global.background) {
                     $('#canvas-background-color').val(ns.style.global.background).focus().blur().change(); // Stupid but effective
+                } if (ns.dataset != state.dataset) {
+                    $("#dataset-switch").val(ns.dataset, true);
                 }
                 
                 if (newState.nodes != null) {
@@ -360,13 +363,70 @@
                 }
                 
                 return sigInst.parseBooneGexf;
+            };
+            
+            function switchDataset(dsid) {
+                if (undo == null) return;
+                var value = dsid || parseInt($(this).val());
+                var dataset = opts.datasets[value];
+                
+                if (value == 0) { // Correlations
+                    updateEdges(value);
+                } else { // Interactions
+                    var newVisible = [];
+                    sigInst._core.graph.nodes.filter(function(node) {
+                        if (!node.hidden && dataset.fetched.indexOf(node.id) == -1) newVisible.push(node.id);
+                    });
+                    
+                    if (newVisible.length > 50) {
+                        alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.');
+                        $("#dataset-switch").val(0);
+                        return;
+                    }
+                    
+                    dataset.fetched = dataset.fetched.concat(newVisible);
+                    
+                    if (!newVisible.length) {
+                        updateEdges(value);
+                    } else {
+                        loadDataset(value, {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: newVisible});
+                    }
+                }
+                
+                state.dataset = value;
+                changeState();
+            };
+            
+            function updateEdges(ds) {
+                var minWeight = null;
+                var maxWeight = null;
+                sigInst._core.graph.edges.forEach(function(edge) {
+                    if (!edge.hasOwnProperty('ds')) {
+                        edge.ds = ds;
+                        edge.absweight = Math.abs(edge.weight);
+                    }
+                    
+                    if (edge.ds == ds) {
+                        minWeight = Math.min(minWeight || edge.absweight, edge.absweight);
+                        maxWeight = Math.max(maxWeight || edge.absweight, edge.absweight);
+                    }
+                    
+                    edge.hidden = edge.ds != ds;
+                });
+                
+                if (sliderProperties.updateLimits) {
+                    $("#cutoff-bar").noUiSlider({range: [minWeight, maxWeight]}, true);
+                }
+                
+                sigInst.draw();
             }
             
-            function loadDataset(preloaded) {
-                var dataset = opts.datasets[0];
+            function loadDataset(dsid, data, preloaded) {
+                var dataset = opts.datasets[dsid];
                 
                 var loadDatasetCallback = function (nodes, edges, extraContext) {
                     var edgesAdded = 0;
+                    edges = edges || [];
                     edges.forEach(function(edge){
                         if (nodeExists(edge.source) && nodeExists(edge.target)) {
                             sigInst.addEdge(edge.id, edge.source, edge.target, edge);
@@ -374,25 +434,14 @@
                         }
                     });
                     
-                    var minWeight = null;
-                    var maxWeight = null;
-                    sigInst._core.graph.edges.forEach(function(edge) {
-                        edge.absweight = Math.abs(edge.weight);
-                        minWeight = Math.min(minWeight || edge.absweight, edge.absweight);
-                        maxWeight = Math.max(maxWeight || edge.absweight, edge.absweight);
-                    });
-                    
-                    vizdata['edges'] = {};
-                    
-                    if (sliderProperties.updateLimits) {
-                        $("#cutoff-bar").noUiSlider({range: [minWeight, maxWeight]}, true);
-                    }
-                    
-                    sigInst.draw();
+                    updateEdges(dsid);
                 };
                 
                 if (preloaded == undefined) {
-                    getParser(dataset.parser)($, sigInst, dataset.url, vizdata, loadDatasetCallback);
+                    getParser(dataset.parser)({
+                            jq: $, sigInst: sigInst, url: dataset.url, vizdata: vizdata, cb: loadDatasetCallback,
+                            data: data, method: dataset.method
+                        });
                 } else {
                     loadDatasetCallback(null, preloaded.edges);
                 }
@@ -431,15 +480,17 @@
                     undo = new Undo($.extend(true, {}, state), nodesState);
                     
                     if (edges.length > 0) {
-                        loadDataset({edges: edges, dataset: extraContext});
+                        loadDataset(0, null, {edges: edges, dataset: extraContext});
                     } else {
                         // LOAD DEFAULT DATASET
-                        loadDataset();
+                        loadDataset(0);
                     }
                     
                     vizdata['edges'] = {};
                 }
-                getParser(layout.parser)($, sigInst, layout.url, vizdata, layoutCallback);
+                getParser(layout.parser)({
+                    jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback
+                });
             }
 
             function loadAnnotation(id) {
@@ -590,7 +641,7 @@
                 sigInst.iterNodes(function(node) {
                     node.visibleDegree = node.degree;
                 }).iterEdges(function(edge) {
-                    edge.hidden = Math.abs(edge.weight) < state.cutoff;
+                    edge.hidden = Math.abs(edge.weight) < state.cutoff || edge.ds != state.dataset;
                     if (edge.hidden || edge.source._hidden || edge.target._hidden) {
                         edge.source.visibleDegree--;
                         edge.target.visibleDegree--;
@@ -717,7 +768,8 @@
                           <input class="gene-search-input form-control" type="hidden"> \
                       </div>');
                 $(rootElement).append('<div id="cutoff-bar"></div>');
-                $(rootElement).append('<div id="cutoff-label"></div>');
+//                $(rootElement).append('<div id="cutoff-label"></div>');
+                $(rootElement).append('<div id="dataset-switch" data-toggle="tooltip" data-placement="top" data-delay="500" title="Switch dataset"></div>');
                 
                 var menuBar = $('<div id="menu-bar">');
                 menuBar.append('<div id="btn-group-neighbourhood" class="hidden btn-group"> \
@@ -846,15 +898,15 @@
                 
                 $(rootElement).append('<div id="zoom-box">\
                           <div class="btn-group-vertical">\
-                            <button id="btn-home" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="500" title="Center view"><span class="glyphicon glyphicon-home"></span></button>\
-                          </div>\
-                          <div class="btn-group-vertical" data-toggle="tooltip" data-placement="left" data-delay="500" title="Zoom">\
-                            <button id="btn-zoom-in" type="button" class="btn btn-default"><span class="glyphicon glyphicon-zoom-in"></span></button>\
-                            <button id="btn-zoom-out" type="button" class="btn btn-default"><span class="glyphicon glyphicon-zoom-out"></span></button>\
+                            <button id="btn-home" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home" data-toggle="tooltip" data-placement="left" data-delay="500" title="Center view"></span></button>\
                           </div>\
                           <div class="btn-group-vertical">\
-                            <button id="btn-fullscreen" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="500" title="Fullscreen"><span class="glyphicon glyphicon-fullscreen"></span></button>\
-                            <button id="btn-snapshot" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="500" title="Network snapshot"><span class="glyphicon glyphicon-camera"></span></button>\
+                            <button id="btn-zoom-in" type="button" class="btn btn-default"><span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" data-placement="left" data-delay="500" title="Zoom in"></span></button>\
+                            <button id="btn-zoom-out" type="button" class="btn btn-default"><span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" data-placement="left" data-delay="500" title="Zoom out"></span></button>\
+                          </div>\
+                          <div class="btn-group-vertical">\
+                            <button id="btn-fullscreen" type="button" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen" data-toggle="tooltip" data-placement="left" data-delay="500" title="Fullscreen"></span></button>\
+                            <button id="btn-snapshot" type="button" class="btn btn-default"><span class="glyphicon glyphicon-camera" data-toggle="tooltip" data-placement="left" data-delay="500" title="Network snapshot"></span></button>\
                           </div>\
                         </div>');
             }
@@ -863,7 +915,6 @@
                 /*
                  * CLICK handlers
                  */
-                $('[data-toggle="tooltip"]').tooltip();
                 $('#btn-group-neighbourhood a').click(function(evt) {
                     switch (evt.target.text) {
                     case "Remove selection":
@@ -1029,6 +1080,15 @@
                     }
                 });
                 
+                $("#dataset-switch").addClass('toggle').noUiSlider({
+                    range: [0, 1],
+                    start: 0,
+                    handles: 1,
+                    step: 1,
+                    orientation: "horizontal",
+                    set: switchDataset
+                });
+                
                 /*
                  * Buttons
                  */
@@ -1187,6 +1247,15 @@
                     _updateNavigation();
                     return false;
                 });
+                
+                $('[data-toggle="tooltip"]').tooltip();
+                
+//                $("#cutoff-bar .noUi-handle").tooltip({
+//                    placement: 'left',
+//                    trigger: 'hover focus click',
+//                    delay: 100,
+//                    title: "FOOOOOOOOOOOO"
+//                });
             }
             
             function init() {
@@ -1225,6 +1294,14 @@
                         $("#modal-overlay").remove()
                     }
                 });
+                
+                /* Add extra dataset */
+                opts.datasets[1] = {
+                        parser: 'json',
+                        url: 'interactions/',
+                        method: 'post',
+                        fetched: []
+                }
                 
                 /* Fetch all node info */
                 $.getJSON(opts.nodesUrl, function(data) {

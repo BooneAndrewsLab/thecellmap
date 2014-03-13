@@ -65,6 +65,10 @@ class Dataset(models.Model):
         return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
     
     @staticmethod
+    def pk_or_default(pk=None):
+        return pk and Dataset.objects.get(pk=pk) or Dataset.get_default()
+    
+    @staticmethod
     def get_default():
         ds = Dataset.objects.order_by('-pk').filter(is_default=True)
         if ds.count(): return ds[0]
@@ -80,17 +84,9 @@ class StrainData(models.Model):
         (TYPE_ARRAY, 'Array'),
     )
     
-#     ARRAY_FG = 'FG'
-#     ARRAY_TS = 'TS'
-#     ARRAY_CHOICES = (
-#         (ARRAY_FG, 'Non-essential'),
-#         (ARRAY_TS, 'Essential'),
-#     )
-    
     dataset = models.ForeignKey(Dataset, related_name='data')
     strain = models.ForeignKey(Strain)
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_QUERY)
-#     array = models.CharField(max_length=2, choices=ARRAY_CHOICES, default=ARRAY_FG)
     scores = dbarray.FloatArrayField()
     pvalues = dbarray.FloatArrayField()
     correlations = dbarray.FloatArrayField(null=True)

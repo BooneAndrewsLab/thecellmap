@@ -69,6 +69,14 @@ a.disabled {
     color: white;
 }
 
+#dataset-switch {
+    position: absolute;
+    z-index: 100;
+    left: 20px;
+    bottom: 10px;
+    width: 30px;
+}
+
 button:hover {
     background: none;
     background-image: none;

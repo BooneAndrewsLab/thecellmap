@@ -10,7 +10,7 @@ from pandas.core.frame import DataFrame
 
 from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
-    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT
+    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries, profile
 import numpy as np
 
 
@@ -41,6 +41,41 @@ def strains_for_nodes(ds, nodes):
     for node in nodes:
         strain = Strain.objects.get(pk=nodes_inv[int(node)][0])
         yield node, strain
+
+@print_queries
+def collect_scores(ds, nodes):
+    with open(ds.static_path('nodes_inv.pickle')) as fp:
+        nodes_inv = cPickle.load(fp)
+    
+    nodes_inv_inv = {}
+    for nid, sids in nodes_inv.iteritems():
+        for sid in sids:
+            nodes_inv_inv[sid] = nid
+    
+    arrays = [nodes_inv_inv[strain] for strain, in ds.arrays.through.objects.order_by('id').values_list('strain_id')]
+    queries = [nodes_inv_inv[strain] for strain, in ds.queries.through.objects.order_by('id').values_list('strain_id')]
+    
+    scores = []
+    
+    nodes = set(map(int, nodes))
+    
+    for node in nodes:
+        node = int(node)
+        strains = nodes_inv[node]
+        
+        for typ, scrs, pvals in ds.data.filter(strain__in=strains).values_list('type', 'scores', 'pvalues'):
+            if typ == StrainData.TYPE_QUERY:
+                scores_axis = arrays
+            elif typ == StrainData.TYPE_ARRAY:
+                scores_axis = queries
+            
+            dat = filter(lambda x: (not np.isnan(x[2]) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals))
+            scores.extend(dat)
+    
+    scores = map(lambda x: tuple(sorted(x[:2])) + x[2:3], scores)
+    scores = DataFrame.from_records(scores, columns=['source', 'target', 'score']).groupby(['source', 'target']).agg({'score': np.mean}).reset_index()
+    
+    return scores
 
 def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
