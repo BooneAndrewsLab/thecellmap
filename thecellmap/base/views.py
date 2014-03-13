@@ -2,10 +2,11 @@
 
 import datetime
 
-from django.http.response import HttpResponseRedirect, Http404
+from django.http.response import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset
 from base.utils import print_queries, is_integer, JsonResponse
 
@@ -23,6 +24,26 @@ def home(request):
 
 def dataset(request, dataset_id):
     return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
+
+@require_POST
+def interactions(request, dataset_id=None):
+    nodes = request.POST.getlist('nodes[]')
+    print len(nodes)
+    if not nodes:
+        raise Http404('No nodes requested')
+    
+    response = []
+    
+    data = collect_scores(Dataset.pk_or_default(dataset_id), nodes)
+    for s, t, w in data.itertuples(index=False):
+        response.append({
+            'id': '%04d%04d' % (s, t),
+            's': s,
+            't': t,
+            'w': w
+         })
+    
+    return JsonResponse({'dataset': 'Interactions', 'edges': response})
 
 @print_queries
 def nodes_download(request, dataset_id=None):

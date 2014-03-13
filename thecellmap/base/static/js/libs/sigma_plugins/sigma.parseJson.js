@@ -1,14 +1,15 @@
 //Mathieu Jacomy @ Sciences Po Médialab & WebAtlas
 //(requires sigma.js to be loaded)
-sigma.publicPrototype.parseJson = function($, sigInst, gexfPath, vizdata, callback) {
-    // Load XML file:
-    var sigmaInstance = sigInst;
+sigma.publicPrototype.parseJson = function(opts) {
+    var vizdata = opts.vizdata;
     var annotations = vizdata[vizdata.loaded_annot];
     var start = new Date().getTime();
     var nodes, edges, extraData = {datasetName: 'Correlations'};
+    var method = opts.method || 'get';
+    var data = opts.data || null;
     
     /* Fetch all node info */
-    $.getJSON(gexfPath, function(data) {
+    opts.jq.ajax({dataType: 'json', data: data, type: method, url: opts.url, success: function(data) {
         var strain, annot, color;
         nodes = data.nodes || [];
         edges = data.edges || [];
@@ -20,7 +21,6 @@ sigma.publicPrototype.parseJson = function($, sigInst, gexfPath, vizdata, callba
             if (strain == undefined) {
                 console.log("Strain not found:", node.id);
                 strain = {};
-//                return;
             }
             
             annot = annotations.map[strain.id];
@@ -68,8 +68,8 @@ sigma.publicPrototype.parseJson = function($, sigInst, gexfPath, vizdata, callba
         var end = new Date().getTime();
         var time = end - start;
         console.log('Execution time: ' + time);
-    }).always(function() { 
-        callback(nodes, edges, extraData); 
+    }}).always(function() { 
+        opts.cb(nodes, edges, extraData); 
     }).fail(function(e) { 
         console.log('failed', e);
     });

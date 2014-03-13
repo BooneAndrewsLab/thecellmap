@@ -3,18 +3,23 @@ Created on Jan 06, 2014
 
 @author: matej
 '''
-from base.models import Dataset, Strain
-from base.utils import CellMapCommand, print_queries
+import cPickle
+from json import encoder
+import json
+import os
+
 from django.core.management.base import CommandError
 from django.db.models import Q
 from django.db.transaction import commit_on_success
-from django.utils import simplejson
 from pandas.core.frame import DataFrame
-import cPickle
-import numpy as np
-import os
 from pandas.core.index import MultiIndex
 
+from base.models import Dataset, Strain
+from base.utils import CellMapCommand, print_queries
+import numpy as np
+
+
+encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 COLOURS = ['w', 'b', 'r']
 
 class Command(CellMapCommand):
@@ -71,8 +76,6 @@ class Command(CellMapCommand):
         cPickle.dump(nodes_inverse_map, open(os.path.join(outpath, 'nodes_inv.pickle'), 'wb'))
         self._dump_clean_json({'nodes': nodes}, os.path.join(outpath, 'nodes.json'))
         
-        dataset.correlation_axis.through.objects.order_by('id').values_list('strain_id')
-        
         correlation_axis = [id for id, in dataset.correlation_axis.through.objects.order_by('id').values_list('strain_id')]
         corr_multiindex = MultiIndex.from_tuples(zip(correlation_axis, map(nodes_map.get, correlation_axis)), names=['strain', 'node'])
         
@@ -97,8 +100,32 @@ class Command(CellMapCommand):
             )
         
         correlation.to_csv(os.path.join(outpath, 'layout.csv'), index=False)
-    
+        
+#         """
+#             Interactions
+#         """
+#         arrays = [id for id, in dataset.arrays.through.objects.order_by('id').values_list('strain_id')]
+#         queries = [id for id, in dataset.queries.through.objects.order_by('id').values_list('strain_id')]
+#         
+#         interactions = DataFrame.from_items(list(dataset.data.filter(type=StrainData.TYPE_ARRAY).values_list('strain', 'scores')))
+#         interactions = interactions.reindex(columns=arrays)
+#         interactions.columns = MultiIndex.from_tuples(zip(arrays, map(nodes_map.get, arrays)), names=['strain', 'node'])
+#         interactions.index = MultiIndex.from_tuples(zip(queries, map(nodes_map.get, queries)), names=['strain', 'node'])
+#         
+#         interactions = interactions.groupby(level=1).mean().groupby(level=1, axis=1).mean()
+#         interactions.index.name = 'queries'
+#         interactions.columns.name = 'arrays'
+#         
+#         interactions = interactions[interactions.abs() > .08]
+#         interactions = interactions.stack().reset_index()
+#         
+#         interactions = [{ 's': int(a), 't': int(b), 'w': float(c)} for a, b, c in interactions.itertuples(index=False)]
+#         self._dump_clean_json(
+#                 {'edges': interactions, 'dataset': 'Interactions'}, 
+#                 os.path.join(outpath, 'interactions.json')
+#             )
+        
     def _dump_clean_json(self, obj, f):
         with open(f, 'wb') as out:
-            out.write(simplejson.dumps(obj).replace(' ', ''))
+            out.write(json.dumps(obj).replace(' ', ''))
     
