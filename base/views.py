@@ -28,7 +28,6 @@ def dataset(request, dataset_id):
 @require_POST
 def interactions(request, dataset_id=None):
     nodes = request.POST.getlist('nodes[]')
-    print len(nodes)
     if not nodes:
         raise Http404('No nodes requested')
     
