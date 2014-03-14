@@ -10,7 +10,7 @@ from pandas.core.frame import DataFrame
 
 from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
-    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries, profile
+    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
 import numpy as np
 
 
@@ -69,13 +69,13 @@ def collect_scores(ds, nodes):
             elif typ == StrainData.TYPE_ARRAY:
                 scores_axis = queries
             
-            dat = filter(lambda x: (not np.isnan(x[2]) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals))
+            dat = filter(lambda x: ((not np.isnan(x[2])) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals))
             scores.extend(dat)
     
     scores = map(lambda x: tuple(sorted(x[:2])) + x[2:3], scores)
     scores = DataFrame.from_records(scores, columns=['source', 'target', 'score']).groupby(['source', 'target']).agg({'score': np.mean}).reset_index()
     
-    return scores
+    return scores[scores.score.abs() > 0.08]
 
 def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
