@@ -428,7 +428,7 @@
                     var edgesAdded = 0;
                     edges = edges || [];
                     edges.forEach(function(edge){
-                        if (nodeExists(edge.source) && nodeExists(edge.target)) {
+                        if (nodeExists(edge.source) && nodeExists(edge.target) && !sigInst._core.graph.edgesIndex[edge.id]) {
                             sigInst.addEdge(edge.id, edge.source, edge.target, edge);
                             edgesAdded++;
                         }
