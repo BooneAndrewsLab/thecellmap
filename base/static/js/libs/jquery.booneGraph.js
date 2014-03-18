@@ -1,12 +1,3 @@
-// ELP* -> URM1 <-- 
-/*
- * group1: elp2-3-4-5-iki1-iki3
- * group2: urm1, uba4, ncs2, ncs6, tum1
- * 
- * green within and red between
- */
-
-
 (function($) {
     $.extend($.fn, {
         /**
@@ -181,11 +172,6 @@
                 if (opts.debug) console.log(msg);
             };
             
-            function updateColorInputs() {
-                $.fn.spectrum.processNativeColorInputs();
-                $('.sp-dd').remove();
-            };
-            
             function iterVisibleNodes(func, ids) {
                 sigInst._core.graph.nodes.filter(function(node) {
                     return !node.hidden;
@@ -214,11 +200,6 @@
             
             function nodeExists(id) {
                 return !!sigInst._core.graph.nodesIndex[id];
-            }
-            
-            function updateColorInputs() {
-                $.fn.spectrum.processNativeColorInputs();
-                $('.sp-dd').remove();
             }
             
             function clearEdges() {
@@ -266,7 +247,23 @@
                 }
             }
             
+            function editNode(id) {
+                var modal = $('#edit-node-modal'), node = getNode(id);
+                modal.find('.modal-title').html('Edit node "' + node.label + '"');
+                modal.find('#edit-node-id').attr("value", id);
+                modal.find('#edit-node-label').attr("value", node.label);
+                modal.find('#edit-node-color').val(node.color).focus().blur().change();
+                modal.modal('show');
+            }
+            
             function modalInput(title, text, label, type, callback) {
+                var inputElement;
+                if (type == 'color') {
+                    inputElement = '<input id="modal-input-value" class="pick-a-color">';
+                } else {
+                    inputElement = '<input type="' + type + '" id="modal-input-value">';
+                }
+                
                 $('body').append('<div class="modal fade" id="modal-input" tabindex="-1" role="dialog" aria-labelledby="modal-input-label" aria-hidden="true"> \
                         <div class="modal-dialog"> \
                         <div class="modal-content"> \
@@ -276,7 +273,7 @@
                           </div> \
                           <div class="modal-body"> \
                             <p>' + text + '</p> \
-                            <p>' + label + '<input type="' + type + '" id="modal-input-value"></p> \
+                            <p>' + label + inputElement + '</p> \
                           </div> \
                           <div class="modal-footer"> \
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
@@ -285,6 +282,8 @@
                         </div> \
                       </div> \
                     </div>');
+                
+                $('#modal-input .pick-a-color').pickAColor();
                 
                 $('#modal-input').modal().on('hidden.bs.modal', function () {
                     $(this).remove();
@@ -371,6 +370,7 @@
                 var dataset = opts.datasets[value];
                 
                 if (value == 0) { // Correlations
+                    $("#switch-label").html('Correlations');
                     updateEdges(value);
                 } else { // Interactions
                     var newVisible = [];
@@ -386,6 +386,7 @@
                     
                     dataset.fetched = dataset.fetched.concat(newVisible);
                     
+                    $("#switch-label").html('Genetic interactions');
                     if (!newVisible.length) {
                         updateEdges(value);
                     } else {
@@ -769,7 +770,10 @@
                       </div>');
                 $(rootElement).append('<div id="cutoff-bar"></div>');
 //                $(rootElement).append('<div id="cutoff-label"></div>');
-                $(rootElement).append('<div id="dataset-switch" data-toggle="tooltip" data-placement="top" data-delay="500" title="Switch dataset"></div>');
+                $(rootElement).append('<div id="switch-container">\
+                        <div id="dataset-switch" class="pull-left" data-toggle="tooltip" data-placement="top" data-delay="500" title="Switch dataset"></div>\
+                        <span id="switch-label">Correlations</span>\
+                      </div>');
                 
                 var menuBar = $('<div id="menu-bar">');
                 menuBar.append('<div id="btn-group-neighbourhood" class="hidden btn-group"> \
@@ -890,9 +894,8 @@
                           <li><a id="context-info" tabindex="-1" href="#"><span class="glyphicon glyphicon-info-sign"></span> Show info</a></li> \
                           <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li> \
                           <li class="divider"></li> \
+                          <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit node</a></li> \
                           <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li> \
-                          <li><a id="context-rename" tabindex="-1" href="#"><span class="glyphicon glyphicon-pencil"></span> Rename node</a></li> \
-                          <li><a id="context-color" tabindex="-1" href="#"><span class="glyphicon glyphicon-tint"></span> Color node</a></li> \
                         </ul> \
                       </div>');
                 
@@ -909,6 +912,38 @@
                             <button id="btn-snapshot" type="button" class="btn btn-default"><span class="glyphicon glyphicon-camera" data-toggle="tooltip" data-placement="left" data-delay="500" title="Network snapshot"></span></button>\
                           </div>\
                         </div>');
+                
+                $('body').append('<div class="modal fade" id="edit-node-modal" tabindex="-1" role="dialog" aria-labelledby="edit-node-modal-label" aria-hidden="true"> \
+                        <div class="modal-dialog"> \
+                        <div class="modal-content"> \
+                          <div class="modal-header"> \
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> \
+                            <h4 class="modal-title" id="edit-node-modal-label"></h4> \
+                          </div> \
+                          <div class="modal-body"> \
+                            <form class="form-horizontal" role="form"> \
+                              <input type="hidden" id="edit-node-id"> \
+                              <div class="form-group"> \
+                                <label for="edit-node-label" class="col-sm-2 control-label">Label</label> \
+                                <div class="col-sm-10"> \
+                                  <input type="text" class="form-control" id="edit-node-label" placeholder="Label"> \
+                                </div> \
+                              </div> \
+                              <div class="form-group"> \
+                                <label for="edit-node-color" class="col-sm-2 control-label">Color</label> \
+                                <div class="col-sm-10"> \
+                                  <input class="form-control pick-a-color" id="edit-node-color"> \
+                                </div> \
+                              </div> \
+                            </form> \
+                          </div> \
+                          <div class="modal-footer"> \
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
+                            <button type="button" class="btn btn-primary modal-confirm">Confirm</button> \
+                          </div> \
+                        </div> \
+                      </div> \
+                    </div>');
             }
             
             function initUI() {
@@ -1068,7 +1103,7 @@
                     step: sliderProperties.step,
                     start: sliderProperties.value,
                     handles: 1,
-                    connect: "upper",
+//                    connect: "upper",
                     direction: "rtl",
                     orientation: "vertical",
                     set: function() {
@@ -1086,6 +1121,7 @@
                     handles: 1,
                     step: 1,
                     orientation: "horizontal",
+                    connect: "upper",
                     set: switchDataset
                 });
                 
@@ -1182,7 +1218,7 @@
                         
                         console.log(opts.nodeInfo(node, strain));
                         
-                        alertUser('Node info', opts.nodeInfo(node, strain))
+                        alertUser('Node info', opts.nodeInfo(node, strain));
                         break
                     case "context-dl":
                         var node = getNode(hoveredTargets[0]), strain = getStrain(node.id);
@@ -1196,35 +1232,9 @@
                         sigInst.draw();
                         changeNodesState();
                         break
-                    case "context-rename":
-                        var node = getNode(hoveredTargets[0]);
-                        modalInput(
-                                'Rename node', 
-                                'Renaming node <strong>' + node.label + '</strong>',
-                                'New name: ',
-                                'text',
-                                function(val) {
-                                    node.label = val;
-                                    sigInst.draw(-1, -1, 1);
-                                    changeNodesState();
-                                }
-                            );
-                        break
-                    case "context-color":
-                        var node = getNode(hoveredTargets[0]);
-                        modalInput(
-                                'Color node', 
-                                'Coloring node <strong>' + node.label + '</strong>',
-                                'New color: ',
-                                'text',
-                                function(val) {
-                                    node.color = val;
-                                    sigInst.draw(1);
-                                    changeNodesState();
-                                }
-                            );
-                        updateColorInputs();
-                        break
+                    case "context-edit-node":
+                        editNode(hoveredTargets[0]);
+                        break;
                     }
                     
                     $("#contextmenu-container").hide();
@@ -1256,6 +1266,16 @@
 //                    delay: 100,
 //                    title: "FOOOOOOOOOOOO"
 //                });
+                
+                var modal = $('#edit-node-modal');
+                modal.modal({show: false});
+                modal.find('.modal-confirm').click(function() {
+                    var node = getNode(modal.find('#edit-node-id').val());
+                    node.label = modal.find('#edit-node-label').val();
+                    node.color = modal.find('#edit-node-color').val();
+                    sigInst.draw();
+                    modal.modal('hide');
+                });
             }
             
             function init() {
@@ -1409,10 +1429,9 @@
                                 }
                             }
                             
-//                            if (addedNew) {
-//                                applyNetwork();
-//                                sigInst.draw();
-//                            }
+                            if (addedNew) {
+                                
+                            }
                             
                             tokenizing = false;
                             if (original!==input) return input;
@@ -1471,6 +1490,8 @@
 //                        }
                     }).on('change', function(evt) {
                         var selected = getSelected();
+                        console.log('changing', tokenizing);
+                        console.log(selected);
                         
                         sigInst.iterNodes(function(node) {
                             if ($.inArray(node.id, selected) >= 0) {
@@ -1499,6 +1520,8 @@
                                 changeState();
                             }
                         }
+                    }).on('select2-blur', function() {
+                        console.log("BLURRRRRRRRR");
                     });
                     
                     // Load plot graph in Michael Jackson mode by

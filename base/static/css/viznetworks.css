@@ -69,12 +69,27 @@ a.disabled {
     color: white;
 }
 
-#dataset-switch {
+#switch-container {
     position: absolute;
     z-index: 100;
     left: 20px;
     bottom: 10px;
-    width: 30px;
+}
+
+#dataset-switch {
+    width: 40px;
+}
+
+#switch-label {
+    color: white;
+    margin-left: 20px;
+}
+
+#dataset-switch .noUi-connect {
+    background: -webkit-linear-gradient(left, #ff0000 , green); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(right, #ff0000, green); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(right, #ff0000, green); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to right, #ff0000 , green); /* Standard syntax */
 }
 
 button:hover {
@@ -262,4 +277,8 @@ input[type=color] {
     margin: 0;
     width: auto;
     height: 100%;
+}
+
+.form-group .input-group-btn {
+    width: 1% !important;
 }
