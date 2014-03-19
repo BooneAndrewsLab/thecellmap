@@ -52,8 +52,8 @@ def collect_scores(ds, nodes):
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
-    arrays = [nodes_inv_inv[strain] for strain, in ds.arrays.through.objects.order_by('id').values_list('strain_id')]
-    queries = [nodes_inv_inv[strain] for strain, in ds.queries.through.objects.order_by('id').values_list('strain_id')]
+    arrays = [nodes_inv_inv[strain] for strain, in ds.arrays.through.objects.filter(dataset=ds).order_by('id').values_list('strain_id')]
+    queries = [nodes_inv_inv[strain] for strain, in ds.queries.through.objects.filter(dataset=ds).order_by('id').values_list('strain_id')]
     
     scores = []
     
@@ -81,9 +81,9 @@ def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
         nodes_inv = cPickle.load(fp)
     
-    correlation_axis = [(strain[0], format_allele_col(*strain)) for strain in ds.correlation_axis.through.objects.order_by('id').values_list(*ONLY)]
-    arrays = [(strain[0], format_allele_col(*strain)) for strain in ds.arrays.through.objects.order_by('id').values_list(*ONLY)]
-    queries = [(strain[0], format_allele_col(*strain)) for strain in ds.queries.through.objects.order_by('id').values_list(*ONLY)]
+    correlation_axis = [(strain[0], format_allele_col(*strain)) for strain in ds.correlation_axis.through.objects.filter(dataset=ds).order_by('id').values_list(*ONLY)]
+    arrays = [(strain[0], format_allele_col(*strain)) for strain in ds.arrays.through.objects.filter(dataset=ds).order_by('id').values_list(*ONLY)]
+    queries = [(strain[0], format_allele_col(*strain)) for strain in ds.queries.through.objects.filter(dataset=ds).order_by('id').values_list(*ONLY)]
     
     for node in nodes:
         strains = nodes_inv[int(node)]

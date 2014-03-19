@@ -3,18 +3,21 @@ Created on Dec 16, 2013
 
 @author: matej
 '''
-from base.models import Strain, Dataset, StrainData
-from base.utils import CellMapCommand, gene_map
+from optparse import make_option
+import re
+
 from django.core.management.base import CommandError, BaseCommand
 from django.db.transaction import commit_on_success
-from optparse import make_option
 from pandas.core.frame import DataFrame
 from pandas.core.index import MultiIndex
 from pandas.io.parsers import read_table
-from thecellmap.settings.local import BOONELAB_MANAGEMENT_DB
-import numpy as np
 import psycopg2
-import re
+
+from base.models import Strain, Dataset, StrainData
+from base.utils import CellMapCommand, gene_map
+import numpy as np
+from thecellmap.settings.local import BOONELAB_MANAGEMENT_DB
+
 
 QUERIES = ('tsq', 'sn', 'damp', 'y')
 
@@ -133,17 +136,16 @@ class Command(CellMapCommand):
         corr.index = indices.index
         corr.columns = indices.index
         
-#         nanmask = np.isnan(corr)
-#         tnanmask = np.isnan(corr.T)
-#         
-# #         if (~nanmask & ~tnanmask).sum().sum() > 0:
-# #             # We would sum reciprocal values!! Check that each pair appears only once
-# #             raise CommandError("Problem with correlation matrix.")
-# #         
-#         corr[nanmask] = 0
-#         corr += corr.T
-#         corr[nanmask & tnanmask] = np.nan
+        nanmask = np.isnan(corr)
+        tnanmask = np.isnan(corr.T)
+         
+        if (~nanmask & ~tnanmask).sum().sum() > 0:
+            # We would sum reciprocal values!! Check that each pair appears only once
+            raise CommandError("Problem with correlation matrix.")
         
+        corr[nanmask] = 0
+        corr += corr.T
+        corr[nanmask & tnanmask] = np.nan
         return corr
     
     def parse_scores(self, path):

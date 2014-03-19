@@ -93,7 +93,29 @@ class StrainData(models.Model):
     
     def __unicode__(self):
         return '%s @ %s' % (self.strain, self.dataset)
+
+class Annotation(models.Model):
+    name = models.CharField(max_length=64)
+    alias = models.CharField(max_length=64, null=True)
+    date = models.DateField()
+    description = models.TextField(blank=True)
     
-#     class Meta:
-#         unique_together = (('dataset', 'strain', 'array'), )
+    def __unicode__(self):
+        return u'%s' % self.name
     
+    class Meta:
+        unique_together = (('name', 'date'), )
+
+class Term(models.Model):
+    annotation = models.ForeignKey(Annotation)
+    name = models.CharField(max_length=128)
+    alias = models.CharField(max_length=128)
+    source = models.CharField(max_length=32)
+    
+    genes = models.ManyToManyField(Gene)
+    
+    def __unicode__(self):
+        return u'%s' % self.name
+    
+    class Meta:
+        unique_together = (('annotation', 'name'), )
