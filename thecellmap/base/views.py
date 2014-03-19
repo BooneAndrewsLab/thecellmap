@@ -2,7 +2,7 @@
 
 import datetime
 
-from django.http.response import HttpResponseRedirect, Http404, HttpResponse
+from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 

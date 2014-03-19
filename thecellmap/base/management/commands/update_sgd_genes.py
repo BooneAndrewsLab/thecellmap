@@ -67,7 +67,7 @@ class Command(CellMapCommand):
         for line in content.readlines():
             line = line.strip().split('\t')
             
-            if line[1] != 'ORF'  or not ORF.match(line[3]): continue
+            if line[1] not in ('ORF', 'pseudogene') or not ORF.match(line[3]): continue
             
             if line[0] in existing:
                 g = existing[line[0]]

@@ -3,41 +3,37 @@ Created on Dec 13, 2013
 
 @author: matej
 '''
-from base.utils import CellMapCommand
-import re
-import xlwt
-from xlwt.Style import colour_map
+import cPickle
 
-PAT = re.compile('_T\d+', re.IGNORECASE)
+from base.utils import CellMapCommand
+from base.models import Strain
+import json
+
 
 class Command(CellMapCommand):
-    def make_style(self, name):
-        style = xlwt.XFStyle()
-        pattern = xlwt.Pattern()
-        pattern.pattern = xlwt.Pattern.SOLID_PATTERN
-        pattern.pattern_fore_colour = xlwt.Style.colour_map[name]
-        style.pattern = pattern
-        return style
-    
     def handle(self, *args, **options):
-        wb = xlwt.Workbook()
-        sheet = wb.add_sheet('palette')
-        sheet.paper_size_code = 1
+        layout = cPickle.load(open('/home/matej/bla.pikl'))
+        strains = {s.boonelab_id.upper(): s.id for s in Strain.objects.all()}
+        nodes_map = cPickle.load(open('/home/matej/dev/workspace/thecellmap/static/visualization/Science/nodes_inv.pickle'))
         
-        xlwt.add_palette_colour("red_stringent", 0x21)
-        wb.set_colour_RGB(0x21, 204, 51, 51)
-        xlwt.add_palette_colour("red_lenient", 0x22)
-        wb.set_colour_RGB(0x22, 255, 153, 153)
-        xlwt.add_palette_colour("green_stringent", 0x23)
-        wb.set_colour_RGB(0x23, 0, 153, 51)
-        xlwt.add_palette_colour("green_lenient", 0x24)
-        wb.set_colour_RGB(0x24, 153, 204, 153)
+        nodes = {}
+        for node_id, strain_ids in nodes_map.iteritems():
+            for strain_id in strain_ids:
+                nodes[strain_id] = node_id
         
-        row = 0
-        for k, v in colour_map.iteritems():
-            style = self.make_style(k)
-            sheet.write(row, 0, k, style)
-            sheet.write(row, 1, v, style)
-            row += 1
+        result = []
+        for l in layout:
+            if not l['sid']: continue
+            
+            strain_id = strains.get(l['sid'].upper())
+            if strain_id:
+                l.pop('sid')
+                l['id'] = nodes[strain_id]
+                result.append(l)
         
-        wb.save("/home/matej/palette.xls")
+        self._dump_clean_json({'nodes': result}, '/home/matej/dev/workspace/thecellmap/static/visualization/Science/layout.json')
+        
+    def _dump_clean_json(self, obj, f):
+        with open(f, 'wb') as out:
+            out.write(json.dumps(obj).replace(' ', ''))
+        

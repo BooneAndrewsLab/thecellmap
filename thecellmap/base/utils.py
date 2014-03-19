@@ -4,6 +4,7 @@ Created on Dec 13, 2013
 @author: matej
 '''
 from StringIO import StringIO
+import csv
 import datetime
 import fileinput
 import hotshot
@@ -14,6 +15,7 @@ import tempfile
 import time
 from types import NoneType
 
+from django.core.files.temp import NamedTemporaryFile
 from django.core.management.base import BaseCommand, CommandError
 from django.http.response import HttpResponse
 from django.utils.datastructures import SortedDict
@@ -23,7 +25,10 @@ from xlwt import Style
 import xlwt
 
 from base.models import Gene
+import numpy as np
 from thecellmap import settings
+from xlrd.biffh import XLRDError
+import xlrd
 
 
 xlwt.add_palette_colour("red_stringent", 0x21)
@@ -60,6 +65,8 @@ for typ in STYLES.keys():
     STYLES[typ] = (get_xlwt_style(xc), xxc)
 
 STYLES[STYLE_BOLD] = (xlwt.easyxf("font: bold on;"), STYLE_BOLD)
+
+INSTRUCTIONS = 'instructions'
 
 class CellMapCommand(BaseCommand):
     def get_path(self, filepath, required=True):
@@ -341,6 +348,144 @@ def write_excel_file(fd=None, type='xls', override_ext=False):
         return XlsWriter(fd)
     elif type == 'xlsx':
         return XlsxWriter(fd)
+    
+    raise BadXlsFile()
+
+class GenericXls():
+    def __init__(self, filename, sheet, name=None):
+        self.name = name
+        self.filename = filename
+        self.workbook = self._open_workbook(filename)
+        self.open_sheet(sheet)
+    
+    def _open_workbook(self, filename): raise NotImplementedError()
+    def _open_sheet(self, name): raise NotImplementedError()
+    def _get_row(self, row): raise NotImplementedError()
+    def _get_value(self, cell): raise NotImplementedError()
+    
+    def open_sheet(self, sheet):
+        if isinstance(sheet, int): sheet = self.sheets()[sheet]
+        self.sheet = self._open_sheet(sheet)
+        self.row = 0
+    
+    def skiplines(self, skip=1):
+        self.row += skip
+    
+    def reset(self):
+        self.row = 0
+    
+    def readline(self, min_columns=0, exact_columns=None):
+        if self.row >= self.rows(): return None
+        l = [self._get_value(c) for c in self._get_row(self.row)]
+        while len(l) < min_columns:
+            l.append(None)
+        
+        if exact_columns and len(l) != exact_columns:
+            raise XlsError("Error on line %s: Wrong number of columns, expected %s, got %s instead" % (self.row, exact_columns, len(l)))
+        
+        self.row += 1
+        return l
+    
+    def readlines(self, start=None, min_columns=None, exact_columns=None):
+        if start:
+            self.row = start
+        
+        while self.row < self.rows():
+            yield self.readline(min_columns, exact_columns)
+    
+    def __iter__(self):
+        for l in self.readlines():
+            yield l
+    
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            self.row = index.start
+            
+            acc = []
+            for l in self.readlines():
+                if self.row >= index.stop:
+                    break
+                acc.append(l)
+            return acc
+        else:
+            self.row = index
+            return self.readline()
+    
+class Xls(GenericXls):
+    def _open_workbook(self, filename):
+        return xlrd.open_workbook(filename=filename)
+    
+    def _open_sheet(self, name):
+        return self.workbook.sheet_by_name(name)
+    
+    def _get_row(self, row):
+        return self.sheet.row(row)
+    
+    def rows(self):
+        return self.sheet.nrows
+    
+    def sheets(self):
+        return [s.name for s in self.workbook.sheets() if s.name.lower() != INSTRUCTIONS]
+    
+    def _get_value(self, cell):
+        if cell.ctype == 3: # date
+            return datetime.datetime(*xlrd.xldate_as_tuple(cell.value, self.workbook.datemode)).strftime('%Y-%m-%d')
+        if cell.ctype == 5: # error
+            return np.nan
+        return cell.value
+    
+class Xlsx(GenericXls):
+    def _open_workbook(self, filename):
+        return openpyxl.reader.excel.load_workbook(filename)
+    
+    def _open_sheet(self, name):
+        return self.workbook.get_sheet_by_name(name)
+    
+    def _get_row(self, row):
+        return self.sheet.rows[row]
+
+    def rows(self):
+        return self.sheet.get_highest_row()
+    
+    def sheets(self):
+        return [s for s in self.workbook.get_sheet_names() if s.lower() != INSTRUCTIONS]
+    
+    def _get_value(self, cell):
+        return cell.value
+
+class Csv(GenericXls):
+    def _open_workbook(self, filename):
+        with open(filename, 'rbU') as f:
+            sniffer = csv.Sniffer()
+            self.dialect = sniffer.sniff(f.readline())
+            f.seek(0)
+            self.numlines = len(f.readlines())
+        
+        return csv.reader(open(filename, 'rbU'), self.dialect)
+    
+    def _open_sheet(self, name): pass
+    def _get_row(self, row): return self.workbook.next()
+    def rows(self): return self.numlines
+    def sheets(self): return ['csv']
+    def _get_value(self, cell): return cell
+
+def open_excel_file(filename, sheet=0, fd=None):
+    if fd and not isinstance(fd, (str, unicode)):
+        # This is stupid... oh well
+        tmp = NamedTemporaryFile(delete=True)
+        tmp.write(fd.read())
+        tmp.seek(0)
+        fd = tmp.name
+    
+    if filename.lower().endswith('xlsx'):
+        return Xlsx(fd or filename, sheet=sheet, name=filename)
+    elif filename.lower().endswith('xls'):
+        try:
+            return Xls(fd or filename, sheet=sheet, name=filename)
+        except XLRDError:
+            pass
+    elif filename.lower().endswith('csv'):
+        return Csv(fd or filename, sheet=sheet, name=filename)
     
     raise BadXlsFile()
 
