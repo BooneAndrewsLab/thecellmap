@@ -259,4 +259,4 @@ var paletteGenerator = {
 		}
 		return diffColors;
 	}
-}
+};
