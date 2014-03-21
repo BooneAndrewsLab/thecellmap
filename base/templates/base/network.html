@@ -44,6 +44,9 @@
 
 {% block js %}
 {{ block.super }}
+  <script src="{% static 'js/libs/chroma.js' %}"></script>
+  <script src="{% static 'js/libs/chroma.palette-gen.js' %}"></script>
+  
   <script src="{% static 'js/libs/isigma.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.parseJson.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.forcelayout.js' %}"></script>
@@ -65,9 +68,6 @@
   <script src="{% static 'js/libs/ladda.js' %}"></script>
   <script src="{% static 'js/libs/jquery.nouislider.js' %}"></script>
 
-  <script src="{% static 'js/libs/chroma.js' %}"></script>
-  <script src="{% static 'js/libs/chroma.palette-gen.js' %}"></script>
-  
   <script type="text/javascript">
   (function($) {
     $(document).ready(function() {
