@@ -2651,7 +2651,7 @@ function Sigma(root, id) {
     } else {
         self.dispatch('nodesonscreen');
     }
-  }).bind('mousedown mouseup ctrlclick shiftclick', function(e) {
+  }).bind('mousedown mouseup ctrlclick shiftclick shiftup', function(e) {
     eventType = (e['type'] == 'mousedown') ? 'downgraph' : 'upgraph';
     self.dispatch(eventType);
 
@@ -2689,6 +2689,12 @@ function Sigma(root, id) {
 
       // don't dispatch edge events if nodes are found.
       return;
+    } else {
+        if(e['type'] == 'shiftclick') {
+            self.dispatch('dragSelection');
+        } else if (e['type'] == 'shiftup') {
+            
+        }
     }
 
 //    targeted = self.graph.edges.filter(function(e) {
@@ -3238,6 +3244,7 @@ function MouseCaptor(dom) {
   this.mouseY = 0;
 
   this.isMouseDown = false;
+  this.isShiftMouseDown = false;
 
   /**
    * Extract the local X position from a mouse event.
@@ -3323,6 +3330,15 @@ function MouseCaptor(dom) {
       } else {
         event.returnValue = false;
       }
+    } else if (self.p.mouseEnabled && self.isShiftMouseDown) {
+      self.isShiftMouseDown = false;
+      self.dispatch('shiftup');
+      
+      if (event.preventDefault) {
+        event.preventDefault();
+      } else {
+        event.returnValue = false;
+      }
     }
   };
 
@@ -3351,6 +3367,7 @@ function MouseCaptor(dom) {
     if(event.ctrlKey || event.metaKey){
       self.dispatch('ctrlclick');
     } else if(event.shiftKey) {
+      self.isShiftMouseDown = true;
       self.dispatch('shiftclick');
     } else {
       switch (event.which) {

@@ -527,7 +527,19 @@
                                             }
                                         }
                                         
-                                        vizdata[id].colorPalette = get_color_palette(i);
+                                        var colors = paletteGenerator.generate(
+                                                i, // Colors
+                                                function(color){ // This function filters valid colors
+                                                    var hcl = color.hcl();
+                                                    return hcl[0]>=0 && hcl[0]<=360
+                                                        && hcl[1]>=0.2 && hcl[1]<=2.73
+                                                        && hcl[2]>=0.1 && hcl[2]<=1.25;
+                                                    },
+                                                true, // Using Force Vector instead of k-Means
+                                                20 // Steps (quality)
+                                            );
+                                        colors = $.map(colors, function(c){return c.hex();});
+                                        vizdata[id].colorPalette = colors;
                                     }
                                 });
                             }
