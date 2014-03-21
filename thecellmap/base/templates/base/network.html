@@ -29,11 +29,17 @@
 
 {% block cdn_js %}
 {{ block.super }}
+  {% if debug %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
+  <script src="{% static "js/libs/typeahead.min.js" %}"></script>
+  <script src="{% static "js/libs/select2.js" %}"></script>
+  {% else %}
   <script src="//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.9.3/typeahead.min.js"></script>
   <script>jQuery.fn.typeahead || document.write('<script src="{% static "js/libs/typeahead.min.js" %}"><\/script>')</script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.js"></script>
   <script>jQuery.fn.select2 || document.write('<script src="{% static "js/libs/select2.min.js" %}"><\/script>')</script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
+  {% endif %}
 {% endblock cdn_js %}
 
 {% block js %}
@@ -76,7 +82,11 @@
                     parser: "json",
                     dataset: 1
                 },
-            annotations: [],
+            annotations: [{% for annot in annotations %}{
+                    id: {{ annot.id }},
+                    name: "{{ annot.name }}",
+                    url: "{% url 'annotation' annot.id %}"
+                },{% endfor %}],
             datasets: [{
                 id: "{{ dataset.id }}",
                 url: "{{ dataset.static_url }}/correlations.json",

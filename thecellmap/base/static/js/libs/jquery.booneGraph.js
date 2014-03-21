@@ -85,7 +85,7 @@
                         attraction: 50,
                         repulsion: 1
                     },
-                    annotation: 1, // TODO: unused
+                    annotation: 'None',
                     dataset: 0
             };
             var undo = null;
@@ -125,6 +125,8 @@
                     $('#canvas-background-color').val(ns.style.global.background).focus().blur().change(); // Stupid but effective
                 } if (ns.dataset != state.dataset) {
                     $("#dataset-switch").val(ns.dataset, true);
+                } if (ns.annotation != state.annotation) {
+                    loadAnnotation(ns.annotation);
                 }
                 
                 if (newState.nodes != null) {
@@ -320,11 +322,11 @@
 
             function setNodeColor(node, color) {
                 if (color == undefined) {
-                    var annot = vizdata[vizdata.loaded_annot].map[node.id];
+                    var annot = vizdata[state.annotation].map[node.id];
                     if (annot != undefined) {
-                        color = vizdata[vizdata.loaded_annot].colorPalette[vizdata[vizdata.loaded_annot].terms[annot[0]].idx];
+                        color = vizdata[state.annotation].colorPalette[vizdata[state.annotation].terms[annot[0]].idx];
                     } else {
-                        color = vizdata[vizdata.loaded_annot].defaultColor;
+                        color = vizdata[state.annotation].defaultColor;
                     }
                 }
                 
@@ -441,7 +443,7 @@
                 if (preloaded == undefined) {
                     getParser(dataset.parser)({
                             jq: $, sigInst: sigInst, url: dataset.url, vizdata: vizdata, cb: loadDatasetCallback,
-                            data: data, method: dataset.method
+                            data: data, method: dataset.method, state: state
                         });
                 } else {
                     loadDatasetCallback(null, preloaded.edges);
@@ -490,13 +492,13 @@
                     vizdata['edges'] = {};
                 }
                 getParser(layout.parser)({
-                    jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback
+                    jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback, state: state
                 });
             }
 
             function loadAnnotation(id) {
-                vizdata.loaded_annot = id;
-
+                state.annotation = id;
+                
                 if (vizdata[id] == undefined) {
                     if (id == 'None') {
                         vizdata[id] = {
@@ -507,8 +509,6 @@
                     } else {
                         opts.annotations.forEach(function(annotation) {
                             if (annotation.name === id) {
-                                console.log(annotation);
-                                
                                 $.ajax({
                                     url : annotation.url,
                                     dataType : 'json',
@@ -522,10 +522,9 @@
                                         var i = 0, n;
                                         for (n in vizdata[id].terms) {
                                             vizdata[id].terms[n] = {
-                                                    idx : i,
+                                                    idx : i++,
                                                     name : vizdata[id].terms[n]
                                             }
-                                            i++;
                                         }
                                         
                                         vizdata[id].colorPalette = get_color_palette(i);
@@ -541,12 +540,16 @@
                 sigInst.iterNodes(function(n) {
                     var strain = getStrain(n.id);
                     var annot = data.map[strain.orf];
-                    if (annot != undefined) {
+                    
+                    if (annot != undefined && annot.length == 1) {
                         n.color = data.colorPalette[data.terms[annot[0]].idx];
                     } else {
+                        // No annotation or multifunction
                         n.color = data.defaultColor;
                     }
                 }).draw();
+                
+                changeState();
             }
             
             function onNodesContext(targets) {
@@ -1490,20 +1493,16 @@
 //                        }
                     }).on('change', function(evt) {
                         var selected = getSelected();
-                        console.log('changing', tokenizing);
-                        console.log(selected);
                         
                         sigInst.iterNodes(function(node) {
                             if ($.inArray(node.id, selected) >= 0) {
-                                setNodeColor(node, "#FF0000");
-                                node.size = node.size_init; // * 3;
+                                node.selected = true;
                                 
                                 if (node.hidden) {
                                     messageUser('Gene you\'re looking for is below current threshold.')
                                 }
                             } else {
-                                setNodeColor(node);
-                                node.size = node.size_init;
+                                node.selected = false;
                             }
                         });
                         
@@ -1526,7 +1525,7 @@
                     
                     // Load plot graph in Michael Jackson mode by
                     // default
-                    loadAnnotation('None');
+                    loadAnnotation(state.annotation);
                     loadLayout();
                 });
                 
