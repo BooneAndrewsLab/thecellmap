@@ -7,13 +7,14 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
-from base.models import Dataset
+from base.models import Dataset, Annotation, Term
 from base.utils import print_queries, is_integer, JsonResponse
 
 
 def _serve_dataset(request, dataset=None):
     return render(request, 'base/network.html', {
             'dataset': dataset or Dataset.get_default(),
+            'annotations': Annotation.objects.all()
       })
 
 def about(request):
@@ -89,5 +90,16 @@ def tabular_data(request, dataset_id=None, node_id=None):
     
     for strain, pval, score in s[s.score > 0].sort('score', ascending=False).itertuples(index=False):
         response['scores_pos'].append(strain + ('%.3f' % score, '%.2e' % pval))
+    
+    return JsonResponse(response)
+
+@print_queries
+def annotation(request, annotation_id):
+    response = {'terms': {}, 'map': {}}
+    
+    for orf, term_id, term in Term.genes.through.objects.filter(term__annotation=annotation_id).values_list('gene__orf', 'term_id', 'term__name'):  # @UndefinedVariable
+        response['map'].setdefault(orf, []).append(term_id)
+        if term_id not in response['terms']:
+            response['terms'][term_id] = term
     
     return JsonResponse(response)

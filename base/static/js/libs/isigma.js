@@ -1727,7 +1727,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     var size = Math.round(node['displaySize'] * 10) / 10;
     var ctx = nodesCtx;
 
-    ctx.fillStyle = node['color'];
+    ctx.fillStyle = node['selected'] ? 'red' : (node['color'] || self.p.defaultNodeColor);
     ctx.beginPath();
     ctx.arc(node['displayX'],
             node['displayY'],
@@ -2055,7 +2055,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
                (self.p.hoverFont || self.p.font || '');
 
     ctx.fillStyle = self.p.labelHoverBGColor == 'node' ?
-                    (node['color'] || self.p.defaultNodeColor) :
+                    ((node['selected'] ? 'red' : node['color']) || self.p.defaultNodeColor) :
                     self.p.defaultHoverLabelBGColor;
 
     // Label background:
@@ -2089,7 +2089,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     // Node border:
     ctx.beginPath();
     ctx.fillStyle = self.p.nodeBorderColor == 'node' ?
-                    (node['color'] || self.p.defaultNodeColor) :
+                    ((node['selected'] ? 'red' : node['color']) || self.p.defaultNodeColor) :
                     self.p.defaultNodeBorderColor;
     ctx.arc(Math.round(node['displayX']),
             Math.round(node['displayY']),
@@ -2103,7 +2103,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     // Node:
     ctx.beginPath();
     ctx.fillStyle = self.p.nodeHoverColor == 'node' ?
-                    (node['color'] || self.p.defaultNodeColor) :
+                    ((node['selected'] ? 'red' : node['color']) || self.p.defaultNodeColor) :
                     self.p.defaultNodeHoverColor;
     ctx.arc(Math.round(node['displayX']),
             Math.round(node['displayY']),
@@ -2117,7 +2117,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
 
     // Label:
     ctx.fillStyle = self.p.labelHoverColor == 'node' ?
-                    (node['color'] || self.p.defaultNodeColor) :
+                    ((node['selected'] ? 'red' : node['color']) || self.p.defaultNodeColor) :
                     self.p.defaultLabelHoverColor;
     ctx.fillText(
       node['label'],

@@ -17,4 +17,7 @@ urlpatterns = patterns('base.views',
     url(r'^dl/$', 'nodes_download', name='nodes_download_default'),
     url(r'^tabular/$', 'tabular', name='tabular_default'),
     url(r'^tabular/(?P<node_id>\d+)/$', 'tabular_data', name='tabular_fetch_default'),
+    
+    # annotation urls
+    url(r'^annotation/(?P<annotation_id>\d+)/$', 'annotation', name='annotation'),
 )
