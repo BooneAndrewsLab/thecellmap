@@ -1189,7 +1189,7 @@
                 
                 $('#style-label-color').change(function() {
                     state.style.node.lcol = $(this).val();
-                    sigInst.drawingProperties({defaultLabelColor: state.style.node.lcol}).draw(-1, -1, 1);
+                    sigInst.drawingProperties({defaultLabelColor: "#" + state.style.node.lcol}).draw(-1, -1, 1);
                     changeState();
                 });
                 
@@ -1288,7 +1288,7 @@
                     labelThreshold: state.style.node.lthr,
                     font: 'Arial',
                     edgeColor : 'white',
-                    defaultLabelColor : state.style.node.lcol,
+                    defaultLabelColor : "#" + state.style.node.lcol,
                     nodeColor : opts.defaultNodeColor,
                     defaultEdgeArrow: opts.arrows ? 'target' : 'none',
                 }).graphProperties(graphProperties).mouseProperties({
