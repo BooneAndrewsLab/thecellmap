@@ -1313,7 +1313,10 @@
                  ).bind('downnodes', onNodeClick
                  ).bind('draggedNode', function() {
                      changeNodesState()
-                 });
+                }).bind('selectionStop', function(nodes) {
+                    $("input.gene-search-input").select2("val", nodes.content, true);
+                }).bind('selectionStart', function() {
+                });
                 
                 buildUI();
                 initUI();
