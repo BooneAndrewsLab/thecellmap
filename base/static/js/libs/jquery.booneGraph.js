@@ -532,8 +532,8 @@
                                                 function(color){ // This function filters valid colors
                                                     var hcl = color.hcl();
                                                     return hcl[0]>=0 && hcl[0]<=360
-                                                        && hcl[1]>=0.2 && hcl[1]<=2.73
-                                                        && hcl[2]>=0.1 && hcl[2]<=1.25;
+                                                        && hcl[1]>=0 && hcl[1]<=3
+                                                        && hcl[2]>=0 && hcl[2]<=1.5;
                                                     },
                                                 true, // Using Force Vector instead of k-Means
                                                 20 // Steps (quality)
