@@ -2775,7 +2775,7 @@ function Sigma(root, id) {
               self.domElements.hover.width,
               self.domElements.hover.height
             );
-      self.domElements.mouse.getContext('2d').fillStyle = "rgba(0, 0, 255, 0.5)";
+      self.domElements.mouse.getContext('2d').fillStyle = "rgba(0, 0, 255, 0.2)";
       self.domElements.mouse.getContext('2d').fillRect(
               self.mousecaptor.startX, 
               self.mousecaptor.startY, 
