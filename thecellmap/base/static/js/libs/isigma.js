@@ -2691,9 +2691,19 @@ function Sigma(root, id) {
       return;
     } else {
         if(e['type'] == 'shiftclick') {
-            self.dispatch('dragSelection');
+            self.dispatch('selectionStart');
+            eventType = 'downselecting';
         } else if (e['type'] == 'shiftup') {
+            self.domElements.mouse.getContext('2d').clearRect(
+                    0,
+                    0,
+                    self.domElements.hover.width,
+                    self.domElements.hover.height
+                  );
             
+            var selection = checkRectSelection(self.mousecaptor.mouseX, self.mousecaptor.startX, self.mousecaptor.mouseY, self.mousecaptor.startY);
+            
+            self.dispatch('selectionStop', selection);
         }
     }
 
@@ -2755,12 +2765,29 @@ function Sigma(root, id) {
 //      );
 //    }
   }).bind('move', function(e) {
-    // console.log(eventType);
     if (eventType == 'downgraph' || eventType == 'downedges') {
       self.mousecaptor.drag();
       self.refresh();
-    }
-    else if (eventType == 'downnodes') {
+    } else if (eventType == 'downselecting') {
+      self.domElements.mouse.getContext('2d').clearRect(
+              0,
+              0,
+              self.domElements.hover.width,
+              self.domElements.hover.height
+            );
+      self.domElements.mouse.getContext('2d').fillStyle = "rgba(0, 0, 255, 0.5)";
+      self.domElements.mouse.getContext('2d').fillRect(
+              self.mousecaptor.startX, 
+              self.mousecaptor.startY, 
+              self.mousecaptor.mouseX - self.mousecaptor.startX, 
+              self.mousecaptor.mouseY - self.mousecaptor.startY);
+      self.domElements.mouse.getContext('2d').fillStyle = "rgba(0, 0, 255, 1)";
+      self.domElements.mouse.getContext('2d').strokeRect(
+              self.mousecaptor.startX, 
+              self.mousecaptor.startY, 
+              self.mousecaptor.mouseX - self.mousecaptor.startX, 
+              self.mousecaptor.mouseY - self.mousecaptor.startY);
+    } else if (eventType == 'downnodes') {
       draggedNode = true;
       self.graph.translateNodes(
         targeted.slice(0, 1),
@@ -3132,7 +3159,34 @@ function Sigma(root, id) {
 
     return self;
   }
-
+  
+  /**
+   * Checks which nodes are in rectangular selection.
+   * @param  {number} mX The mouse X position.
+   * @param  {number} mY The mouse Y position.
+   * @param  {number} mX The mouse X position.
+   * @param  {number} mY The mouse Y position.
+   * @return {Graph} Returns itself.
+   */
+  function checkRectSelection(X1, X2, Y1, Y2) {
+    var x1 = Math.min(X1, X2), x2 = Math.max(X1, X2), 
+        y1 = Math.min(Y1, Y2), y2 = Math.max(Y1, Y2), 
+        over = [];
+    
+    self.graph.nodes.forEach(function(node) {
+      if (node['hidden']) {
+        return;
+      }
+      
+      if (x1 <= node['displayX'] && node['displayX'] <= x2 &&
+          y1 <= node['displayY'] && node['displayY'] <= y2) {
+          over.push(node.id);
+      }
+    });
+    
+    return over;
+  };
+  
   /**
    * Draws the active nodes labels. This method is applied directly, and does
    * not use the pseudo-asynchronous tasks process.
@@ -3368,6 +3422,9 @@ function MouseCaptor(dom) {
       self.dispatch('ctrlclick');
     } else if(event.shiftKey) {
       self.isShiftMouseDown = true;
+      self.startX = self.mouseX;
+      self.startY = self.mouseY;
+      
       self.dispatch('shiftclick');
     } else {
       switch (event.which) {
@@ -3847,7 +3904,7 @@ function SigmaPublic(sigmaInstance) {
   };
 
   // Events
-  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode', function(e) {
+  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop', function(e) {
     // console.log(e.type, e.content);
     self.dispatch(e.type, e.content);
   });
