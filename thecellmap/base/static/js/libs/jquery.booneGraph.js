@@ -1314,7 +1314,7 @@
                  ).bind('draggedNode', function() {
                      changeNodesState()
                 }).bind('selectionStop', function(nodes) {
-                    $("input.gene-search-input").select2("val", nodes.content, true);
+                    $("input.gene-search-input").select2("val", getSelected().concat(nodes.content), true);
                 }).bind('selectionStart', function() {
                 });
                 
