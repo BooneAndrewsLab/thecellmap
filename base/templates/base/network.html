@@ -46,7 +46,7 @@
 {% block js %}
 {{ block.super }}
   <!-- TEMPORARY! CHANGE BACK TO OFFICIAL VERSION WHEN THEY FIX IT -->
-  <script>jQuery.fn.select2 || document.write('<script src="{% static "js/libs/select2.js" %}"><\/script>')</script>
+  <script src="{% static 'js/libs/select2.js' %}"></script>
   
   <script src="{% static 'js/libs/chroma.js' %}"></script>
   <script src="{% static 'js/libs/chroma.palette-gen.js' %}"></script>
