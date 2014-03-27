@@ -46,7 +46,8 @@
                         
                         return table.wrap('<div>').parent().html();
                     },
-                    modifiedCallback: null
+                    modifiedCallback: null,
+                    uiUrl: "url/"
             };
             
             var sliderProperties = $.extend({}, DEFAULTS.slider, o.slider || {});
@@ -124,7 +125,7 @@
                 } if (ns.style.global.background != state.style.global.background) {
                     $('#canvas-background-color').val(ns.style.global.background).focus().blur().change(); // Stupid but effective
                 } if (ns.dataset != state.dataset) {
-                    $("#dataset-switch").val(ns.dataset, true);
+                    $("#btn-group-datasets a[data-id=\"" + ns.dataset + "\"]").click();
                 } if (ns.annotation != state.annotation) {
                     loadAnnotation(ns.annotation);
                 }
@@ -370,9 +371,11 @@
                 if (undo == null) return;
                 var value = dsid || parseInt($(this).val());
                 var dataset = opts.datasets[value];
+                var dsEle = $("#btn-group-datasets a[data-id=\"" + value + "\"]");
+                $("#btn-group-datasets a").removeClass('active');
                 
                 if (value == 0) { // Correlations
-                    $("#switch-label").html('Correlations');
+                    dsEle.addClass('active');
                     updateEdges(value);
                 } else { // Interactions
                     var newVisible = [];
@@ -382,13 +385,13 @@
                     
                     if (newVisible.length > 50) {
                         alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.');
-                        $("#dataset-switch").val(0);
+                        $("#btn-group-datasets a[data-id=\"0\"]").addClass('active');
                         return;
                     }
                     
                     dataset.fetched = dataset.fetched.concat(newVisible);
                     
-                    $("#switch-label").html('Genetic interactions');
+                    dsEle.addClass('active');
                     if (!newVisible.length) {
                         updateEdges(value);
                     } else {
@@ -607,6 +610,61 @@
                 }
             }
             
+            function arangeNodes() {
+                var selected = getSelected(), xmin, xmax, ymin, ymax, n = 0;
+                if (selected.length == 0) return;
+                
+                selected.forEach(function(node){
+                    node = getNode(node);
+                    xmin = xmin ? Math.min(xmin, node.x) : node.x;
+                    xmax = xmax ? Math.max(xmax, node.x) : node.x;
+                    ymin = ymin ? Math.min(ymin, node.y) : node.y;
+                    ymax = ymax ? Math.max(ymax, node.y) : node.y;
+                });
+                
+                switch($(this).attr('id')) {
+                case "tool-arange-circle":
+                    var node, cx, cy, r, theta, alpha = Math.PI * 2 / selected.length, i = -1;
+                    cx = xmin + ((xmax - xmin) / 2);
+                    cy = ymin + ((ymax - ymin) / 2);
+                    r = (Math.abs(xmax - xmin) < Math.abs(ymax - ymin) ? Math.abs(xmax - xmin) : Math.abs(ymax - ymin)) / 2;
+                    
+                    while (++i < selected.length) {
+                        node = getNode(selected[i]);
+                        theta = alpha * i;
+                        node.x = cx + (Math.cos(theta) * r);
+                        node.y = cy + (Math.sin(theta) * r);
+                    }
+                    
+                    changeNodesState();
+                    break;
+                case "tool-arange-crescent-right":
+                    n += selected.length / 2;
+                case "tool-arange-crescent-top":
+                    n += selected.length / 2;
+                case "tool-arange-crescent-left":
+                    n += selected.length / 2;
+                case "tool-arange-crescent-bottom":
+                    var node, cx, cy, r, theta, alpha = Math.PI * 2 / (selected.length * 2), i = n - 1;
+                    cx = xmin + ((xmax - xmin) / 2);
+                    cy = ymin + ((ymax - ymin) / 2);
+                    r = (Math.abs(xmax - xmin) > Math.abs(ymax - ymin) ? Math.abs(xmax - xmin) : Math.abs(ymax - ymin)) / 2;
+                    
+                    while (++i < selected.length + n) {
+                        node = getNode(selected[i - n]);
+                        theta = alpha * i;
+                        node.x = cx + (Math.cos(theta) * r);
+                        node.y = cy + (Math.sin(theta) * r);
+                    }
+                    
+                    changeNodesState();
+                    break;
+                default: return;
+                }
+                
+                sigInst.draw();
+            }
+            
             function toggleLayout(justStop) {
                 if (opts.runningLayout) {
                     sigInst.stopForceLayout();
@@ -777,188 +835,26 @@
                 saveAs(blob, 'network_data.xgmml');
             }
             
-            function buildUI() {
-                $(".changed-network").hide().removeClass('hidden');
-                $(rootElement).append('<div id="search-bar" class="input-group"> \
-                          <span class="input-group-addon glyphicon glyphicon-search"></span> \
-                          <input class="gene-search-input form-control" type="hidden"> \
-                      </div>');
-                $(rootElement).append('<div id="cutoff-bar"></div>');
-//                $(rootElement).append('<div id="cutoff-label"></div>');
-                $(rootElement).append('<div id="switch-container">\
-                        <div id="dataset-switch" class="pull-left" data-toggle="tooltip" data-placement="top" data-delay="500" title="Switch dataset"></div>\
-                        <span id="switch-label">Correlations</span>\
-                      </div>');
+            function buildNewUI() {
+                $.ajax(opts.uiUrl, {
+                    async: false,
+                    processData: false,
+                    success: function(data) {
+                        $(rootElement).append($('<div class="vizualization-ui" style="display: none;">').html(data));
+                    }
+                  });
                 
-                var menuBar = $('<div id="menu-bar">');
-                menuBar.append('<div id="btn-group-neighbourhood" class="hidden btn-group"> \
-                        <button type="button" class="btn btn-primary">Neighbourhood</button> \
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
-                          <span class="caret"></span> \
-                          <span class="sr-only">Toggle Dropdown</span> \
-                        </button> \
-                        <ul class="dropdown-menu" role="menu"> \
-                          <li><a href="#">Remove selection</a></li> \
-                          <li class="divider"></li> \
-                          <li><a href="#" data-toggle="download">Selected genes only</a></li> \
-                          <li><a href="#" data-toggle="download">1st neighbours</a></li> \
-                          <li><a href="#" data-toggle="download">2nd neighbours</a></li> \
-                          <li><a href="#" data-toggle="download">3rd neighbours</a></li> \
-                        </ul> \
-                      </div>');
+                $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide);
                 
                 if (opts.annotations.length > 0) {
-                    menuBar.append('<div id="btn-group-annotation" class="btn-group"> \
-                            <button type="button" class="btn btn-primary">Annotation</button> \
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
-                              <span class="caret"></span> \
-                              <span class="sr-only">Toggle Dropdown</span> \
-                            </button> \
-                            <ul class="dropdown-menu" role="menu"> \
-                              <li><a href="#">None</a></li> \
-                              <li class="divider"></li> \
-                            </ul> \
-                          </div>');
-                    
                     opts.annotations.forEach(function(annotation) {
-                        menuBar.find('#btn-group-annotation .dropdown-menu').append('<li><a href="#">' + annotation.name + '</a></li>');
+                        $('#btn-group-annotation .dropdown-menu').append('<li><a href="#">' + annotation.name + '</a></li>');
                     });
                 }
-                
-                menuBar.append('<div id="btn-group-layout" class="btn-group"> \
-                        <button id="btn-layout" type="button" class="btn btn-primary">Layout</button> \
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
-                          <span class="caret"></span> \
-                          <span class="sr-only">Toggle Dropdown</span> \
-                        </button> \
-                        <ul class="dropdown-menu" role="menu"> \
-                          <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li> \
-                        <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li> \
-                        </ul> \
-                      </div>');
-                menuBar.find('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide);
-                menuBar.append('<button id="btn-style" type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-style">Style</button>');
-                $(rootElement).append(menuBar);
-                
-                var download_bar = $('<div id="download-bar" class="input-group"></div>');
-                download_bar.append('<div id="btn-group-download" class="btn-group"> \
-                        <button id="btn-view" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button> \
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> \
-                          <span class="caret"></span> \
-                          <span class="sr-only">Toggle Dropdown</span> \
-                        </button> \
-                        <ul class="dropdown-menu" role="menu"> \
-                            <li><a id="view-tabular" href="#"><span class="glyphicons table"></span> View data in table form</a></li> \
-                            <li class="divider"></li> \
-                            <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span> Download visible network</a></li> \
-                            <li><a id="download-selected" href="#"><span class="filetype-icon xls"></span> Download data for selected genes</a></li> \
-                            <li><a id="download-dataset" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li> \
-                            <li class="divider"></li> \
-                            <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li> \
-                        </ul> \
-                      </div>');
-                download_bar.find("#download-selected").toggleClass('disabled');
-                download_bar.find("#download-dataset").toggleClass('disabled');
-                $(rootElement).append(download_bar);
-                
-                $('body').append('<div id="alerts-panel"></div>');
-                $('body').append('<div class="modal fade" id="modal-style" tabindex="-1" role="dialog" aria-labelledby="modal-style-label" aria-hidden="true"> \
-                            <div class="modal-dialog"> \
-                            <div class="modal-content"> \
-                              <div class="modal-header"> \
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> \
-                                <h4 class="modal-title" id="modal-style-label">Network style</h4> \
-                              </div> \
-                              <div class="modal-body"> \
-                                <ul id="style-tabs" class="nav nav-pills nav-justified"> \
-                                  <li class="active"><a href="#style-node" data-toggle="tab">Node</a></li> \
-                                  <li><a href="#style-edge" data-toggle="tab">Edge</a></li> \
-                                  <li><a href="#style-general" data-toggle="tab">General</a></li> \
-                                </ul> \
-                                <div class="tab-content"> \
-                                  <div class="tab-pane fade in active" id="style-node"> \
-                                    <ul class="list-group"> \
-                                      <li class="list-group-item">Node size: <div id="style-slider-nsize"></div></li> \
-                                      <li class="list-group-item">Label size: <div id="style-slider-lsize"></div></li> \
-                                      <li class="list-group-item">Label threshold: <div id="style-slider-lthresh"></div></li> \
-                                      <li class="list-group-item">Label color: <input id="style-label-color" value="fff" name="label-color" class="pick-a-color"></li> \
-                                    </ul> \
-                                  </div> \
-                                  <div class="tab-pane fade" id="style-edge"> \
-                                    <ul class="list-group"> \
-                                      <li class="list-group-item">Edge width: <div id="style-slider-esize"></div></li> \
-                                    </ul> \
-                                  </div> \
-                                  <div class="tab-pane fade" id="style-general"> \
-                                    <ul class="list-group"> \
-                                      <li class="list-group-item">Background color: <input id="canvas-background-color" value="222222" name="background-color" class="pick-a-color"></li> \
-                                    </ul> \
-                                  </div> \
-                                </div> \
-                              </div> \
-                              <div class="modal-footer"> \
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
-                                <button id="btn-style-default" type="button" class="btn btn-primary">Revert to defaults</button> \
-                              </div> \
-                            </div><!-- /.modal-content --> \
-                          </div><!-- /.modal-dialog --> \
-                        </div><!-- /.modal -->');
-                
-                $('body').append('<div id="contextmenu-container" class="dropdown clearfix" style="display: none;"> \
-                        <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block;position:static;margin-bottom:5px;"> \
-                          <li><a id="context-info" tabindex="-1" href="#"><span class="glyphicon glyphicon-info-sign"></span> Show info</a></li> \
-                          <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li> \
-                          <li class="divider"></li> \
-                          <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit node</a></li> \
-                          <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li> \
-                        </ul> \
-                      </div>');
-                
-                $(rootElement).append('<div id="zoom-box">\
-                          <div class="btn-group-vertical">\
-                            <button id="btn-home" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home" data-toggle="tooltip" data-placement="left" data-delay="500" title="Center view"></span></button>\
-                          </div>\
-                          <div class="btn-group-vertical">\
-                            <button id="btn-zoom-in" type="button" class="btn btn-default"><span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" data-placement="left" data-delay="500" title="Zoom in"></span></button>\
-                            <button id="btn-zoom-out" type="button" class="btn btn-default"><span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" data-placement="left" data-delay="500" title="Zoom out"></span></button>\
-                          </div>\
-                          <div class="btn-group-vertical">\
-                            <button id="btn-fullscreen" type="button" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen" data-toggle="tooltip" data-placement="left" data-delay="500" title="Fullscreen"></span></button>\
-                            <button id="btn-snapshot" type="button" class="btn btn-default"><span class="glyphicon glyphicon-camera" data-toggle="tooltip" data-placement="left" data-delay="500" title="Network snapshot"></span></button>\
-                          </div>\
-                        </div>');
-                
-                $('body').append('<div class="modal fade" id="edit-node-modal" tabindex="-1" role="dialog" aria-labelledby="edit-node-modal-label" aria-hidden="true"> \
-                        <div class="modal-dialog"> \
-                        <div class="modal-content"> \
-                          <div class="modal-header"> \
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> \
-                            <h4 class="modal-title" id="edit-node-modal-label"></h4> \
-                          </div> \
-                          <div class="modal-body"> \
-                            <form class="form-horizontal" role="form"> \
-                              <input type="hidden" id="edit-node-id"> \
-                              <div class="form-group"> \
-                                <label for="edit-node-label" class="col-sm-2 control-label">Label</label> \
-                                <div class="col-sm-10"> \
-                                  <input type="text" class="form-control" id="edit-node-label" placeholder="Label"> \
-                                </div> \
-                              </div> \
-                              <div class="form-group"> \
-                                <label for="edit-node-color" class="col-sm-2 control-label">Color</label> \
-                                <div class="col-sm-10"> \
-                                  <input class="form-control pick-a-color" id="edit-node-color"> \
-                                </div> \
-                              </div> \
-                            </form> \
-                          </div> \
-                          <div class="modal-footer"> \
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
-                            <button type="button" class="btn btn-primary modal-confirm">Confirm</button> \
-                          </div> \
-                        </div> \
-                      </div> \
-                    </div>');
+                $(".changed-network").hide().removeClass('hidden');
+                $("#modal-style").appendTo("body");
+                $("#contextmenu-container").appendTo("body");
+                $("#edit-node-modal").appendTo("body");
             }
             
             function initUI() {
@@ -1130,14 +1026,8 @@
                     }
                 });
                 
-                $("#dataset-switch").addClass('toggle').noUiSlider({
-                    range: [0, 1],
-                    start: 0,
-                    handles: 1,
-                    step: 1,
-                    orientation: "horizontal",
-                    connect: "upper",
-                    set: switchDataset
+                $("#btn-group-datasets a").click(function(){
+                    switchDataset($(this).attr('data-id'));
                 });
                 
                 /*
@@ -1178,7 +1068,7 @@
                         $("#network-container").requestFullScreen();
                     }
                 });
-                $('#btn-snapshot').click(downloadCanvasSnapshot);
+                $('#tool-snapshot').click(downloadCanvasSnapshot);
                 
                 $('#btn-zoom-in').click(function() {
                     var position = sigInst.position();
@@ -1209,22 +1099,22 @@
                  * Prevent context menu, we want our own
                  * rightclick functionality
                  */
-                $("#network-container").contextmenu(function() {
-                    return false;
-                });
-                // sigh... disable context menu on context menu
-                // b/c its not in the other container
-                $("#contextmenu-container").contextmenu(function() {
-                    return false;
-                });
-                // Nice effects, stop any animations on enter,
-                // hide on leave, hide if not entered (code in
-                // callback above)
-                $("#contextmenu-container").mouseleave(function() {
-                    $(this).delay(500).hide();
-                }).mouseenter(function() {
-                    $(this).stop(true);
-                });
+//                $("#network-container").contextmenu(function() {
+//                    return false;
+//                });
+//                // sigh... disable context menu on context menu
+//                // b/c its not in the other container
+//                $("#contextmenu-container").contextmenu(function() {
+//                    return false;
+//                });
+//                // Nice effects, stop any animations on enter,
+//                // hide on leave, hide if not entered (code in
+//                // callback above)
+//                $("#contextmenu-container").mouseleave(function() {
+//                    $(this).delay(500).hide();
+//                }).mouseenter(function() {
+//                    $(this).stop(true);
+//                });
                 
                 $("#contextmenu a").click(function() {
                     switch ($(this).attr('id')) {
@@ -1291,6 +1181,12 @@
                     sigInst.draw();
                     modal.modal('hide');
                 });
+                
+                $(".tool-arange a").click(arangeNodes);
+            };
+            
+            function showUI() {
+                $(".vizualization-ui").show();
             }
             
             function init() {
@@ -1318,7 +1214,8 @@
                 }).bind('selectionStart', function() {
                 });
                 
-                buildUI();
+//                buildUI();
+                buildNewUI();
                 initUI();
                 
                 if (opts.highlight) sigInst.hoverHighlight(opts);
@@ -1531,6 +1428,7 @@
                             
                             if (!($(selected).not(state.selection).length == 0 && $(state.selection).not(selected).length == 0)) {
                                 state.selection = getSelected();
+                                $(".tool-arange").toggleClass("disabled", state.selection.length == 0);
                                 changeState();
                             }
                         }
@@ -1538,11 +1436,14 @@
                         console.log("BLURRRRRRRRR");
                     });
                     
+                    showUI();
+                    
                     // Load plot graph in Michael Jackson mode by
                     // default
                     loadAnnotation(state.annotation);
                     loadLayout();
                 });
+                
                 
                 $(document).mousemove(updateMousePosition);
             }

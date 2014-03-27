@@ -1,5 +1,5 @@
-#btn-group-download li:first-child {
-    height: 30px;
+body {
+    overflow: hidden;
 }
 
 /* Stupid stupid stupid hack */
@@ -44,95 +44,14 @@ a.disabled {
     width: 210px !important;
 }
 
+.btn-group .dropdown-menu.menu-right {
+    left: 0;
+    right: auto;
+}
+
 .btn-group .dropdown-menu {
     left: auto;
     right: 0;
-}
-
-#cutoff-bar {
-    position: absolute;
-    z-index: 100;
-    right: 22px;
-    bottom: 210px;
-    height: 250px;
-}
-
-#cutoff-bar .noUi-handle {
-    opacity: 0.9;
-}
-
-#cutoff-label {
-    position: absolute;
-    z-index: 100;
-    left: 10px;
-    bottom: 10px;
-    color: white;
-}
-
-#switch-container {
-    position: absolute;
-    z-index: 100;
-    left: 20px;
-    bottom: 10px;
-}
-
-#dataset-switch {
-    width: 40px;
-}
-
-#switch-label {
-    color: white;
-    margin-left: 20px;
-}
-
-#dataset-switch .noUi-connect {
-    background: -webkit-linear-gradient(left, #ff0000 , green); /* For Safari 5.1 to 6.0 */
-    background: -o-linear-gradient(right, #ff0000, green); /* For Opera 11.1 to 12.0 */
-    background: -moz-linear-gradient(right, #ff0000, green); /* For Firefox 3.6 to 15 */
-    background: linear-gradient(to right, #ff0000 , green); /* Standard syntax */
-}
-
-button:hover {
-    background: none;
-    background-image: none;
-}
-
-#zoom-box {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    z-index: 100;
-    padding: 10px;
-}
-
-#zoom-box > * {
-    display: block;
-    margin-top: 5px;
-}
-
-#search-bar {
-    position: absolute;
-    width: 389px;
-    z-index: 100;
-    padding: 10px;
-}
-
-#download-bar {
-    position: absolute;
-    z-index: 100;
-    padding: 10px;
-    left: 389px;
-}
-
-#menu-bar {
-    position: absolute;
-    z-index: 100;
-    padding: 10px;
-    right: 0;
-}
-
-#menu-bar > * {
-    margin: 0px 5px;
 }
 
 .input-group .glyphicon {
@@ -140,71 +59,14 @@ button:hover {
 }
 
 .sigma-parent {
-    border-radius: 4px 4px 4px 4px;
     min-height: 400px;
     height: 100%;
-    position: relative;
 }
 
 .sigma-expand {
     background: #222222;
     border-radius: 8px;
     height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 100%;
-}
-
-.menu-container {
-    position: absolute;
-    width: 150px;
-    z-index: 100;
-}
-
-#menu-container li.ui-menu-item, #menu-container li.ui-menu-divider {
-    display: none;
-    overflow: hidden;
-}
-
-#menu-container {
-    top: 260px;
-    left: 10px;
-    transition: width .3s ease-out, height .3s;
-    -webkit-transition: width .3s ease-out, height .3s; /* Safari */
-    width: 60px;
-    height: 20px;
-    z-index: 101;
-}
-
-#menu-container:hover li.ui-menu-item, #menu-container:hover li.ui-menu-divider {
-    display: block;
-}
-
-#menu-container:hover {
-    width: 150px;
-    height: auto;
-}
-
-#selection-menu-container {
-    bottom: 0;
-    left: 0;
-}
-
-#selection-menu-container .selected-node-item {
-    line-height: 1;
-    font-weight: 200;
-    padding: 1px 0.4em;
-}
-
-input.labelText, textarea.labelText {
-    color:#AAA;
-}
-
-input[type=color] {
-    width: 100%;
-    height: 20px;
-    padding: 0px;
 }
 
 #contextmenu-container {
@@ -213,72 +75,72 @@ input[type=color] {
     z-index: 100;
 }
 
-#navigation {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 60px;
-    z-index: 1;
-}
-
-#neighbours {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 60px;
-    z-index: 1;
-}
-
-.slider-vertical {
-    height: 200px;
-    margin: 0px auto;
-}
-
-.slider-label {
-    margin: 0px auto;
-    padding: 5px;
-    margin-top: 8px;
-    text-align: center;
-    height: 21px;
-}
-
-#content {
-    margin: 0;
-}
-
-#modal-overlay {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    z-index: 500;
-}
-
 .dialog-field {
     margin: 2px 0px;
 }
 
-#legend input[type=color], #legend .sp-replacer {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-}
-
-#legend .sp-replacer {
-    width: 15px; /* 15+1border+4padding=20px */
-    height: 15px; 
-    border: 1px #ccc solid;
-    border-radius: 3px;
-    background-color: white;
-}
-
-#legend .sp-preview {
-    border: none;
-    float: none;
-    margin: 0;
-    width: auto;
-    height: 100%;
-}
-
 .form-group .input-group-btn {
     width: 1% !important;
+}
+
+/** VIZ UI **/
+.vizualization-ui {
+    padding: 5px 5px; /* make a nice 5px gap between ui and network border */
+    pointer-events: none;
+    position: absolute;
+}
+
+.vizualization-ui > * {
+    pointer-events: auto;
+    position: absolute;
+}
+
+.top-right {
+    right: 5px;
+}
+
+.bottom-left {
+    bottom: 5px;
+}
+
+.bottom-right {
+    bottom: 5px;
+    right: 5px;
+}
+
+.middle-right {
+    right: 5px;
+    top: 0px;
+    height: 100%;
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+#cutoff-bar {
+    min-height: 100px;
+    max-height: 300px;
+    height: 50%;
+    margin-bottom: 20px;
+    margin-left: 11px;
+}
+
+.select2-choices {
+    max-height: 300px;
+    overflow-y: auto!important;
+}
+
+#btn-group-download {
+    vertical-align: top;
+}
+
+.dropdown-menu a > span.glyphicons {
+    font-size: 16px;
+}
+
+.dropdown-menu a > span:nth-child(2) {
+    vertical-align: middle;
+}
+
+#btn-group-datasets .dropdown-menu {
+    padding: 0px;
 }
