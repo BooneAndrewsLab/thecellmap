@@ -1,0 +1,114 @@
+<div class="row">
+  <div class="col-md-6 ui-col">
+    <div class="float-children">
+      <div id="search-bar" class="input-group">
+        <span class="input-group-addon glyphicon glyphicon-search"></span>
+        <input class="gene-search-input form-control" type="hidden">
+      </div>
+      <div id="download-bar">
+        <div id="btn-group-download" class="btn-group">
+          <button id="btn-view" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button>
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a id="view-tabular" href="#"><span class="glyphicons table"></span> View data in table form</a></li>
+            <li class="divider"></li>
+            <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span> Download visible network</a></li>
+            <li><a id="download-selected" class="disabled" href="#"><span class="filetype-icon xls"></span> Download data for selected genes</a></li>
+            <li><a id="download-dataset" class="disabled" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li>
+            <li class="divider"></li>
+            <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 ui-col">
+    <div class="pull-right">
+      <div id="btn-group-neighbourhood" class="hidden btn-group">
+        <button type="button" class="btn btn-primary">Neighbourhood</button>
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="#">Remove selection</a></li>
+          <li class="divider"></li>
+          <li><a href="#" data-toggle="download">Selected genes only</a></li>
+          <li><a href="#" data-toggle="download">1st neighbours</a></li>
+          <li><a href="#" data-toggle="download">2nd neighbours</a></li>
+          <li><a href="#" data-toggle="download">3rd neighbours</a></li>
+        </ul>
+      </div>
+      <div id="btn-group-annotation" class="btn-group">
+        <button type="button" class="btn btn-primary">Annotation</button>
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="#">None</a></li>
+          <li class="divider"></li>
+        </ul>
+      </div>
+      <div id="btn-group-layout" class="btn-group">
+        <button id="btn-layout" type="button" class="btn btn-primary">Layout</button>
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+          <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li>
+          <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li>
+        </ul>
+      </div>
+      <button id="btn-style" type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-style">Style</button>
+    </div>
+  </div>
+</div>
+
+<div class="row cutoff-row">
+  <div class="col-md-offset-11 col-md-1 ui-col">
+    <div>
+      <div id="cutoff-bar"></div>
+      <div class="btn-group-vertical">
+        <button id="btn-zoom-in" type="button" class="btn btn-default">
+          <span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" data-placement="left" data-delay="500"
+            title="Zoom in"></span>
+        </button>
+        <button id="btn-home" type="button" class="btn btn-default">
+          <span class="glyphicon glyphicon-home" data-toggle="tooltip" data-placement="left" data-delay="500"
+            title="Center view"></span>
+        </button>
+        <button id="btn-zoom-out" type="button" class="btn btn-default">
+          <span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" data-placement="left" data-delay="500"
+            title="Zoom out"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 ui-col">
+    <div id="btn-group-tools" class="btn-group dropup">
+      <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Datasets <span class="caret"></span></button>
+      <ul class="dropdown-menu menu-right" role="menu">
+        <li><a id="dataset-correlations" href="#"><span class="glyphicons camera"></span> Correlations</a></li>
+        <li><a id="dataset-interactions" href="#"><span class="glyphicons camera"></span> Genetic interactions</a></li>
+      </ul>
+    </div>
+<!--     <div id="switch-container"> -->
+<!--       <div id="dataset-switch" class="pull-left" data-toggle="tooltip" data-placement="top" data-delay="500" title="Switch dataset"></div> -->
+<!--       <span id="switch-label">Correlations</span> -->
+<!--     </div> -->
+  </div>
+  <div class="col-md-6 ui-col">
+    <div class="pull-right">
+      <div id="btn-group-tools" class="btn-group dropup">
+        <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Tools <span class="caret"></span></button>
+        <ul class="dropdown-menu" role="menu">
+          <li><a id="tool-snapshot" href="#"><span class="glyphicons camera"></span> Take a snapshot</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
