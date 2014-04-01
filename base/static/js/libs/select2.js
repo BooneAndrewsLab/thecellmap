@@ -3000,7 +3000,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 this.opts.element.val(distinct.length === 0 ? "" : distinct.join(this.opts.separator));
             }
         },
-
+        
         // multi
         buildChangeDetails: function (old, current) {
             var current = current.slice(0),
@@ -3017,6 +3017,7 @@ the specific language governing permissions and limitations under the Apache Lic
                         old.splice(j, 1);
                         j--;
                     }
+                    if (current.length == 0) break;
                 }
             }
 

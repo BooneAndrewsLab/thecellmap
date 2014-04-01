@@ -60,10 +60,15 @@
             var rootElement = $(this)[0];
             
             /* Common vars */
+            var Link = $.noUiSlider.Link;
             var sigInst = null;
             var vizdata = {};
             var mouseX, mouseY;
             var hoveredTargets = null;
+            var clicking = {
+                    wasDragging: false,
+                    modifierKey: null
+            };
             
             var state = {
                     selection: [],
@@ -111,7 +116,7 @@
                 if (!($(ns.selection).not(state.selection).length == 0 && $(state.selection).not(ns.selection).length == 0)) {
                     $("input.gene-search-input").select2("val", ns.selection, true);
                 } if (ns.cutoff != state.cutoff) {
-                    $("#cutoff-bar").val(ns.cutoff, true);
+                    $("#cutoff-bar-cor").val(ns.cutoff, {set: true});
                 } if (ns.style.node.nsize != state.style.node.nsize) {
                     $('#style-slider-nsize').val(ns.style.node.nsize, true);
                 } if (ns.style.node.lsize != state.style.node.lsize) {
@@ -173,6 +178,12 @@
             
             function log(msg) {
                 if (opts.debug) console.log(msg);
+            };
+            
+            function countVisibleNodes() {
+                return sigInst._core.graph.nodes.filter(function(node) {
+                    return !node.hidden;
+                }).length;
             };
             
             function iterVisibleNodes(func, ids) {
@@ -376,6 +387,7 @@
                 
                 if (value == 0) { // Correlations
                     dsEle.addClass('active');
+                    $("#selected-dataset").html("Correlations");
                     updateEdges(value);
                 } else { // Interactions
                     var newVisible = [];
@@ -386,12 +398,15 @@
                     if (newVisible.length > 50) {
                         alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.');
                         $("#btn-group-datasets a[data-id=\"0\"]").addClass('active');
+                        $("#selected-dataset").html("Correlations");
                         return;
                     }
                     
                     dataset.fetched = dataset.fetched.concat(newVisible);
                     
                     dsEle.addClass('active');
+                    $("#selected-dataset").html("Genetic interactions");
+                    
                     if (!newVisible.length) {
                         updateEdges(value);
                     } else {
@@ -406,6 +421,8 @@
             function updateEdges(ds) {
                 var minWeight = null;
                 var maxWeight = null;
+                var ele = $(".cutoff-bar[data-dataset=\"" + ds + "\"]");
+                
                 sigInst._core.graph.edges.forEach(function(edge) {
                     if (!edge.hasOwnProperty('ds')) {
                         edge.ds = ds;
@@ -421,8 +438,22 @@
                 });
                 
                 if (sliderProperties.updateLimits) {
-                    $("#cutoff-bar").noUiSlider({range: [minWeight, maxWeight]}, true);
+                    if (ds == 0) {
+                        console.log("updatinging", minWeight, maxWeight);
+                        ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: [minWeight]}, true);
+                    } else {
+                        ele.noUiSlider({range: {min: -1, max: 1}, start: [-0.08, 0.08]}, true);
+                    }
                 }
+                
+                if (ds == 0) {
+                    $("#cutoff-label-max").css('visibility', 'hidden');
+                } else {
+                    $("#cutoff-label-max").css('visibility', 'visible');
+                }
+                
+                $(".cutoff-bar").css('display', 'none');
+                ele.css('display', 'block');
                 
                 sigInst.draw();
             }
@@ -441,9 +472,11 @@
                     });
                     
                     updateEdges(dsid);
+                    $(".modal-backdrop").remove();
                 };
                 
                 if (preloaded == undefined) {
+                    $('<div class="modal-backdrop fade in"></div>').appendTo(document.body);
                     getParser(dataset.parser)({
                             jq: $, sigInst: sigInst, url: dataset.url, vizdata: vizdata, cb: loadDatasetCallback,
                             data: data, method: dataset.method, state: state
@@ -584,13 +617,25 @@
             }
 
             function onNodesClick(targets) {
-                var node = getNode(targets.content[0]);
-                var strain = getStrain(targets.content[0]);
-                setTimeout( function(){
-                    // HAACK
-                    log('Opening in SGD: ' + node.id + " " + strain.orf);
-                    window.open("http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=" + strain.orf);
-                }, 200); // delay 500 ms
+                switch(clicking.modifierKey) {
+                case 'ctrl':
+                    break;
+                case 'shift':
+                    console.log(getSelected().concat(targets.content), getSelected(), targets.content);
+                    $("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
+                    break;
+                default:
+                    $("input.gene-search-input").select2("val", targets.content, true);
+                    break;
+                }
+                
+//                var node = getNode(targets.content[0]);
+//                var strain = getStrain(targets.content[0]);
+//                setTimeout( function(){
+//                    // HAACK
+//                    log('Opening in SGD: ' + node.id + " " + strain.orf);
+//                    window.open("http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=" + strain.orf);
+//                }, 200); // delay 500 ms
             }
             
             function onNodeClick(targets) {
@@ -666,6 +711,11 @@
             }
             
             function toggleLayout(justStop) {
+                if (countVisibleNodes() > 300) {
+                    alertUser('Too many nodes', 'Too many nodes are visible for the layout algorithm to run efficiently.');
+                    return;
+                }
+                
                 if (opts.runningLayout) {
                     sigInst.stopForceLayout();
                     _setRunningLayout(false);
@@ -676,6 +726,7 @@
                             },
                         attraction_multiplier: $("#layout-slider-att").val(),
                         repulsion_multiplier: $("#layout-slider-rep").val(),
+                        edgeFilter: function(edge) { return edge.weight > 0; }
                     });
                     _setRunningLayout(true);
                 }
@@ -921,10 +972,9 @@
                 
                 var styleSliders = {
                     nsize: {
-                        range: [.1, 10],
+                        range: {min: .1, max: 10},
                         step: .2,
                         start: 2,
-                        handles: 1,
                         connect: "lower",
                         set: function() {
                             sigInst.graphProperties({maxNodeSize: $(this).val()}).draw();
@@ -933,10 +983,9 @@
                         }
                     },
                     lsize: {
-                        range: [1, 30],
+                        range: {min: 1, max: 30},
                         step: 1,
                         start: sigInst._core.plotter.p.defaultLabelSize,
-                        handles: 1,
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({defaultLabelSize: $(this).val()}).draw(-1, -1, 1);
@@ -945,10 +994,9 @@
                         }
                     },
                     lthresh: {
-                        range: [0, 20],
+                        range: {min: 0, max: 20},
                         step: 1,
                         start: sigInst._core.plotter.p.labelThreshold,
-                        handles: 1,
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({labelThreshold: $(this).val()}).draw(-1, -1, 1);
@@ -957,10 +1005,9 @@
                         }
                     },
                     esize: {
-                        range: [1, 30],
+                        range: {min: 1, max: 30},
                         step: 1,
                         start: 1,
-                        handles: 1,
                         connect: "lower",
                         set: function() {
                             sigInst.graphProperties({maxEdgeSize: $(this).val()}).draw();
@@ -971,7 +1018,7 @@
                 } 
                 
                 for (slider in styleSliders) {
-                    $('#style-slider-' + slider).noUiSlider(styleSliders[slider]);
+                    $('#style-slider-' + slider).noUiSlider(styleSliders[slider]).on('set', styleSliders[slider].set);
                     $('#style-slider-' + slider).attr('data-slider-default', $('#style-slider-' + slider).val());
                 }
                 
@@ -988,7 +1035,7 @@
                 
                 var layoutSliders = {
                     att: {
-                        range: [1, 100],
+                        range: {min: 1, max: 100},
                         step: 1,
                         start: 50,
                         handles: 1,
@@ -996,7 +1043,7 @@
                         set: changeState
                     },
                     rep: {
-                        range: [1, 100],
+                        range: {min: 1, max: 100},
                         step: 1,
                         start: 1,
                         handles: 1,
@@ -1006,25 +1053,44 @@
                 }
                 
                 for (slider in layoutSliders) {
-                    $('#layout-slider-' + slider).noUiSlider(layoutSliders[slider]);
+//                    $('#layout-slider-' + slider).noUiSlider(layoutSliders[slider]);
                 }
                 
-                $("#cutoff-bar").noUiSlider({
-                    range: [sliderProperties.min, sliderProperties.max],
+                $("#cutoff-bar-cor").noUiSlider({
+                    range: {min: sliderProperties.min, max: sliderProperties.max},
                     step: sliderProperties.step,
-                    start: sliderProperties.value,
-                    handles: 1,
-//                    connect: "upper",
+                    start: [sliderProperties.value],
                     direction: "rtl",
                     orientation: "vertical",
-                    set: function() {
-                        applyCutoff($(this).val());
-                        changeState();
-                    },
                     serialization: {
-                        to: [$("#cutoff-label"), 'html']
+                        lower: [new Link({target: $("#cutoff-label-min")})]
                     }
+                }).on('set', function() {
+                    applyCutoff($(this).val());
+                    changeState();
                 });
+                $("#cutoff-label-min").html(sliderProperties.value);
+                
+                $("#cutoff-bar-int").noUiSlider({
+                    range: {
+                        min: -1,
+                        max: 1
+                    },
+                    step: sliderProperties.step,
+                    start: [-0.08, 0.08],
+                    direction: "rtl",
+                    orientation: "vertical",
+                }).on('set', function() {
+                    console.log($(this).val());
+//                    applyCutoff($(this).val());
+//                    changeState();
+                }).on('slide', function() {
+                    var val = $(this).val();
+                    $("#cutoff-label-min").html(val[0]);
+                    $("#cutoff-label-max").html(val[1]);
+                });
+                
+                $("#cutoff-label").click(function() {});
                 
                 $("#btn-group-datasets a").click(function(){
                     switchDataset($(this).attr('data-id'));
@@ -1046,12 +1112,10 @@
                     
                     var position = sigInst.position();
                     var size = sigInst.size();
-                    console.log(size, position.ratio);
                     
                     var x = -(mmx.ax + mmx.zx - (2 * position.stageX) - size.w) / 2;
                     var y = -(mmx.ay + mmx.zy - (2 * position.stageY) - size.h) / 2;
                     
-                    console.log(x, y);
                     sigInst.goTo(x, y).draw();
 //                    
 //                    position = sigInst.position();
@@ -1068,7 +1132,7 @@
                         $("#network-container").requestFullScreen();
                     }
                 });
-                $('#tool-snapshot').click(downloadCanvasSnapshot);
+                $('#download-snapshot').click(downloadCanvasSnapshot);
                 
                 $('#btn-zoom-in').click(function() {
                     var position = sigInst.position();
@@ -1183,10 +1247,19 @@
                 });
                 
                 $(".tool-arange a").click(arangeNodes);
+                
+                $("#tool-rotate").click(function() {
+                    sigInst.rotateNodes({callback: function() {changeNodesState();}});
+                });
+                
+                $(".disabled a").click(function(e) {
+                    e.preventDefault();
+                    return false;
+                })
             };
             
             function showUI() {
-                $(".vizualization-ui").show();
+                $(".vizualization-ui").fadeIn(1000);
             }
             
             function init() {
@@ -1203,12 +1276,24 @@
                     drawHoverEdges: false,
                     maxRatio : 64
                 }).bind('rightclicknodes', onNodesContext
-                 ).bind('ctrlclicknodes', onNodesCtrlClick
-                 ).bind('shiftclicknodes', onNodesShiftClick
-//                 ).bind('dblclicknodes', onNodesClick
-                 ).bind('downnodes', onNodeClick
-                 ).bind('draggedNode', function() {
-                     changeNodesState()
+                 ).bind('ctrlclicknodes', function () {
+                    clicking.modifierKey = 'ctrl';
+                }).bind('shiftclicknodes', function () {
+                    console.log("setting shift");
+                    clicking.modifierKey = 'shift';
+                }).bind('upnodes', function(e) {
+                    if (!clicking.wasDragging) {
+                        onNodesClick(e);
+                    }
+                    clicking.wasDragging = false;
+                    clicking.modifierKey = null;
+                }).bind('upgraph', function(evt) {
+                    if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting) { // Clear selection
+                        clearSelection();
+                    }
+                }).bind('draggedNode', function() {
+                    clicking.wasDragging = true;
+                    changeNodesState()
                 }).bind('selectionStop', function(nodes) {
                     $("input.gene-search-input").select2("val", getSelected().concat(nodes.content), true);
                 }).bind('selectionStart', function() {
@@ -1289,7 +1374,6 @@
                                     });
                                 }
                             });
-                            
                             callback(result);
                         },
                         tokenizer: function (input, selection, selectCallback, opts) {
@@ -1344,11 +1428,10 @@
                                 }
                             }
                             
-                            if (addedNew) {
-                                
-                            }
-                            
                             tokenizing = false;
+                            if (addedNew) {
+                                this.triggerChange({foo: "bar"});
+                            }
                             if (original!==input) return input;
                         },
                         createSearchChoice: function(term) {
@@ -1356,12 +1439,13 @@
                             term = term.replace('*', '').toLowerCase();
                             
                             if (term.length > 0) {
-                                var results = [];
+                                var results = [], seen = {};
                                 
                                 autocomp.forEach(function(node) {
                                     node.tokens.forEach(function(token) {
-                                        if ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term) {
+                                        if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
                                             results.push({id: node.id, text: node.value });
+                                            seen[node.id] = 0;
                                             return;
                                         }
                                     });
@@ -1403,7 +1487,7 @@
 //                            
 //                            
 //                        }
-                    }).on('change', function(evt) {
+                    }).on('change', function(evt, a, b, c) {
                         var selected = getSelected();
                         
                         sigInst.iterNodes(function(node) {
@@ -1433,7 +1517,6 @@
                             }
                         }
                     }).on('select2-blur', function() {
-                        console.log("BLURRRRRRRRR");
                     });
                     
                     showUI();

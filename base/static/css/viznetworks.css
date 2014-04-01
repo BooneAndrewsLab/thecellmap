@@ -112,11 +112,11 @@ a.disabled {
     right: 5px;
     top: 0px;
     height: 100%;
-    padding-top: 60px;
+    padding-top: 44px;
     padding-bottom: 60px;
 }
 
-#cutoff-bar {
+.cutoff-bar {
     min-height: 100px;
     max-height: 300px;
     height: 50%;
@@ -143,4 +143,16 @@ a.disabled {
 
 #btn-group-datasets .dropdown-menu {
     padding: 0px;
+}
+
+.cutoff-label {
+    display: block;
+    width: 40px;
+    margin-bottom: 5px;
+    padding: 6px 2px;
+    text-align: center;
+}
+
+#cutoff-label-max {
+    margin-bottom: 20px;
 }
