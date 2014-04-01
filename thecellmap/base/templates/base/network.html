@@ -55,6 +55,7 @@
   <script src="{% static 'js/libs/sigma_plugins/sigma.parseJson.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.forcelayout.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.boonetools.js' %}"></script>
+  <script src="{% static 'js/libs/sigma_plugins/sigma.rotate.js' %}"></script>
   <script src="{% static 'js/libs/jquery.contextMenu.js' %}"></script>
   <script src="{% static 'js/libs/fullScreenApi.js' %}"></script>
   <script src="{% static 'js/libs/colors.js' %}"></script>
@@ -104,7 +105,7 @@
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
             debug: true,
-            layoutButtonHide: true,
+            layoutButtonHide: false,
             slider: {
                 min : 0,
                 step : 0.01,

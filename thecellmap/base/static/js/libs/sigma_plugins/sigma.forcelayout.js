@@ -13,14 +13,16 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     var forceConstant;
     var layout_iterations = 0;
     var temperature = 0;
-
+    var centre_gravity = {x: 0, y: 0};
+    var bound_box = {x: 0, y: 0};
+    
     // performance test
     var mean_time = 0;
 
     this.p = {
         attraction_multiplier : 1,
         repulsion_multiplier : .75, // 0.75
-        gravity: 10,
+        gravity: 100,
         max_iterations : 1000,
         width : 1000,
         height : 1000,
@@ -29,7 +31,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
             return !n.hidden;
         }),
         edges : this.graph.edges.filter(function(e) {
-            return !e.source.hidden && !e.target.hidden;
+            return !e.source.hidden && !e.target.hidden && !e.hidden;
         }),
         subnetworkLengths: {
         }
@@ -80,6 +82,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     }
     
     this.init = function() {
+        var xmax, xmin, ymax, ymin;
         self.p.width = self.p.nodes.length * 15;
         self.p.height = self.p.nodes.length * 15;
         
@@ -91,6 +94,10 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         attraction_constant = self.p.attraction_multiplier * forceConstant;
         repulsion_constant = self.p.repulsion_multiplier * forceConstant;
         
+        if (self.p.edgeFilter) {
+//            self.p.edges = self.p.edges.filter(self.p.edgeFilter);
+        }
+        
         self.p.nodes.forEach(function(n) {
             n.layout = {
                 offset_x : 0,
@@ -101,7 +108,16 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
                 connections : {},
                 subnetwork : null
             };
+            xmax = !xmax ? n.x : Math.max(xmax, n.x);
+            xmin = !xmin ? n.x : Math.min(xmin, n.x);
+            ymax = !ymax ? n.y : Math.max(ymax, n.y);
+            ymin = !ymin ? n.y : Math.min(ymin, n.y);
         });
+        
+        bound_box.x = Math.abs(xmax - xmin);
+        bound_box.y = Math.abs(ymax - ymin);
+        centre_gravity.x = xmin + ((xmax - xmin) / 2);
+        centre_gravity.y = ymin + ((ymax - ymin) / 2);
         
         self.traverse();
         
@@ -115,6 +131,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         var edges = p.edges;
         var lens = p.subnetworkLengths;
         var m = p.subnetworkLengths.mean;
+        var new_box;
 
         var start = new Date().getTime();
 
@@ -171,10 +188,10 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
             node_u.layout.offset_x += (delta_x / delta_length) * force;
             node_u.layout.offset_y += (delta_y / delta_length) * force;
         });
-
+        
         nodes.forEach(function(n) {
             // Gravity
-            var d = Math.sqrt(n.x * n.x + n.y * n.y);
+            var d = Math.sqrt((n.x - centre_gravity.x) * (n.x - centre_gravity.x) + (n.y - centre_gravity.y) * (n.y - centre_gravity.y));
             var gf = forceConstant * p.gravity * d * 0.0001;
             
             n.layout.offset_x -= gf * n.layout.offset_x / d;
@@ -185,14 +202,17 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         nodes.forEach(function(node) {
             delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset_x * node.layout.offset_x
                     + node.layout.offset_y * node.layout.offset_y));
-
+            
             node.layout.tmp_pos_x += (node.layout.offset_x / delta_length) * Math.min(delta_length, temperature);
             node.layout.tmp_pos_y += (node.layout.offset_y / delta_length) * Math.min(delta_length, temperature);
 
             node.x -= (node.x - node.layout.tmp_pos_x) / 10;
             node.y -= (node.y - node.layout.tmp_pos_y) / 10;
         });
-
+        
+        // calculate if expanding or contracting
+        new_box = self.calc_bound_box();
+        
         temperature *= (1 - (layout_iterations / p.max_iterations));
         layout_iterations++;
 
@@ -208,6 +228,19 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     
     this.temp = function() {
         return temperature;
+    }
+    
+    this.calc_bound_box = function() {
+        var xmax, xmin, ymax, ymin, box = {};
+        self.p.nodes.forEach(function(n) {
+            xmax = !xmax ? n.x : Math.max(xmax, n.x);
+            xmin = !xmin ? n.x : Math.min(xmin, n.x);
+            ymax = !ymax ? n.y : Math.max(ymax, n.y);
+            ymin = !ymin ? n.y : Math.min(ymin, n.y);
+        });
+        box.x = Math.abs(xmax - xmin);
+        box.y = Math.abs(ymax - ymin);
+        return box;
     }
 };
 

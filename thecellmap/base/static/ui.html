@@ -28,13 +28,20 @@ $('.vizualization-ui').ready(function() {
       <li><a id="download-dataset" class="disabled" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li>
       <li class="divider"></li>
       <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li>
+      <li><a id="download-snapshot" href="#"><span class="filetype-icon png"></span> Export visible network to png</a></li>
     </ul>
   </div>
 </div>
 
 
 <div class="middle-right">
-  <div id="cutoff-bar"></div>
+  <button id="cutoff-label-max" type="button" class="btn btn-default cutoff-label" style="visibility: hidden;">&nbsp;</button>
+  
+  <div id="cutoff-bar-cor" class="cutoff-bar" data-dataset="0"></div>
+  <div id="cutoff-bar-int" class="cutoff-bar" data-dataset="1" style="display: none;"></div>
+  
+  <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label"></button>
+  
   <div class="btn-group-vertical">
     <button id="btn-zoom-in" type="button" class="btn btn-default">
       <span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" data-placement="left" data-delay="500"
@@ -53,10 +60,7 @@ $('.vizualization-ui').ready(function() {
 
 <div class="top-right">
   <div id="btn-group-neighbourhood" class="hidden btn-group">
-    <button type="button" class="btn btn-primary">Neighbourhood</button>
-    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-      <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
-    </button>
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Neighbourhood <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a href="#">Remove selection</a></li>
       <li class="divider"></li>
@@ -67,45 +71,13 @@ $('.vizualization-ui').ready(function() {
     </ul>
   </div>
   
-  <div id="btn-group-annotation" class="btn-group">
-    <button type="button" class="btn btn-primary">Annotation</button>
-    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-      <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
-    </button>
-    <ul class="dropdown-menu" role="menu">
-      <li><a href="#">None</a></li>
-      <li class="divider"></li>
-    </ul>
-  </div>
-  
   <div id="btn-group-layout" class="btn-group">
     <button id="btn-layout" type="button" class="btn btn-primary">Layout</button>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li>
-      <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li>
-    </ul>
-  </div>
-  
-  <button id="btn-style" type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-style">Style</button>
-</div>
-
-<div class="bottom-left">
-  <div id="btn-group-datasets" class="btn-group dropup">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Datasets <span class="caret"></span></button>
-    <div class="list-group dropdown-menu menu-right" role="menu">
-      <a href="#" data-id="0" class="list-group-item active">Correlations</a>
-      <a href="#" data-id="1" class="list-group-item">Genetic interactions</a>
-    </div>
-  </div>
-</div>
-
-<div class="bottom-right">
-  <div id="btn-group-tools" class="btn-group dropup">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Tools <span class="caret"></span></button>
-    <ul class="dropdown-menu" role="menu">
+      <li><a id="tool-rotate" href="#"><span class="glyphicons roundabout"></span> Rotate </a></li>
       <li class="dropdown-submenu pull-left tool-arange disabled"><a tabindex="-1" href="#"><span class="glyphicons vector_path_polygon"></span><span> Arange selected nodes</span></a>
         <ul class="dropdown-menu" role="menu">
           <li><a id="tool-arange-circle" tabindex="-1" href="#">Circle</a></li>
@@ -119,8 +91,34 @@ $('.vizualization-ui').ready(function() {
           </li>
         </ul>
       </li>
-      <li><a id="tool-snapshot" href="#"><span class="glyphicons camera"></span><span> Take a snapshot</span></a></li>
+      <li class="disabled"><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack </a></li>
+
+<!--       <li><a href="#">Attraction: <div id="layout-slider-att"></div></a></li> -->
+<!--       <li><a href="#">Repulsion: <div id="layout-slider-rep"></div></a></li> -->
     </ul>
+  </div>
+  
+  <div id="btn-group-style" class="btn-group">
+    <button type="button" class="btn btn-success dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a id="btn-style" data-toggle="modal" data-target="#modal-style" href="#"><span class="glyphicons adjust_alt"></span> Visual </a></li>
+      <li id="btn-group-annotation" class="dropdown-submenu pull-left tool-arange"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>
+        <ul class="dropdown-menu" role="menu">
+          <li><a href="#">None</a></li>
+          <li class="divider"></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="bottom-left">
+  <div id="btn-group-datasets" class="btn-group dropup">
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> <span id="selected-dataset">Correlations</span> <span class="caret"></span></button>
+    <div class="list-group dropdown-menu menu-right" role="menu">
+      <a href="#" data-id="0" class="list-group-item active">Correlations</a>
+      <a href="#" data-id="1" class="list-group-item">Genetic interactions</a>
+    </div>
   </div>
 </div>
 
