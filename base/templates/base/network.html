@@ -96,11 +96,11 @@
                     url: "{% url 'annotation' annot.id %}"
                 },{% endfor %}],
             datasets: [{
-                id: "{{ dataset.id }}",
-                url: "{{ dataset.static_url }}/correlations.json",
-                name: "Correlations",
-                parser: "json",
-                type: 1
+                  id: "{{ dataset.id }}",
+                  url: "{{ dataset.static_url }}/correlations.json",
+                  name: "Correlations",
+                  parser: "json",
+                  type: 1
             }],
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
