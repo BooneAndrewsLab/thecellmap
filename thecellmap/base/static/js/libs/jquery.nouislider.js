@@ -1,24 +1,1650 @@
 /*! $.noUiSlider - WTFPL - refreshless.com/nouislider/ */
-(function(e){function h(a){throw new RangeError("noUiSlider: "+a);}function x(a,b,d){(a[b]||a[d])&&a[b]===a[d]&&h("(Link) '"+b+"' can't match '"+d+"'.'")}function t(a){return"number"===typeof a&&!isNaN(a)&&isFinite(a)}function H(a){return e.isArray(a)?a:[a]}function D(a,b){a.addClass(b);setTimeout(function(){a.removeClass(b)},300)}function y(a,b){return 100*b/(a[1]-a[0])}function I(a,b){if(b>=a.d.slice(-1)[0])return 100;for(var d=1,c,g,e;b>=a.d[d];)d++;c=a.d[d-1];g=a.d[d];e=a.c[d-1];c=[c,g];return e+
-y(c,0>c[0]?b+Math.abs(c[0]):b-c[0])/(100/(a.c[d]-e))}function J(a,b){for(var d=1,c;b>=a.c[d];)d++;if(a.m)return c=a.c[d-1],d=a.c[d],b-c>(d-c)/2?d:c;a.h[d-1]?(c=a.h[d-1],d=a.c[d-1]+Math.round((b-a.c[d-1])/c)*c):d=b;return d}function s(a){void 0===a&&(a={});"object"!==typeof a&&h("(Format) 'format' option must be an object.");var b={};e(K).each(function(d,c){void 0===a[c]?b[c]=z[d]:typeof a[c]===typeof z[d]?("decimals"===c&&(0>a[c]||7<a[c])&&h("(Format) 'format.decimals' option must be between 0 and 7."),
-b[c]=a[c]):h("(Format) 'format."+c+"' must be a "+typeof z[d]+".")});x(b,"mark","thousand");x(b,"prefix","negative");x(b,"prefix","negativeBefore");this.B=b}function q(a,b){if(!(this instanceof q))throw Error("Link: Don't use Link as a function. Use the 'new' keyword.");if(!a)throw new RangeError("Link: missing parameters.");this.g=a.format||{};this.update=!b;var d=this,c=a.target||function(){},g=a.method,f="string"===typeof c&&0===c.indexOf("-tooltip-"),h="string"===typeof c&&0!==c.indexOf("-"),
-n="function"===typeof c,r=c instanceof e||e.zepto&&e.zepto.isZ(c),E=r&&c.is("input, select, textarea"),l=r&&"function"===typeof g,s=r&&"string"===typeof g&&c[g];if(f)this.method=g||"html",this.j=e(c.replace("-tooltip-","")||"<div/>")[0];else if(h)this.method="val",this.j=document.createElement("input"),this.j.name=c,this.j.type="hidden";else if(n)this.target=!1,this.method=c;else{if(r){if(g&&(l||s)){this.target=c;this.method=g;return}if(!g&&E){this.method="val";this.target=c;this.target.on("change",
-function(a){a=e(a.target).val();var b=d.q;d.u.val([b?null:a,b?a:null],{link:d})});return}if(!g&&!E){this.method="html";this.target=c;return}}throw new RangeError("Link: Invalid Link.");}}function L(a,b){t(b)||h("'step' is not numeric.");a.h[0]=b}function M(a,b){("object"!==typeof b||e.isArray(b))&&h("'range' is not an object.");e.each(b,function(b,c){var g;"number"===typeof c&&(c=[c]);e.isArray(c)||h("'range' contains invalid value.");g="min"===b?0:"max"===b?100:parseFloat(b);t(g)&&t(c[0])||h("'range' value isn't numeric.");
-a.c.push(g);a.d.push(c[0]);g?a.h.push(isNaN(c[1])?!1:c[1]):isNaN(c[1])||(a.h[0]=c[1])});e.each(a.h,function(b,c){if(!c)return!0;a.h[b]=y([a.d[b],a.d[b+1]],c)/(100/(a.c[b+1]-a.c[b]))})}function N(a,b){"number"===typeof b&&(b=[b]);(!e.isArray(b)||!b.length||2<b.length)&&h("'start' option is incorrect.");a.a=b.length;a.start=b}function O(a,b){a.m=b;"boolean"!==typeof b&&h("'snap' option must be a boolean.")}function P(a,b){"lower"===b&&1===a.a?a.i=1:"upper"===b&&1===a.a?a.i=2:!0===b&&2===a.a?a.i=3:!1===
-b?a.i=0:h("'connect' option was doesn't match handle count.")}function Q(a,b){switch(b){case "horizontal":a.k=0;break;case "vertical":a.k=1;break;default:h("'orientation' option is invalid.")}}function R(a,b){2<a.c.length&&h("'margin' option is only supported on linear sliders.");a.margin=y(a.d,b);t(b)||h("'margin' option must be numeric.")}function S(a,b){switch(b){case "ltr":a.dir=0;break;case "rtl":a.dir=1;a.i=[0,2,1,3][a.i];break;default:h("'direction' option was not recognized.")}}function T(a,
-b){"string"!==typeof b&&h("'behaviour' must be a string containing options.");var d=0<=b.indexOf("snap");a.n={p:0<=b.indexOf("tap")||d,extend:0<=b.indexOf("extend"),s:0<=b.indexOf("drag"),fixed:0<=b.indexOf("fixed"),m:d}}function U(a,b,d){a.o=[b.lower,b.upper];a.g=new s(b.format);e.each(a.o,function(a,g){e.isArray(g)||h("'serialization."+(a?"upper":"lower")+"' must be an array.");e.each(g,function(){this instanceof q||h("'serialization."+(a?"upper":"lower")+"' can only contain Link instances.");this.q=
-a;this.u=d;this.scope=this.scope||d;this.g=new s(e.extend({},b.format,this.g))})});a.dir&&1<a.a&&a.o.reverse()}function V(a,b){var d={c:[],d:[],h:[!1],margin:0},c;c={step:{e:!1,f:L},range:{e:!0,f:M},start:{e:!0,f:N},snap:{e:!1,f:O},connect:{e:!0,f:P},orientation:{e:!1,f:Q},margin:{e:!1,f:R},direction:{e:!0,f:S},behaviour:{e:!0,f:T},serialization:{e:!0,f:U}};a=e.extend({connect:!1,direction:"ltr",behaviour:"tap",orientation:"horizontal"},a);a.serialization=e.extend({lower:[],upper:[],format:{}},a.serialization);
-e.each(c,function(c,e){if(void 0===a[c])if(e.e)h("'"+c+"' is required.");else return!0;e.f(d,a[c],b)});d.style=d.k?"top":"left";return d}function W(a,b){var d=e("<div><div/></div>").addClass(f[2]),c=["-lower","-upper"];a.dir&&c.reverse();d.children().addClass(f[3]+" "+f[3]+c[b]);return d}function X(a,b){b.j&&(b=new q({target:e(b.j).clone().appendTo(a),method:b.method,format:b.g},!0));return b}function Y(a,b){var d,c=[];for(d=0;d<a.a;d++){var e=c,f=d,h=a.o[d],n=b[d].children(),r=void 0,l=[];l.push(new q({format:a.g},
-!0));for(r=0;r<h.length;r++)l.push(X(n,h[r]));e[f]=l}return c}function Z(a,b,d){switch(a){case 1:b.addClass(f[7]);d[0].addClass(f[6]);break;case 3:d[1].addClass(f[6]);case 2:d[0].addClass(f[7]);case 0:b.addClass(f[6])}}function aa(a,b){var d,c=[];for(d=0;d<a.a;d++)c.push(W(a,d).appendTo(b));return c}function ba(a,b){b.addClass([f[0],f[8+a.dir],f[4+a.k]].join(" "));return e("<div/>").appendTo(b).addClass(f[1])}function ca(a,b,d){function c(){return u[["width","height"][b.k]]()}function g(a){var b,
-c=[m.val()];for(b=0;b<a.length;b++)m.trigger(a[b],c)}function h(a,c,d){var g=a[0]!==k[0][0]?1:0,p=v[0]+b.margin,F=v[1]-b.margin;d&&1<k.length&&(c=g?Math.max(c,p):Math.min(c,F));100>c&&(c=J(b,c));c=Math.max(Math.min(parseFloat(c.toFixed(7)),100),0);if(c===v[g])return 1===k.length?!1:c===p||c===F?0:!1;a.css(b.style,c+"%");a.is(":first-child")&&a.toggleClass(f[17],50<c);v[g]=c;b.dir&&(c=100-c);e(w[g]).each(function(){this.write(b,c,a.children(),m)});return!0}function q(a,b,c){c||D(m,f[14]);h(a,b,!1);
-g(["slide","set","change"])}function n(a,c,d,e){a=a.replace(/\s/g,".nui ")+".nui";c.on(a,function(a){var c=m.attr("disabled");if(m.hasClass(f[14])||void 0!==c&&null!==c)return!1;a.preventDefault();var c=0===a.type.indexOf("touch"),g=0===a.type.indexOf("mouse"),B=0===a.type.indexOf("pointer"),A,h,k=a;0===a.type.indexOf("MSPointer")&&(B=!0);a.originalEvent&&(a=a.originalEvent);c&&(A=a.changedTouches[0].pageX,h=a.changedTouches[0].pageY);if(g||B)B||void 0!==window.pageXOffset||(window.pageXOffset=document.documentElement.scrollLeft,
-window.pageYOffset=document.documentElement.scrollTop),A=a.clientX+window.pageXOffset,h=a.clientY+window.pageYOffset;k.v=[A,h];k.cursor=g;a=k;a.l=a.v[b.k];d(a,e)})}function r(a,b){var d=b.a||k,e,f=!1,f=100*(a.l-b.start)/c(),m=d[0][0]!==k[0][0]?1:0;var n=b.w;e=f+n[0];f+=n[1];1<d.length?(0>e&&(f+=Math.abs(e)),100<f&&(e-=f-100),e=[Math.max(Math.min(e,100),0),Math.max(Math.min(f,100),0)]):e=[e,f];f=h(d[0],e[m],1===d.length);1<d.length&&(f=h(d[1],e[m?0:1],!1)||f);f&&g(["slide"])}function s(a){e("."+f[15]).removeClass(f[15]);
-a.cursor&&e("body").css("cursor","").off(".nui");C.off(".nui");m.removeClass(f[12]);g(["set","change"])}function t(a,b){1===b.a.length&&b.a[0].children().addClass(f[15]);a.stopPropagation();n(l.move,C,r,{start:a.l,a:b.a,w:[v[0],v[k.length-1]]});n(l.end,C,s,null);a.cursor&&(e("body").css("cursor",e(a.target).css("cursor")),1<k.length&&m.addClass(f[12]),e("body").on("selectstart.nui",!1))}function x(a){var d=a.l,g=0;a.stopPropagation();e.each(k,function(){g+=this.offset()[b.style]});g=d<g/2||1===k.length?
-0:1;d-=u.offset()[b.style];d=100*d/c();q(k[g],d,b.n.m);b.n.m&&t(a,{a:[k[g]]})}function y(a){var c=(a=a.l<u.offset()[b.style])?0:100;a=a?0:k.length-1;q(k[a],c,!1)}var m=e(a),v=[-1,-1],u,w,k;if(!m.is(":empty"))throw Error("Slider was already initialized.");u=ba(b,m);k=aa(b,u);w=Y(b,k);Z(b.i,m,k);(function(a){var b;if(!a.fixed)for(b=0;b<k.length;b++)n(l.start,k[b].children(),t,{a:[k[b]]});a.p&&n(l.start,u,x,{a:k});a.extend&&(m.addClass(f[16]),a.p&&n(l.start,m,y,{a:k}));a.s&&(b=u.find("."+f[7]).addClass(f[10]),
-a.fixed&&(b=b.add(u.children().not(b).children())),n(l.start,b,t,{a:k}))})(b.n);a.F=function(a,c,d,n,p){var l;b.dir&&1<b.a&&a.reverse();p&&D(m,f[14]);for(l=0;l<(1<k.length?3:1);l++)p=d||w[l%2][0],p=p.valueOf(a[l%2]),!1!==p&&(p=I(b,p),b.dir&&(p=100-p),!0!==h(k[l%2],p,!0)&&e(w[l%2]).each(function(){this.write(b,v[l%2],k[l%2].children(),m,n)}));!0===c&&g(["set"])};a.D=function(){var a,c=[];for(a=0;a<b.a;a++)c[a]=w[a][0].A;return 1===c.length?c[0]:b.dir&&1<b.a?c.reverse():c};a.r=function(){e.each(w,function(){e.each(this,
-function(){this.target&&this.target.off(".nui")})});e(this).off(".nui").removeClass(f.join(" ")).empty();return d};m.val(b.start)}function da(a){this.length||h("Can't initialize slider on empty selection.");var b=V(a,this);return this.each(function(){ca(this,b,a)})}function ea(a){return this.each(function(){var b=e(this).val(),d=this.r(),c=e.extend({},d,a);e(this).noUiSlider(c);d.start===c.start&&e(this).val(b)})}var C=e(document),G=e.fn.val,l=window.navigator.G?{start:"pointerdown",move:"pointermove",
-end:"pointerup"}:window.navigator.msPointerEnabled?{start:"MSPointerDown",move:"MSPointerMove",end:"MSPointerUp"}:{start:"mousedown touchstart",move:"mousemove touchmove",end:"mouseup touchend"},f="noUi-target noUi-base noUi-origin noUi-handle noUi-horizontal noUi-vertical noUi-background noUi-connect noUi-ltr noUi-rtl noUi-dragable  noUi-state-drag  noUi-state-tap noUi-active noUi-extended noUi-stacking".split(" "),K="decimals mark thousand prefix postfix encoder decoder negative negativeBefore".split(" "),
-z=[2,".","","","",function(a){return a},function(a){return a},"-",""];s.prototype.b=function(a){return this.B[a]};s.prototype.C=function(a){function b(a){return a.split("").reverse().join("")}a=this.b("encoder")(a);var d="",c="",e="",f="";0>a&&(d=this.b("negative"),c=this.b("negativeBefore"));a=Math.abs(a).toFixed(this.b("decimals")).toString();a=a.split(".");0===parseFloat(a)&&(a[0]="0");this.b("thousand")?(e=b(a[0]).match(/.{1,3}/g),e=b(e.join(b(this.b("thousand"))))):e=a[0];this.b("mark")&&1<a.length&&
-(f=this.b("mark")+a[1]);return c+this.b("prefix")+d+e+f+this.b("postfix")};s.prototype.t=function(a){function b(a){return a.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g,"\\$&")}var d;if(null===a||void 0===a)return!1;a=a.toString();d=a.replace(RegExp("^"+b(this.b("negativeBefore"))),"");a!==d?(a=d,d="-"):d="";a=a.replace(RegExp("^"+b(this.b("prefix"))),"");this.b.negative&&(d="",a=a.replace(RegExp("^"+b(this.b("negative"))),"-"));a=a.replace(RegExp(b(this.b("postfix"))+"$"),"").replace(RegExp(b(this.b("thousand")),
-"g"),"").replace(this.b("mark"),".");a=this.b("decoder")(parseFloat(d+a));return isNaN(a)?!1:a};q.prototype.write=function(a,b,d,c,e){if(!this.update||!1!==e){if(100<=b)b=a.d.slice(-1)[0];else{e=1;for(var f,h,l;b>=a.c[e];)e++;f=a.d[e-1];h=a.d[e];l=a.c[e-1];f=[f,h];b=100/(a.c[e]-l)*(b-l)*(f[1]-f[0])/100+f[0]}this.A=b=this.format(b);if("function"===typeof this.method)this.method.call(this.target[0]||c[0],b,d,c);else this.target[this.method](b,d,c)}};q.prototype.format=function(a){return this.g.C(a)};
-q.prototype.valueOf=function(a){return this.g.t(a)};e.noUiSlider={Link:q};e.fn.noUiSlider=function(a,b){return(b?ea:da).call(this,a)};e.fn.val=function(){var a=Array.prototype.slice.call(arguments,0),b,d,c,g;if(!a.length)return this.hasClass(f[0])?this[0].D():G.apply(this);"object"===typeof a[1]?(b=a[1].set,d=a[1].link,c=a[1].update,g=a[1].animate):!0===a[1]&&(b=!0);return this.each(function(){e(this).hasClass(f[0])?this.F(H(a[0]),b,d,c,g):G.apply(e(this),a)})}})(window.jQuery||window.Zepto);
+
+/*jslint browser: true */
+/*jslint devel: true */
+/*jslint continue: true */
+/*jslint plusplus: true */
+/*jslint sub: true */
+/*jslint white: true */
+
+// ==ClosureCompiler==
+// @externs_url http://refreshless.com/externs/jquery-1.8.js
+// @compilation_level ADVANCED_OPTIMIZATIONS
+// @warning_level VERBOSE
+// ==/ClosureCompiler==
+
+(function( $ ){
+
+    'use strict';
+
+    var
+    // Cache the document selector;
+/** @const */ doc = $(document),
+    // Namespace for binding and unbinding slider events;
+/** @const */ namespace = '.nui',
+    // Copy of the current value function;
+/** @const */ $val = $.fn.val,
+    // Determine the events to bind. IE11 implements pointerEvents without
+    // a prefix, which breaks compatibility with the IE10 implementation.
+/** @const */ actions = window.navigator.pointerEnabled ? {
+        start: 'pointerdown',
+        move: 'pointermove',
+        end: 'pointerup'
+    } : window.navigator.msPointerEnabled ? {
+        start: 'MSPointerDown',
+        move: 'MSPointerMove',
+        end: 'MSPointerUp'
+    } : {
+        start: 'mousedown touchstart',
+        move: 'mousemove touchmove',
+        end: 'mouseup touchend'
+    },
+    // Re-usable list of classes;
+/** @const */ Classes = [
+/*  0 */  'noUi-target'
+/*  1 */ ,'noUi-base'
+/*  2 */ ,'noUi-origin'
+/*  3 */ ,'noUi-handle'
+/*  4 */ ,'noUi-horizontal'
+/*  5 */ ,'noUi-vertical'
+/*  6 */ ,'noUi-background'
+/*  7 */ ,'noUi-connect'
+/*  8 */ ,'noUi-ltr'
+/*  9 */ ,'noUi-rtl'
+/* 10 */ ,'noUi-dragable'
+/* 11 */ ,''
+/* 12 */ ,'noUi-state-drag'
+/* 13 */ ,''
+/* 14 */ ,'noUi-state-tap'
+/* 15 */ ,'noUi-active'
+/* 16 */ ,'noUi-extended'
+/* 17 */ ,'noUi-stacking'
+    ],
+/** @const */ Formatting = [
+/*  0 */  'decimals'
+/*  1 */ ,'mark'
+/*  2 */ ,'thousand'
+/*  3 */ ,'prefix'
+/*  4 */ ,'postfix'
+/*  5 */ ,'encoder'
+/*  6 */ ,'decoder'
+/*  7 */ ,'negative'
+/*  8 */ ,'negativeBefore'
+    ],
+/** @const */ FormatDefaults = [
+/*  0 */  2
+/*  1 */ ,'.'
+/*  2 */ ,''
+/*  3 */ ,''
+/*  4 */ ,''
+/*  5 */ ,function(a){ return a; }
+/*  6 */ ,function(a){ return a; }
+/*  7 */ ,'-'
+/*  8 */ ,''
+    ];
+
+
+// Error handling
+
+    function throwError( message ){
+        throw new RangeError('noUiSlider: ' + message);
+    }
+
+    // Throw an error if formatting options are incompatible.
+    function throwEqualError( F, a, b ) {
+        if ( (F[a] || F[b]) && (F[a] === F[b]) ) {
+            throwError("(Link) '"+a+"' can't match '"+b+"'.'");
+        }
+    }
+
+
+// General helpers
+
+    // Limits a value to 0 - 100
+    function limit ( a ) {
+        return Math.max(Math.min(a, 100), 0);
+    }
+
+    // Round a value to the closest 'to'.
+    function closest ( value, to ) {
+        return Math.round(value / to) * to;
+    }
+
+    // Determine the size of a sub-range in relation to a full range.
+    function subRangeRatio ( pa, pb ) {
+        return (100 / (pb - pa));
+    }
+
+
+// Type validation
+
+    function typeMatch ( a, b ) {
+        return (typeof a) === (typeof b);
+    }
+
+    // Test in an object is an instance of jQuery or Zepto.
+    function isInstance ( a ) {
+        return a instanceof $ || ( $['zepto'] && $['zepto']['isZ'](a) );
+    }
+
+    // Checks whether a value is numerical.
+    function isNumeric ( a ) {
+        return typeof a === 'number' && !isNaN( a ) && isFinite( a );
+    }
+
+    // Wraps a variable as an array, if it isn't one yet.
+    function asArray ( a ) {
+        return $.isArray(a) ? a : [a];
+    }
+
+
+// Class handling
+
+    // Sets a class and removes it after [duration] ms.
+    function addClassFor ( element, className, duration ) {
+        element.addClass(className);
+        setTimeout(function(){
+            element.removeClass(className);
+        }, duration);
+    }
+
+    // Tests if element has a class, adds it if not. Returns original state.
+    function getsClass ( element, className ) {
+
+        var has = element.hasClass(className);
+
+        if ( !has ) {
+            element.addClass( className );
+        }
+
+        return has;
+    }
+
+
+// Value calculation
+
+    // (percentage) How many percent is this value of this range?
+    function fromPercentage ( range, value ) {
+        return (value * 100) / ( range[1] - range[0] );
+    }
+
+    // (percentage) Where is this value on this range?
+    function toPercentage ( range, value ) {
+        return fromPercentage( range, range[0] < 0 ?
+            value + Math.abs(range[0]) :
+                value - range[0] );
+    }
+
+    // (value) How much is this percentage on this range?
+    function isPercentage ( range, value ) {
+        return ((value * ( range[1] - range[0] )) / 100) + range[0];
+    }
+
+    // (percentage)
+    function toStepping ( options, value ) {
+
+        if ( value >= options.xVal.slice(-1)[0] ){
+            return 100;
+        }
+
+        var j = 1, va, vb, pa, pb;
+        while ( value >= options.xVal[j] ){
+            j++;
+        }
+
+        va = options.xVal[j-1];
+        vb = options.xVal[j];
+        pa = options.xPct[j-1];
+        pb = options.xPct[j];
+
+        return pa + (toPercentage([va, vb], value) / subRangeRatio (pa, pb));
+    }
+
+    // (value)
+    function fromStepping ( options, value ) {
+
+        // There is no range group that fits 100
+        if ( value >= 100 ){
+            return options.xVal.slice(-1)[0];
+        }
+
+        var j = 1, va, vb, pa, pb;
+        while ( value >= options.xPct[j] ){
+            j++;
+        }
+
+        va = options.xVal[j-1];
+        vb = options.xVal[j];
+        pa = options.xPct[j-1];
+        pb = options.xPct[j];
+
+        return isPercentage([va, vb], (value - pa) * subRangeRatio (pa, pb));
+    }
+
+    // (percentage) Get the step that applies at a certain value.
+    function getStep ( options, value ){
+
+        var j = 1, a, b;
+        while ( value >= options.xPct[j] ){
+            j++;
+        }
+
+        if ( options.snap ) {
+
+            a = options.xPct[j-1];
+            b = options.xPct[j];
+
+            if ((value - a) > ((b-a)/2)){
+                return b;
+            }
+
+            return a;
+        }
+
+        if ( !options.xSteps[j-1] ){
+            return value;
+        }
+
+        return options.xPct[j-1] + closest(
+            value - options.xPct[j-1],
+            options.xSteps[j-1]
+        );
+    }
+
+
+// Event handling
+
+    // Provide a clean event with standardized offset values.
+    function fixEvent ( e ) {
+
+        // Prevent scrolling and panning on touch events, while
+        // attempting to slide. The tap event also depends on this.
+        e.preventDefault();
+
+        // Filter the event to register the type, which can be
+        // touch, mouse or pointer. Offset changes need to be
+        // made on an event specific basis.
+        var  touch = e.type.indexOf('touch') === 0
+            ,mouse = e.type.indexOf('mouse') === 0
+            ,pointer = e.type.indexOf('pointer') === 0
+            ,x,y, event = e;
+
+        // IE10 implemented pointer events with a prefix;
+        if ( e.type.indexOf('MSPointer') === 0 ) {
+            pointer = true;
+        }
+
+        // Get the originalEvent, if the event has been wrapped
+        // by jQuery. Zepto doesn't wrap the event.
+        if ( e.originalEvent ) {
+            e = e.originalEvent;
+        }
+
+        if ( touch ) {
+            // noUiSlider supports one movement at a time,
+            // so we can select the first 'changedTouch'.
+            x = e.changedTouches[0].pageX;
+            y = e.changedTouches[0].pageY;
+        }
+
+        if ( mouse || pointer ) {
+
+            // Polyfill the pageXOffset and pageYOffset
+            // variables for IE7 and IE8;
+            if( !pointer && window.pageXOffset === undefined ){
+                window.pageXOffset = document.documentElement.scrollLeft;
+                window.pageYOffset = document.documentElement.scrollTop;
+            }
+
+            x = e.clientX + window.pageXOffset;
+            y = e.clientY + window.pageYOffset;
+        }
+
+        event.points = [x, y];
+        event.cursor = mouse;
+
+        return event;
+    }
+
+
+// Organize formatting in an object.
+
+    /** @constructor */
+    function Format( options ){
+
+        // If no settings where provided, the defaults will be loaded.
+        if ( options === undefined ){
+            options = {};
+        }
+
+        if ( typeof options !== 'object' ){
+            throwError("(Format) 'format' option must be an object.");
+        }
+
+        var settings = {};
+
+        // Copy all values into a new object.
+        $(Formatting).each(function(i, val){
+
+            if ( options[val] === undefined ){
+
+                settings[val] = FormatDefaults[i];
+
+            // When we aren't loading defaults, validate the entry.
+            } else if ( typeMatch(options[val],  FormatDefaults[i]) ) {
+
+                // Support for up to 7 decimals.
+                // More can't be guaranteed due to floating point issues.
+                if ( val === 'decimals' ){
+                    if ( options[val] < 0 || options[val] > 7 ){
+                        throwError("(Format) 'format.decimals' option must be between 0 and 7.");
+                    }
+                }
+
+                settings[val] = options[val];
+
+            // If the value isn't valid, emit an error.
+            } else {
+                throwError("(Format) 'format."+val+"' must be a " + typeof FormatDefaults[i] + ".");
+            }
+        });
+
+        // Some values can't be extracted from a
+        // string if certain combinations are present.
+        throwEqualError(settings, 'mark', 'thousand');
+        throwEqualError(settings, 'prefix', 'negative');
+        throwEqualError(settings, 'prefix', 'negativeBefore');
+
+        this.settings = settings;
+    }
+
+    // Shorthand for internal value get
+    Format.prototype.v = function ( a ) {
+        return this.settings[a];
+    };
+
+    Format.prototype.to = function ( number ) {
+
+        function reverse ( a ) {
+            return a.split('').reverse().join('');
+        }
+
+        number = this.v('encoder')( number );
+
+        var negative = '', preNegative = '', base = '', mark = '';
+
+        if ( number < 0 ) {
+            negative = this.v('negative');
+            preNegative = this.v('negativeBefore');
+        }
+
+        // Round to proper decimal count
+        number = Math.abs(number).toFixed( this.v('decimals') ).toString();
+        number = number.split('.');
+
+        // Rounding away decimals might cause a value of -0
+        // when using very small ranges. Remove those cases.
+        if ( parseFloat(number) === 0 ) {
+            number[0] = '0';
+        }
+
+        // Group numbers in sets of three.
+        if ( this.v('thousand') ) {
+            base = reverse(number[0]).match(/.{1,3}/g);
+            base = reverse(base.join(reverse( this.v('thousand') )));
+        } else {
+            base = number[0];
+        }
+
+        // Ignore the decimal separator if decimals are set to 0.
+        if ( this.v('mark') && number.length > 1 ) {
+            mark = this.v('mark') + number[1];
+        }
+
+        // Return the finalized formatted number.
+        return preNegative +
+            this.v('prefix') +
+            negative +
+            base +
+            mark +
+            this.v('postfix');
+    };
+
+    Format.prototype.from = function ( input ) {
+
+        function esc(s){
+            return s.replace(/[\-\/\\\^$*+?.()|\[\]{}]/g, '\\$&');
+        }
+
+        var isNeg;
+        // The set request might want to ignore this handle.
+        // Test for 'undefined' too, as a two-handle slider
+        // can still be set with an integer.
+        if( input === null || input === undefined ) {
+            return false;
+        }
+
+        // Remove formatting and set period for float parsing.
+        input = input.toString();
+
+        // Replace the preNegative indicator.
+        isNeg = input.replace(new RegExp('^' + esc( this.v('negativeBefore') )), '');
+
+        // Check if the value changed by removing the negativeBefore symbol.
+        if( input !== isNeg ) {
+            input = isNeg;
+            isNeg = '-';
+        } else {
+            isNeg = '';
+        }
+
+        // If prefix is set and the number is actually prefixed.
+        input = input.replace(new RegExp('^'+esc( this.v('prefix') )), '');
+
+        // Only replace if a negative sign is set.
+        if ( this.v['negative'] ) {
+
+            // Reset isNeg to prevent double '-' insertion.
+            isNeg = '';
+
+            // Reset the negative sign to '-'
+            input = input.replace(new RegExp('^'+esc( this.v('negative') )), '-');
+        }
+
+        // Clean the input string
+        input = input
+        // If postfix is set and the number is postfixed.
+            .replace( new RegExp(esc( this.v('postfix') ) + '$'), '')
+        // Remove the separator every three digits.
+            .replace( new RegExp(esc( this.v('thousand') ), 'g'), '')
+        // Set the decimal separator back to period.
+            .replace( this.v('mark'), '.');
+
+        // Run the user defined decoder. Returns input by default.
+        input = this.v('decoder')( parseFloat( isNeg + input ) );
+
+        // Ignore invalid input
+        if (isNaN( input )) {
+            return false;
+        }
+
+        return input;
+    };
+
+
+// Serialization target
+
+/** @constructor */
+    function Link( entry, update ){
+
+        // Make sure Link isn't called as a function, in which case
+        // the 'this' scope would be the window.
+        if ( !(this instanceof Link) ) {
+            throw new Error( "Link: " +
+                "Don't use Link as a function. " +
+                "Use the 'new' keyword.");
+        }
+
+        if ( !entry ) {
+            throw new RangeError("Link: missing parameters.");
+        }
+
+        // Write all formatting to this object.
+        // No validation needed, as we'll merge these with the parent
+        // format options first.
+        this.formatting = entry['format'] || {};
+
+        // Store the update option.
+        this.update = !update;
+
+        // In IE < 9, .bind() isn't available, need this link in .change().
+    var that = this,
+
+        // Get values from the input.
+        target = entry['target'] || function(){},
+        method = entry['method'],
+
+        // Find the type of this link.
+        isTooltip = ( typeof target === 'string' && target.indexOf('-tooltip-') === 0 ),
+        isHidden = ( typeof target === 'string' && target.indexOf('-') !== 0 ),
+        isMethod = ( typeof target === 'function' ),
+        is$ = ( isInstance(target) ),
+        isInput = ( is$ && target.is('input, select, textarea') ),
+        methodIsFunction = ( is$ && typeof method === 'function' ),
+        methodIsName = ( is$ && typeof method === 'string' && target[method] );
+
+        // If target is a string, a new hidden input will be created.
+        if ( isTooltip ) {
+
+            // By default, use the 'html' method.
+            this.method = method || 'html';
+
+            // Use jQuery to create the element
+            this.el = $( target.replace('-tooltip-', '') || '<div/>' )[0];
+
+            return;
+        }
+
+        // If the string doesn't begin with '-', which is reserved, add a new hidden input.
+        if ( isHidden ) {
+
+            this.method = 'val';
+
+            this.el = document.createElement('input');
+            this.el.name = target;
+            this.el.type = 'hidden';
+
+            return;
+        }
+
+        // The target can also be a function, which will be called.
+        if ( isMethod ) {
+            this.target = false;
+            this.method = target;
+            return;
+        }
+
+        // If the target is and $ element.
+        if ( is$ ) {
+
+            // The method must exist on the element.
+            if ( method && ( methodIsFunction || methodIsName ) ) {
+                this.target = target;
+                this.method = method;
+                return;
+            }
+
+            // If a jQuery/Zepto input element is provided, but no method is set,
+            // the element can assume it needs to respond to 'change'...
+            if ( !method && isInput ) {
+
+                // Default to .val if this is an input element.
+                this.method = 'val';
+                this.target = target;
+
+                // Set the slider to a new value on change.
+                this.target.on('change', function( e ){
+
+                    // Returns null array.
+                    function at(a,b,c){
+                        return [c?a:b, c?b:a];
+                    }
+
+                    var output = at(null, $(e.target).val(), that.N);
+
+                    that.obj.val(output, { 'link': that });
+                });
+
+                return;
+            }
+
+            // ... or not.
+            if ( !method && !isInput ) {
+
+                // Default arbitrarily to 'html'.
+                this.method = 'html';
+                this.target = target;
+
+                return;
+            }
+        }
+
+        throw new RangeError("Link: Invalid Link.");
+    }
+
+    // Provides external items with the slider value.
+    Link.prototype.write = function ( options, value, handle, slider, update ) {
+
+        // Don't synchronize this Link.
+        if ( this.update && update === false ) {
+            return;
+        }
+
+        // Convert the value to the slider stepping/range.
+        value = fromStepping( options, value );
+
+        // Format values for display.
+        value = this.format( value );
+
+        // Store the numerical value.
+        this.saved = value;
+
+        // Branch between serialization to a function or an object.
+        if ( typeof this.method === 'function' ) {
+            // When target is undefined, the target was a function.
+            // In that case, provided the slider as the calling scope.
+            // Use [0] to get the DOM element, not the $ instance.
+            this.method.call( this.target[0] || slider[0], value, handle, slider );
+        } else {
+            this.target[ this.method ]( value, handle, slider );
+        }
+    };
+
+    // Parses slider value to user defined display.
+    Link.prototype.format = function ( a ) {
+        return this.formatting.to(a);
+    };
+
+    // Converts a formatted value back to a real number.
+    Link.prototype.valueOf = function ( a ) {
+        return this.formatting.from(a);
+    };
+
+
+// Input validation
+
+    function testStep ( parsed, entry ) {
+
+        if ( !isNumeric( entry ) ) {
+            throwError("'step' is not numeric.");
+        }
+
+        // The step option can still be used to set stepping
+        // for linear sliders. Overwritten if set in 'range'.
+        parsed.xSteps[0] = entry;
+    }
+
+    function testRange ( parsed, entry ) {
+
+        // Filter incorrect input.
+        if ( typeof entry !== 'object' || $.isArray(entry) ) {
+            throwError("'range' is not an object.");
+        }
+
+        // Loop all entries.
+        $.each( entry, function ( index, value ) {
+
+            var percentage;
+
+            // Wrap numerical input in an array.
+            if ( typeof value === "number" ) {
+                value = [value];
+            }
+
+            // Reject any invalid input.
+            if ( !$.isArray( value ) ){
+                throwError("'range' contains invalid value.");
+            }
+
+            // Covert min/max syntax to 0 and 100.
+            if ( index === 'min' ) {
+                percentage = 0;
+            } else if ( index === 'max' ) {
+                percentage = 100;
+            } else {
+                percentage = parseFloat( index );
+            }
+
+            // Check for correct input.
+            if ( !isNumeric( percentage ) || !isNumeric( value[0] ) ) {
+                throwError("'range' value isn't numeric.");
+            }
+
+            // Store values.
+            parsed.xPct.push( percentage );
+            parsed.xVal.push( value[0] );
+
+            // NaN will evaluate to false too, but to keep
+            // logging clear, set step explicitly. Make sure
+            // not to override the 'step' setting with false.
+            if ( !percentage ) {
+                if ( !isNaN( value[1] ) ) {
+                    parsed.xSteps[0] = value[1];
+                }
+            } else {
+                parsed.xSteps.push( isNaN(value[1]) ? false : value[1] );
+            }
+        });
+
+        $.each(parsed.xSteps, function(i,n){
+
+            // Ignore 'false' stepping.
+            if ( !n ) {
+                return true;
+            }
+
+            // Check if step fits. Not required, but this might serve some goal.
+            // !((parsed.xVal[i+1] - parsed.xVal[i]) % n);
+
+            // Factor to range ratio
+            parsed.xSteps[i] = fromPercentage([
+                 parsed.xVal[i]
+                ,parsed.xVal[i+1]
+            ], n) / subRangeRatio (
+                parsed.xPct[i],
+                parsed.xPct[i+1] );
+        });
+    }
+
+    function testStart ( parsed, entry ) {
+
+        if ( typeof entry === "number" ) {
+            entry = [entry];
+        }
+
+        // Validate input. Values aren't tested, the internal Link will do
+        // that and provide a valid location.
+        if ( !$.isArray( entry ) || !entry.length || entry.length > 2 ) {
+            throwError("'start' option is incorrect.");
+        }
+
+        // Store the number of handles.
+        parsed.handles = entry.length;
+
+        // When the slider is initialized, the .val method will
+        // be called with the start options.
+        parsed.start = entry;
+    }
+
+    function testSnap ( parsed, entry ) {
+
+        // Enforce 100% stepping within subranges.
+        parsed.snap = entry;
+
+        if ( typeof entry !== 'boolean' ){
+            throwError("'snap' option must be a boolean.");
+        }
+    }
+
+    function testConnect ( parsed, entry ) {
+
+        if ( entry === 'lower' && parsed.handles === 1 ) {
+            parsed.connect = 1;
+        } else if ( entry === 'upper' && parsed.handles === 1 ) {
+            parsed.connect = 2;
+        } else if ( entry === true && parsed.handles === 2 ) {
+            parsed.connect = 3;
+        } else if ( entry === false ) {
+            parsed.connect = 0;
+        } else {
+            throwError("'connect' option was doesn't match handle count.");
+        }
+    }
+
+    function testOrientation ( parsed, entry ) {
+
+        // Set orientation to an a numerical value for easy
+        // array selection.
+        switch ( entry ){
+          case 'horizontal':
+            parsed.ort = 0;
+            break;
+          case 'vertical':
+            parsed.ort = 1;
+            break;
+          default:
+            throwError("'orientation' option is invalid.");
+        }
+    }
+
+    function testMargin ( parsed, entry ) {
+
+        if ( parsed.xPct.length > 2 ) {
+            throwError("'margin' option is only supported on linear sliders.");
+        }
+
+        // Parse value to range and store. As xVal is checked
+        // to be no bigger than 2, use it as range.
+        parsed.margin = fromPercentage(parsed.xVal, entry);
+
+        if ( !isNumeric(entry) ){
+            throwError("'margin' option must be numeric.");
+        }
+    }
+
+    function testDirection ( parsed, entry ) {
+
+        // Set direction as a numerical value for easy parsing.
+        // Invert connection for RTL sliders, so that the proper
+        // handles get the connect/background classes.
+        switch ( entry ) {
+          case 'ltr':
+            parsed.dir = 0;
+            break;
+          case 'rtl':
+            parsed.dir = 1;
+            parsed.connect = [0,2,1,3][parsed.connect];
+            break;
+          default:
+            throwError("'direction' option was not recognized.");
+        }
+    }
+
+    function testBehaviour ( parsed, entry ) {
+
+        // Make sure the input is a string.
+        if ( typeof entry !== 'string' ) {
+            throwError("'behaviour' must be a string containing options.");
+        }
+
+        // Check if the string contains any keywords.
+        // None are required.
+        var tap = entry.indexOf('tap') >= 0,
+            extend = entry.indexOf('extend') >= 0,
+            drag = entry.indexOf('drag') >= 0,
+            fixed = entry.indexOf('fixed') >= 0,
+            snap = entry.indexOf('snap') >= 0;
+
+        parsed.events = {
+            tap: tap || snap,
+            extend: extend,
+            drag: drag,
+            fixed: fixed,
+            snap: snap
+        };
+    }
+
+    function testSerialization ( parsed, entry, sliders ) {
+
+        parsed.ser = [ entry['lower'], entry['upper'] ];
+        parsed.formatting = new Format( entry['format'] );
+
+        $.each( parsed.ser, function( i, a ){
+
+            // Check if the provided option is an array.
+            if ( !$.isArray(a) ) {
+                throwError("'serialization."+(!i?'lower':'upper')+"' must be an array.");
+            }
+
+            $.each(a, function(){
+
+                // Check if entry is a Link.
+                if ( !(this instanceof Link) ) {
+                    throwError("'serialization."+(!i?'lower':'upper')+"' can only contain Link instances.");
+                }
+
+                // Assign other properties.
+                this.N = i;
+                this.obj = sliders;
+                this.scope = this.scope || sliders;
+
+                // Run internal validator.
+                this.formatting = new Format($.extend({}
+                    ,entry['format']
+                    ,this.formatting
+                ));
+            });
+        });
+
+        // If the slider has two handles and is RTL,
+        // reverse the serialization input. For one handle,
+        // lower is still lower.
+        if ( parsed.dir && parsed.handles > 1 ) {
+            parsed.ser.reverse();
+        }
+    }
+
+    // Test all developer settings and parse to assumption-safe values.
+    function test ( options, sliders ){
+
+    /*  Every input option is tested and parsed. This'll prevent
+        endless validation in internal methods. These tests are
+        structured with an item for every option available. An
+        option can be marked as required by setting the 'r' flag.
+        The testing function is provided with three arguments:
+            - The provided value for the option;
+            - A reference to the options object;
+            - The name for the option;
+
+        The testing function returns false when an error is detected,
+        or true when everything is OK. It can also modify the option
+        object, to make sure all values can be correctly looped elsewhere. */
+
+        var parsed = {
+             xPct: []
+            ,xVal: []
+            ,xSteps: [ false ]
+            ,margin: 0
+        }, tests;
+
+        tests = {
+            'step': { r: false, t: testStep },
+            'range': { r: true, t: testRange },
+            'start': { r: true, t: testStart },
+            'snap': { r: false, t: testSnap },
+            'connect': { r: true, t: testConnect },
+            'orientation': { r: false, t: testOrientation },
+            'margin': { r: false, t: testMargin },
+            'direction': { r: true, t: testDirection },
+            'behaviour': { r: true, t: testBehaviour },
+            'serialization': { r: true, t: testSerialization }
+        };
+
+        // Set defaults where applicable.
+        options = $.extend({
+             'connect': false
+            ,'direction': 'ltr'
+            ,'behaviour': 'tap'
+            ,'orientation': 'horizontal'
+        }, options);
+
+        // Make sure the test for serialization runs.
+        options['serialization'] = $.extend({
+             'lower': []
+            ,'upper': []
+            ,'format': {}
+        }, options['serialization']);
+
+        // Run all options through a testing mechanism to ensure correct
+        // input. It should be noted that options might get modified to
+        // be handled properly. E.g. wrapping integers in arrays.
+        $.each( tests, function( name, test ){
+
+            if ( options[name] === undefined ) {
+                if ( test.r ) {
+                    throwError("'" + name + "' is required.");
+                } else {
+                    return true;
+                }
+            }
+
+            test.t( parsed, options[name], sliders );
+        });
+
+        // Pre-define the styles.
+        parsed.style = parsed.ort ? 'top' : 'left';
+
+        return parsed;
+    }
+
+
+// DOM additions
+
+    // Append a handle to the base.
+    function addHandle ( options, index ) {
+
+        var handle = $('<div><div/></div>').addClass( Classes[2] ),
+            additions = [ '-lower', '-upper' ];
+
+        if ( options.dir ) {
+            additions.reverse();
+        }
+
+        handle.children().addClass(
+            Classes[3] + " " + Classes[3]+additions[index]
+        );
+
+        return handle;
+    }
+
+    // Create a copy of an element-creating Link.
+    function addElement ( handle, link ) {
+
+        // If the Link requires creation of a new element,
+        // create this element and return a new Link instance.
+        if ( link.el ) {
+            link = new Link({
+                'target': $(link.el).clone().appendTo( handle ),
+                'method': link.method,
+                'format': link.formatting
+            }, true);
+        }
+
+        // Otherwise, return the reference.
+        return link;
+    }
+
+    // Loop all links for a handle.
+    function addElements ( elements, handle, formatting ) {
+
+        var index, list = [];
+
+        // Use the Link interface to provide unified
+        // formatting for the .val() method.
+        list.push(
+            new Link({
+                'format': formatting
+            }, true)
+        );
+
+        // Loop all links in either 'lower' or 'upper'.
+        for ( index = 0; index < elements.length; index++ ) {
+            list.push(addElement(handle, elements[index]));
+        }
+
+        return list;
+    }
+
+    // Go over all Links and assign them to a handle.
+    function addLinks ( options, handles ) {
+
+        var index, links = [];
+
+        // Copy the links into a new array, instead of modifying
+        // the 'options.ser' list. This allows replacement of the invalid
+        // '.el' Links, while the others are still passed by reference.
+        for ( index = 0; index < options.handles; index++ ) {
+
+            // Append a new array.
+            links[index] = addElements(
+                options.ser[index],
+                handles[index].children(),
+                options.formatting
+            );
+        }
+
+        return links;
+    }
+
+    // Add the proper connection classes.
+    function addConnection ( connect, target, handles ) {
+
+        // Apply the required connection classes to the elements
+        // that need them. Some classes are made up for several
+        // segments listed in the class list, to allow easy
+        // renaming and provide a minor compression benefit.
+        switch ( connect ) {
+            case 1: target.addClass( Classes[7] );
+                    handles[0].addClass( Classes[6] );
+                    break;
+            case 3: handles[1].addClass( Classes[6] );
+                    /* falls through */
+            case 2: handles[0].addClass( Classes[7] );
+                    /* falls through */
+            case 0: target.addClass(Classes[6]);
+                    break;
+        }
+    }
+
+    // Add handles and loop Link elements.
+    function addHandles ( options, base ) {
+
+        var index, handles = [];
+
+        // Append handles.
+        for ( index = 0; index < options.handles; index++ ) {
+
+            // Keep a list of all added handles.
+            handles.push( addHandle( options, index ).appendTo(base) );
+        }
+
+        return handles;
+    }
+
+    // Initialize a single slider.
+    function addSlider ( options, target ) {
+
+        // Apply classes and data to the target.
+        target.addClass([
+            Classes[0],
+            Classes[8 + options.dir],
+            Classes[4 + options.ort]
+        ].join(' '));
+
+        return $('<div/>').appendTo(target).addClass( Classes[1] );
+    }
+
+
+// Slider scope
+
+function closure ( target, options, originalOptions ){
+
+// Internal variables
+
+    // All variables local to 'closure' are marked $.
+    var $Target = $(target),
+        $Locations = [-1, -1],
+        $Base,
+        $Serialization,
+        $Handles;
+
+    // Shorthand for base dimensions.
+    function baseSize ( ) {
+        return $Base[['width', 'height'][options.ort]]();
+    }
+
+
+// External event handling
+
+    function fireEvents ( events ) {
+
+        // Use the external api to get the values.
+        // Wrap the values in an array, as .trigger takes
+        // only one additional argument.
+        var index, values = [ $Target.val() ];
+
+        for ( index = 0; index < events.length; index++ ){
+            $Target.trigger(events[index], values);
+        }
+    }
+
+
+// Handle placement
+
+    // Test suggested values and apply margin, step.
+    function setHandle ( handle, to, delimit ) {
+
+        var n = handle[0] !== $Handles[0][0] ? 1 : 0,
+            lower = $Locations[0] + options.margin,
+            upper = $Locations[1] - options.margin;
+
+        // Don't delimit range dragging.
+        if ( delimit && $Handles.length > 1 ) {
+            to = n ? Math.max( to, lower ) : Math.min( to, upper );
+        }
+
+        // Handle the step option.
+        if ( to < 100 ){
+            to = getStep(options, to);
+        }
+
+        // Limit to 0/100 for .val input, trim anything beyond 7 digits, as
+        // JavaScript has some issues in its floating point implementation.
+        to = limit(parseFloat(to.toFixed(7)));
+
+        // Return falsy if handle can't move. False for 0 or 100 limit,
+        // '0' for limiting by another handle.
+        if ( to === $Locations[n] ) {
+            if ( $Handles.length === 1 ) {
+                return false;
+            }
+            return ( to === lower || to === upper ) ? 0 : false;
+        }
+
+        // Set the handle to the new position.
+        handle.css( options.style, to + '%' );
+
+        // Force proper handle stacking
+        if ( handle.is(':first-child') ) {
+            handle.toggleClass(Classes[17], to > 50 );
+        }
+
+        // Update locations.
+        $Locations[n] = to;
+
+        // Invert the value if this is a right-to-left slider.
+        if ( options.dir ) {
+            to = 100 - to;
+        }
+
+        // Write values to serialization Links.
+        // Convert the value to the correct relative representation.
+        $($Serialization[n]).each(function(){
+            this.write( options, to, handle.children(), $Target );
+        });
+
+        return true;
+    }
+
+    // Delimit proposed values for handle positions.
+    function getPositions ( a, b, delimit ) {
+
+        // Add movement to current position.
+        var c = a + b[0], d = a + b[1];
+
+        // Only alter the other position on drag,
+        // not on standard sliding.
+        if ( delimit ) {
+            if ( c < 0 ) {
+                d += Math.abs(c);
+            }
+            if ( d > 100 ) {
+                c -= ( d - 100 );
+            }
+
+            // Limit values to 0 and 100.
+            return [limit(c), limit(d)];
+        }
+
+        return [c,d];
+    }
+
+    // Handles movement by tapping.
+    function jump ( handle, to, instant ) {
+
+        if ( !instant ) {
+            // Flag the slider as it is now in a transitional state.
+            // Transition takes 300 ms, so re-enable the slider afterwards.
+            addClassFor( $Target, Classes[14], 300 );
+        }
+
+        // Move the handle to the new position.
+        setHandle( handle, to, false );
+
+        fireEvents(['slide', 'set', 'change']);
+    }
+
+
+// Events
+
+    // Handler for attaching events trough a proxy.
+    function attach ( events, element, callback, data ) {
+
+        // Add the noUiSlider namespace to all events.
+        events = events.replace( /\s/g, namespace + ' ' ) + namespace;
+
+        // Bind a closure on the target.
+        return element.on( events, function( e ){
+
+            // jQuery and Zepto handle unset attributes differently.
+            var disabled = $Target.attr('disabled');
+                disabled = !( disabled === undefined || disabled === null );
+
+            // Test if there is anything that should prevent an event
+            // from being handled, such as a disabled state or an active
+            // 'tap' transition.
+            if( $Target.hasClass( Classes[14] ) || disabled ) {
+                return false;
+            }
+
+            e = fixEvent(e);
+            e.calcPoint = e.points[ options.ort ];
+
+            // Call the event handler with the event [ and additional data ].
+            callback ( e, data );
+        });
+    }
+
+    // Handle movement on document for handle and range drag.
+    function move ( event, data ) {
+
+        var handles = data.handles || $Handles, positions, state = false,
+            proposal = ((event.calcPoint - data.start) * 100) / baseSize(),
+            h = handles[0][0] !== $Handles[0][0] ? 1 : 0;
+
+        // Calculate relative positions for the handles.
+        positions = getPositions( proposal, data.positions, handles.length > 1);
+
+        state = setHandle ( handles[0], positions[h], handles.length === 1 );
+
+        if ( handles.length > 1 ) {
+            state = setHandle ( handles[1], positions[h?0:1], false ) || state;
+        }
+
+        // Fire the 'slide' event if any handle moved.
+        if ( state ) {
+            fireEvents(['slide']);
+        }
+    }
+
+    // Unbind move events on document, call callbacks.
+    function end ( event ) {
+
+        // The handle is no longer active, so remove the class.
+        $('.' + Classes[15]).removeClass(Classes[15]);
+
+        // Remove cursor styles and text-selection events bound to the body.
+        if ( event.cursor ) {
+            $('body').css('cursor', '').off( namespace );
+        }
+
+        // Unbind the move and end events, which are added on 'start'.
+        doc.off( namespace );
+
+        // Remove dragging class.
+        $Target.removeClass(Classes[12]);
+
+        // Fire the change and set events.
+        fireEvents(['set', 'change']);
+    }
+
+    // Bind move events on document.
+    function start ( event, data ) {
+
+        // Mark the handle as 'active' so it can be styled.
+        if( data.handles.length === 1 ) {
+            data.handles[0].children().addClass(Classes[15]);
+        }
+
+        // A drag should never propagate up to the 'tap' event.
+        event.stopPropagation();
+
+        // Attach the move event.
+        attach ( actions.move, doc, move, {
+            start: event.calcPoint,
+            handles: data.handles,
+            positions: [
+                $Locations[0],
+                $Locations[$Handles.length - 1]
+            ]
+        });
+
+        // Unbind all movement when the drag ends.
+        attach ( actions.end, doc, end, null );
+
+        // Text selection isn't an issue on touch devices,
+        // so adding cursor styles can be skipped.
+        if ( event.cursor ) {
+
+            // Prevent the 'I' cursor and extend the range-drag cursor.
+            $('body').css('cursor', $(event.target).css('cursor'));
+
+            // Mark the target with a dragging state.
+            if ( $Handles.length > 1 ) {
+                $Target.addClass(Classes[12]);
+            }
+
+            // Prevent text selection when dragging the handles.
+            $('body').on('selectstart' + namespace, false);
+        }
+    }
+
+    // Move closest handle to tapped location.
+    function tap ( event ) {
+
+        var location = event.calcPoint, total = 0, to;
+
+        // The tap event shouldn't propagate up and cause 'edge' to run.
+        event.stopPropagation();
+
+        // Add up the handle offsets.
+        $.each( $Handles, function(){
+            total += this.offset()[ options.style ];
+        });
+
+        // Find the handle closest to the tapped position.
+        total = ( location < total/2 || $Handles.length === 1 ) ? 0 : 1;
+
+        location -= $Base.offset()[ options.style ];
+
+        // Calculate the new position.
+        to = ( location * 100 ) / baseSize();
+
+        // Find the closest handle and calculate the tapped point.
+        // The set handle to the new position.
+        jump( $Handles[total], to, options.events.snap );
+
+        if ( options.events.snap ) {
+            start(event, { handles: [$Handles[total]] });
+        }
+    }
+
+    // Move handle to edges when target gets tapped.
+    function edge ( event ) {
+
+        var i = event.calcPoint < $Base.offset()[ options.style ],
+            to = i ? 0 : 100;
+
+        i = i ? 0 : $Handles.length - 1;
+
+        jump( $Handles[i], to, false );
+    }
+
+    // Attach events to several slider parts.
+    function events ( behaviour ) {
+
+        var i, drag;
+
+        // Attach the standard drag event to the handles.
+        if ( !behaviour.fixed ) {
+
+            for ( i = 0; i < $Handles.length; i++ ) {
+
+                // These events are only bound to the visual handle
+                // element, not the 'real' origin element.
+                attach ( actions.start, $Handles[i].children(), start, {
+                    handles: [ $Handles[i] ]
+                });
+            }
+        }
+
+        // Attach the tap event to the slider base.
+        if ( behaviour.tap ) {
+            attach ( actions.start, $Base, tap, {
+                handles: $Handles
+            });
+        }
+
+        // Extend tapping behaviour to target
+        if ( behaviour.extend ) {
+
+            $Target.addClass( Classes[16] );
+
+            if ( behaviour.tap ) {
+                attach ( actions.start, $Target, edge, {
+                    handles: $Handles
+                });
+            }
+        }
+
+        // Make the range dragable.
+        if ( behaviour.drag ){
+
+            drag = $Base.find( '.' + Classes[7] ).addClass( Classes[10] );
+
+            // When the range is fixed, the entire range can
+            // be dragged by the handles. The handle in the first
+            // origin will propagate the start event upward,
+            // but it needs to be bound manually on the other.
+            if ( behaviour.fixed ) {
+                drag = drag.add($Base.children().not( drag ).children());
+            }
+
+            attach ( actions.start, drag, start, {
+                handles: $Handles
+            });
+        }
+    }
+
+
+// Initialize slider
+
+    // Throw an error if the slider was already initialized.
+    if ( !$Target.is(':empty') ) {
+        throw new Error('Slider was already initialized.');
+    }
+
+    // Create the base element, initialise HTML and set classes.
+    // Add handles and links.
+    $Base = addSlider( options, $Target );
+    $Handles = addHandles( options, $Base );
+    $Serialization = addLinks( options, $Handles );
+
+    // Set the connect classes.
+    addConnection ( options.connect, $Target, $Handles );
+
+    // Attach user events.
+    events( options.events );
+
+
+// Methods
+
+    // Set the slider value.
+    target.vSet = function ( values, callback, link, update, animate ){
+
+        var i, to;
+
+        // The RTL settings is implemented by reversing the front-end,
+        // internal mechanisms are the same.
+        if ( options.dir && options.handles > 1 ) {
+            values.reverse();
+        }
+
+        // Animation is optional.
+        if ( animate ) {
+            addClassFor( $Target, Classes[14], 300 );
+        }
+
+        // If there are multiple handles to be set run the setting
+        // mechanism twice for the first handle, to make sure it
+        // can be bounced of the second one properly.
+        for ( i = 0; i < ( $Handles.length > 1 ? 3 : 1 ); i++ ) {
+
+            to = link || $Serialization[i%2][0];
+            to = to.valueOf( values[i%2] );
+
+            if ( to === false ) {
+                continue;
+            }
+
+            // Calculate the new handle position
+            to = toStepping( options, to );
+
+            // Invert the value if this is a right-to-left slider.
+            if ( options.dir ) {
+                to = 100 - to;
+            }
+
+            // Force delimitation.
+            if ( setHandle( $Handles[i%2], to, true ) === true ) {
+                continue;
+            }
+
+            // Reset the input if it doesn't match the slider.
+            $($Serialization[i%2]).each(function(){
+                this.write(
+                    options,
+                    $Locations[i%2],
+                    $Handles[i%2].children(),
+                    $Target,
+                    update
+                );
+            });
+        }
+
+        // Optionally fire the 'set' event.
+        if( callback === true ) {
+            fireEvents(['set']);
+        }
+
+        return this;
+    };
+
+    // Get the slider value.
+    target.vGet = function ( ){
+
+        var i, retour = [];
+
+        // Get the value from all handles.
+        for ( i = 0; i < options.handles; i++ ){
+            retour[i] = $Serialization[i][0].saved;
+        }
+
+        // If only one handle is used, return a single value.
+        if ( retour.length === 1 ){
+            return retour[0];
+        }
+
+        if ( options.dir && options.handles > 1 ) {
+            return retour.reverse();
+        }
+
+        return retour;
+    };
+
+    // Destroy the slider and unbind all events.
+    target.destroy = function ( ){
+
+        // Loop all linked serialization objects and unbind all
+        // events in the noUiSlider namespace.
+        $.each($Serialization, function(){
+            $.each(this, function(){
+                // Won't remove 'change' when bound implicitly.
+                if ( this.target ) {
+                    this.target.off( namespace );
+                }
+            });
+        });
+
+        // Unbind events on the slider, remove all classes and child elements.
+        $(this).off(namespace)
+            .removeClass(Classes.join(' '))
+            .empty();
+
+        // Return the original options from the closure.
+        return originalOptions;
+    };
+
+
+// Value setting
+
+    // Use the public value method to set the start values.
+    $Target.val( options.start );
+}
+
+
+// Access points
+
+    // Run the standard initializer
+    function initialize ( originalOptions ) {
+
+        // Throw error if group is empty.
+        if ( !this.length ){
+            throwError("Can't initialize slider on empty selection.");
+        }
+
+        // Test the options once, not for every slider.
+        var options = test( originalOptions, this );
+
+        // Loop all items, and provide a new closed-scope environment.
+        return this.each(function(){
+            closure(this, options, originalOptions);
+        });
+    }
+
+    // Destroy the slider, then re-enter initialization.
+    function rebuild ( options ) {
+
+        return this.each(function(){
+
+            // Get the current values from the slider,
+            // including the initialization options.
+            var values = $(this).val(),
+                originalOptions = this.destroy(),
+
+                // Extend the previous options with the newly provided ones.
+                newOptions = $.extend( {}, originalOptions, options );
+
+            // Run the standard initializer.
+            $(this).noUiSlider( newOptions );
+
+            // If the start option hasn't changed,
+            // reset the previous values.
+            if ( originalOptions.start === newOptions.start ) {
+                $(this).val(values);
+            }
+        });
+    }
+
+
+    // Expose serialization constructor.
+    /** @expose */
+    $.noUiSlider = { 'Link': Link };
+
+    // Extend jQuery/Zepto with the noUiSlider method.
+    /** @expose */
+    $.fn.noUiSlider = function ( options, re ) {
+        return ( re ? rebuild : initialize ).call(this, options);
+    };
+
+    $.fn.val = function ( ) {
+
+        // Convert the function arguments to an array.
+        var args = Array.prototype.slice.call( arguments, 0 ),
+            set, link, update, animate;
+
+        // Test if there are arguments, and if not, call the 'get' method.
+        if ( !args.length ) {
+
+            // Determine whether to use the native val method.
+            if ( this.hasClass(Classes[0]) ) {
+                return this[0].vGet();
+            }
+
+            return $val.apply( this );
+        }
+
+        // Extract modifiers for value method.
+        if ( typeof args[1] === 'object' ) {
+            set = args[1]['set'];
+            link = args[1]['link'];
+            update = args[1]['update'];
+            animate = args[1]['animate'];
+
+        // Support the 'true' option.
+        } else if ( args[1] === true ) {
+            set = true;
+        }
+
+        // Loop all individual items, and handle setting appropriately.
+        return this.each(function(){
+
+            if ( $(this).hasClass(Classes[0]) ) {
+                this.vSet( asArray(args[0]), set, link, update, animate );
+            } else {
+                $val.apply( $(this), args );
+            }
+        });
+    };
+
+}( window['jQuery'] || window['Zepto'] ));
