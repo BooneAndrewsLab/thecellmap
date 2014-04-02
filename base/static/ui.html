@@ -62,8 +62,6 @@ $('.vizualization-ui').ready(function() {
   <div id="btn-group-neighbourhood" class="hidden btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Neighbourhood <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-      <li><a href="#">Remove selection</a></li>
-      <li class="divider"></li>
       <li><a href="#" data-toggle="download">Selected genes only</a></li>
       <li><a href="#" data-toggle="download">1st neighbours</a></li>
       <li><a href="#" data-toggle="download">2nd neighbours</a></li>
@@ -77,6 +75,8 @@ $('.vizualization-ui').ready(function() {
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
+      <li><a id="tool-layout" href="#"><span class="glyphicons roundabout"></span> Force-directed layout </a></li>
+      <li class="divider"></li>
       <li><a id="tool-rotate" href="#"><span class="glyphicons roundabout"></span> Rotate </a></li>
       <li class="dropdown-submenu pull-left tool-arange disabled"><a tabindex="-1" href="#"><span class="glyphicons vector_path_polygon"></span><span> Arange selected nodes</span></a>
         <ul class="dropdown-menu" role="menu">
@@ -102,7 +102,7 @@ $('.vizualization-ui').ready(function() {
     <button type="button" class="btn btn-success dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a id="btn-style" data-toggle="modal" data-target="#modal-style" href="#"><span class="glyphicons adjust_alt"></span> Visual </a></li>
-      <li id="btn-group-annotation" class="dropdown-submenu pull-left tool-arange"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>
+      <li id="btn-group-annotation" class="dropdown-submenu pull-left"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>
         <ul class="dropdown-menu" role="menu">
           <li><a href="#">None</a></li>
           <li class="divider"></li>

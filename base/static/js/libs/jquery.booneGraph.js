@@ -72,7 +72,9 @@
             
             var state = {
                     selection: [],
-                    cutoff: sliderProperties.value,
+                    cutoff: {
+//                        0: sliderProperties.value
+                    },
                     style: {
                         node: {
                             nsize: 2,
@@ -96,6 +98,7 @@
             };
             var undo = null;
             var autoState = false;
+            var isInitializing = true;
             
             function _updateNavigation() {
                 $(".undo-network").toggleClass('disabled', !undo.hasUndo());
@@ -115,8 +118,8 @@
                 
                 if (!($(ns.selection).not(state.selection).length == 0 && $(state.selection).not(ns.selection).length == 0)) {
                     $("input.gene-search-input").select2("val", ns.selection, true);
-                } if (ns.cutoff != state.cutoff) {
-                    $("#cutoff-bar-cor").val(ns.cutoff, {set: true});
+//                } if (ns.cutoff != state.cutoff) {
+//                    $("#cutoff-bar-cor").val(ns.cutoff, {set: true});
                 } if (ns.style.node.nsize != state.style.node.nsize) {
                     $('#style-slider-nsize').val(ns.style.node.nsize, true);
                 } if (ns.style.node.lsize != state.style.node.lsize) {
@@ -135,6 +138,12 @@
                     loadAnnotation(ns.annotation);
                 }
                 
+                for (var key in ns.cutoff) {
+                    if (ns.cutoff[key] != state.cutoff[key]) {
+                        console.log('Cutoffs differ', ns.cutoff[key], state.cutoff[key])
+                    }
+                }
+                
                 if (newState.nodes != null) {
                     var node, n;
                     for (n in newState.nodes) {
@@ -148,7 +157,7 @@
                             node.color = n.color;
                         }
                     }
-                    applyCutoff(state.cutoff);
+                    applyCutoff(getCutoff());
                     $("input.gene-search-input").select2("val", ns.selection, true);
                     sigInst.draw();
                 }
@@ -157,7 +166,8 @@
             };
             
             function changeState() {
-                if (!autoState && undo != null) {
+                if (!isInitializing && !autoState && undo != null) {
+                    console.log('changing state');
                     undo.addChange($.extend(true, {}, state));
                     _showNavigation();
                 }
@@ -166,7 +176,7 @@
             function changeNodesState() {
                 if (!autoState && undo != null) {
                     var nodeState = {};
-                    
+                    console.log('changing node state');
                     sigInst._core.graph.nodes.filter(function(node) {
                         nodeState[node.id] = {x: node.x, y: node.y, hidden: node._hidden, color: node.color};
                     });
@@ -179,6 +189,14 @@
             function log(msg) {
                 if (opts.debug) console.log(msg);
             };
+            
+            function getCutoff() {
+                return state.cutoff[state.dataset];
+            }
+            
+            function setCutoff(cutoff) {
+                return state.cutoff[state.dataset] = cutoff;
+            }
             
             function countVisibleNodes() {
                 return sigInst._core.graph.nodes.filter(function(node) {
@@ -415,7 +433,6 @@
                 }
                 
                 state.dataset = value;
-                changeState();
             };
             
             function updateEdges(ds) {
@@ -439,11 +456,15 @@
                 
                 if (sliderProperties.updateLimits) {
                     if (ds == 0) {
-                        console.log("updatinging", minWeight, maxWeight);
-                        ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: [minWeight]}, true);
+                        ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: minWeight}, true);
+                        ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
+                        ele.val([state.cutoff[ds] || minWeight], {set: true, update: true})
                     } else {
-                        ele.noUiSlider({range: {min: -1, max: 1}, start: [-0.08, 0.08]}, true);
+                        ele.val([-0.08, 0.08], {set: true, update: true});
                     }
+                    
+                    console.log("current val:", ele.val());
+//                    applyCutoff(ele.val());
                 }
                 
                 if (ds == 0) {
@@ -455,7 +476,9 @@
                 $(".cutoff-bar").css('display', 'none');
                 ele.css('display', 'block');
                 
+                changeState();
                 sigInst.draw();
+                isInitializing = false;
             }
             
             function loadDataset(dsid, data, preloaded) {
@@ -472,11 +495,11 @@
                     });
                     
                     updateEdges(dsid);
-                    $(".modal-backdrop").remove();
+//                    $(".modal-backdrop").remove();
                 };
                 
                 if (preloaded == undefined) {
-                    $('<div class="modal-backdrop fade in"></div>').appendTo(document.body);
+//                    $('<div class="modal-backdrop fade in"></div>').appendTo(document.body);
                     getParser(dataset.parser)({
                             jq: $, sigInst: sigInst, url: dataset.url, vizdata: vizdata, cb: loadDatasetCallback,
                             data: data, method: dataset.method, state: state
@@ -757,16 +780,17 @@
                     }
                 });
                 
-                applyCutoff(state.cutoff);
+                applyCutoff(getCutoff());
             };
             
             function applyCutoff(cutoff) {
-                state.cutoff = cutoff;
+                console.log('applying cutoff', cutoff);
+                setCutoff(cutoff);
                 
                 sigInst.iterNodes(function(node) {
                     node.visibleDegree = node.degree;
                 }).iterEdges(function(edge) {
-                    edge.hidden = Math.abs(edge.weight) < state.cutoff || edge.ds != state.dataset;
+                    edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.dataset;
                     if (edge.hidden || edge.source._hidden || edge.target._hidden) {
                         edge.source.visibleDegree--;
                         edge.target.visibleDegree--;
@@ -914,9 +938,6 @@
                  */
                 $('#btn-group-neighbourhood a').click(function(evt) {
                     switch (evt.target.text) {
-                    case "Remove selection":
-                        clearSelection();
-                        break;
                     case "Selected genes only":
                         applyNeighbourhood(0);
                         changeNodesState();
@@ -930,7 +951,7 @@
                 });
                 
                 $('#btn-group-annotation a').click(function(evt) { loadAnnotation(evt.target.text); });
-                $('#btn-layout').click(toggleLayout);
+                $('#btn-layout, #tool-layout').click(toggleLayout);
                 
                 $("#btn-group-download a, #btn-group-download button").click(function() {
                     switch ($(this).attr('id')) {
@@ -1080,14 +1101,12 @@
                     start: [-0.08, 0.08],
                     direction: "rtl",
                     orientation: "vertical",
+                    serialization: {
+                        lower: [new Link({target: $("#cutoff-label-max")})],
+                        upper: [new Link({target: $("#cutoff-label-min")})],
+                    }
                 }).on('set', function() {
                     console.log($(this).val());
-//                    applyCutoff($(this).val());
-//                    changeState();
-                }).on('slide', function() {
-                    var val = $(this).val();
-                    $("#cutoff-label-min").html(val[0]);
-                    $("#cutoff-label-max").html(val[1]);
                 });
                 
                 $("#cutoff-label").click(function() {});
@@ -1308,10 +1327,12 @@
                 /* Loading spinner each time we hit the server */
                 $("body").on({
                     ajaxStart: function() {
-                        $(rootElement).append('<div id="modal-overlay" class="ui-widget-overlay ui-front"></div>');
+                        $('<div class="modal-backdrop fade in"></div>').appendTo(document.body);
+//                        $(rootElement).append('<div id="modal-overlay" class="ui-widget-overlay ui-front"></div>');
                     },
                     ajaxStop: function() {
-                        $("#modal-overlay").remove()
+                        $('.modal-backdrop').remove();
+//                        $("#modal-overlay").remove()
                     }
                 });
                 
