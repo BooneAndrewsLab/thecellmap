@@ -99,6 +99,7 @@
             var undo = null;
             var autoState = false;
             var isInitializing = true;
+            var noPulse = false;
             
             function _updateNavigation() {
                 $(".undo-network").toggleClass('disabled', !undo.hasUndo());
@@ -649,18 +650,18 @@
             }
 
             function onNodesClick(targets) {
+                noPulse = true;
                 switch(clicking.modifierKey) {
                 case 'ctrl':
                     break;
                 case 'shift':
-                    console.log(getSelected().concat(targets.content), getSelected(), targets.content);
                     $("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
                     break;
                 default:
                     $("input.gene-search-input").select2("val", targets.content, true);
                     break;
                 }
-                
+                noPulse = false;
 //                var node = getNode(targets.content[0]);
 //                var strain = getStrain(targets.content[0]);
 //                setTimeout( function(){
@@ -1315,7 +1316,6 @@
                  ).bind('ctrlclicknodes', function () {
                     clicking.modifierKey = 'ctrl';
                 }).bind('shiftclicknodes', function () {
-                    console.log("setting shift");
                     clicking.modifierKey = 'shift';
                 }).bind('upnodes', function(e) {
                     if (!clicking.wasDragging) {
@@ -1331,7 +1331,9 @@
                     clicking.wasDragging = true;
                     changeNodesState()
                 }).bind('selectionStop', function(nodes) {
+                    noPulse = true;
                     $("input.gene-search-input").select2("val", getSelected().concat(nodes.content), true);
+                    noPulse = false;
                 }).bind('selectionStart', function() {
                 });
                 
@@ -1551,8 +1553,15 @@
                             sigInst.draw();
                             
                             if (!($(selected).not(state.selection).length == 0 && $(state.selection).not(selected).length == 0)) {
+                                var diff = $(getSelected()).not(state.selection).get();
+                                
                                 state.selection = getSelected();
                                 $(".tool-arange").toggleClass("disabled", state.selection.length == 0);
+                                if (!noPulse) {
+                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
+                                        return diff.indexOf(node.id) != -1;
+                                    })});
+                                }
                                 changeState();
                             }
                         }
