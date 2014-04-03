@@ -22,7 +22,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     this.p = {
         attraction_multiplier : 1,
         repulsion_multiplier : .75, // 0.75
-        gravity: 100,
+        gravity: 10,
         max_iterations : 1000,
         width : 1000,
         height : 1000,
@@ -93,6 +93,8 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         forceConstant = Math.sqrt(self.p.height * self.p.width / nodes_length);
         attraction_constant = self.p.attraction_multiplier * forceConstant;
         repulsion_constant = self.p.repulsion_multiplier * forceConstant;
+        
+        console.log(self.p.attraction_multiplier, self.p.repulsion_multiplier);
         
         if (self.p.edgeFilter) {
 //            self.p.edges = self.p.edges.filter(self.p.edgeFilter);
