@@ -156,3 +156,11 @@ a.disabled {
 #cutoff-label-max {
     margin-bottom: 20px;
 }
+
+#cutoff-bar-int .noUi-handle-lower {
+    background: #8ab88a;
+}
+
+#cutoff-bar-int .noUi-handle-upper {
+    background: #d99694;
+}

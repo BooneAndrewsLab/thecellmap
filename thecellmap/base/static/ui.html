@@ -70,12 +70,13 @@ $('.vizualization-ui').ready(function() {
   </div>
   
   <div id="btn-group-layout" class="btn-group">
-    <button id="btn-layout" type="button" class="btn btn-primary">Layout</button>
+    <button id="btn-layout" type="button" class="btn btn-primary" data-layout-type="force">Layout</button>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li><a id="tool-layout" href="#"><span class="glyphicons roundabout"></span> Force-directed layout </a></li>
+      <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"><span class="glyphicons resize_full"></span> Force-directed layout </a></li>
+      <li><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"><span class="glyphicons share_alt"></span> Annotation-directed layout </a></li>
       <li class="divider"></li>
       <li><a id="tool-rotate" href="#"><span class="glyphicons roundabout"></span> Rotate </a></li>
       <li class="dropdown-submenu pull-left tool-arange disabled"><a tabindex="-1" href="#"><span class="glyphicons vector_path_polygon"></span><span> Arange selected nodes</span></a>
@@ -101,7 +102,7 @@ $('.vizualization-ui').ready(function() {
       <li><a id="btn-style" data-toggle="modal" data-target="#modal-style" href="#"><span class="glyphicons adjust_alt"></span> Visual </a></li>
       <li id="btn-group-annotation" class="dropdown-submenu pull-left"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>
         <ul class="dropdown-menu" role="menu">
-          <li><a href="#">None</a></li>
+          <li class="active"><a href="#">None</a></li>
           <li class="divider"></li>
         </ul>
       </li>
