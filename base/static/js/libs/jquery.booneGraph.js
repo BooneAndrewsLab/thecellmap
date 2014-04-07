@@ -744,7 +744,7 @@
             }
             
             function toggleLayout(justStop) {
-                if (countVisibleNodes() > 300) {
+                if (countVisibleNodes() > 500) {
                     alertUser('Too many nodes', 'Too many nodes are visible for the layout algorithm to run efficiently.');
                     return;
                 }
@@ -753,14 +753,58 @@
                     sigInst.stopForceLayout();
                     _setRunningLayout(false);
                 } else if (justStop !== true) {
-                    sigInst.startForceLayout({
+                    var lopts, annotations, data, strain, annot, key;
+                    
+                    lopts = {
                         callback: function() {
                                 _setRunningLayout(false);
                             },
                         attraction_multiplier: $("#layout-slider-att").val() || 50,
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
-                        edgeFilter: function(edge) { return edge.weight > 0; }
-                    });
+                        edgeFilter: function(edge) { return edge.weight > 0; },
+                    };
+                    
+                    switch($(this).attr('data-layout-type') || 'force') {
+                    case 'annotation':
+                        annotations = {};
+                        data = vizdata[state.annotation];
+                        
+                        iterVisibleNodes(function(n) {
+                            strain = getStrain(n.id);
+                            annot = data.map[strain.orf] || [-1];
+                            
+                            annot.forEach(function(a) {
+                                if (!annotations.hasOwnProperty(a)) {
+                                    annotations[a] = [];
+                                }
+                                annotations[a].push(n);
+                            })
+                        });
+                        
+                        lopts.edges = [];
+                        k_combinations(sigInst._core.graph.nodes.filter(function(node) {
+                            return !node.hidden;
+                        }), 2).forEach(function(x) {
+                            lopts.edges.push({
+                                weight: .01,
+                                source: x[0],
+                                target: x[1]
+                            })
+                        });
+                        
+                        for (key in annotations) {
+                            k_combinations(annotations[key], 2).forEach(function(x) {
+                                lopts.edges.push({
+                                    weight: 1,
+                                    source: x[0],
+                                    target: x[1]
+                                })
+                            });
+                        }
+                        break;
+                    }
+                    
+                    sigInst.startForceLayout(lopts);
                     _setRunningLayout(true);
                 }
             }
@@ -967,8 +1011,12 @@
                     
                 });
                 
-                $('#btn-group-annotation a').click(function(evt) { loadAnnotation(evt.target.text); });
-                $('#btn-layout, #tool-layout').click(toggleLayout);
+                $('#btn-group-annotation a').click(function(evt) {
+                    $('#btn-group-annotation li').removeClass('active');
+                    $(this).parent().addClass('active');
+                    loadAnnotation(evt.target.text); 
+                });
+                $('#btn-layout, .tool-layout').click(toggleLayout);
                 
                 $("#btn-group-download a, #btn-group-download button").click(function() {
                     switch ($(this).attr('id')) {
@@ -1200,22 +1248,22 @@
                  * Prevent context menu, we want our own
                  * rightclick functionality
                  */
-                $("#network-container").contextmenu(function() {
-                    return false;
-                });
-                // sigh... disable context menu on context menu
-                // b/c its not in the other container
-                $("#contextmenu-container").contextmenu(function() {
-                    return false;
-                });
-                // Nice effects, stop any animations on enter,
-                // hide on leave, hide if not entered (code in
-                // callback above)
-                $("#contextmenu-container").mouseleave(function() {
-                    $(this).delay(500).hide();
-                }).mouseenter(function() {
-                    $(this).stop(true);
-                });
+//                $("#network-container").contextmenu(function() {
+//                    return false;
+//                });
+//                // sigh... disable context menu on context menu
+//                // b/c its not in the other container
+//                $("#contextmenu-container").contextmenu(function() {
+//                    return false;
+//                });
+//                // Nice effects, stop any animations on enter,
+//                // hide on leave, hide if not entered (code in
+//                // callback above)
+//                $("#contextmenu-container").mouseleave(function() {
+//                    $(this).delay(500).hide();
+//                }).mouseenter(function() {
+//                    $(this).stop(true);
+//                });
                 
                 $("#contextmenu a").click(function() {
                     switch ($(this).attr('id')) {
