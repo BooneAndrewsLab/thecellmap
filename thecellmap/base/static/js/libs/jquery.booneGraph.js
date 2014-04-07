@@ -1248,22 +1248,22 @@
                  * Prevent context menu, we want our own
                  * rightclick functionality
                  */
-//                $("#network-container").contextmenu(function() {
-//                    return false;
-//                });
-//                // sigh... disable context menu on context menu
-//                // b/c its not in the other container
-//                $("#contextmenu-container").contextmenu(function() {
-//                    return false;
-//                });
-//                // Nice effects, stop any animations on enter,
-//                // hide on leave, hide if not entered (code in
-//                // callback above)
-//                $("#contextmenu-container").mouseleave(function() {
-//                    $(this).delay(500).hide();
-//                }).mouseenter(function() {
-//                    $(this).stop(true);
-//                });
+                $("#network-container").contextmenu(function() {
+                    return false;
+                });
+                // sigh... disable context menu on context menu
+                // b/c its not in the other container
+                $("#contextmenu-container").contextmenu(function() {
+                    return false;
+                });
+                // Nice effects, stop any animations on enter,
+                // hide on leave, hide if not entered (code in
+                // callback above)
+                $("#contextmenu-container").mouseleave(function() {
+                    $(this).delay(500).hide();
+                }).mouseenter(function() {
+                    $(this).stop(true);
+                });
                 
                 $("#contextmenu a").click(function() {
                     switch ($(this).attr('id')) {
