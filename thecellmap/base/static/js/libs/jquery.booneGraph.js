@@ -473,16 +473,18 @@
                     if (ds == 0) {
                         ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: minWeight}, true);
                         ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                        ele.val([state.cutoff[ds] || minWeight]) //, {set: true, update: true})
+                        ele.val([state.cutoff[ds] || minWeight])
                     } else {
-                        ele.val([-0.08, 0.08]) //, {set: true, update: true});
+                        ele.val([-0.08, 0.08])
                     }
                 }
                 
                 if (ds == 0) {
                     $("#cutoff-label-max").css('visibility', 'hidden');
+                    $("#cutoff-label-min").removeClass('btn-danger').addClass('btn-default');
                 } else {
                     $("#cutoff-label-max").css('visibility', 'visible');
+                    $("#cutoff-label-min").removeClass('btn-default').addClass('btn-danger');
                 }
                 
                 $(".cutoff-bar").css('display', 'none');
@@ -1170,7 +1172,6 @@
                         upper: [new Link({target: function(val){$("#cutoff-label-min").html(-val);}})]
                     }
                 }).on('set', function() {
-//                    var val = $(this).val();
                     applyCutoff($(this).val());
                     changeState();
                 });
@@ -1372,7 +1373,7 @@
                     clicking.wasDragging = false;
                     clicking.modifierKey = null;
                 }).bind('upgraph', function(evt) {
-                    if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting) { // Clear selection
+                    if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$(".btn-group").hasClass('open')) { // Clear selection
                         clearSelection();
                     }
                 }).bind('draggedNode', function() {
