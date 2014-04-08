@@ -35,7 +35,7 @@ $('.vizualization-ui').ready(function() {
 
 
 <div class="middle-right">
-  <button id="cutoff-label-max" type="button" class="btn btn-default cutoff-label" style="visibility: hidden;">&nbsp;</button>
+  <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label" style="visibility: hidden;">&nbsp;</button>
   
   <div id="cutoff-bar-cor" class="cutoff-bar" data-dataset="0"></div>
   <div id="cutoff-bar-int" class="cutoff-bar" data-dataset="1" style="display: none;"></div>
@@ -60,12 +60,12 @@ $('.vizualization-ui').ready(function() {
 
 <div class="top-right">
   <div id="btn-group-neighbourhood" class="hidden btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Neighbourhood <span class="caret"></span></button>
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-      <li><a href="#" data-toggle="download">Selected genes only</a></li>
-      <li><a href="#" data-toggle="download">1st neighbours</a></li>
-      <li><a href="#" data-toggle="download">2nd neighbours</a></li>
-      <li><a href="#" data-toggle="download">3rd neighbours</a></li>
+      <li><a href="#" data-toggle="download">Selected genes</a></li>
+      <li><a href="#" data-toggle="download">&nbsp; + 1st neighbours</a></li>
+      <li><a href="#" data-toggle="download">&nbsp; + 2nd neighbours</a></li>
+      <li><a href="#" data-toggle="download">&nbsp; + 3rd neighbours</a></li>
     </ul>
   </div>
   
@@ -97,7 +97,7 @@ $('.vizualization-ui').ready(function() {
   </div>
   
   <div id="btn-group-style" class="btn-group">
-    <button type="button" class="btn btn-success dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a id="btn-style" data-toggle="modal" data-target="#modal-style" href="#"><span class="glyphicons adjust_alt"></span> Visual </a></li>
       <li id="btn-group-annotation" class="dropdown-submenu pull-left"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>

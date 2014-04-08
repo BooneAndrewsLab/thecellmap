@@ -238,7 +238,7 @@ class GenericXlsWriter():
         self.write_score_row(values, sheet, col_offset=0, **kwargs)
     
     def write_score_row_pos(self, values, sheet=None, **kwargs):
-        self.write_score_row(values, sheet, col_offset=5, **kwargs)
+        self.write_score_row(values, sheet, col_offset=len(self.SCORE_FORMATS) + 1, **kwargs)
     
     def add_instructions_sheet(self):
         self.add_sheet('Instructions')
