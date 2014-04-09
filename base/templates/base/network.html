@@ -106,7 +106,7 @@
             }],
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
-            debug: true,
+            debug: {% if debug %}true{% else %}false{% endif %},
             layoutButtonHide: false,
             slider: {
                 min : 0,

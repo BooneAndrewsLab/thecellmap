@@ -385,8 +385,10 @@
             }
             
             function clearSelection() {
-                $("input.gene-search-input").select2('val', "", true);
-                state.selection = [];
+                if (state.selection.length > 0) {
+                    $("input.gene-search-input").select2('val', "", true);
+                    state.selection = [];
+                }
             }
             
             function getParser(type) {
@@ -1245,18 +1247,21 @@
                     changeState();
                 });
                 
-                /*
-                 * Prevent context menu, we want our own
-                 * rightclick functionality
-                 */
-                $("#network-container").contextmenu(function() {
-                    return false;
-                });
-                // sigh... disable context menu on context menu
-                // b/c its not in the other container
-                $("#contextmenu-container").contextmenu(function() {
-                    return false;
-                });
+                if (!opts.debug) {
+                    /*
+                     * Prevent context menu, we want our own
+                     * rightclick functionality
+                     */
+                    $("#network-container").contextmenu(function() {
+                        return false;
+                    });
+                    // sigh... disable context menu on context menu
+                    // b/c its not in the other container
+                    $("#contextmenu-container").contextmenu(function() {
+                        return false;
+                    });
+                }
+                
                 // Nice effects, stop any animations on enter,
                 // hide on leave, hide if not entered (code in
                 // callback above)
@@ -1606,11 +1611,11 @@
                                 
                                 state.selection = getSelected();
                                 $(".tool-arange").toggleClass("disabled", state.selection.length == 0);
-                                if (!noPulse) {
-                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
-                                        return diff.indexOf(node.id) != -1;
-                                    })});
-                                }
+//                                if (!noPulse) {
+//                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
+//                                        return diff.indexOf(node.id) != -1;
+//                                    })});
+//                                }
                                 changeState();
                             }
                         }
