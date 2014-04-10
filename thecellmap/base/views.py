@@ -2,13 +2,14 @@
 
 import datetime
 
-from django.http.response import HttpResponseRedirect, Http404
+from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term
 from base.utils import print_queries, is_integer, JsonResponse
+from pandas.core.common import is_float
 
 
 def _serve_dataset(request, dataset=None):
@@ -53,6 +54,9 @@ def nodes_download(request, dataset_id=None):
     if not nodes:
         return HttpResponseRedirect(dataset.static_url('dataset.txt'))
     
+    if len(nodes) > 20:
+        return HttpResponseForbidden('Trying to download too many nodes')
+    
     return nodes_xls(
                  dataset, 
                  nodes, 
@@ -77,10 +81,16 @@ def tabular_data(request, dataset_id=None, node_id=None):
     response = {'correlations': [], 'scores_pos': [], 'scores_neg': []}
     data = data[data.keys()[0]]
     c = data['correlations']
-    c = c[c.correlation > .2]
-    
     s = data['scores']
-    s = s[(s.score.abs() > 0.08) & (s.pval < 0.05)]
+    s = s[s.pval < 0.05]
+    
+    if 's' in request.GET:
+        return _tabular_more_scores(request, s)
+    elif 'c' in request.GET:
+        return _tabular_more_correlations(request, c)
+    
+    c = c[c.correlation > .2]
+    s = s[s.score.abs() > 0.08]
     
     for strain, correlation in c.itertuples(index=False):
         response['correlations'].append(strain + ('%.3f' % correlation, ))
@@ -90,6 +100,37 @@ def tabular_data(request, dataset_id=None, node_id=None):
     
     for strain, pval, score in s[s.score > 0].sort('score', ascending=False).itertuples(index=False):
         response['scores_pos'].append(strain + ('%.3f' % score, '%.2e' % pval))
+    
+    return JsonResponse(response)
+
+def _tabular_more_scores(request, scores):
+    try:
+        cutoff = float(request.GET['s'])
+    except:
+        return HttpResponseBadRequest('Cutoff is not a number (float)')
+    
+    if cutoff < 0:
+        scores = scores[(scores.score < 0) & (scores.score > cutoff)].sort('score')
+    else:
+        scores = scores[(scores.score >= 0) & (scores.score < cutoff)].sort('score', ascending=False)
+    
+    response = []
+    for strain, pval, score in scores.itertuples(index=False):
+        response.append(strain + ('%.3f' % score, '%.2e' % pval, ))
+    
+    return JsonResponse(response)
+
+def _tabular_more_correlations(request, correlations):
+    try:
+        cutoff = float(request.GET['c'])
+    except:
+        return HttpResponseBadRequest('Cutoff is not a number (float)')
+    
+    correlations = correlations[(correlations.correlation < cutoff) & (correlations.correlation >= 0)]
+    
+    response = []
+    for strain, correlation in correlations.itertuples(index=False):
+        response.append(strain + ('%.3f' % correlation, ))
     
     return JsonResponse(response)
 

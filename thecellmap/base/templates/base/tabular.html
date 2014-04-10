@@ -44,9 +44,27 @@
   <script src="{% static 'js/libs/bootstrap-sortable.js' %}"></script>
   <script type="text/javascript">
   (function($) {
+    function add_to_table(tbody, data, val_idx) {
+      if (data.length == 0) return;
+      var row, ele = tbody.find('.row-more');
+      var ctf =  data[0][val_idx] < 0 ? -1 : 1;
+      var func = data[0][val_idx] < 0 ? Math.max : Math.min;
+      
+      data.forEach(function (line) {
+          row = '';
+          line.forEach(function(val) {
+              row += '<td data-value="' + val + '">' + val + '</td>';
+          });
+          ctf = func(line[val_idx], ctf);
+          ele.before('<tr>' + row + '</tr>');
+      });
+      
+      ele.find('.load-more').data('cutoff', ctf);
+    }
+    
     function load_strain(target) {
         if (isEmpty(target) && !target.hasClass('data-loading')) {
-            var node_id = target.attr('data-node');
+            var node_id = target.data('node');
             target.addClass('data-loading');
             target.append($('#spinner>div').clone());
             
@@ -62,7 +80,7 @@
                               </a> \
                               <ul class="dropdown-menu download-data"> \
                                 <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Current gene</a></li> \
-                                {% if strains|length > 1 %}<li><a href="#" data-downloadtype="all">All genes</a></li>{% endif %} \
+                                {% if strains|length > 1 %}<li{% if strains|length > 30 %} data-toggle="tooltip" title="Download limited to less than 30 nodes" data-placement="right"{% endif %}><a href="#" data-downloadtype="all"{% if strains|length > 30 %} class="disabled"{% endif %}>All genes</a></li>{% endif %} \
                               </ul> \
                             </li> \
                           </ul> \
@@ -134,49 +152,19 @@
                         </div> \
                       </div>');
                 
-                var row, cls;
-                if (d.correlations.length == 0) {
-                    $('#c' + node_id + ' tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant correlations found</td></tr>');
-                } else {
-                    d.correlations.forEach(function (line) {
-                        setTimeout(function() {
-                            row = '';
-                            line.forEach(function(val) {
-                                row += '<td data-value="' + val + '">' + val + '</td>';
-                            });
-                            $('#c' + node_id + ' tbody').append('<tr>' + row + '</tr>');
-                        }, 0);
-                    });
-                    setTimeout(function() {
-                        $('#c' + node_id + ' tbody').append('<tr><td colspan="4">Other correlations are below the threshold...</td></tr>');
-                    }, 0);
-                }
+                target.find('li[data-toggle="tooltip"]').tooltip();
                 
-                d.scores_pos.forEach(function (line) {
-                    setTimeout(function() {
-                        row = '';
-                        line.forEach(function(val){
-                            row +='<td data-value="' + val + '">' + val + '</td>';
-                        });
-                        $('#s' + node_id + ' .score-pos tbody').append('<tr>' + row + '</tr>');
-                    }, 0);
-                });
-                if (d.scores_pos.length == 0) {
-                    $('#s' + node_id + ' .score-pos tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant positive interactions found</td></tr>');
-                }
+                $('#c' + node_id + ' tbody').append(
+                        '<tr class="row-more"><td colspan="3" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="c" data-cutoff="1"> \
+                            Load all <span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
                 
-                d.scores_neg.forEach(function (line) {
-                    setTimeout(function() {
-                        row = '';
-                        line.forEach(function(val){
-                            row +='<td data-value="' + val + '">' + val + '</td>';
-                        });
-                        $('#s' + node_id + ' .score-neg tbody').append('<tr>' + row + '</tr>');
-                    }, 0);
-                });
-                if (d.scores_neg.length == 0) {
-                    $('#s' + node_id + ' .score-neg tbody').append('<tr><td class="table-empty" colspan="3">Sorry, no significant negative interactions found</td></tr>');
-                }
+                $('#s' + node_id + ' tbody').append(
+                        '<tr class="row-more"><td colspan="4" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="s" data-cutoff="1"> \
+                            Load all <span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                $('#s' + node_id + ' .score-neg .load-more').data('cutoff', -1);
+                add_to_table($('#s' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
+                add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2);
                 
                 target.removeClass('data-loading');
                 target.find('.bubblingG').remove();
@@ -192,6 +180,16 @@
                     }
                     
                     evt.preventDefault();
+                });
+                
+                target.find('.load-more').click(function() {
+                    var clicked = $(this);
+                    var data = {};
+                    data[clicked.data('ds')] = clicked.data('cutoff');
+                    $.get(clicked.closest('.tab-pane[data-node]').data('node') + "/", data, function(d) {
+                        add_to_table(clicked.closest('tbody'), d, 2);
+                        clicked.closest('tr').remove();
+                    });
                 });
             });
         }

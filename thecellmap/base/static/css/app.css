@@ -6,3 +6,7 @@
    css/less/bootstrap.less file.
 
    ========================================================================== */
+a.disabled {
+    pointer-events: none;
+    color: gray !important;
+}
