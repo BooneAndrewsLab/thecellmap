@@ -10,11 +10,6 @@ body {
     padding-right: 8px;
 }
 
-a.disabled {
-    pointer-events: none;
-    color: gray !important;
-}
-
 .content .container {
     width: auto;
 }

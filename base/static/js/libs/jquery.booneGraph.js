@@ -47,7 +47,8 @@
                         return table.wrap('<div>').parent().html();
                     },
                     modifiedCallback: null,
-                    uiUrl: "url/"
+                    uiUrl: "url/",
+                    downloadLimit: 30
             };
             
             var sliderProperties = $.extend({}, DEFAULTS.slider, o.slider || {});
@@ -286,6 +287,23 @@
                     } else {
                         $('#alert-missing .message').html(message);
                     }
+                }
+            };
+            
+            function updateTooltips() {
+                $('#download-selected').parent().tooltip('destroy');
+                if ($('#download-selected').hasClass('disabled')) {
+                    if (getSelected().length > opts.downloadLimit)
+                        $('#download-selected').parent().tooltip({title: 'Download limited to less than 30 nodes',
+                            placement: 'right'});
+                    else if (getSelected().length == 0)
+                        $('#download-selected').parent().tooltip({title: 'Select some nodes first',
+                            placement: 'right'});
+                }
+                
+                $('#view-tabular').parent().tooltip('destroy');
+                if ($('#view-tabular').hasClass('disabled')) {
+                    $('#view-tabular').parent().tooltip({title: 'Select some nodes first', placement: 'right'});
                 }
             }
             
@@ -1600,7 +1618,8 @@
                         
                         $('#btn-group-neighbourhood').toggleClass('hidden', selected.length == 0);
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
-                        $('#download-selected').toggleClass('disabled', selected.length == 0);
+                        $('#download-selected').toggleClass('disabled', selected.length == 0 || selected.length > opts.downloadLimit);
+                        $('#view-tabular').toggleClass('disabled', selected.length == 0);
                         
                         if (!tokenizing) {
                             updateMissingMessage();
@@ -1617,11 +1636,15 @@
 //                                    })});
 //                                }
                                 changeState();
+                                
+                                /* Set the tooltips */
+                                updateTooltips();
                             }
                         }
                     }).on('select2-blur', function() {
                     });
                     
+                    updateTooltips();
                     showUI();
                     
                     // Load plot graph in Michael Jackson mode by
