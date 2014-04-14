@@ -313,7 +313,7 @@
                 var url = 'http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.orf;
                 var annot, term, color;
                 
-                modal.find('.modal-title').html('Edit node "' + node.label + '"');
+                modal.find('.modal-title').html('Node details: "' + node.label + '"');
                 
                 modal.find('#node-orf').html(strain.orf);
                 modal.find('#node-name').html(strain.name);
