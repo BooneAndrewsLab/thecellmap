@@ -166,3 +166,13 @@ body {
     word-wrap: break-word;
     word-break: break-word;
 }
+
+/* Some special annotation tab styling */
+
+#style-annotation-accordion .panel {
+    overflow: visible;
+}
+
+#style-annotation-accordion .pick-a-color-markup .input-group-btn {
+    width: 100%!important;
+}
