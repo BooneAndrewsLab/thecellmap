@@ -264,6 +264,9 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 8, 1, 'Significant positive genetic interactions (stringent cutoff: score > 0.16, p-value < 0.05)')
         self._write_cell(sheet['sheet'], 9, 0, 'E', style=STYLE_POS_SIGNIFICANT)
         self._write_cell(sheet['sheet'], 9, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
+        
+        self._write_cell(sheet['sheet'], 11, 0, 'Notes:', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 12, 0, 'These are unpublished data. Please contact Michael Costanzo (michael.costanzo@utoronto.ca) for questions regarding citation policy.')
     
     def save(self, seek=None):
         self._save()
