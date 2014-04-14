@@ -152,10 +152,17 @@ body {
     margin-bottom: 20px;
 }
 
-/* #cutoff-bar-int .noUi-handle-lower { */
-/*     background: #8ab88a; */
-/* } */
+.cutoff-unreliable {
+    background-color: #d9534f!important;
+}
 
-/* #cutoff-bar-int .noUi-handle-upper { */
-/*     background: #d99694; */
-/* } */
+.form-info {
+    padding: 6px 2px;
+    display: block;
+}
+
+#node-annotation-table tr td:nth-child(2) {
+    vertical-align: middle;
+    word-wrap: break-word;
+    word-break: break-word;
+}
