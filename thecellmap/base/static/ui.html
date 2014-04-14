@@ -170,10 +170,9 @@ $('.vizualization-ui').ready(function() {
 
 <div id="contextmenu-container" class="dropdown clearfix" style="display: none;">
   <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
-    <li><a id="context-info" tabindex="-1" href="#"><span class="glyphicon glyphicon-info-sign"></span> Show info</a></li>
+    <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Node details...</a></li>
     <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li>
     <li class="divider"></li>
-    <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit node</a></li>
     <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
   </ul>
 </div>
@@ -187,8 +186,34 @@ $('.vizualization-ui').ready(function() {
         <h4 class="modal-title" id="edit-node-modal-label"></h4>
       </div>
       <div class="modal-body">
+        
         <form class="form-horizontal" role="form">
           <input type="hidden" id="edit-node-id">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">ORF</label>
+            <div class="col-sm-10">
+              <span id="node-orf" class="form-info"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-10">
+              <span id="node-name" class="form-info"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Allele</label>
+            <div class="col-sm-10">
+              <span id="node-allele" class="form-info"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">SGD url</label>
+            <div class="col-sm-10">
+              <span id="node-sgd" class="form-info"></span>
+            </div>
+          </div>
+          
           <div class="form-group">
             <label for="edit-node-label" class="col-sm-2 control-label">Label</label>
             <div class="col-sm-10">
@@ -199,6 +224,21 @@ $('.vizualization-ui').ready(function() {
             <label for="edit-node-color" class="col-sm-2 control-label">Color</label>
             <div class="col-sm-10">
               <input class="form-control pick-a-color" id="edit-node-color">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                          <th style="width: 1%;"></th>
+                          <th>Annotation</th>
+                          <th style="width: 1%;">Dominant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="node-annotation-table">
+                    </tbody>
+                </table>
             </div>
           </div>
         </form>

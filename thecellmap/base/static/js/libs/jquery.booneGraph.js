@@ -8,6 +8,7 @@
             /* Default options */
             var DEFAULTS = {
                     defaultNodeColor: '#E8E8E8',
+                    multifunctionNodeColor: '#E8E8E8',
                     runningLayout: null,
                     layout: null,
                     datasets: [],
@@ -308,11 +309,56 @@
             }
             
             function editNode(id) {
-                var modal = $('#edit-node-modal'), node = getNode(id);
+                var modal = $('#edit-node-modal'), node = getNode(id), strain = getStrain(id), data = vizdata[state.annotation];
+                var url = 'http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.orf;
+                var annot, term, color;
+                
                 modal.find('.modal-title').html('Edit node "' + node.label + '"');
+                
+                modal.find('#node-orf').html(strain.orf);
+                modal.find('#node-name').html(strain.name);
+                modal.find('#node-allele').html(strain.alel);
+                modal.find('#node-sgd').html('<a href="' + url + '">' + url + '</a>');
+                
                 modal.find('#edit-node-id').attr("value", id);
                 modal.find('#edit-node-label').attr("value", node.label);
                 modal.find('#edit-node-color').val(node.color).focus().blur().change();
+                
+                $('#node-annotation-table').empty();
+                
+                annot = data.map[strain.orf] || [-1];
+                
+                if (annot.length > 1) {
+                    $('#node-annotation-table').append('<tr class="annotation-row" data-term="-2">\
+                            <td><input class="form-control pick-a-color annotation-color" value="' + data.multifunctionColor + '"></td>\
+                            <td>Multi-function</td>\
+                            <td><input type="radio" name="dominant"></td></tr>');
+                }
+                
+                annot.forEach(function(a) {
+                    if (data.terms.hasOwnProperty(a)) {
+                        term = data.terms[a];
+                        color = data.colorPalette[term.idx];
+                    } else {
+                        term = {name: 'Unannotated', idx: -1};
+                        color = data.defaultColor;
+                    }
+                    
+                    $('#node-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
+                            <td><input class="form-control pick-a-color annotation-color" value="' + color + '"></td>\
+                            <td>' + term.name + '</td>\
+                            <td><input type="radio" name="dominant"></td></tr>');
+                });
+                
+                $('#node-annotation-table .pick-a-color[value="' + node.color + '"]').closest('tr').find('input[type="radio"]').prop('checked', true);
+                $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false});
+                
+                $('#node-annotation-table input[name=dominant]').change(function() {
+                    modal.find('#edit-node-color').val(
+                            $('#node-annotation-table input[name=dominant]:checked').closest('tr').find('.pick-a-color').val()
+                        ).focus().blur().change();
+                });
+                
                 modal.modal('show');
             }
             
@@ -489,13 +535,18 @@
                 opts.datasets[ds].min = minWeight;
                 opts.datasets[ds].max = maxWeight;
                 
+                if (ds == 0) {
+                    ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
+                    ele.val([state.cutoff[ds] || minWeight]);
+                }
+                
                 if (sliderProperties.updateLimits) {
                     if (ds == 0) {
                         ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: minWeight}, true);
                         ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                        ele.val([state.cutoff[ds] || minWeight])
+                        ele.val([state.cutoff[ds] || minWeight]);
                     } else {
-                        ele.val([-0.08, 0.08])
+                        ele.val([-0.08, 0.08]);
                     }
                 }
                 
@@ -606,8 +657,9 @@
                                     async : false,
                                     success : function(data) {
                                         vizdata[id] = data;
-                                        if (vizdata['defaultColor'] == undefined) {
-                                            vizdata.defaultColor = opts.defaultNodeColor;
+                                        if (vizdata[id].defaultColor == undefined) {
+                                            vizdata[id].defaultColor = opts.defaultNodeColor;
+                                            vizdata[id].multifunctionColor = opts.multifunctionNodeColor;
                                         }
                                         
                                         var i = 0, n;
@@ -637,22 +689,45 @@
                         });
                     }
                 }
-
-                var data = vizdata[id];
+                
+                applyAnnotationColors();
+//                var data = vizdata[id];
+//                
+//                sigInst.iterNodes(function(n) {
+//                    var strain = getStrain(n.id);
+//                    var annot = data.map[strain.orf];
+//                    
+//                    if (annot != undefined) {
+//                        if (annot.length == 1)
+//                            n.color = data.colorPalette[data.terms[annot[0]].idx];
+//                        else
+//                            n.color = data.multifunctionColor;
+//                    } else {
+//                        // No annotation or multifunction
+//                        n.color = data.defaultColor;
+//                    }
+//                }).draw();
+                
+                changeState();
+            }
+            
+            function applyAnnotationColors() {
+                var data = vizdata[state.annotation], strain, annot;
                 
                 sigInst.iterNodes(function(n) {
-                    var strain = getStrain(n.id);
-                    var annot = data.map[strain.orf];
+                    strain = getStrain(n.id);
+                    annot = data.map[strain.orf];
                     
-                    if (annot != undefined && annot.length == 1) {
-                        n.color = data.colorPalette[data.terms[annot[0]].idx];
+                    if (annot != undefined) {
+                        if (annot.length == 1)
+                            n.color = data.colorPalette[data.terms[annot[0]].idx];
+                        else
+                            n.color = data.multifunctionColor;
                     } else {
                         // No annotation or multifunction
                         n.color = data.defaultColor;
                     }
                 }).draw();
-                
-                changeState();
             }
             
             function onNodesContext(targets) {
@@ -1167,7 +1242,7 @@
                 $("#cutoff-bar-cor").noUiSlider({
                     range: {min: sliderProperties.min, max: sliderProperties.max},
                     step: sliderProperties.step,
-                    start: [sliderProperties.value],
+                    start: sliderProperties.value,
                     direction: "rtl",
                     orientation: "vertical",
                     serialization: {
@@ -1175,9 +1250,15 @@
                     }
                 }).on('set', function() {
                     applyCutoff($(this).val());
+                    
+                    $(this).find('.noUi-handle').toggleClass('cutoff-unreliable', $(this).val() < sliderProperties.value);
+                    
+                    if ($(this).find('.noUi-handle').hasClass('cutoff-unreliable')) {
+                        alertUser('Not implemented yet', 'Loading correlations below the significant cutoff is not available yet.');
+                    }
+                    
                     changeState();
                 });
-                $("#cutoff-label-min").html(sliderProperties.value);
                 
                 $("#cutoff-bar-int").noUiSlider({
                     range: {
@@ -1196,6 +1277,7 @@
                     changeState();
                 });
                 
+                $("#cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
                 
                 $("#btn-group-datasets a").click(function(){
@@ -1345,14 +1427,55 @@
 //                    title: "FOOOOOOOOOOOO"
 //                });
                 
+                /* EDIT NODE MODAL DIALOG STUFF */
+                
                 var modal = $('#edit-node-modal');
                 modal.modal({show: false});
                 modal.find('.modal-confirm').click(function() {
-                    var node = getNode(modal.find('#edit-node-id').val());
+                    var node = getNode(modal.find('#edit-node-id').val()), colorsChanged = false;
                     node.label = modal.find('#edit-node-label').val();
-                    node.color = modal.find('#edit-node-color').val();
-                    sigInst.draw();
+                    node.color = "#" + modal.find('#edit-node-color').val().toUpperCase();
+                    
+                    modal.find('.annotation-color').each(function() {
+                        var color = '#' + $(this).val().toUpperCase();
+                        
+                        switch ($(this).closest('tr').data('term')) {
+                        case -2: // multifunction
+                            if (vizdata[state.annotation].multifunctionColor != color) {
+                                vizdata[state.annotation].multifunctionColor = color;
+                                colorsChanged = true;
+                            }
+                            break;
+                        case -1: // unannotated
+                            if (vizdata[state.annotation].defaultColor != color) {
+                                vizdata[state.annotation].defaultColor = color;
+                                colorsChanged = true;
+                            }
+                            break;
+                        default:
+                            if (vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] != color) {
+                                vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] = color;
+                                colorsChanged = true;
+                            }
+                            break;
+                        }
+                    });
+                    
+                    if (colorsChanged) {
+                        applyAnnotationColors();
+                    } else {
+                        sigInst.draw();
+                    }
+                    
                     modal.modal('hide');
+                    
+                    changeNodesState();
+                });
+                
+                modal.find('#edit-node-color').on('change', function() {
+                    if (modal.find('input[name=dominant]:checked').closest('tr').find('.pick-a-color').val() != $(this).val()) {
+                        modal.find('input[name=dominant]').prop('checked', false);
+                    }
                 });
                 
                 $(".tool-arange a").click(arangeNodes);
