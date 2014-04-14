@@ -92,7 +92,13 @@ $('.vizualization-ui').ready(function() {
   <div id="btn-group-style" class="btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-      <li><a id="btn-style" data-toggle="modal" data-target="#modal-style" href="#"><span class="glyphicons adjust_alt"></span> Visual </a></li>
+      <li><a id="btn-style-node" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-node" href="#"><span class="glyphicons adjust_alt"></span> Node style </a></li>
+      <li><a id="btn-style-edge" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-edge" href="#"><span class="glyphicons adjust_alt"></span> Edge style </a></li>
+      <li><a id="btn-style-general" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-general" href="#"><span class="glyphicons adjust_alt"></span> General style </a></li>
+      <li><a id="btn-style-annotation" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-annotation" href="#"><span class="glyphicons adjust_alt"></span> Annotation legend </a></li>
+      
+      <li class="divider"></li>
+      
       <li id="btn-group-annotation" class="dropdown-submenu pull-left"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>
         <ul class="dropdown-menu" role="menu">
           <li class="active"><a href="#">None</a></li>
@@ -128,6 +134,7 @@ $('.vizualization-ui').ready(function() {
           <li class="active"><a href="#style-node" data-toggle="tab">Node</a></li>
           <li><a href="#style-edge" data-toggle="tab">Edge</a></li>
           <li><a href="#style-general" data-toggle="tab">General</a></li>
+          <li><a href="#style-annotation" data-toggle="tab">Annotations</a></li>
         </ul>
         <div class="tab-content">
           <div class="tab-pane fade in active" id="style-node">
@@ -156,6 +163,14 @@ $('.vizualization-ui').ready(function() {
             <ul class="list-group">
               <li class="list-group-item">Background color: <input id="canvas-background-color" value="222222"
                 name="background-color" class="pick-a-color"></li>
+            </ul>
+          </div>
+          <div class="tab-pane fade" id="style-annotation">
+            <ul class="list-group">
+              <li class="list-group-item">
+                <div class="panel-group" id="style-annotation-accordion">
+                </div>
+              </li>
             </ul>
           </div>
         </div>

@@ -326,12 +326,13 @@
                 
                 $('#node-annotation-table').empty();
                 
-                annot = data.map[strain.orf] || [-1];
+                annot = data.map[strain.orf] || ["-1"];
                 
                 if (annot.length > 1) {
-                    $('#node-annotation-table').append('<tr class="annotation-row" data-term="-2">\
-                            <td><input class="form-control pick-a-color annotation-color" value="' + data.multifunctionColor + '"></td>\
-                            <td>Multi-function</td>\
+                    term = data.terms["-2"];
+                    $('#node-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
+                            <td><input class="form-control pick-a-color annotation-color" value="' + data.colorPalette[term.idx] + '"></td>\
+                            <td>' + term.name + '</td>\
                             <td><input type="radio" name="dominant"></td></tr>');
                 }
                 
@@ -339,9 +340,6 @@
                     if (data.terms.hasOwnProperty(a)) {
                         term = data.terms[a];
                         color = data.colorPalette[term.idx];
-                    } else {
-                        term = {name: 'Unannotated', idx: -1};
-                        color = data.defaultColor;
                     }
                     
                     $('#node-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
@@ -646,7 +644,8 @@
                         vizdata[id] = {
                                 map : {},
                                 defaultColor : opts.defaultNodeColor,
-                                terms: []
+                                terms: {"-1": {id: -1, idx: 0, name: 'Unannotated', orig_name: 'Unannotated'}},
+                                colorPalette: [opts.defaultNodeColor]
                         }
                     } else {
                         opts.annotations.forEach(function(annotation) {
@@ -666,9 +665,17 @@
                                         for (n in vizdata[id].terms) {
                                             vizdata[id].terms[n] = {
                                                     idx : i++,
-                                                    name : vizdata[id].terms[n]
+                                                    id : n,
+                                                    name : vizdata[id].terms[n],
+                                                    orig_name : vizdata[id].terms[n]
                                             }
                                         }
+                                        
+                                        $.extend(vizdata[id].terms, {
+                                              "-1": {id: -1, idx: i, name: 'Unannotated', orig_name: 'Unannotated'},
+                                              "-2": {id: -2, idx: i+1, name: 'Multi-function', orig_name: 'Multi-function'}
+                                            }
+                                          );
                                         
                                         var colors = paletteGenerator.generate(
                                                 i, // Colors
@@ -682,7 +689,7 @@
                                                 20 // Steps (quality)
                                             );
                                         colors = $.map(colors, function(c){return c.hex();});
-                                        vizdata[id].colorPalette = colors;
+                                        vizdata[id].colorPalette = colors.concat([opts.defaultNodeColor, opts.multifunctionNodeColor]);
                                     }
                                 });
                             }
@@ -691,24 +698,77 @@
                 }
                 
                 applyAnnotationColors();
-//                var data = vizdata[id];
-//                
-//                sigInst.iterNodes(function(n) {
-//                    var strain = getStrain(n.id);
-//                    var annot = data.map[strain.orf];
-//                    
-//                    if (annot != undefined) {
-//                        if (annot.length == 1)
-//                            n.color = data.colorPalette[data.terms[annot[0]].idx];
-//                        else
-//                            n.color = data.multifunctionColor;
-//                    } else {
-//                        // No annotation or multifunction
-//                        n.color = data.defaultColor;
-//                    }
-//                }).draw();
+                rebuildLegend();
                 
                 changeState();
+            }
+            
+            function rebuildLegend() {
+                var id = state.annotation, terms = vizdata[id].terms;
+                $("#style-annotation-accordion").empty();
+                
+                for (n in terms) {
+                    var term = terms[n];
+                    var color = vizdata[id].colorPalette[term.idx];
+                    
+                    $("#style-annotation-accordion").append('<div id="panel-annotation-' + term.id + '" class="panel panel-default" data-term="' + term.id + '">\
+                        <div class="panel-heading" style="background-color: ' + color + ';">\
+                          <h4 class="panel-title">\
+                            <a data-toggle="collapse" data-parent="#style-annotation-accordion" href="#style-annotation-' + term.id + '">\
+                              ' + term.name + '\
+                            </a>\
+                          </h4>\
+                        </div>\
+                        <div id="style-annotation-' + term.id + '" class="panel-collapse collapse">\
+                          <div class="panel-body">\
+                          </div>\
+                        </div>\
+                      </div>');
+                    
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-body").append('<form class="form-horizontal" role="form">\
+                            <div class="form-group">\
+                              <label class="col-sm-2 control-label" for="style-annotation-' + term.id + '-name">Name</label>\
+                              <div class="col-sm-10 input-group">\
+                                <input class="form-control annotation-name" placeholder="Annotation name" id="style-annotation-' + term.id + '-name" value="' + term.name + '">\
+                                <span class="input-group-btn">\
+                                  <button class="btn btn-primary annotation-name-revert" type="button" data-toggle="tooltip" data-placement="top" data-delay="200" title="Revert to default name"><span class="glyphicon glyphicon-refresh"></span> </button>\
+                                </span>\
+                              </div>\
+                            </div>\
+                            <div class="form-group">\
+                              <label class="col-sm-2 control-label" for="style-annotation-' + term.id + '-color">Color</label>\
+                              <div class="col-sm-10 input-group">\
+                                <input id="style-annotation-' + term.id + '-color" class="pick-a-color" value="' + color + '">\
+                              </div>\
+                            </div>\
+                          </form>');
+                }
+                
+                $("#style-annotation-accordion *[data-toggle=tooltip]").tooltip();
+                $("#style-annotation-accordion .pick-a-color").pickAColor({showSavedColors: false}).on('change', function() {
+                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')], color = '#' + $(this).val();
+                    vizdata[id].colorPalette[term.idx] = color;
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
+                    applyAnnotationColors();
+                });
+                $("#style-annotation-accordion .annotation-name").keyup(function() {
+                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+                    term.name = $(this).val();
+                    $(this).closest('.panel').find('.panel-title a').html(term.name);
+                });
+                $("#style-annotation-accordion .annotation-name-revert").click(function() {
+                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
+                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
+                    term.name = term.orig_name;
+                });
             }
             
             function applyAnnotationColors() {
@@ -722,10 +782,10 @@
                         if (annot.length == 1)
                             n.color = data.colorPalette[data.terms[annot[0]].idx];
                         else
-                            n.color = data.multifunctionColor;
+                            n.color = data.colorPalette[data.terms["-2"].idx];
                     } else {
                         // No annotation or multifunction
-                        n.color = data.defaultColor;
+                        n.color = data.colorPalette[data.terms["-1"].idx];
                     }
                 }).draw();
             }
@@ -1108,7 +1168,7 @@
                     
                 });
                 
-                $('#btn-group-annotation a').click(function(evt) {
+                $('#btn-group-annotation li a').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
                     loadAnnotation(evt.target.text); 
@@ -1210,6 +1270,10 @@
                         $('#style-slider-' + slider).val($('#style-slider-' + slider).attr('data-slider-default'), true);
                     }
                     $('#canvas-background-color').val('#222222').change();
+                });
+                
+                $('.btn-style').click(function() {
+                    $('#style-tabs a[href="' + $(this).data('tab') + '"]').tab('show');
                 });
                 
                 /*
@@ -1420,13 +1484,6 @@
                 
                 $('[data-toggle="tooltip"]').tooltip();
                 
-//                $("#cutoff-bar .noUi-handle").tooltip({
-//                    placement: 'left',
-//                    trigger: 'hover focus click',
-//                    delay: 100,
-//                    title: "FOOOOOOOOOOOO"
-//                });
-                
                 /* EDIT NODE MODAL DIALOG STUFF */
                 
                 var modal = $('#edit-node-modal');
@@ -1436,33 +1493,24 @@
                     node.label = modal.find('#edit-node-label').val();
                     node.color = "#" + modal.find('#edit-node-color').val().toUpperCase();
                     
+                    console.log(vizdata[state.annotation].colorPalette);
                     modal.find('.annotation-color').each(function() {
                         var color = '#' + $(this).val().toUpperCase();
                         
-                        switch ($(this).closest('tr').data('term')) {
-                        case -2: // multifunction
-                            if (vizdata[state.annotation].multifunctionColor != color) {
-                                vizdata[state.annotation].multifunctionColor = color;
-                                colorsChanged = true;
-                            }
-                            break;
-                        case -1: // unannotated
-                            if (vizdata[state.annotation].defaultColor != color) {
-                                vizdata[state.annotation].defaultColor = color;
-                                colorsChanged = true;
-                            }
-                            break;
-                        default:
-                            if (vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] != color) {
-                                vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] = color;
-                                colorsChanged = true;
-                            }
-                            break;
+                        console.log($(this).closest('tr').data('term'), color);
+                        
+                        if (vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] != color) {
+                            console.log('\t' + vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')]);
+                            vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] = color;
+                            console.log('\t' + vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')]);
+                            colorsChanged = true;
+                            console.log("\tCHANGED!!");
                         }
                     });
                     
                     if (colorsChanged) {
                         applyAnnotationColors();
+                        rebuildLegend();
                     } else {
                         sigInst.draw();
                     }
