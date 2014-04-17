@@ -62,10 +62,10 @@ $('.vizualization-ui').ready(function() {
   <div id="btn-group-neighbourhood" class="hidden btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-      <li><a href="#" data-toggle="download">Selected genes</a></li>
-      <li><a href="#" data-toggle="download">&nbsp; + 1st neighbours</a></li>
-      <li><a href="#" data-toggle="download">&nbsp; + 2nd neighbours</a></li>
-      <li><a href="#" data-toggle="download">&nbsp; + 3rd neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-level="0">Selected genes</a></li>
+      <li><a href="#" data-toggle="download" data-level="1">&nbsp; + 1st neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-level="2">&nbsp; + 2nd neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-level="3">&nbsp; + 3rd neighbours</a></li>
     </ul>
   </div>
   
@@ -77,6 +77,7 @@ $('.vizualization-ui').ready(function() {
     <ul class="dropdown-menu" role="menu">
       <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"><span class="glyphicons resize_full"></span> Force-directed layout </a></li>
       <li><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"><span class="glyphicons share_alt"></span> Annotation-directed layout </a></li>
+      <li><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"><span class="glyphicons share_alt"></span> GI-directed layout </a></li>
       <li class="divider"></li>
       <li><a id="tool-rotate" href="#"><span class="glyphicons roundabout"></span> Rotate graph </a></li>
       <li class="disabled"><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
@@ -183,12 +184,19 @@ $('.vizualization-ui').ready(function() {
   </div> <!-- /.modal-dialog -->
 </div> <!-- /.modal -->
 
-<div id="contextmenu-container" class="dropdown clearfix" style="display: none;">
+<div id="contextmenu-container" class="dropdown clearfix contextmenu" style="display: none;">
   <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
     <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Node details...</a></li>
     <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li>
     <li class="divider"></li>
     <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
+  </ul>
+</div>
+
+<div id="contextmenu-edge-container" class="dropdown clearfix contextmenu" style="display: none;">
+  <ul id="contextmenu-edge" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
+    <li class="disabled"><a id="contextmenu-edge-count"></a></li>
+    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this awesome correlation </a></li>
   </ul>
 </div>
 

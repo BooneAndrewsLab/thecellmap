@@ -64,7 +64,7 @@ body {
     height: 100%;
 }
 
-#contextmenu-container {
+.contextmenu {
     width: 150px;
     position: absolute;
     z-index: 100;

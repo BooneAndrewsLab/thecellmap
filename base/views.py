@@ -9,7 +9,6 @@ from django.views.decorators.http import require_POST
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term
 from base.utils import print_queries, is_integer, JsonResponse
-from pandas.core.common import is_float
 
 
 def _serve_dataset(request, dataset=None):

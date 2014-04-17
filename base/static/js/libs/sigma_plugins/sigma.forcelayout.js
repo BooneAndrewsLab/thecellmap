@@ -180,7 +180,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
             delta_y = node_v.layout.tmp_pos_y - node_u.layout.tmp_pos_y;
 
             delta_length = Math.max(EPSILON, Math.sqrt((delta_x * delta_x) + (delta_y * delta_y)));
-            force = ((delta_length * delta_length) / attraction_constant) * (edge.weight * 10);
+            force = ((delta_length * delta_length) / attraction_constant) * (edge.absweight * 10);
 
             node_v.layout.offset_x -= (delta_x / delta_length) * force;
             node_v.layout.offset_y -= (delta_y / delta_length) * force;

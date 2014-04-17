@@ -74,6 +74,7 @@
             
             var state = {
                     selection: [],
+                    edgeSelection: [],
                     cutoff: {
                         0: sliderProperties.value
                     },
@@ -121,6 +122,8 @@
                 
                 if (!($(ns.selection).not(state.selection).length == 0 && $(state.selection).not(ns.selection).length == 0)) {
                     $("input.gene-search-input").select2("val", ns.selection, true);
+                } if (!($(ns.edgeSelection).not(state.edgeSelection).length == 0 && $(state.edgeSelection).not(ns.edgeSelection).length == 0)) {
+                    onEdgesClick({content: ns.edgeSelection})
                 } if (ns.style.node.nsize != state.style.node.nsize) {
                     $('#style-slider-nsize').val(ns.style.node.nsize, true);
                 } if (ns.style.node.lsize != state.style.node.lsize) {
@@ -216,6 +219,12 @@
                 }).length;
             };
             
+            function countVisibleEdges() {
+                return sigInst._core.graph.edges.filter(function(edge) {
+                    return !edge.hidden && edge.source.hidden && edge.target.hidden;
+                }).length;
+            };
+            
             function iterVisibleNodes(func, ids) {
                 sigInst._core.graph.nodes.filter(function(node) {
                     return !node.hidden;
@@ -240,6 +249,10 @@
 
             function getNode(id) {
                 return sigInst._core.graph.nodesIndex[id];
+            };
+            
+            function getEdge(id) {
+                return sigInst._core.graph.edgesIndex[id];
             };
             
             function nodeExists(id) {
@@ -447,9 +460,15 @@
             }
             
             function clearSelection() {
+                sigInst.iterEdges(function(e) {
+                    e.selected = false;
+                });
+                
                 if (state.selection.length > 0) {
                     $("input.gene-search-input").select2('val', "", true);
                     state.selection = [];
+                } else {
+                    sigInst.draw();
                 }
             }
             
@@ -468,6 +487,42 @@
                 }
                 
                 return sigInst.parseBooneGexf;
+            };
+            
+            function showCorrelationDriving() {
+                var nodes = [];
+                autoState = true; // Prevent automatic state change on loadDataset
+                
+                hoveredTargets.forEach(function(e) {
+                    e = getEdge(e);
+                    if (nodes.indexOf(e.source.id) == -1) nodes.push(e.source.id);
+                    if (nodes.indexOf(e.target.id) == -1) nodes.push(e.target.id);
+                });
+                
+                loadDataset(1, {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes}, undefined, function(edges) {
+                    nodes = [];
+                    edges.forEach(function(e) {
+                        if (nodes.indexOf(e.source) == -1) nodes.push(e.source);
+                        if (nodes.indexOf(e.target) == -1) nodes.push(e.target);
+                    });
+                    
+                    sigInst.iterNodes(function(node) {
+                        if (nodes.indexOf(parseInt(node.id)) == -1) {
+                            node._hidden = node.hidden = true;
+                        }
+                    });
+                    
+                    $("#btn-group-datasets a").removeClass('active');
+                    $("#btn-group-datasets a[data-id=1]").addClass('active');
+                    $("#selected-dataset").html("Genetic interactions");
+                    state.dataset = 1;
+                    
+                    sigInst.draw();
+                    
+                    autoState = false;
+                    
+                    changeNodesState();
+                });
             };
             
             function switchDataset(dsid) {
@@ -564,7 +619,7 @@
                 isInitializing = false;
             }
             
-            function loadDataset(dsid, data, preloaded) {
+            function loadDataset(dsid, data, preloaded, callback) {
                 var dataset = opts.datasets[dsid];
                 
                 var loadDatasetCallback = function (nodes, edges, extraContext) {
@@ -578,6 +633,10 @@
                     });
                     
                     updateEdges(dsid);
+                    
+                    if (callback != undefined) {
+                        callback(edges);
+                    }
                 };
                 
                 if (preloaded == undefined) {
@@ -799,15 +858,27 @@
                 });
             }
 
-            /**
-             * Select nodes to isolate
-             */
-            function onNodesCtrlClick(targets) {
-                // TODO: 
+            function onEdgesContext(targets) {
+                hoveredTargets = targets.content;
+                $("#contextmenu-edge-count").html(state.edgeSelection.length + ' edge' + (state.edgeSelection.length == 1 ? '' : 's') + ' selected');
+                $("#contextmenu-edge-container").show().delay(2000).hide(200);
+                $("#contextmenu-edge-container").css({
+                    left : mouseX,
+                    top : mouseY,
+                });
             }
-
+            
+            function onEdgesClick(targets) {
+                state.edgeSelection = targets.content;
+                
+                sigInst.iterEdges(function(e) {
+                    e.selected = targets.content.indexOf(e.id) != -1;
+                }).draw(-1, 1, -1, -1);
+            };
+            
             function onNodesClick(targets) {
                 noPulse = true;
+                
                 switch(clicking.modifierKey) {
                 case 'ctrl':
                     break;
@@ -819,13 +890,6 @@
                     break;
                 }
                 noPulse = false;
-//                var node = getNode(targets.content[0]);
-//                var strain = getStrain(targets.content[0]);
-//                setTimeout( function(){
-//                    // HAACK
-//                    log('Opening in SGD: ' + node.id + " " + strain.orf);
-//                    window.open("http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=" + strain.orf);
-//                }, 200); // delay 500 ms
             }
             
             function onNodeClick(targets) {
@@ -900,9 +964,9 @@
                 sigInst.draw();
             }
             
-            function toggleLayout(justStop) {
-                if (countVisibleNodes() > 500) {
-                    alertUser('Too many nodes', 'Too many nodes are visible for the layout algorithm to run efficiently.');
+            function toggleLayout(justStop, layoutType) {
+                if (countVisibleEdges() > 20000) {
+                    alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + countVisibleEdges());
                     return;
                 }
                 
@@ -921,7 +985,7 @@
                         edgeFilter: function(edge) { return edge.weight > 0; },
                     };
                     
-                    switch($(this).attr('data-layout-type') || 'force') {
+                    switch(layoutType || $(this).attr('data-layout-type') || 'force') {
                     case 'annotation':
                         annotations = {};
                         data = vizdata[state.annotation];
@@ -944,6 +1008,7 @@
                         }), 2).forEach(function(x) {
                             lopts.edges.push({
                                 weight: .01,
+                                absweight: .01,
                                 source: x[0],
                                 target: x[1]
                             })
@@ -953,11 +1018,63 @@
                             k_combinations(annotations[key], 2).forEach(function(x) {
                                 lopts.edges.push({
                                     weight: 1,
+                                    absweight: 1,
                                     source: x[0],
                                     target: x[1]
                                 })
                             });
                         }
+                        break;
+                    case 'gi':
+                        lopts.edges = [];
+                        groups = {};
+                        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
+                        var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;});
+                        var other, weight;
+                        
+                        etmp.forEach(function(e) {
+                            lopts.edges.push(e);
+                        });
+                        
+                        ntmp.forEach(function(n) {
+                            var tmp = [], tmpkey;
+                            etmp.forEach(function(e) {
+                                if (e.source.id == n.id || e.target.id == n.id) {
+                                    // try excluding nodes driving this correlation
+                                    other = e.source.id == n.id ? e.target : e.source;
+                                    tmp.push(e.weight < 0 ? "-" + other.id : other.id);
+                                }
+                            });
+                            
+                            if (tmp.length > 100) {
+                                return;
+                            }
+                            
+                            tmp = tmp.sort();
+                            tmpkey = tmp.join();
+                            if (!groups.hasOwnProperty(tmpkey)) {
+                                groups[tmpkey] = {nodes: [], keylen: tmp.length};
+                            }
+                            
+                            groups[tmpkey].nodes.push(n);
+                        });
+                        
+                        for (key in groups) {
+                            weight = Math.log(groups[key].keylen) + 0.01;
+                            
+                            console.log(groups[key].keylen, key, weight);
+                            
+                            k_combinations(groups[key].nodes, 2).forEach(function(x) {
+                                lopts.edges.push({
+                                    weight: weight,
+                                    absweight: weight,
+                                    source: x[0],
+                                    target: x[1]
+                                })
+                            });
+                        }
+                        
+                        console.log(groups);
                         break;
                     }
                     
@@ -985,6 +1102,8 @@
                     localSelected = $.extend({}, localSelected, tmpSelected);
                 }
                 
+                console.log(localSelected, level);
+                
                 sigInst.iterNodes(function(node) {
                     if (!localSelected.hasOwnProperty(node.id)) {
                         node._hidden = node.hidden = true;
@@ -998,7 +1117,7 @@
                 console.log('applying cutoff', cutoff);
                 setCutoff(cutoff);
                 
-                var isArray = $.isArray(cutoff);
+                var isArray = $.isArray(cutoff), selected = getSelected();
                 
                 sigInst.iterNodes(function(node) {
                     node.visibleDegree = node.degree;
@@ -1014,7 +1133,7 @@
                         edge.target.visibleDegree--;
                     }
                 }).iterNodes(function(node) {
-                    node.hidden = node._hidden || node.visibleDegree <= 0; // either we manually hid the node or it's not connected to anything
+                    node.hidden = (node._hidden || node.visibleDegree <= 0) && selected.indexOf(node.id) == -1; // either we manually hid the node or it's not connected to anything
                 });
                 
                 sigInst.draw();
@@ -1147,6 +1266,7 @@
                 $(".changed-network").hide().removeClass('hidden');
                 $("#modal-style").appendTo("body");
                 $("#contextmenu-container").appendTo("body");
+                $("#contextmenu-edge-container").appendTo("body");
                 $("#edit-node-modal").appendTo("body");
             }
             
@@ -1155,16 +1275,19 @@
                  * CLICK handlers
                  */
                 $('#btn-group-neighbourhood a').click(function(evt) {
-                    switch (evt.target.text) {
-                    case "Selected genes only":
-                        applyNeighbourhood(0);
-                        changeNodesState();
-                        break;
-                    default:
-                        applyNeighbourhood(parseInt(evt.target.text.charAt(0)));
-                        changeNodesState();
-                        break;
-                    }
+                    applyNeighbourhood($(evt.target).data('level'));
+                    changeNodesState();
+                    
+//                    switch (evt.target.text) {
+//                    case "Selected genes only":
+//                        applyNeighbourhood(0);
+//                        changeNodesState();
+//                        break;
+//                    default:
+//                        applyNeighbourhood(parseInt(evt.target.text.charAt(0)));
+//                        changeNodesState();
+//                        break;
+//                    }
                     
                 });
                 
@@ -1203,11 +1326,6 @@
                         break;
                     }
                 });
-                
-//                $('#style-tabs a').click(function (e) {
-//                    e.preventDefault();
-//                    $(this).tab('show');
-//                });
                 
                 /*
                  * Style modal stuff
@@ -1280,28 +1398,28 @@
                  * Other sliders
                  */
                 
-                var layoutSliders = {
-                    att: {
-                        range: {min: 1, max: 100},
-                        step: 1,
-                        start: 50,
-                        handles: 1,
-                        connect: "lower",
-                        set: changeState
-                    },
-                    rep: {
-                        range: {min: 1, max: 100},
-                        step: 1,
-                        start: 1,
-                        handles: 1,
-                        connect: "lower",
-                        set: changeState
-                    }
-                }
-                
-                for (slider in layoutSliders) {
+//                var layoutSliders = {
+//                    att: {
+//                        range: {min: 1, max: 100},
+//                        step: 1,
+//                        start: 50,
+//                        handles: 1,
+//                        connect: "lower",
+//                        set: changeState
+//                    },
+//                    rep: {
+//                        range: {min: 1, max: 100},
+//                        step: 1,
+//                        start: 1,
+//                        handles: 1,
+//                        connect: "lower",
+//                        set: changeState
+//                    }
+//                }
+//                
+//                for (slider in layoutSliders) {
 //                    $('#layout-slider-' + slider).noUiSlider(layoutSliders[slider]);
-                }
+//                }
                 
                 $("#cutoff-bar-cor").noUiSlider({
                     range: {min: sliderProperties.min, max: sliderProperties.max},
@@ -1421,7 +1539,7 @@
                     });
                     // sigh... disable context menu on context menu
                     // b/c its not in the other container
-                    $("#contextmenu-container").contextmenu(function() {
+                    $(".contextmenu").contextmenu(function() {
                         return false;
                     });
                 }
@@ -1429,7 +1547,7 @@
                 // Nice effects, stop any animations on enter,
                 // hide on leave, hide if not entered (code in
                 // callback above)
-                $("#contextmenu-container").mouseleave(function() {
+                $(".contextmenu").mouseleave(function() {
                     $(this).delay(500).hide();
                 }).mouseenter(function() {
                     $(this).stop(true);
@@ -1462,6 +1580,14 @@
                     }
                     
                     $("#contextmenu-container").hide();
+                });
+                
+                $("#contextmenu-edge a").click(function() {
+                    switch ($(this).attr('id')) {
+                    case "context-edge-gi":
+                        showCorrelationDriving();
+                        break
+                    }
                 });
                 
                 $(".pick-a-color").pickAColor();
@@ -1572,13 +1698,23 @@
                     }
                 }).bind('draggedNode', function() {
                     clicking.wasDragging = true;
-                    changeNodesState()
-                }).bind('selectionStop', function(nodes) {
+                    changeNodesState();
+                }).bind('selectionStop', function(selection) {
                     noPulse = true;
-                    $("input.gene-search-input").select2("val", getSelected().concat(nodes.content), true);
+                    if (selection.content.nodeSelect) {
+                        $("input.gene-search-input").select2("val", getSelected().concat(selection.content.selected), true);
+                    } else {
+                        onEdgesClick({content: state.edgeSelection.concat(selection.content.selected)});
+                        changeState();
+                    }
                     noPulse = false;
                 }).bind('selectionStart', function() {
-                });
+                }).bind('rightclickedges', onEdgesContext
+                 ).bind('upedges', function(targeted) {
+                     onEdgesClick(targeted);
+                     changeState();
+                 });
+                
                 
                 buildNewUI();
                 initUI();

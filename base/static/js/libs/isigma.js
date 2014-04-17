@@ -1766,7 +1766,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
           edge['target']['displayX'],
           edge['target']['displayY']
         ],
-        color = edge['color'];
+        color = edge['selected'] ? 'red' : edge['color'];
 
     if (!color) {
       switch (self.p.edgeColor) {
@@ -1870,7 +1870,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
         break;
     }
 
-    edge['hover'] && drawHoverEdge(edge);
+//    edge['hover'] && drawHoverEdge(edge);
 
     return self;
   };
@@ -2522,6 +2522,12 @@ function Sigma(root, id) {
   var targeted;
   
   /**
+   * Last edges detected under the mouse pointer. Used by interaction listeners.
+   * @private
+   */
+  var targetedEdges;
+  
+  /**
    * Last selected nodes. Used by interaction listeners.
    * @private
    */
@@ -2671,6 +2677,7 @@ function Sigma(root, id) {
         self.dispatch('nodesonscreen');
     }
   }).bind('mousedown mouseup ctrlclick shiftclick shiftup', function(e) {
+//    eventType = (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') ? 'downgraph' : 'upgraph';
     if (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') {
       eventType = 'downgraph';
     } else if (e['type'] == 'mouseup') {
@@ -2678,9 +2685,7 @@ function Sigma(root, id) {
     } else if (e['type'] == 'shiftup') {
       eventType = 'upgraph';
     }
-      
-//    eventType = (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') ? 'downgraph' : 'upgraph';
-
+    
     targeted = self.graph.nodes.filter(function(n) {
       return !!n['hover'];
     }).map(function(n) {
@@ -2692,8 +2697,24 @@ function Sigma(root, id) {
     }).map(function(n) {
       return n.id;
     });
+    
+    targetedEdges = [];
+    if (eventType == 'upgraph') {
+      self.graph.checkHoverEdge(
+                self.mousecaptor.mouseX,
+                self.mousecaptor.mouseY,
+                self.mousecaptor.ratio,
+                self.plotter.p.defaultEdgeType
+      );
+      
+      targetedEdges = self.graph.edges.filter(function(e) {
+            return !!e['hover'];
+          }).map(function(n) {
+            return n.id;
+          });
+    }
 
-    self.dispatch(eventType, {dragged: draggedMouse, targeted: targeted.length, selecting: e['type'] == 'shiftup'});
+    self.dispatch(eventType, {dragged: draggedMouse, targeted: targeted.length + targetedEdges.length, selecting: e['type'] == 'shiftup'});
     
     if (targeted.length) {
       if(e['type'] == 'ctrlclick') {
@@ -2725,16 +2746,27 @@ function Sigma(root, id) {
             self.dispatch('selectionStart');
             eventType = 'downselecting';
         } else if (e['type'] == 'shiftup') {
-            self.domElements.mouse.getContext('2d').clearRect(
-                    0,
-                    0,
-                    self.domElements.hover.width,
-                    self.domElements.hover.height
-                  );
+            var selection;
+            if (draggedMouse) {
+                self.domElements.mouse.getContext('2d').clearRect(
+                        0,
+                        0,
+                        self.domElements.hover.width,
+                        self.domElements.hover.height
+                      );
+                
+                selection = checkRectSelection(self.mousecaptor.mouseX, self.mousecaptor.startX, self.mousecaptor.mouseY, self.mousecaptor.startY);
+            } else {
+                selection = targetedEdges;
+            }
             
-            var selection = checkRectSelection(self.mousecaptor.mouseX, self.mousecaptor.startX, self.mousecaptor.mouseY, self.mousecaptor.startY);
-            
-            self.dispatch('selectionStop', selection);
+            self.dispatch('selectionStop', {selected: selection, nodeSelect: draggedMouse});
+        } else {
+            if(e['type'] == 'mouseup') {
+                if (targetedEdges.length) {
+                    self.dispatch('upedges', targetedEdges);
+                }
+            }
         }
     }
     
@@ -2745,9 +2777,10 @@ function Sigma(root, id) {
     }).map(function(n) {
       return n.id;
     });
-
+    
     if (targeted.length) {
       eventType = (e['type'] == 'dblclick') ? 'dblclicknodes' : 'rightclicknodes';
+      
       self.dispatch(
         eventType,
         targeted
@@ -2756,6 +2789,27 @@ function Sigma(root, id) {
       // don't dispatch edge events if nodes are found.
       return;
     }
+    
+    self.graph.checkHoverEdge(
+            self.mousecaptor.mouseX,
+            self.mousecaptor.mouseY,
+            self.mousecaptor.ratio,
+            self.plotter.p.defaultEdgeType
+    );
+    targeted = self.graph.edges.filter(function(e) {
+        return !!e['hover'];
+      }).map(function(n) {
+        return n.id;
+      });
+    
+    if (targeted.length) {
+      eventType = (e['type'] == 'dblclick') ? 'dblclickedges' : 'rightclickedges';
+      self.dispatch(
+              eventType,
+              targeted
+            );
+    }
+    
   }).bind('move', function(e) {
     draggedMouse = true;
     if (eventType == 'downgraph' || eventType == 'downedges') {
