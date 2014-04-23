@@ -489,15 +489,19 @@
                 return sigInst.parseBooneGexf;
             };
             
-            function showCorrelationDriving() {
+            function showCorrelationDriving(fromNodes) {
                 var nodes = [];
                 autoState = true; // Prevent automatic state change on loadDataset
                 
-                hoveredTargets.forEach(function(e) {
-                    e = getEdge(e);
-                    if (nodes.indexOf(e.source.id) == -1) nodes.push(e.source.id);
-                    if (nodes.indexOf(e.target.id) == -1) nodes.push(e.target.id);
-                });
+                if (fromNodes) {
+                    nodes = getSelected();
+                } else {
+                    hoveredTargets.forEach(function(e) {
+                        e = getEdge(e);
+                        if (nodes.indexOf(e.source.id) == -1) nodes.push(e.source.id);
+                        if (nodes.indexOf(e.target.id) == -1) nodes.push(e.target.id);
+                    });
+                }
                 
                 loadDataset(1, {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes}, undefined, function(edges) {
                     nodes = [];
@@ -1062,8 +1066,6 @@
                         for (key in groups) {
                             weight = Math.log(groups[key].keylen) + 0.01;
                             
-                            console.log(groups[key].keylen, key, weight);
-                            
                             k_combinations(groups[key].nodes, 2).forEach(function(x) {
                                 lopts.edges.push({
                                     weight: weight,
@@ -1577,6 +1579,9 @@
                     case "context-edit-node":
                         editNode(hoveredTargets[0]);
                         break;
+                    case "context-node-gi":
+                        showCorrelationDriving(true);
+                        break;
                     }
                     
                     $("#contextmenu-container").hide();
@@ -1937,6 +1942,8 @@
                                 
                                 state.selection = getSelected();
                                 $(".tool-arange").toggleClass("disabled", state.selection.length == 0);
+                                $("#context-node-gi").parent().toggleClass("disabled", state.selection.length < 2);
+                                
 //                                if (!noPulse) {
 //                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
 //                                        return diff.indexOf(node.id) != -1;

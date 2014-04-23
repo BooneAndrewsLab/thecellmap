@@ -1766,7 +1766,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
           edge['target']['displayX'],
           edge['target']['displayY']
         ],
-        color = edge['selected'] ? 'red' : edge['color'];
+        color = edge['selected'] ? 'yellow' : edge['color'];
 
     if (!color) {
       switch (self.p.edgeColor) {
