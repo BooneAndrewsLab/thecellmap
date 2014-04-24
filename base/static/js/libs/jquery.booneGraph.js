@@ -221,7 +221,7 @@
             
             function countVisibleEdges() {
                 return sigInst._core.graph.edges.filter(function(edge) {
-                    return !edge.hidden && edge.source.hidden && edge.target.hidden;
+                    return !edge.hidden && !edge.source.hidden && !edge.target.hidden;
                 }).length;
             };
             
