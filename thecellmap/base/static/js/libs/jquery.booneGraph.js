@@ -1687,8 +1687,9 @@
                     drawHoverEdges: false,
                     maxRatio : 64
                 }).bind('rightclicknodes', onNodesContext
-                 ).bind('ctrlclicknodes', function () {
+                 ).bind('ctrlclicknodes', function (e) {
                     clicking.modifierKey = 'ctrl';
+                    onNodesContext(e);
                 }).bind('shiftclicknodes', function () {
                     clicking.modifierKey = 'shift';
                 }).bind('upnodes', function(e) {
