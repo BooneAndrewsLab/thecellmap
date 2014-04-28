@@ -925,8 +925,8 @@
                     ymax = ymax ? Math.max(ymax, node.y) : node.y;
                 });
                 
-                switch($(this).attr('id')) {
-                case "tool-arange-circle":
+                switch($(this).data('arange-type')) {
+                case "circle":
                     var node, cx, cy, r, theta, alpha = Math.PI * 2 / selected.length, i = -1;
                     cx = xmin + ((xmax - xmin) / 2);
                     cy = ymin + ((ymax - ymin) / 2);
@@ -941,13 +941,13 @@
                     
                     changeNodesState();
                     break;
-                case "tool-arange-crescent-right":
+                case "crescent-right":
                     n += selected.length / 2;
-                case "tool-arange-crescent-top":
+                case "crescent-top":
                     n += selected.length / 2;
-                case "tool-arange-crescent-left":
+                case "crescent-left":
                     n += selected.length / 2;
-                case "tool-arange-crescent-bottom":
+                case "crescent-bottom":
                     var node, cx, cy, r, theta, alpha = Math.PI * 2 / (selected.length * 2), i = n - 1;
                     cx = xmin + ((xmax - xmin) / 2);
                     cy = ymin + ((ymax - ymin) / 2);
@@ -1569,11 +1569,18 @@
                         window.location.href = 'dl/?n=' + node.id;
                         break
                     case "context-hide":
+                        autoState = true; // prevent selection change from changing the state
+                        var selected = getSelected();
                         hoveredTargets.forEach(function(node) {
+                            if (selected.indexOf(node) != -1) {
+                                selected.splice(selected.indexOf(node), 1);
+                                $("input.gene-search-input").select2("val", selected, true);
+                            }
                             node = getNode(node);
                             node.hidden = node._hidden = true;
                         });
                         sigInst.draw();
+                        autoState = false;
                         changeNodesState();
                         break
                     case "context-edit-node":
@@ -1657,7 +1664,7 @@
                     }
                 });
                 
-                $(".tool-arange a").click(arangeNodes);
+                $("a.tool-arange").click(arangeNodes);
                 
                 $("#tool-rotate").click(function() {
                     sigInst.rotateNodes({callback: function() {changeNodesState();}});
@@ -1915,7 +1922,7 @@
 //                            
 //                        }
                     }).on('change', function(evt, a, b, c) {
-                        var selected = getSelected();
+                        var selected = getSelected(), numVisibleSelected = 0;
                         
                         sigInst.iterNodes(function(node) {
                             if ($.inArray(node.id, selected) >= 0) {
@@ -1923,13 +1930,15 @@
                                 
                                 if (node.hidden) {
                                     messageUser('Gene you\'re looking for is below current threshold.')
+                                } else {
+                                    numVisibleSelected++;
                                 }
                             } else {
                                 node.selected = false;
                             }
                         });
                         
-                        $('#btn-group-neighbourhood').toggleClass('hidden', selected.length == 0);
+                        $('#btn-group-neighbourhood').toggleClass('hidden', numVisibleSelected == 0);
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
                         $('#download-selected').toggleClass('disabled', selected.length == 0 || selected.length > opts.downloadLimit);
                         $('#view-tabular').toggleClass('disabled', selected.length == 0);
@@ -1942,7 +1951,7 @@
                                 var diff = $(getSelected()).not(state.selection).get();
                                 
                                 state.selection = getSelected();
-                                $(".tool-arange").toggleClass("disabled", state.selection.length == 0);
+                                $(".tool-arange").parent().toggleClass("disabled", state.selection.length == 0);
                                 $("#context-node-gi").parent().toggleClass("disabled", state.selection.length < 2);
                                 
 //                                if (!noPulse) {
