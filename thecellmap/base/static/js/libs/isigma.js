@@ -2699,7 +2699,7 @@ function Sigma(root, id) {
     });
     
     targetedEdges = [];
-    if (eventType == 'upgraph') {
+    if (eventType == 'upgraph' || (e['type'] == 'ctrlclick' && targeted.length == 0)) {
       self.graph.checkHoverEdge(
                 self.mousecaptor.mouseX,
                 self.mousecaptor.mouseY,
@@ -2713,7 +2713,7 @@ function Sigma(root, id) {
             return n.id;
           });
     }
-
+    
     self.dispatch(eventType, {dragged: draggedMouse, targeted: targeted.length + targetedEdges.length, selecting: e['type'] == 'shiftup'});
     
     if (targeted.length) {
@@ -2765,6 +2765,11 @@ function Sigma(root, id) {
             if(e['type'] == 'mouseup') {
                 if (targetedEdges.length) {
                     self.dispatch('upedges', targetedEdges);
+                }
+            } else if (e['type'] == 'ctrlclick') {
+                eventType = 'ctrlclickedges';
+                if (targetedEdges.length) {
+                    self.dispatch(eventType, targetedEdges);
                 }
             }
         }
