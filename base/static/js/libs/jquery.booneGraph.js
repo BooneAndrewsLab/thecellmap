@@ -1641,7 +1641,6 @@
                     node.color = "#" + modal.find('#edit-node-color').val().toUpperCase();
                     node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
                     
-                    console.log(vizdata[state.annotation].colorPalette);
                     modal.find('.annotation-color').each(function() {
                         var color = '#' + $(this).val().toUpperCase();
                         
@@ -1732,6 +1731,7 @@
                     noPulse = false;
                 }).bind('selectionStart', function() {
                 }).bind('rightclickedges', onEdgesContext
+                 ).bind('ctrlclickedges', onEdgesContext
                  ).bind('upedges', function(targeted) {
                      onEdgesClick(targeted);
                      changeState();
