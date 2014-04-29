@@ -161,6 +161,7 @@
                             node.hidden = n.hidden;
                             node._hidden = n.hidden;
                             node.color = n.color;
+                            node.forceLabel = n.forceLabel;
                         }
                     }
                     
@@ -336,6 +337,7 @@
                 modal.find('#edit-node-id').attr("value", id);
                 modal.find('#edit-node-label').attr("value", node.label);
                 modal.find('#edit-node-color').val(node.color).focus().blur().change();
+                modal.find('#edit-node-label-force').prop('checked', !!node.forceLabel);
                 
                 $('#node-annotation-table').empty();
                 
@@ -511,9 +513,10 @@
                     });
                     
                     sigInst.iterNodes(function(node) {
-                        if (nodes.indexOf(parseInt(node.id)) == -1) {
-                            node._hidden = node.hidden = true;
-                        }
+                        node._hidden = node.hidden = nodes.indexOf(parseInt(node.id)) == -1;
+//                        if (nodes.indexOf(parseInt(node.id)) == -1) {
+//                            node._hidden = node.hidden = true;
+//                        }
                     });
                     
                     $("#btn-group-datasets a").removeClass('active');
@@ -547,7 +550,8 @@
                     });
                     
                     if (newVisible.length > 50) {
-                        alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.');
+                        alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.\
+                                Maximum number of nodes is 50 but you have ' + newVisible.length + ' visible.');
                         $("#btn-group-datasets a[data-id=\"0\"]").addClass('active');
                         $("#selected-dataset").html("Correlations");
                         return;
@@ -595,6 +599,9 @@
                 if (ds == 0) {
                     ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
                     ele.val([state.cutoff[ds] || minWeight]);
+                } else {
+                    $("#cutoff-label-max").html(state.cutoff[ds][1]);
+                    $("#cutoff-label-min").html(state.cutoff[ds][0]);
                 }
                 
                 if (sliderProperties.updateLimits) {
@@ -1522,6 +1529,7 @@
                 $('#canvas-background-color').change(function() {
                     state.style.global.background = $(this).val();
                     $(rootElement).css('background-color', "#" + state.style.global.background);
+                    sigInst.drawingProperties({defaultLabelColor: invertColor(state.style.global.background)}).draw(-1, -1, 1);
                     changeState();
                 });
                 
@@ -1557,13 +1565,6 @@
                 
                 $("#contextmenu a").click(function() {
                     switch ($(this).attr('id')) {
-                    case "context-info":
-                        var node = getNode(hoveredTargets[0]), strain = getStrain(node.id);
-                        
-                        console.log(opts.nodeInfo(node, strain));
-                        
-                        alertUser('Node info', opts.nodeInfo(node, strain));
-                        break
                     case "context-dl":
                         var node = getNode(hoveredTargets[0]), strain = getStrain(node.id);
                         window.location.href = 'dl/?n=' + node.id;
@@ -1583,6 +1584,14 @@
                         autoState = false;
                         changeNodesState();
                         break
+                    case "context-label-toggle":
+                        hoveredTargets.forEach(function(node) {
+                            node = getNode(node);
+                            node.forceLabel = !node.forceLabel;
+                        });
+                        sigInst.draw();
+                        changeNodesState();
+                        break;
                     case "context-edit-node":
                         editNode(hoveredTargets[0]);
                         break;
@@ -1630,6 +1639,7 @@
                     var node = getNode(modal.find('#edit-node-id').val()), colorsChanged = false;
                     node.label = modal.find('#edit-node-label').val();
                     node.color = "#" + modal.find('#edit-node-color').val().toUpperCase();
+                    node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
                     
                     console.log(vizdata[state.annotation].colorPalette);
                     modal.find('.annotation-color').each(function() {
@@ -1642,7 +1652,6 @@
                             vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] = color;
                             console.log('\t' + vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')]);
                             colorsChanged = true;
-                            console.log("\tCHANGED!!");
                         }
                     });
                     
