@@ -12,7 +12,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     var repulsion_constant;
     var forceConstant;
     var layout_iterations = 0;
-    var temperature = 0;
+    var temperature = 0, base_temperature = 0;
     var centre_gravity = {x: 0, y: 0};
     var bound_box = {x: 0, y: 0};
     
@@ -87,7 +87,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         self.p.height = self.p.nodes.length * 15;
         
         self.p.finished = false;
-        temperature = self.p.width / 10.0;
+        base_temperature = temperature = self.p.width / 10.0;
         nodes_length = self.p.nodes.length;
         edges_length = self.p.edges.length;
         forceConstant = Math.sqrt(self.p.height * self.p.width / nodes_length);
@@ -230,6 +230,14 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         return temperature;
     }
     
+    this.isDone = function() {
+        return layout_iterations == 160;
+    }
+    
+    this.percentDone = function() {
+        return layout_iterations / 160;
+    }
+    
     this.calc_bound_box = function() {
         var xmax, xmin, ymax, ymin, box = {};
         self.p.nodes.forEach(function(n) {
@@ -250,7 +258,11 @@ sigma.publicPrototype.startForceLayout = function(properties) {
     var fl = this.forcelayout;
 
     this.addGenerator('forcelayout', this.forcelayout.atomicGo, function() {
-        if (fl.temp() < 0.0005) {
+        if (properties.progress_callback) {
+            properties.progress_callback(fl.percentDone());
+        }
+        
+        if (fl.isDone()) {
             properties.callback();
             return false;
         }
