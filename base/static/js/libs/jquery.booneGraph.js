@@ -912,11 +912,22 @@
             }
             
             function _setRunningLayout(bool) {
+                var ladda, button = $('#btn-layout');
+                
                 opts.runningLayout = bool;
-                $('#btn-layout').toggleClass('btn-primary', !bool);
-                $('#btn-layout').toggleClass('btn-danger', bool);
+                button.toggleClass('btn-primary', !bool);
+                button.toggleClass('btn-danger', bool);
+                
                 if (!bool) {
                     changeNodesState();
+                    ladda = Ladda.getInstance(button.attr('id'));
+                    ladda.stop();
+                    button.siblings(".dropdown-toggle").removeClass('disabled');
+                } else {
+                    ladda = Ladda.create(button[0]);
+                    button.siblings(".dropdown-toggle").addClass('disabled');
+                    ladda.start();
+                    button.removeAttr("disabled");
                 }
             }
             
@@ -976,6 +987,7 @@
             }
             
             function toggleLayout(justStop, layoutType) {
+                var layoutButton = $("#btn-layout");
                 if (countVisibleEdges() > 20000) {
                     alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + countVisibleEdges());
                     return;
@@ -991,6 +1003,9 @@
                         callback: function() {
                                 _setRunningLayout(false);
                             },
+                        progress_callback: function(p) {
+                            Ladda.getInstance(layoutButton.attr('id')).setProgress(p);
+                        },
                         attraction_multiplier: $("#layout-slider-att").val() || 50,
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
                         edgeFilter: function(edge) { return edge.weight > 0; },
@@ -1083,7 +1098,6 @@
                             });
                         }
                         
-                        console.log(groups);
                         break;
                     }
                     
@@ -1727,7 +1741,7 @@
                 $(".disabled a").click(function(e) {
                     e.preventDefault();
                     return false;
-                })
+                });
             };
             
             function showUI() {

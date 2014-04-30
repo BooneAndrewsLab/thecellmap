@@ -8,7 +8,7 @@
     }
 })(this, function(Spinner) {
     "use strict";
-    var ALL_INSTANCES = [];
+    var ALL_INSTANCES = {};
     function create(button) {
         if (typeof button === "undefined") {
             console.warn("Ladda button target must be defined.");
@@ -44,6 +44,7 @@
                 clearTimeout(timer);
                 timer = setTimeout(function() {
                     spinner.stop();
+                    button.removeChild(spinnerWrapper);
                 }, 1e3);
                 return this;
             },
@@ -82,7 +83,7 @@
                 return button.hasAttribute("data-loading");
             }
         };
-        ALL_INSTANCES.push(instance);
+        ALL_INSTANCES[button.getAttribute('id')] = instance;
         return instance;
     }
     function bind(target, options) {
@@ -114,8 +115,10 @@
         }
     }
     function stopAll() {
-        for (var i = 0, len = ALL_INSTANCES.length; i < len; i++) {
-            ALL_INSTANCES[i].stop();
+        for (var i in ALL_INSTANCES) {
+            if (ALL_INSTANCES.hasOwnProperty(i)) {
+                ALL_INSTANCES[i].stop();
+            }
         }
     }
     function createSpinner(button) {
@@ -149,9 +152,16 @@
         }
         return a;
     }
+    function getInstance(id) {
+        if (ALL_INSTANCES.hasOwnProperty(id)) {
+            return ALL_INSTANCES[id];
+        }
+        return null;
+    }
     return {
         bind: bind,
         create: create,
-        stopAll: stopAll
+        stopAll: stopAll,
+        getInstance: getInstance
     };
 });
