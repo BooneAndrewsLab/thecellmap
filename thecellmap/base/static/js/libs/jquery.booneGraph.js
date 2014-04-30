@@ -1495,13 +1495,59 @@
                     var x = -(mmx.ax + mmx.zx - (2 * position.stageX) - size.w) / 2;
                     var y = -(mmx.ay + mmx.zy - (2 * position.stageY) - size.h) / 2;
                     
-                    sigInst.goTo(x, y).draw();
-//                    
-//                    position = sigInst.position();
-//                    size = sigInst.size();
-//                    console.log(size);
-//                    
-//                    sigInst.goTo(0, 0, 1).draw();
+                    var moveRequired = Math.round( position.stageX ) != x || Math.round( position.stageY ) != y;
+                    var timeout = 0;
+                    
+                    if (moveRequired) {
+                        sigInst.goTo(x, y).draw();
+                        timeout = 150; // We know goTo needs 100ms, 50ms buffer just in case
+                    }
+                    
+                    setTimeout(function() {
+                        if (timeout != 0) {
+                            mmx = {};
+                            sigInst.iterNodes(function(node) {
+                                if (!node.hidden) {
+                                    mmx.ax = Math.min(node.displayX, mmx.ax || node.displayX);
+                                    mmx.zx = Math.max(node.displayX, mmx.zx || node.displayX);
+                                    mmx.ay = Math.min(node.displayY, mmx.ay || node.displayY);
+                                    mmx.zy = Math.max(node.displayY, mmx.zy || node.displayY);
+                                }
+                            });
+                            
+                            position = sigInst.position();
+                            size = sigInst.size();
+                        }
+                        
+                        if (mmx.ax < 0 || mmx.zx > size.w || mmx.ay < 0 || mmx.zy > size.h) { // Zoom out required
+                            var xmin = Math.min(mmx.ax, size.w - mmx.zx);
+                            var ymin = Math.min(mmx.ay, size.h - mmx.zy);
+                            
+                            var ratio = 0;
+                            if (xmin < ymin) {
+                                ratio = -xmin / size.w;
+                            } else {
+                                ratio = -ymin / size.h;
+                            }
+                            
+                            // ratio multiplier should be 2.11 but let's set it to 3 for a nice padding around the newtwork
+                            sigInst.goTo(size.w / 2, size.h / 2, position.ratio / (3 * ratio + 1)).draw();
+                        } else { // Zoom in could be required
+                            var xmin = Math.min(mmx.ax, size.w - mmx.zx);
+                            var ymin = Math.min(mmx.ay, size.h - mmx.zy);
+                            
+                            var ratio = 0;
+                            if (xmin < ymin) {
+                                ratio = xmin / size.w;
+                            } else {
+                                ratio = ymin / size.h;
+                            }
+                            
+                            // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
+                            sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
+                        }
+                        
+                    }, timeout); 
                 });
                 $('#btn-fullscreen').click(function() {
                     console.log($().isFullScreen());
