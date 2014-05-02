@@ -29,6 +29,8 @@ $('.vizualization-ui').ready(function() {
       <li class="divider"></li>
       <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li>
       <li><a id="download-snapshot" href="#"><span class="filetype-icon png"></span> Export visible network to png</a></li>
+      <li class="divider"></li>
+      <li class="disabled" data-selection-constraint="true" data-selection-gt="0"><a id="list-selected" href="#"><span class="filetype-icon xls" style="visibility: hidden;"></span> List selected genes</a></li>
     </ul>
   </div>
 </div>
@@ -48,8 +50,8 @@ $('.vizualization-ui').ready(function() {
         title="Zoom in"></span>
     </button>
     <button id="btn-home" type="button" class="btn btn-default">
-      <span class="glyphicon glyphicon-home" data-toggle="tooltip" data-placement="left" data-delay="500"
-        title="Center view"></span>
+      <span class="glyphicon glyphicon-record" data-toggle="tooltip" data-placement="left" data-delay="500"
+        title="Center view and adjust zoom"></span>
     </button>
     <button id="btn-zoom-out" type="button" class="btn btn-default">
       <span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" data-placement="left" data-delay="500"
@@ -62,10 +64,12 @@ $('.vizualization-ui').ready(function() {
   <div id="btn-group-neighbourhood" class="hidden btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-      <li><a href="#" data-toggle="download" data-level="0">Selected genes</a></li>
-      <li><a href="#" data-toggle="download" data-level="1">&nbsp; + 1st neighbours</a></li>
-      <li><a href="#" data-toggle="download" data-level="2">&nbsp; + 2nd neighbours</a></li>
-      <li><a href="#" data-toggle="download" data-level="3">&nbsp; + 3rd neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="1">&nbsp; + 1st neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
+      <li class="divider"></li>
+      <li data-selection-constraint="true" data-selection-gt="1"><a href="#" data-toggle="download" data-type="correlation-gi">Genetic interactions driving these correlations</a></li>
     </ul>
   </div>
   
@@ -194,7 +198,7 @@ $('.vizualization-ui').ready(function() {
     <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
     <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li>
     <li class="divider"></li>
-    <li class="disabled"><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving these awesome correlations </a></li>
+    <li class="disabled"><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving these correlations </a></li>
   </ul>
 </div>
 
