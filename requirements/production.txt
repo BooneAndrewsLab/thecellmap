@@ -40,3 +40,4 @@ pandas
 django-crispy-forms
 openpyxl
 xlwt
+xlrd
