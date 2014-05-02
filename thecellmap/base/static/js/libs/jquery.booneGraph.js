@@ -1719,7 +1719,9 @@
             };
             
             function showUI() {
-                $(".vizualization-ui").fadeIn(1000);
+                setTimeout(function() {
+                    $(".vizualization-ui").fadeIn(1000);
+                }, 0);
             }
             
             function init() {
