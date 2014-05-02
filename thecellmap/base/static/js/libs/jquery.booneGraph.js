@@ -36,17 +36,6 @@
                           arrowRatio: 4,
                           safe : false,
                     },
-                    nodeInfo: function(node, strain) {
-                        var table = $('<table class="table"><tbody>');
-                        var url = 'http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.orf;
-                        
-                        table.find('tbody').append('<tr><td>ORF</td><td>' + strain.orf + '</td></tr>');
-                        table.find('tbody').append('<tr><td>Name</td><td>' + strain.name + '</td></tr>');
-                        table.find('tbody').append('<tr><td>Allele</td><td>' + strain.alel + '</td></tr>');
-                        table.find('tbody').append('<tr><td>SGD url</td><td><a href="' + url + '">' + url + '</a></td></tr>');
-                        
-                        return table.wrap('<div>').parent().html();
-                    },
                     modifiedCallback: null,
                     uiUrl: "url/",
                     downloadLimit: 30
@@ -375,46 +364,7 @@
                 modal.modal('show');
             }
             
-            function modalInput(title, text, label, type, callback) {
-                var inputElement;
-                if (type == 'color') {
-                    inputElement = '<input id="modal-input-value" class="pick-a-color">';
-                } else {
-                    inputElement = '<input type="' + type + '" id="modal-input-value">';
-                }
-                
-                $('body').append('<div class="modal fade" id="modal-input" tabindex="-1" role="dialog" aria-labelledby="modal-input-label" aria-hidden="true"> \
-                        <div class="modal-dialog"> \
-                        <div class="modal-content"> \
-                          <div class="modal-header"> \
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> \
-                            <h4 class="modal-title" id="modal-input-label">' + title + '</h4> \
-                          </div> \
-                          <div class="modal-body"> \
-                            <p>' + text + '</p> \
-                            <p>' + label + inputElement + '</p> \
-                          </div> \
-                          <div class="modal-footer"> \
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> \
-                            <button id="modal-input-confirm" type="button" class="btn btn-primary">Confirm</button> \
-                          </div> \
-                        </div> \
-                      </div> \
-                    </div>');
-                
-                $('#modal-input .pick-a-color').pickAColor();
-                
-                $('#modal-input').modal().on('hidden.bs.modal', function () {
-                    $(this).remove();
-                });
-                $('#modal-input-confirm').click(function() {
-                    if (!callback($('#modal-input input').val())) {
-                        $('#modal-input').modal('hide');
-                    }
-                });
-            }
-            
-            function alertUser(title, text) {
+            function alertUser(title, text, preModalCallback) {
                 $('body').append('<div class="modal fade" id="modal-alert" tabindex="-1" role="dialog" aria-labelledby="modal-alert-label" aria-hidden="true"> \
                         <div class="modal-dialog"> \
                         <div class="modal-content"> \
@@ -431,6 +381,10 @@
                         </div><!-- /.modal-content --> \
                       </div><!-- /.modal-dialog --> \
                     </div><!-- /.modal -->');
+                
+                if (preModalCallback != undefined) {
+                    preModalCallback($('#modal-alert'));
+                }
                 
                 $('#modal-alert').modal().on('hidden.bs.modal', function () {
                     $(this).remove();
@@ -1298,20 +1252,16 @@
                  * CLICK handlers
                  */
                 $('#btn-group-neighbourhood a').click(function(evt) {
-                    applyNeighbourhood($(evt.target).data('level'));
+                    switch($(evt.target).data('type')) {
+                    case 'neighbourhood':
+                        applyNeighbourhood($(evt.target).data('level'));
+                        break;
+                    case 'correlation-gi':
+                        showCorrelationDriving(true);
+                        break;
+                    }
+                    
                     changeNodesState();
-                    
-//                    switch (evt.target.text) {
-//                    case "Selected genes only":
-//                        applyNeighbourhood(0);
-//                        changeNodesState();
-//                        break;
-//                    default:
-//                        applyNeighbourhood(parseInt(evt.target.text.charAt(0)));
-//                        changeNodesState();
-//                        break;
-//                    }
-                    
                 });
                 
                 $('#btn-group-annotation li a').click(function(evt) {
@@ -1347,7 +1297,31 @@
                     case "download-xgmml":
                         downloadXGMML();
                         break;
+                    case "list-selected":
+                        var selected = getUnique(getSelected().map(function(s) {return getStrain(s).orf;}).sort());
+                        if (selected.length > 0)
+                            alertUser('Selected genes', selected.join('<br>'), function(ele) {
+                                ele.find('.modal-footer').append(
+                                    '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit to YeastMine</button>');
+                                ele.find('.submit-ym').click(function() {
+                                    window.open('http://yeastmine.yeastgenome.org/yeastmine/buildBag.do?' + $.param({'text': selected.join(',')}, true), '_blank');
+                                });
+                                
+//                                ele.find('.modal-footer').append(
+//                                    '<button type="button" class="btn btn-primary submit-go" data-dismiss="modal">Submit to GO</button>');
+//                                ele.find('.submit-go').click(function() {
+//                                    window.open('http://amigo.geneontology.org/amigo/medial_search?' + $.param({'q': selected.join(',')}, true), '_blank');
+//                                });
+                            });
+                        else
+                            alertUser('Selection required', 'Please select one ore more genes to view');
+                        
+                        break;
                     }
+                });
+                
+                $("#search-bar button").click(function() {
+                    
                 });
                 
                 /*
@@ -2011,6 +1985,14 @@
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
                         $('#download-selected').toggleClass('disabled', selected.length == 0 || selected.length > opts.downloadLimit);
                         $('#view-tabular').toggleClass('disabled', selected.length == 0);
+                        
+                        $('li[data-selection-constraint]').each(function() {
+                            var enabled = true;
+                            if ($(this).data('selection-gt') != undefined) {
+                                enabled &= numVisibleSelected > $(this).data('selection-gt');
+                            }
+                            $(this).toggleClass('disabled', !enabled);
+                        });
                         
                         if (!tokenizing) {
                             updateMissingMessage();

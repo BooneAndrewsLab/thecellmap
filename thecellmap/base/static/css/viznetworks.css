@@ -180,3 +180,7 @@ body {
 .form-control[type=checkbox] {
     width: auto;
 }
+
+#search-bar .input-group-btn {
+    width: auto;
+}

@@ -44,6 +44,18 @@ Object.size = function(obj) {
     return size;
 };
 
+function getUnique(array){
+    var u = {}, a = [];
+    for(var i = 0, l = array.length; i < l; ++i){
+       if(u.hasOwnProperty(array[i])) {
+          continue;
+       }
+       a.push(array[i]);
+       u[array[i]] = 1;
+    }
+    return a;
+};
+
 function getURLParameter(name) {
     return decodeURI(
         (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
