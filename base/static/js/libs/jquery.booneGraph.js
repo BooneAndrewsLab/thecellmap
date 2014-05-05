@@ -1518,9 +1518,6 @@
                                 ratio = -ymin / size.h;
                             }
                             
-                            // TODO: IMPLEMENT RATIO THRESHOLD
-                            console.log(ratio);
-                            
                             // ratio multiplier should be 2.11 but let's set it to 3 for a nice padding around the newtwork
                             sigInst.goTo(size.w / 2, size.h / 2, position.ratio / (3 * ratio + 1)).draw();
                         } else { // Zoom in could be required
@@ -1534,11 +1531,10 @@
                                 ratio = ymin / size.h;
                             }
                             
-                            // TODO: IMPLEMENT RATIO THRESHOLD 
-                            console.log(ratio);
-                            
+                            if (ratio > 0.22) {
                             // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
                             sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
+                            }
                         }
                         
                     }, timeout); 
