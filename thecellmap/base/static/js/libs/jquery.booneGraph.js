@@ -1518,6 +1518,9 @@
                                 ratio = -ymin / size.h;
                             }
                             
+                            // TODO: IMPLEMENT RATIO THRESHOLD
+                            console.log(ratio);
+                            
                             // ratio multiplier should be 2.11 but let's set it to 3 for a nice padding around the newtwork
                             sigInst.goTo(size.w / 2, size.h / 2, position.ratio / (3 * ratio + 1)).draw();
                         } else { // Zoom in could be required
@@ -1530,6 +1533,9 @@
                             } else {
                                 ratio = ymin / size.h;
                             }
+                            
+                            // TODO: IMPLEMENT RATIO THRESHOLD 
+                            console.log(ratio);
                             
                             // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
                             sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
@@ -1716,6 +1722,15 @@
                     e.preventDefault();
                     return false;
                 });
+                
+                $(".cutoff-label").popover({
+                    container: ".vizualization-ui",
+                    placement: "left",
+                    html: true,
+                    content: '<input type="text" class="form-control">'
+                }).on('show.bs.popover', function () {
+                    console.log($(this));
+                });
             };
             
             function showUI() {
@@ -1772,7 +1787,6 @@
                      onEdgesClick(targeted);
                      changeState();
                  });
-                
                 
                 buildNewUI();
                 initUI();

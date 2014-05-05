@@ -20,4 +20,7 @@ urlpatterns = patterns('base.views',
     
     # annotation urls
     url(r'^annotation/(?P<annotation_id>\d+)/$', 'annotation', name='annotation'),
+    
+    # DEBUG
+    url(r'^testingdebug/$', 'foobar', name='foobar'),
 )
