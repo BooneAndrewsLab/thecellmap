@@ -143,3 +143,6 @@ def annotation(request, annotation_id):
             response['terms'][term_id] = term
     
     return JsonResponse(response)
+
+def foobar(request):
+    return render(request, 'base/foobar.html')
