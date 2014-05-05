@@ -476,6 +476,7 @@
                     $("#btn-group-datasets a").removeClass('active');
                     $("#btn-group-datasets a[data-id=1]").addClass('active');
                     $("#selected-dataset").html("Genetic interactions");
+                    
                     state.dataset = 1;
                     
                     sigInst.draw();
@@ -1262,6 +1263,7 @@
                     }
                     
                     changeNodesState();
+                    return $(this).hasClass("dropdown-toggle");
                 });
                 
                 $('#btn-group-annotation li a').click(function(evt) {
@@ -1318,6 +1320,8 @@
                         
                         break;
                     }
+                    
+                    return $(this).hasClass("dropdown-toggle");
                 });
                 
                 $("#search-bar button").click(function() {
@@ -1712,6 +1716,7 @@
                 
                 $("#tool-rotate").click(function() {
                     sigInst.rotateNodes({callback: function() {changeNodesState();}});
+                    return false;
                 });
                 
                 $(".disabled a").click(function(e) {
