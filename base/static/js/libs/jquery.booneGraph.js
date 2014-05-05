@@ -1270,8 +1270,12 @@
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
                     loadAnnotation(evt.target.text); 
+                    return false;
                 });
-                $('#btn-layout, .tool-layout').click(toggleLayout);
+                $('#btn-layout, .tool-layout').click(function() {
+                    toggleLayout();
+                    return false;
+                });
                 
                 $("#btn-group-download a, #btn-group-download button").click(function() {
                     switch ($(this).attr('id')) {
