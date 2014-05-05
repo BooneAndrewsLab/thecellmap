@@ -1727,6 +1727,17 @@
                 }).on('show.bs.popover', function () {
                     console.log($(this));
                 });
+                
+                $("body").keydown(function(e) {
+                    if (e.ctrlKey && (e.which == 97 || e.which == 65)){
+                        var visibleNodes = sigInst._core.graph.nodes.filter(function(node) {
+                            return !node.hidden;
+                        });
+                        visibleNodes = visibleNodes.map(function(node) {return node.id;});
+                        $("input.gene-search-input").select2("val", visibleNodes, true);
+                        return false;
+                    }
+                });
             };
             
             function showUI() {
