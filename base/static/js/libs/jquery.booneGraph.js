@@ -1719,6 +1719,10 @@
                         content: '<div><input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '"></div>'
                     }).on('hide.bs.popover', function () {
                         var value = $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(), cutoff = state.cutoff[state.dataset];
+                        if (state.dataset != 0) {
+                            cutoff = cutoff.slice();
+                        }
+                        
                         if (isNumber(value)) {
                             value = parseFloat(value).toFixed(2);
                             if (label.attr('id') == 'cutoff-label-min') {
