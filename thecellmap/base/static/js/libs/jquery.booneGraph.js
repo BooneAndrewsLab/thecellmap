@@ -1304,13 +1304,14 @@
                         downloadXGMML();
                         break;
                     case "list-selected":
-                        var selected = getUnique(getSelected().map(function(s) {return getStrain(s).orf;}).sort());
+                        var selected = getUnique(getSelected().map(function(s) {return getStrain(s).label;}).sort());
+                        var selectedOrfs = getUnique(getSelected().map(function(s) {return getStrain(s).orf;}).sort());
                         if (selected.length > 0)
                             alertUser('Selected genes', selected.join('<br>'), function(ele) {
                                 ele.find('.modal-footer').append(
                                     '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit to YeastMine</button>');
                                 ele.find('.submit-ym').click(function() {
-                                    window.open('http://yeastmine.yeastgenome.org/yeastmine/buildBag.do?' + $.param({'text': selected.join(',')}, true), '_blank');
+                                    window.open('http://yeastmine.yeastgenome.org/yeastmine/buildBag.do?' + $.param({'text': selectedOrfs.join(',')}, true), '_blank');
                                 });
                                 
 //                                ele.find('.modal-footer').append(
