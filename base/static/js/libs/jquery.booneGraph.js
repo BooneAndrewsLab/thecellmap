@@ -730,70 +730,45 @@
             
             function rebuildLegend() {
                 var id = state.annotation, terms = vizdata[id].terms;
-                $("#style-annotation-accordion").empty();
+                $("#style-annotation").empty();
+                
+                $("#style-annotation").append('<table class="annotation-table"><thead><tr>\
+                      <th style="width: 1%;"></th>\
+                      <th>Annotation</th></tr></thead>\
+                  <tbody id="style-annotation-table"></tbody></table>');
                 
                 for (n in terms) {
                     var term = terms[n];
                     var color = vizdata[id].colorPalette[term.idx];
                     
-                    $("#style-annotation-accordion").append('<div id="panel-annotation-' + term.id + '" class="panel panel-default" data-term="' + term.id + '">\
-                        <div class="panel-heading" style="background-color: ' + color + ';">\
-                          <h4 class="panel-title">\
-                            <a data-toggle="collapse" data-parent="#style-annotation-accordion" href="#style-annotation-' + term.id + '">\
-                              ' + term.name + '\
-                            </a>\
-                          </h4>\
-                        </div>\
-                        <div id="style-annotation-' + term.id + '" class="panel-collapse collapse">\
-                          <div class="panel-body">\
-                          </div>\
-                        </div>\
-                      </div>');
-                    
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-body").append('<form class="form-horizontal" role="form">\
-                            <div class="form-group">\
-                              <label class="col-sm-2 control-label" for="style-annotation-' + term.id + '-name">Name</label>\
-                              <div class="col-sm-10 input-group">\
-                                <input class="form-control annotation-name" placeholder="Annotation name" id="style-annotation-' + term.id + '-name" value="' + term.name + '">\
-                                <span class="input-group-btn">\
-                                  <button class="btn btn-primary annotation-name-revert" type="button" data-toggle="tooltip" data-placement="top" data-delay="200" title="Revert to default name"><span class="glyphicon glyphicon-refresh"></span> </button>\
-                                </span>\
-                              </div>\
-                            </div>\
-                            <div class="form-group">\
-                              <label class="col-sm-2 control-label" for="style-annotation-' + term.id + '-color">Color</label>\
-                              <div class="col-sm-10 input-group">\
-                                <input id="style-annotation-' + term.id + '-color" class="pick-a-color" value="' + color + '">\
-                              </div>\
-                            </div>\
-                          </form>');
+                    $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
+                            <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
+                            <td>' + term.name + '</td></td></tr>');
                 }
                 
-                $("#style-annotation-accordion *[data-toggle=tooltip]").tooltip();
-                $("#style-annotation-accordion .pick-a-color").pickAColor({showSavedColors: false}).on('change', function() {
-                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')], color = '#' + $(this).val();
-                    vizdata[id].colorPalette[term.idx] = color;
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
-                    applyAnnotationColors();
-                });
-                $("#style-annotation-accordion .annotation-name").keyup(function() {
-                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-                    term.name = $(this).val();
-                    $(this).closest('.panel').find('.panel-title a').html(term.name);
-                });
-                $("#style-annotation-accordion .annotation-name-revert").click(function() {
-                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
-                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
-                    term.name = term.orig_name;
-                });
+                $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false});
+//              
+//                $("#style-annotation-accordion *[data-toggle=tooltip]").tooltip();
+//                $("#style-annotation-accordion .pick-a-color").pickAColor({showSavedColors: false}).on('change', function() {
+//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')], color = '#' + $(this).val();
+//                    vizdata[id].colorPalette[term.idx] = color;
+//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
+//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
+//                    applyAnnotationColors();
+//                });
+//                $("#style-annotation-accordion .annotation-name").keyup(function() {
+//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+//                    term.name = $(this).val();
+//                    $(this).closest('.panel').find('.panel-title a').html(term.name);
+//                });
+//                $("#style-annotation-accordion .annotation-name-revert").click(function() {
+//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+//                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
+//                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
+//                    term.name = term.orig_name;
+//                });
             }
             
             function applyAnnotationColors() {
