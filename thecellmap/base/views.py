@@ -38,9 +38,9 @@ def interactions(request, dataset_id=None):
     for s, t, w in data.itertuples(index=False):
         response.append({
             'id': '%04d%04d' % (s, t),
-            's': s,
-            't': t,
-            'w': w
+            's': int(s),
+            't': int(t),
+            'w': float(w)
          })
     
     return JsonResponse({'dataset': 'Interactions', 'edges': response})
