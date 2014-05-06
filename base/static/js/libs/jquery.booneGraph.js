@@ -942,6 +942,10 @@
             }
             
             function toggleLayout(justStop, layoutType) {
+                if (justStop.preventDefault != undefined) {
+                    justStop.preventDefault();
+                }
+                
                 var layoutButton = $("#btn-layout");
                 if (countVisibleEdges() > 20000) {
                     alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + countVisibleEdges());
@@ -1079,8 +1083,6 @@
                     });
                     localSelected = $.extend({}, localSelected, tmpSelected);
                 }
-                
-                console.log(localSelected, level);
                 
                 sigInst.iterNodes(function(node) {
                     if (!localSelected.hasOwnProperty(node.id)) {
@@ -1263,21 +1265,18 @@
                     }
                     
                     changeNodesState();
-                    return $(this).hasClass("dropdown-toggle");
+                    evt.preventDefault();
                 });
                 
                 $('#btn-group-annotation li a').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
                     loadAnnotation(evt.target.text); 
-                    return false;
+                    evt.preventDefault();
                 });
-                $('#btn-layout, .tool-layout').click(function() {
-                    toggleLayout();
-                    return false;
-                });
+                $('#btn-layout, .tool-layout').click(toggleLayout);
                 
-                $("#btn-group-download a, #btn-group-download button").click(function() {
+                $("#btn-group-download a, #btn-group-download button").click(function(evt) {
                     switch ($(this).attr('id')) {
                     case "download-visible":
                         downloadShownData();
@@ -1326,11 +1325,7 @@
                         break;
                     }
                     
-                    return $(this).hasClass("dropdown-toggle");
-                });
-                
-                $("#search-bar button").click(function() {
-                    
+                    evt.preventDefault();
                 });
                 
                 /*
@@ -1468,8 +1463,9 @@
                 $("#cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
                 
-                $("#btn-group-datasets a").click(function(){
+                $("#btn-group-datasets a").click(function(evt){
                     switchDataset($(this).attr('data-id'));
+                    evt.preventDefault();
                 });
                 
                 /*
@@ -1492,7 +1488,7 @@
                     var x = -(mmx.ax + mmx.zx - (2 * position.stageX) - size.w) / 2;
                     var y = -(mmx.ay + mmx.zy - (2 * position.stageY) - size.h) / 2;
                     
-                    var moveRequired = Math.round( position.stageX ) != x || Math.round( position.stageY ) != y;
+                    var moveRequired = Math.round( position.stageX ) != Math.round( x ) || Math.round( position.stageY ) != Math.round( y );
                     var timeout = 0;
                     
                     if (moveRequired) {
@@ -1527,6 +1523,7 @@
                                 ratio = -ymin / size.h;
                             }
                             
+                            console.log("zooming out");
                             // ratio multiplier should be 2.11 but let's set it to 3 for a nice padding around the newtwork
                             sigInst.goTo(size.w / 2, size.h / 2, position.ratio / (3 * ratio + 1)).draw();
                         } else { // Zoom in could be required
@@ -1541,8 +1538,9 @@
                             }
                             
                             if (ratio > 0.22) {
-                            // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
-                            sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
+                                console.log("zooming");
+                                // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
+                                sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
                             }
                         }
                         
@@ -1689,12 +1687,8 @@
                     modal.find('.annotation-color').each(function() {
                         var color = '#' + $(this).val().toUpperCase();
                         
-                        console.log($(this).closest('tr').data('term'), color);
-                        
                         if (vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] != color) {
-                            console.log('\t' + vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')]);
                             vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] = color;
-                            console.log('\t' + vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')]);
                             colorsChanged = true;
                         }
                     });
@@ -1719,9 +1713,9 @@
                 
                 $("a.tool-arange").click(arangeNodes);
                 
-                $("#tool-rotate").click(function() {
+                $("#tool-rotate").click(function(e) {
                     sigInst.rotateNodes({callback: function() {changeNodesState();}});
-                    return false;
+                    e.preventDefault();
                 });
                 
                 $(".disabled a").click(function(e) {
@@ -1729,13 +1723,25 @@
                     return false;
                 });
                 
-                $(".cutoff-label").popover({
-                    container: ".vizualization-ui",
-                    placement: "left",
-                    html: true,
-                    content: '<input type="text" class="form-control">'
-                }).on('show.bs.popover', function () {
-                    console.log($(this));
+                $(".cutoff-label").each(function() {
+                    var label = $(this);
+                    label.popover({
+                        container: "body",
+                        placement: "left",
+                        html: true,
+                        content: '<input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '">'
+                    }).on('hide.bs.popover', function () {
+                        
+                        
+                        console.log("HIDINGZZZ", $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val());
+                        
+                    }).on('shown.bs.popover', function () {
+                        $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keypress(function (e) {
+                            if (e.which == 13) {
+                                label.popover('hide');
+                            }
+                        }).focus();
+                    });
                 });
                 
                 $("body").keydown(function(e) {
