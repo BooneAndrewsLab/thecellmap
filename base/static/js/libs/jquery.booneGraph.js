@@ -1729,16 +1729,34 @@
                         container: "body",
                         placement: "left",
                         html: true,
-                        content: '<input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '">'
+                        content: '<div><input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '"></div>'
                     }).on('hide.bs.popover', function () {
-                        
-                        
-                        console.log("HIDINGZZZ", $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val());
-                        
+                        var value = $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(), cutoff = state.cutoff[state.dataset];
+                        if (isNumber(value)) {
+                            value = parseFloat(value).toFixed(2);
+                            if (label.attr('id') == 'cutoff-label-min') {
+                                if (state.dataset == 0) {
+                                    cutoff = value;
+                                } else {
+                                    cutoff[1] = -value;
+                                }
+                            } else {
+                                cutoff[0] = -value;
+                            }
+                            
+                            if (state.cutoff[state.dataset] != cutoff) {
+                                if (state.dataset == 0) { // TEMPORARY HACK
+                                    $(".cutoff-bar[data-dataset=\"" + state.dataset + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
+                                }
+                                $(".cutoff-bar[data-dataset=\"" + state.dataset + "\"]").val(cutoff, {update: true, set: true});
+                            }
+                        }
                     }).on('shown.bs.popover', function () {
-                        $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keypress(function (e) {
+                        $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keyup(function (e) {
+                            $(this).parent().toggleClass('has-error', !isNumber($(this).val()));
+                            
                             if (e.which == 13) {
-                                label.popover('hide');
+                                label.click();
                             }
                         }).focus();
                     });
