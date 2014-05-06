@@ -1606,7 +1606,7 @@
                     $(this).stop(true);
                 });
                 
-                $("#contextmenu a").click(function() {
+                $("#contextmenu a").click(function(evt) {
                     switch ($(this).attr('id')) {
                     case "context-dl":
                         var node = getNode(hoveredTargets[0]), strain = getStrain(node.id);
@@ -1644,14 +1644,16 @@
                     }
                     
                     $("#contextmenu-container").hide();
+                    evt.preventDefault();
                 });
                 
-                $("#contextmenu-edge a").click(function() {
+                $("#contextmenu-edge a").click(function(evt) {
                     switch ($(this).attr('id')) {
                     case "context-edge-gi":
                         showCorrelationDriving();
                         break
                     }
+                    evt.preventDefault();
                 });
                 
                 $(".pick-a-color").pickAColor();
