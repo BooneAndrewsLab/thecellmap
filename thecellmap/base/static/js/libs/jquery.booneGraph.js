@@ -155,7 +155,7 @@
                     }
                     
                     reapplyCutoff = true;
-//                    $("input.gene-search-input").select2("val", ns.selection, true);
+                    $("input.gene-search-input").select2("val", ns.selection, true);
                     sigInst.draw();
                 }
                 
@@ -268,8 +268,8 @@
                 if (autoState) return;
                 
                 var missing = [];
-                getSelected().forEach(function(sel) {
-                    if (getNode(sel) === undefined) {
+                getSelectedNodes().forEach(function(sel) {
+                    if (!sel.startsWith('annot') && getNode(sel) === undefined) {
                         var strain = getStrain(sel);
                         missing.push(strain.verboseName);
                     }
@@ -295,12 +295,13 @@
             };
             
             function updateTooltips() {
+                var nodes = getSelectedNodes();
                 $('#download-selected').parent().tooltip('destroy');
                 if ($('#download-selected').hasClass('disabled')) {
-                    if (getSelected().length > opts.downloadLimit)
+                    if (nodes.length > opts.downloadLimit)
                         $('#download-selected').parent().tooltip({title: 'Download limited to less than 30 nodes',
                             placement: 'right'});
-                    else if (getSelected().length == 0)
+                    else if (nodes.length == 0)
                         $('#download-selected').parent().tooltip({title: 'Select some nodes first',
                             placement: 'right'});
                 }
@@ -411,7 +412,40 @@
                 mouseY = event.pageY;
             }
             
-            function getSelected() {
+            function getSelectedNodes() {
+                var selected = getSelection(), map, annotations = [];
+                var i, j, selectedByAnnotation = {}, strain;
+                
+                if (vizdata.hasOwnProperty(state.annotation)) {
+                    map = vizdata[state.annotation].map;
+                    
+                    selected.forEach(function(sel) {
+                        if (sel.startsWith('annot')) {
+                            annotations.push(parseInt(sel.replace('annot', '')));
+                        }
+                    });
+                    
+                    // Some annotations are selected
+                    if (annotations.length > 0) {
+                        for (i in map) {
+                            if (map.hasOwnProperty(i)) {
+                                for (j in map[i]) {
+                                    if ($.inArray(map[i][j], annotations) >= 0 && !selectedByAnnotation.hasOwnProperty(i)) {
+                                        selectedByAnnotation[i] = null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return sigInst._core.graph.nodes.filter(function(node) {
+                    strain = getStrain(node.id);
+                    return $.inArray(node.id, selected) >= 0 || (!node.hidden && selectedByAnnotation.hasOwnProperty(strain.orf));
+                }).map(function(node){return node.id;});
+            }
+            
+            function getSelection() {
                 return $("input.gene-search-input").select2('val');
             }
             
@@ -450,7 +484,7 @@
                 autoState = true; // Prevent automatic state change on loadDataset
                 
                 if (fromNodes) {
-                    nodes = getSelected();
+                    nodes = getSelectedNodes();
                 } else {
                     hoveredTargets.forEach(function(e) {
                         e = getEdge(e);
@@ -722,10 +756,17 @@
                     }
                 }
                 
+                /* Remove any selected annotations from a different annotation */
+                var oldState = autoState;
+                autoState = true;
+                var selection = getSelection().filter(function(s) {return !s.startsWith('annot');});
+                $("input.gene-search-input").select2("val", selection, true);
+                autoState = oldState;
+                
                 applyAnnotationColors();
                 rebuildLegend();
                 
-                changeState();
+                changeNodesState();
             }
             
             function rebuildLegend() {
@@ -746,7 +787,7 @@
                             <td>' + term.name + '</td></td></tr>');
                 }
                 
-                $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false});
+//                $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false});
 //              
 //                $("#style-annotation-accordion *[data-toggle=tooltip]").tooltip();
 //                $("#style-annotation-accordion .pick-a-color").pickAColor({showSavedColors: false}).on('change', function() {
@@ -834,7 +875,7 @@
                 case 'ctrl':
                     break;
                 case 'shift':
-                    $("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
+                    $("input.gene-search-input").select2("val", getSelection().concat(targets.content), true);
                     break;
                 default:
                     $("input.gene-search-input").select2("val", targets.content, true);
@@ -848,7 +889,7 @@
             }
             
             function onNodesShiftClick(targets) {
-                $("input.gene-search-input").select2("val", getSelected().concat(targets.content), true);
+                $("input.gene-search-input").select2("val", getSelection().concat(targets.content), true);
             }
             
             function _setRunningLayout(bool) {
@@ -872,7 +913,7 @@
             }
             
             function arangeNodes() {
-                var selected = getSelected(), xmin, xmax, ymin, ymax, n = 0;
+                var selected = getSelectedNodes(), xmin, xmax, ymin, ymax, n = 0;
                 if (selected.length == 0) return;
                 
                 selected.forEach(function(node){
@@ -1052,7 +1093,7 @@
             
             function applyNeighbourhood(level) {
                 /* Resets big red nodes */
-                var selected = getSelected(), localSelected = {}, tmpSelected;
+                var selected = getSelectedNodes(), localSelected = {}, tmpSelected;
                 selected.forEach(function (id){
                     localSelected[id] = null;
                 });
@@ -1082,7 +1123,7 @@
                 console.log('applying cutoff', cutoff);
                 setCutoff(cutoff);
                 
-                var isArray = $.isArray(cutoff), selected = getSelected();
+                var isArray = $.isArray(cutoff), selected = getSelectedNodes();
                 
                 sigInst.iterNodes(function(node) {
                     node.visibleDegree = node.degree;
@@ -1268,14 +1309,14 @@
                         break;
                     case "btn-view":
                     case "view-tabular":
-                        var selected = getSelected();
+                        var selected = getSelectedNodes();
                         if (selected.length > 0) 
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
                         else
                             alertUser('Selection required', 'Please select one ore more genes to view');
                         break;
                     case "download-selected":
-                        var selected = getSelected();
+                        var selected = getSelectedNodes();
                         if (selected.length > 0) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         else
@@ -1288,8 +1329,8 @@
                         downloadXGMML();
                         break;
                     case "list-selected":
-                        var selected = getUnique(getSelected().map(function(s) {return getStrain(s).label;}).sort());
-                        var selectedOrfs = getUnique(getSelected().map(function(s) {return getStrain(s).orf;}).sort());
+                        var selected = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).label;}).sort());
+                        var selectedOrfs = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).orf;}).sort());
                         if (selected.length > 0)
                             alertUser('Selected genes', selected.join('<br>'), function(ele) {
                                 ele.find('.modal-footer').append(
@@ -1599,7 +1640,7 @@
                         break
                     case "context-hide":
                         autoState = true; // prevent selection change from changing the state
-                        var selected = getSelected();
+                        var selected = getSelectedNode();
                         hoveredTargets.forEach(function(node) {
                             if (selected.indexOf(node) != -1) {
                                 selected.splice(selected.indexOf(node), 1);
@@ -1806,7 +1847,7 @@
                 }).bind('selectionStop', function(selection) {
                     noPulse = true;
                     if (selection.content.nodeSelect) {
-                        $("input.gene-search-input").select2("val", getSelected().concat(selection.content.selected), true);
+                        $("input.gene-search-input").select2("val", getSelectedNodes().concat(selection.content.selected), true);
                     } else {
                         onEdgesClick({content: state.edgeSelection.concat(selection.content.selected)});
                         changeState();
@@ -1883,20 +1924,31 @@
                         multiple: true,
                         minimumInputLength: 2,
                         containerCssClass: 'form-control', 
-                        placeholder: 'Start typing genes...',
+                        placeholder: 'Start typing genes or annotations...',
                         allowClear: true,
                         width: '350px',
                         tokenSeparators: [",", " ", "\t", "\n"],
                         initSelection: function (element, callback) {
                             var id = $(element).val(), strain, result = [];
-                            
                             id.split(",").forEach(function(x) {
                                 if (x !== "") {
-                                    strain = getStrain(x);
-                                    result.push({
-                                        text: strain.verboseName,
-                                        id: strain.id
-                                    });
+                                    if (x.startsWith('annot')) {
+                                        x = parseInt(x.replace('annot', ''));
+                                        for (var term in vizdata[state.annotation].terms) {
+                                            if (x == term) {
+                                                result.push({
+                                                    text: vizdata[state.annotation].terms[term].name,
+                                                    id: 'annot' + x
+                                                });
+                                            }
+                                        }
+                                    } else {
+                                        strain = getStrain(x);
+                                        result.push({
+                                            text: strain.verboseName,
+                                            id: strain.id
+                                        });
+                                    }
                                 }
                             });
                             callback(result);
@@ -1959,26 +2011,26 @@
                             }
                             if (original!==input) return input;
                         },
-                        createSearchChoice: function(term) {
-                            var wildcard = term.indexOf('*') != -1;
-                            term = term.replace('*', '').toLowerCase();
-                            
-                            if (term.length > 0) {
-                                var results = [], seen = {};
-                                
-                                autocomp.forEach(function(node) {
-                                    node.tokens.forEach(function(token) {
-                                        if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
-                                            results.push({id: node.id, text: node.value });
-                                            seen[node.id] = 0;
-                                            return;
-                                        }
-                                    });
-                                });
-                                
-                                if (results.length !== 0) return results;
-                            }
-                        },
+//                        createSearchChoice: function(term) {
+//                            var wildcard = term.indexOf('*') != -1;
+//                            term = term.replace('*', '').toLowerCase();
+//                            
+//                            if (term.length > 0) {
+//                                var results = [], seen = {};
+//                                
+//                                autocomp.forEach(function(node) {
+//                                    node.tokens.forEach(function(token) {
+//                                        if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+//                                            results.push({id: node.id, text: node.value });
+//                                            seen[node.id] = 0;
+//                                            return;
+//                                        }
+//                                    });
+//                                });
+//                                
+//                                if (results.length !== 0) return results;
+//                            }
+//                        },
                         query: function(query) {
                             if (query.term === undefined) {
                                 query.callback({results: []});
@@ -1987,6 +2039,7 @@
                             
                             var data = {results: []};
                             var term = query.term.replace('*', '').toLowerCase();
+                            var aterm, aterms = vizdata[state.annotation].terms, acount = 0;
                             
                             autocomp.forEach(function(node) {
                                 if (query.term.length == 0){
@@ -2001,21 +2054,23 @@
                                 }
                             });
                             
-                            data.results = data.results.slice(0, 5);
+                            for (aterm in aterms) {
+                                if (aterms.hasOwnProperty(aterm) && aterms[aterm].name.toLowerCase().indexOf(term) != -1) {
+                                    data.results.unshift({id: 'annot' + aterm, text: "Annotation: " + aterms[aterm].name });
+                                    acount++;
+                                }
+                                if (acount > 2) break; // List only 3 terms max
+                            }
+                            
+                            data.results = data.results.slice(0, 6);
                             query.callback(data);
                         },
                         data: autocomp,
-                    }).on('select2-selecting', function(evt) {
-//                        if (getNode(evt.val) === undefined) {
-//                            var strain = getStrain(evt.val);
-//                            messageUser('Gene <strong>' + strain.verboseName + '</strong> was screened but is below the lowest threshold');
-//                            
-//                            
-//                        }
                     }).on('change', function(evt, a, b, c) {
-                        var selected = getSelected(), numVisibleSelected = 0;
+                        var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
                         
                         sigInst.iterNodes(function(node) {
+                            strain = getStrain(node.id);
                             if ($.inArray(node.id, selected) >= 0) {
                                 node.selected = true;
                                 
@@ -2047,9 +2102,9 @@
                             sigInst.draw();
                             
                             if (!($(selected).not(state.selection).length == 0 && $(state.selection).not(selected).length == 0)) {
-                                var diff = $(getSelected()).not(state.selection).get();
+                                var diff = $(selected).not(state.selection).get();
                                 
-                                state.selection = getSelected();
+                                state.selection = getSelection();
                                 $(".tool-arange").parent().toggleClass("disabled", state.selection.length == 0);
                                 $("#context-node-gi").parent().toggleClass("disabled", state.selection.length < 2);
                                 
