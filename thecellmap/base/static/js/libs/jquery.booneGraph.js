@@ -1640,7 +1640,7 @@
                         break
                     case "context-hide":
                         autoState = true; // prevent selection change from changing the state
-                        var selected = getSelectedNode();
+                        var selected = getSelectedNodes();
                         hoveredTargets.forEach(function(node) {
                             if (selected.indexOf(node) != -1) {
                                 selected.splice(selected.indexOf(node), 1);
