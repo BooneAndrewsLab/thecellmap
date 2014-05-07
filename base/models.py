@@ -111,6 +111,7 @@ class Term(models.Model):
     name = models.CharField(max_length=128)
     alias = models.CharField(max_length=128)
     source = models.CharField(max_length=32)
+    color = models.CharField(max_length=6)
     
     genes = models.ManyToManyField(Gene)
     

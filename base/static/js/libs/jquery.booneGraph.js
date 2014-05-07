@@ -787,7 +787,7 @@
                             <td>' + term.name + '</td></td></tr>');
                 }
                 
-//                $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false});
+                $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false, showSavedColors: false});
 //              
 //                $("#style-annotation-accordion *[data-toggle=tooltip]").tooltip();
 //                $("#style-annotation-accordion .pick-a-color").pickAColor({showSavedColors: false}).on('change', function() {

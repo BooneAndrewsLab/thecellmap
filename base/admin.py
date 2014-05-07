@@ -5,6 +5,7 @@ Created on Dec 16, 2013
 '''
 
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term
 
@@ -40,12 +41,15 @@ class AnnotationAdmin(admin.ModelAdmin):
         return ds.term_set.count()
 
 class TermAdmin(admin.ModelAdmin):
-    list_display = ('annotation', 'name', 'alias', 'number_of_genes')
+    list_display = ('annotation', 'name', 'alias', 'term_color', 'number_of_genes')
     exclude = ('genes', )
     list_filter = ('annotation', )
     
     def number_of_genes(self, ds):
         return ds.genes.count()
+    
+    def term_color(self, term):
+        return mark_safe('<span style="color: #%s; font-weight: bold;">%s</span>' % (term.color, term.color))
 
 admin.site.register(Gene, GeneAdmin)
 admin.site.register(Strain, StrainAdmin)
