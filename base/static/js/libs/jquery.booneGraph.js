@@ -780,8 +780,15 @@
                 }
                 
                 $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false, showSavedColors: false});
+                
                 $("#style-annotation-table .pick-a-color").on('change', function() {
-                    var term = vizdata[id].terms[n], color = '#' + $(this).val();
+                    var term, color = '#' + $(this).val(), a = $(this).closest("tr").data("term");
+                    for (n in terms) {
+                        term = vizdata[id].terms[n];
+                        if(terms[n].idx == a) {
+                            break
+                        }
+                    }
                     vizdata[id].colorPalette[term.idx] = color;
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
