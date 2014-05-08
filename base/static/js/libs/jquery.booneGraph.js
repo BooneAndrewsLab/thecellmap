@@ -1792,6 +1792,10 @@
                     });
                 });
                 
+                $(".dropdown-submenu > a").click(function(evt) {
+                    evt.preventDefault();
+                });
+                
                 $("body").keydown(function(e) {
                     if (e.ctrlKey && (e.which == 97 || e.which == 65)){
                         var visibleNodes = sigInst._core.graph.nodes.filter(function(node) {
