@@ -1336,14 +1336,11 @@
                                 ele.find('.modal-footer').append(
                                     '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit to YeastMine</button>');
                                 ele.find('.submit-ym').click(function() {
-                                    window.open('http://yeastmine.yeastgenome.org/yeastmine/buildBag.do?' + $.param({'text': selectedOrfs.join(',')}, true), '_blank');
+                                    $('<form target="_blank" action="http://yeastmine.yeastgenome.org/yeastmine/portal.do" method="post">\
+                                            <input type="hidden" name="class" value="Gene"> \
+                                            <input type="hidden" name="externalids" value="' + selectedOrfs.join(',') + '"> \
+                                       </form>').submit();
                                 });
-                                
-//                                ele.find('.modal-footer').append(
-//                                    '<button type="button" class="btn btn-primary submit-go" data-dismiss="modal">Submit to GO</button>');
-//                                ele.find('.submit-go').click(function() {
-//                                    window.open('http://amigo.geneontology.org/amigo/medial_search?' + $.param({'q': selected.join(',')}, true), '_blank');
-//                                });
                             });
                         else
                             alertUser('Selection required', 'Please select one ore more genes to view');
