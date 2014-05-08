@@ -354,7 +354,11 @@
                 });
                 
                 $('#node-annotation-table .pick-a-color[value="' + node.color + '"]').closest('tr').find('input[type="radio"]').prop('checked', true);
-                $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false});
+                $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false}).on("change", function() {
+                    if ($(this).closest('tr').find('input[name=dominant]').prop('checked')) {
+                        modal.find('#edit-node-color').val($(this).val()).focus().blur().change();
+                    }
+                });
                 
                 $('#node-annotation-table input[name=dominant]').change(function() {
                     modal.find('#edit-node-color').val(
