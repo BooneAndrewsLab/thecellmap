@@ -723,6 +723,10 @@
                                         var i = 0, n, colors = [];
                                         for (n in vizdata[id].terms) {
                                             colors.push(vizdata[id].terms[n].color);
+                                            if(colors[i].indexOf("#" == -1)) {
+                                                colors[i] = "#" + colors[i];
+                                            }
+                                            
                                             vizdata[id].terms[n] = {
                                                     idx : i++,
                                                     id : n,
@@ -759,9 +763,8 @@
             }
             
             function rebuildLegend() {
-                var id = state.annotation, terms = vizdata[id].terms;
+                var id = state.annotation, terms = vizdata[id].terms, n;
                 $("#style-annotation").empty();
-                
                 $("#style-annotation").append('<table class="annotation-table"><thead><tr>\
                       <th style="width: 1%;"></th>\
                       <th>Annotation</th></tr></thead>\
@@ -777,28 +780,26 @@
                 }
                 
                 $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false, showSavedColors: false});
-//              
-//                $("#style-annotation-accordion *[data-toggle=tooltip]").tooltip();
-//                $("#style-annotation-accordion .pick-a-color").pickAColor({showSavedColors: false}).on('change', function() {
-//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')], color = '#' + $(this).val();
-//                    vizdata[id].colorPalette[term.idx] = color;
-//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
-//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-//                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
-//                    applyAnnotationColors();
-//                });
-//                $("#style-annotation-accordion .annotation-name").keyup(function() {
-//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-//                    term.name = $(this).val();
-//                    $(this).closest('.panel').find('.panel-title a').html(term.name);
-//                });
-//                $("#style-annotation-accordion .annotation-name-revert").click(function() {
-//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-//                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
-//                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
-//                    term.name = term.orig_name;
-//                });
+                $("#style-annotation-table .pick-a-color").on('change', function() {
+                    var term = vizdata[id].terms[n], color = '#' + $(this).val();
+                    vizdata[id].colorPalette[term.idx] = color;
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+                    $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
+                    applyAnnotationColors();
+                });
+                $("#style-annotation-table .annotation-name").keyup(function() {
+                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+                    term.name = $(this).val();
+                    $(this).closest('.panel').find('.panel-title a').html(term.name);
+                });
+                $("#style-annotation-table .annotation-name-revert").click(function() {
+                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
+                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
+                    term.name = term.orig_name;
+                });
             }
             
             function applyAnnotationColors() {
