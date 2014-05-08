@@ -720,13 +720,14 @@
                                             vizdata[id].multifunctionColor = opts.multifunctionNodeColor;
                                         }
                                         
-                                        var i = 0, n;
+                                        var i = 0, n, colors = [];
                                         for (n in vizdata[id].terms) {
+                                            colors.push(vizdata[id].terms[n].color);
                                             vizdata[id].terms[n] = {
                                                     idx : i++,
                                                     id : n,
-                                                    name : vizdata[id].terms[n],
-                                                    orig_name : vizdata[id].terms[n]
+                                                    name : vizdata[id].terms[n].name,
+                                                    orig_name : vizdata[id].terms[n].name,
                                             }
                                         }
                                         
@@ -736,18 +737,6 @@
                                             }
                                           );
                                         
-                                        var colors = paletteGenerator.generate(
-                                                i, // Colors
-                                                function(color){ // This function filters valid colors
-                                                    var hcl = color.hcl();
-                                                    return hcl[0]>=0 && hcl[0]<=360
-                                                        && hcl[1]>=0 && hcl[1]<=3
-                                                        && hcl[2]>=0 && hcl[2]<=1.5;
-                                                    },
-                                                true, // Using Force Vector instead of k-Means
-                                                20 // Steps (quality)
-                                            );
-                                        colors = $.map(colors, function(c){return c.hex();});
                                         vizdata[id].colorPalette = colors.concat([opts.defaultNodeColor, opts.multifunctionNodeColor]);
                                     }
                                 });
