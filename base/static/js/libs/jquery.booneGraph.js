@@ -1681,6 +1681,7 @@
                 });
                 
                 $(".pick-a-color").pickAColor();
+                $('#modal-style input.pick-a-color').addClass('form-control').css({width: "auto"});
                 
                 $(".refresh-network").click(function() {
                     location.reload();
