@@ -800,8 +800,12 @@
                 
                 for (n in terms) {
                     var term = terms[n];
-                    var color = vizdata[id].colorPalette[term.idx];
-                    
+                    var color
+                    console.log("cookie", $.cookie(term.name))
+                    if ($.cookie(term.name) == undefined)
+                        color = vizdata[id].colorPalette[term.idx];
+                    else
+                        color = $.cookie(term.name);
                     $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
                             <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
                             <td>' + term.name + '</td></td></tr>');
@@ -812,11 +816,14 @@
                     var term, color = '#' + $(this).val(), a = $(this).closest("tr").data("term");
                     for (n in terms) {
                         term = vizdata[id].terms[n];
+                        if (n != -1 && n != -2){
+                            $.cookie(term.name, color);
+                        }
                         if(terms[n].idx == a) {
                             break
                         }
                     }
-                    vizdata[id].colorPalette[term.idx] = color;
+                    
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
@@ -824,19 +831,6 @@
                     applyAnnotationColors();
                     changeNodesState();
                 });
-                
-                $("#style-annotation")
-//                $("#style-annotation-table .annotation-name").keyup(function() {
-//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-//                    term.name = $(this).val();
-//                    $(this).closest('.panel').find('.panel-title a').html(term.name);
-//                });
-//                $("#style-annotation-table .annotation-name-revert").click(function() {
-//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-//                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
-//                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
-//                    term.name = term.orig_name;
-//                });
             }
             
             function applyAnnotationColors() {
@@ -845,10 +839,11 @@
                 sigInst.iterNodes(function(n) {
                     strain = getStrain(n.id);
                     annot = data.map[strain.orf];
-                    
                     if (annot != undefined) {
-                        if (annot.length == 1)
+                        if (annot.length == 1 && $.cookie(data.terms[annot[0]].name) == undefined)
                             n.color = data.colorPalette[data.terms[annot[0]].idx];
+                        else if (annot.length == 1)
+                            n.color = $.cookie(data.terms[annot[0]].name)
                         else
                             n.color = data.colorPalette[data.terms["-2"].idx];
                     } else {
@@ -1440,8 +1435,19 @@
                         $('#style-slider-' + slider).val($('#style-slider-' + slider).attr('data-slider-default'), true);
                     }
                     $('#canvas-background-color').val('#222222').change();
+                    
+                    //revert annotation colors to default
+                    var data = vizdata[state.annotation], strain, annot;
+                    sigInst.iterNodes(function(n) {
+                        strain = getStrain(n.id);
+                        annot = data.map[strain.orf];
+                        if (annot != undefined)
+                            $.removeCookie(data.terms[annot[0]].name);
+                    });
+                    
+                    rebuildLegend();
+                    applyAnnotationColors();
                 });
-                
                 $('.btn-style').click(function() {
                     $('#style-tabs a[href="' + $(this).data('tab') + '"]').tab('show');
                 });
