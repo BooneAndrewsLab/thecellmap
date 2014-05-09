@@ -693,6 +693,7 @@
                     }
                     
                     vizdata['edges'] = {};
+                    rebuildLegend();
                 }
                 getParser(layout.parser)({
                     jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback, state: state
@@ -768,7 +769,6 @@
             
             function rebuildLegend() {
                 var id = state.annotation, terms = {}, strain = [], mapStrain = {};
-                
                 //select only visible strains
                 sigInst.iterNodes(function(node) {
                     if (!node.hidden) {
@@ -808,7 +808,6 @@
                 }
                 
                 $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false, showSavedColors: false});
-                
                 $("#style-annotation-table .pick-a-color").on('change', function() {
                     var term, color = '#' + $(this).val(), a = $(this).closest("tr").data("term");
                     for (n in terms) {
@@ -823,18 +822,21 @@
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
                     applyAnnotationColors();
+                    changeNodesState();
                 });
-                $("#style-annotation-table .annotation-name").keyup(function() {
-                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-                    term.name = $(this).val();
-                    $(this).closest('.panel').find('.panel-title a').html(term.name);
-                });
-                $("#style-annotation-table .annotation-name-revert").click(function() {
-                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
-                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
-                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
-                    term.name = term.orig_name;
-                });
+                
+                $("#style-annotation")
+//                $("#style-annotation-table .annotation-name").keyup(function() {
+//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+//                    term.name = $(this).val();
+//                    $(this).closest('.panel').find('.panel-title a').html(term.name);
+//                });
+//                $("#style-annotation-table .annotation-name-revert").click(function() {
+//                    var term = vizdata[id].terms[$(this).closest('.panel').data('term')];
+//                    $(this).closest('.input-group').find('input.annotation-name').val(term.orig_name);
+//                    $(this).closest('.panel').find('.panel-title a').html(term.orig_name);
+//                    term.name = term.orig_name;
+//                });
             }
             
             function applyAnnotationColors() {
@@ -1167,6 +1169,7 @@
                     node.hidden = (node._hidden || node.visibleDegree <= 0) && selected.indexOf(node.id) == -1; // either we manually hid the node or it's not connected to anything
                 });
                 
+                rebuildLegend();
                 sigInst.draw();
             };
             
