@@ -1683,20 +1683,21 @@
                 $(".pick-a-color").pickAColor();
                 $('#modal-style input.pick-a-color').addClass('form-control').css({width: "auto"});
                 
-                $(".refresh-network").click(function() {
+                $(".refresh-network").click(function(evt) {
                     location.reload();
+                    evt.preventDefault();
                 });
-                $(".undo-network").click(function() {
+                $(".undo-network").click(function(evt) {
                     if (!$(this).hasClass('disabled'))
                         setState(undo.undo());
                     _updateNavigation();
-                    return false;
+                    evt.preventDefault();
                 });
-                $(".redo-network").click(function() {
+                $(".redo-network").click(function(evt) {
                     if (!$(this).hasClass('disabled'))
                         setState(undo.redo());
                     _updateNavigation();
-                    return false;
+                    evt.preventDefault();
                 });
                 
                 $('[data-toggle="tooltip"]').tooltip();
