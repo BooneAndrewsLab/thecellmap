@@ -767,7 +767,31 @@
             }
             
             function rebuildLegend() {
-                var id = state.annotation, terms = vizdata[id].terms, n;
+                var id = state.annotation, terms = {}, strain = [], mapStrain = {};
+                
+                //select only visible strains
+                sigInst.iterNodes(function(node) {
+                    if (!node.hidden) {
+                        strain.push(getStrain(node.id));
+                    }
+                });
+                
+                //store terms of the visible strains into the variable terms
+                for (var i = 0; i < strain.length; i++) {
+                    mapStrain = vizdata[id].map[(strain[i].orf)];
+                    if (typeof mapStrain !== 'undefined') {
+                        if (mapStrain.length == 1) {
+                            terms[mapStrain] = vizdata[id].terms[mapStrain];
+                        }
+                        //for multi-function strains
+                        else
+                            terms[-2] = vizdata[id].terms[-2];
+                    }
+                    //for unannotated strains
+                    else
+                        terms[-1] = vizdata[id].terms[-1];
+                }
+                
                 $("#style-annotation").empty();
                 $("#style-annotation").append('<table class="annotation-table"><thead><tr>\
                       <th style="width: 1%;"></th>\
