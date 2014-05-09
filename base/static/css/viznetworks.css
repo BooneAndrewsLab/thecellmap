@@ -184,3 +184,7 @@ body {
 #search-bar .input-group-btn {
     width: auto;
 }
+
+#modal-style .pick-a-color-markup .input-group-btn {
+    width: 100%!important;
+}

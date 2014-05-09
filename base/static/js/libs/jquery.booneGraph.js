@@ -1335,7 +1335,7 @@
                         if (selected.length > 0)
                             alertUser('Selected genes', selected.join('<br>'), function(ele) {
                                 ele.find('.modal-footer').append(
-                                    '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit to YeastMine</button>');
+                                    '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit ORFs to YeastMine</button>');
                                 ele.find('.submit-ym').click(function() {
                                     $('<form target="_blank" action="http://yeastmine.yeastgenome.org/yeastmine/portal.do" method="post">\
                                             <input type="hidden" name="class" value="Gene"> \
