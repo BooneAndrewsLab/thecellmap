@@ -45,6 +45,7 @@
 
 {% block js %}
 {{ block.super }}
+<!--[if gt IE 8]><!-->
   <!-- TEMPORARY! CHANGE BACK TO OFFICIAL VERSION WHEN THEY FIX IT -->
   <script src="{% static 'js/libs/select2.js' %}"></script>
   
@@ -120,9 +121,13 @@
     });
   })(jQuery);
   </script>
+<!--<![endif]-->
 {% endblock js %}
 
 {% block content %}
+<!--[if lt IE 9]>
+<p>You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<!--<![endif]-->
 <div class="container"
      style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;' 
      unselectable='on'
@@ -130,7 +135,8 @@
      onmousedown='return false;'>
     <div id="inner-container">
       <div id="sigma-parent" class="sigma-parent">
-          <div id="network-container" class="sigma-expand"></div>
+        <div id="network-container" class="sigma-expand">
+        </div>
       </div>
     </div>
 </div>
