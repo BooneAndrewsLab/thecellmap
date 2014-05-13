@@ -266,9 +266,8 @@
             
             function updateMissingMessage() {
                 if (autoState) return;
-                
                 var missing = [];
-                getSelectedNodes().forEach(function(sel) {
+                getSelection().forEach(function(sel) {
                     if (!sel.startsWith('annot') && getNode(sel) === undefined) {
                         var strain = getStrain(sel);
                         missing.push(strain.verboseName);
@@ -291,7 +290,10 @@
                     } else {
                         $('#alert-missing .message').html(message);
                     }
+                    $('#alerts-panel').show();
                 }
+                else
+                    $('#alerts-panel').hide();
             };
             
             function updateTooltips() {
@@ -2146,6 +2148,7 @@
                         data: autocomp,
                     }).on('change', function(evt, a, b, c) {
                         var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
+                        var selectionLength;
                         
                         sigInst.iterNodes(function(node) {
                             strain = getStrain(node.id);
