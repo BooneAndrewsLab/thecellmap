@@ -1849,6 +1849,23 @@
             function showUI() {
                 setTimeout(function() {
                     $(".vizualization-ui").fadeIn(1000);
+                    
+                    /* Some older browsers don't support this, add a workaround */
+                    if (!Modernizr.pointerevents) {
+                        var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
+                            var evt = document.createEvent("MouseEvents");
+                            evt.initMouseEvent(e.type, e.bubbles, e.cancelable, e.view, e.detail, 
+                                    e.screenX, e.screenY, 
+                                    e.clientX, e.clientY, 
+                                    e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button, null);
+                            target.dispatchEvent(evt);
+                        };
+                        
+                        ele.addEventListener('DOMMouseScroll', eventFwd, false);
+                        ele.addEventListener('mousewheel', eventFwd, false);
+                        ele.addEventListener('mousemove', eventFwd, false);
+                        ele.addEventListener('mousedown', eventFwd, false);
+                    }
                 }, 0);
             }
             
