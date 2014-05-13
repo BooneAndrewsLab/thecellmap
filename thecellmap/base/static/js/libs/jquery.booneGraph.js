@@ -1318,6 +1318,12 @@
                     evt.preventDefault();
                 });
                 
+//                $(".dropdown-toggle").click(function(evt) {
+//                    evt.stopPropagation();
+////                    while (!$(this).parent().hasClass('open'))
+//                    $(this).dropdown('toggle').dropdown('toggle');
+//                });
+                
                 $('#btn-group-annotation li a').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
@@ -2197,6 +2203,7 @@
                             annot = selection.replace("action_loadannot ", '');
                             loadAnnotation(annot);
                             e.preventDefault();
+                            $(".gene-search-input").select2("close");
                         }
                     });
                     
