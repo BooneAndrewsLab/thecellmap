@@ -757,10 +757,10 @@
                 /* Remove any selected annotations from a different annotation */
                 var oldState = autoState;
                 autoState = true;
-                var selection = getSelection().filter(function(s) {return !s.startsWith('annot');});
+                var selection = getSelection().filter(function(s) {return (!s.startsWith('annot'))});
                 $("input.gene-search-input").select2("val", selection, true);
-                autoState = oldState;
                 
+                autoState = oldState;
                 applyAnnotationColors();
                 rebuildLegend();
                 
@@ -837,7 +837,6 @@
             
             function applyAnnotationColors() {
                 var data = vizdata[state.annotation], strain, annot;
-                
                 sigInst.iterNodes(function(n) {
                     strain = getStrain(n.id);
                     annot = data.map[strain.orf];
@@ -1973,6 +1972,7 @@
                             var id = $(element).val(), strain, result = [];
                             id.split(",").forEach(function(x) {
                                 if (x !== "") {
+                                    
                                     if (x.startsWith('annot')) {
                                         x = parseInt(x.replace('annot', ''));
                                         for (var term in vizdata[state.annotation].terms) {
@@ -1983,7 +1983,15 @@
                                                 });
                                             }
                                         }
-                                    } else {
+                                    } 
+                                    else if (x.startsWith('action_loadannot')) {
+                                        x = x.replace('action_loadannot', '')
+                                        result.push({
+                                            text: "Load:" + x,
+                                            id: "action_loadannot" + x
+                                        });
+                                    }
+                                    else {
                                         strain = getStrain(x);
                                         result.push({
                                             text: strain.verboseName,
@@ -2103,6 +2111,12 @@
                                 if (acount > 2) break; // List only 3 terms max
                             }
                             
+                            //load annotations
+                            opts.annotations.forEach(function(annotation) {
+                                if (("load " + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.annotation)
+                                    data.results.unshift({id: "action_loadannot " + annotation.name, text: "Load: " + annotation.name});
+                            });
+                                
                             data.results = data.results.slice(0, 6);
                             query.callback(data);
                         },
@@ -2160,7 +2174,13 @@
                                 updateTooltips();
                             }
                         }
-                    }).on('select2-blur', function() {
+                    }).on('select2-selecting', function(e) {
+                        var selection = e.val, annot;
+                        if (selection.length > 17 && selection.indexOf("action_loadannot ") == 0) {
+                            annot = selection.replace("action_loadannot ", '');
+                            loadAnnotation(annot);
+                            e.preventDefault();
+                        }
                     });
                     
                     updateTooltips();
