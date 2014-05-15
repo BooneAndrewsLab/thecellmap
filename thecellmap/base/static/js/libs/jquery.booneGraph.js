@@ -1,4 +1,6 @@
 (function($) {
+    if(!window.console) {window.console={}; window.console.log = function(){};}
+ 
     $.extend($.fn, {
         /**
          * Starting point, example:
@@ -160,7 +162,7 @@
                 }
                 
                 if (reapplyCutoff) {
-                    console.log("reapplying", state.dataset, state.cutoff, state.cutoff[state.dataset]);
+                    log("reapplying", state.dataset, state.cutoff, state.cutoff[state.dataset]);
                     applyCutoff(state.cutoff[state.dataset]);
                     
                     if (state.dataset == 0) { // TEMPORARY HACK
@@ -191,8 +193,8 @@
                 }
             };
             
-            function log(msg) {
-                if (opts.debug) console.log(msg);
+            function log() {
+                if (opts.debug && window.console) console.log(arguments);
             };
             
             function getCutoff() {
@@ -1145,7 +1147,7 @@
             };
             
             function applyCutoff(cutoff) {
-                console.log('applying cutoff', cutoff);
+                log('applying cutoff', cutoff);
                 setCutoff(cutoff);
                 
                 var isArray = $.isArray(cutoff), selected = getSelectedNodes();
@@ -1320,11 +1322,12 @@
                     evt.preventDefault();
                 });
                 
-//                $(".dropdown-toggle").click(function(evt) {
+                $(".dropdown-toggle").click(function(evt) {
+                    evt.isDropDownToggleEvent = true;
 //                    evt.stopPropagation();
 ////                    while (!$(this).parent().hasClass('open'))
 //                    $(this).dropdown('toggle').dropdown('toggle');
-//                });
+                });
                 
                 $('#btn-group-annotation li a').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
@@ -1591,7 +1594,7 @@
                                 ratio = -ymin / size.h;
                             }
                             
-                            console.log("zooming out");
+                            log("zooming out");
                             // ratio multiplier should be 2.11 but let's set it to 3 for a nice padding around the newtwork
                             sigInst.goTo(size.w / 2, size.h / 2, position.ratio / (3 * ratio + 1)).draw();
                         } else { // Zoom in could be required
@@ -1606,7 +1609,7 @@
                             }
                             
                             if (ratio > 0.22) {
-                                console.log("zooming");
+                                log("zooming");
                                 // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
                                 sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
                             }
@@ -1615,7 +1618,7 @@
                     }, timeout); 
                 });
                 $('#btn-fullscreen').click(function() {
-                    console.log($().isFullScreen());
+                    log($().isFullScreen());
                     if ($().isFullScreen()) {
                         $("#network-container").cancelFullScreen();
                     } else {
@@ -1904,6 +1907,7 @@
                     clicking.modifierKey = null;
                 }).bind('upgraph', function(evt) {
                     if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$(".btn-group").hasClass('open')) { // Clear selection
+                        log(evt.isDropDownToggleEvent);
                         clearSelection();
                     }
                 }).bind('draggedNode', function() {
