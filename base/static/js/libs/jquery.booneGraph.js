@@ -952,7 +952,7 @@
             
             function arangeNodes() {
                 var selected = getSelectedNodes(true), xmin, xmax, ymin, ymax, n = 0;
-                if (selected.length == 0) return;
+                if (selected.length < 3) return;
                 
                 selected.forEach(function(node){
                     node = getNode(node);
@@ -1328,7 +1328,9 @@
                         applyNeighbourhood($(evt.target).data('level'));
                         break;
                     case 'correlation-gi':
-                        showCorrelationDriving(true);
+                        var selection = getSelectedNodes();
+                        if (selection.length > 1)
+                            showCorrelationDriving(true);
                         break;
                     }
                     
@@ -1364,13 +1366,13 @@
                         break;
                     case "download-selected":
                         var selected = getSelectedNodes();
-                        if (selected.length > 0) 
+                        if (selected.length > 0 && selected.length < 20) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         break;
                     case "download-dataset":
-                        var selected = getSelectedNodes();
-                        if (selected.length > 0)
+                        if (opts.canBulkDownload) {
                             window.open('dl/','_blank');
+                        }
                         break;
                     case "download-xgmml":
                         downloadXGMML();
@@ -1720,7 +1722,9 @@
                         editNode(hoveredTargets[0]);
                         break;
                     case "context-node-gi":
-                        showCorrelationDriving(true);
+                        var selection = getSelectedNodes(true);
+                        if (selection > 1 && selection < 6)
+                            showCorrelationDriving(true);
                         break;
                     }
                     
@@ -2184,17 +2188,18 @@
                             }
                         });
                         
-                        $('#btn-group-neighbourhood').toggleClass('hidden', numVisibleSelected == 0);
-                        $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
-                        
                         $('li[data-selection-constraint]').each(function() {
-                            var enabled = true;
+                            var enabled = true, size = selection.length;
+                            if ($(this).data('selection-type') == 'visible') {
+                                size = numVisibleSelected;
+                            }
                             if ($(this).data('selection-gt') != undefined) {
-                                enabled &= selected.length > $(this).data('selection-gt');
+                                enabled &= size > $(this).data('selection-gt');
                             }
                             if ($(this).data('selection-lt') != undefined) {
-                                enabled &= selected.length < $(this).data('selection-lt');
+                                enabled &= size < $(this).data('selection-lt');
                             }
+                            
                             $(this).toggleClass('disabled', !enabled);
                         });
                         
@@ -2206,8 +2211,6 @@
                                 var diff = $(selected).not(state.selection).get();
                                 
                                 state.selection = getSelection();
-                                $(".tool-arange").parent().toggleClass("disabled", state.selection.length == 0);
-                                $("#context-node-gi").parent().toggleClass("disabled", state.selection.length < 2);
                                 
 //                                if (!noPulse) {
 //                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
