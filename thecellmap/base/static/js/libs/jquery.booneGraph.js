@@ -263,7 +263,7 @@
                       </div>');
                 $('#alerts-panel').append(alert);
                 alert.alert();
-                setTimeout(function() { alert.alert('close') }, 3000);
+                setTimeout(function() { alert.alert('close'); }, 3000);
             }
             
             function updateMissingMessage() {
@@ -292,10 +292,9 @@
                     } else {
                         $('#alert-missing .message').html(message);
                     }
-                    $('#alerts-panel').show();
+                } else {
+                    $('#alert-missing').remove();
                 }
-                else
-                    $('#alerts-panel').hide();
             };
             
             function updateTooltips() {
@@ -421,8 +420,12 @@
             }
             
             function getSelectedNodes(visible) {
-                var selected = getSelection(), map, annotations = [];
-                var i, j, selectedByAnnotation = {}, strain;
+                var selected = getSelection(), map, annotations = [], result;
+                var i, j, selectedByAnnotation = {}, strain, node;
+                
+                result = selected.filter(function(sel) {
+                    return !sel.startsWith('annot') && !sel.startsWith('action');
+                });
                 
                 if (vizdata.hasOwnProperty(state.annotation)) {
                     map = vizdata[state.annotation].map;
@@ -447,15 +450,20 @@
                     }
                 }
                 
-                console.log(vizdata['strains'], selected);
-                return sigInst._core.graph.nodes.filter(function(node) {
-                    strain = getStrain(node.id);
-                    if (visible) 
-                        return $.inArray(node.id, selected) >= 0 || (!node.hidden && selectedByAnnotation.hasOwnProperty(strain.orf));
-                    else {
-                        return $.inArray(node.id, selected) >= 0 || selectedByAnnotation.hasOwnProperty(strain.orf);
+                vizdata.strains.forEach(function(strain) {
+                    if (selectedByAnnotation.hasOwnProperty(strain.orf)) {
+                        result.push(strain.id);
                     }
-                }).map(function(node){return node.id;});
+                });
+                
+                if (!!visible) {
+                    return result.filter(function(strainid) {
+                        node = getNode(strainid);
+                        return !!node && !node.hidden;
+                    });
+                }
+                
+                return result;
             }
             
             function getSelection() {
@@ -498,6 +506,7 @@
                 
                 if (fromNodes) {
                     nodes = getSelectedNodes(true);
+                    console.log(nodes);
                 } else {
                     hoveredTargets.forEach(function(e) {
                         e = getEdge(e);
@@ -515,9 +524,6 @@
                     
                     sigInst.iterNodes(function(node) {
                         node._hidden = node.hidden = nodes.indexOf(parseInt(node.id)) == -1;
-//                        if (nodes.indexOf(parseInt(node.id)) == -1) {
-//                            node._hidden = node.hidden = true;
-//                        }
                     });
                     
                     $("#btn-group-datasets a").removeClass('active');
@@ -1125,7 +1131,7 @@
             
             function applyNeighbourhood(level) {
                 /* Resets big red nodes */
-                var selected = getSelectedNodes(true), localSelected = {}, tmpSelected;
+                var selected = getSelectedNodes(true), localSelected = {}, tmpSelected, strain;
                 selected.forEach(function (id){
                     localSelected[id] = null;
                 });
@@ -1143,7 +1149,9 @@
                 }
                 
                 sigInst.iterNodes(function(node) {
-                    if (!localSelected.hasOwnProperty(node.id)) {
+                    strain = getStrain(node.id);
+                    
+                    if (!localSelected.hasOwnProperty(strain.id)) {
                         node._hidden = node.hidden = true;
                     }
                 });
@@ -1155,7 +1163,7 @@
                 log('applying cutoff', cutoff);
                 setCutoff(cutoff);
                 
-                var isArray = $.isArray(cutoff), selected = getSelectedNodes(true);
+                var isArray = $.isArray(cutoff), selected = getSelectedNodes(true), strain;
                 
                 sigInst.iterNodes(function(node) {
                     node.visibleDegree = node.degree;
@@ -1171,7 +1179,8 @@
                         edge.target.visibleDegree--;
                     }
                 }).iterNodes(function(node) {
-                    node.hidden = (node._hidden || node.visibleDegree <= 0) && selected.indexOf(node.id) == -1; // either we manually hid the node or it's not connected to anything
+                    strain = getStrain(node.id);
+                    node.hidden = (node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.id + "") == -1; // either we manually hid the node or it's not connected to anything
                 });
                 
                 rebuildLegend();
@@ -1349,15 +1358,14 @@
                         break;
                     case "btn-view":
                     case "view-tabular":
-                        var selected = getSelectedNodes(false);
-                        console.log(selected);
+                        var selected = getSelectedNodes();
                         if (selected.length > 0) 
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
                         else
                             alertUser('Selection required', 'Please select one ore more genes to view');
                         break;
                     case "download-selected":
-                        var selected = getSelectedNodes(false);
+                        var selected = getSelectedNodes();
                         if (selected.length > 0) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         else
@@ -1370,8 +1378,8 @@
                         downloadXGMML();
                         break;
                     case "list-selected":
-                        var selected = getUnique(getSelectedNodes(false).map(function(s) {return getStrain(s).label;}).sort());
-                        var selectedOrfs = getUnique(getSelectedNodes(false).map(function(s) {return getStrain(s).orf;}).sort());
+                        var selected = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).label;}).sort());
+                        var selectedOrfs = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).orf;}).sort());
                         if (selected.length > 0)
                             alertUser('Selected genes', selected.join('<br>'), function(ele) {
                                 ele.find('.modal-footer').append(
@@ -1922,7 +1930,7 @@
                 }).bind('selectionStop', function(selection) {
                     noPulse = true;
                     if (selection.content.nodeSelect) {
-                        $("input.gene-search-input").select2("val", getSelectedNodes(true).concat(selection.content.selected), true);
+                        $("input.gene-search-input").select2("val", getSelection().concat(selection.content.selected), true);
                     } else {
                         onEdgesClick({content: state.edgeSelection.concat(selection.content.selected)});
                         changeState();
@@ -2013,7 +2021,7 @@
                                         for (var term in vizdata[state.annotation].terms) {
                                             if (x == term) {
                                                 result.push({
-                                                    text: vizdata[state.annotation].terms[term].name,
+                                                    text: 'Annotation: ' + vizdata[state.annotation].terms[term].name,
                                                     id: 'annot' + x
                                                 });
                                             }
@@ -2157,12 +2165,12 @@
                         },
                         data: autocomp,
                     }).on('change', function(evt, a, b, c) {
-                        var selected = getSelectedNodes(true), numVisibleSelected = 0, strain;
+                        var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
                         var selectionLength, selection = getSelection();
                         
                         sigInst.iterNodes(function(node) {
                             strain = getStrain(node.id);
-                            if ($.inArray(node.id, selected) >= 0) {
+                            if ($.inArray(strain.id + "", selected) >= 0) {
                                 node.selected = true;
                                 
                                 if (node.hidden) {
@@ -2184,6 +2192,9 @@
                             var enabled = true;
                             if ($(this).data('selection-gt') != undefined) {
                                 enabled &= numVisibleSelected > $(this).data('selection-gt');
+                            }
+                            if ($(this).data('selection-lt') != undefined) {
+                                enabled &= numVisibleSelected < $(this).data('selection-lt');
                             }
                             $(this).toggleClass('disabled', !enabled);
                         });
