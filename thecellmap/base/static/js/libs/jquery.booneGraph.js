@@ -299,7 +299,7 @@
             };
             
             function updateTooltips() {
-                var nodes = getSelectedNodes();
+                var nodes = getSelectedNodes(true);
                 $('#download-selected').parent().tooltip('destroy');
                 if ($('#download-selected').hasClass('disabled')) {
                     if (nodes.length > opts.downloadLimit)
@@ -420,7 +420,7 @@
                 mouseY = event.pageY;
             }
             
-            function getSelectedNodes() {
+            function getSelectedNodes(visible) {
                 var selected = getSelection(), map, annotations = [];
                 var i, j, selectedByAnnotation = {}, strain;
                 
@@ -447,9 +447,14 @@
                     }
                 }
                 
+                console.log(vizdata['strains'], selected);
                 return sigInst._core.graph.nodes.filter(function(node) {
                     strain = getStrain(node.id);
-                    return $.inArray(node.id, selected) >= 0 || (!node.hidden && selectedByAnnotation.hasOwnProperty(strain.orf));
+                    if (visible) 
+                        return $.inArray(node.id, selected) >= 0 || (!node.hidden && selectedByAnnotation.hasOwnProperty(strain.orf));
+                    else {
+                        return $.inArray(node.id, selected) >= 0 || selectedByAnnotation.hasOwnProperty(strain.orf);
+                    }
                 }).map(function(node){return node.id;});
             }
             
@@ -492,7 +497,7 @@
                 autoState = true; // Prevent automatic state change on loadDataset
                 
                 if (fromNodes) {
-                    nodes = getSelectedNodes();
+                    nodes = getSelectedNodes(true);
                 } else {
                     hoveredTargets.forEach(function(e) {
                         e = getEdge(e);
@@ -940,7 +945,7 @@
             }
             
             function arangeNodes() {
-                var selected = getSelectedNodes(), xmin, xmax, ymin, ymax, n = 0;
+                var selected = getSelectedNodes(true), xmin, xmax, ymin, ymax, n = 0;
                 if (selected.length == 0) return;
                 
                 selected.forEach(function(node){
@@ -1120,7 +1125,7 @@
             
             function applyNeighbourhood(level) {
                 /* Resets big red nodes */
-                var selected = getSelectedNodes(), localSelected = {}, tmpSelected;
+                var selected = getSelectedNodes(true), localSelected = {}, tmpSelected;
                 selected.forEach(function (id){
                     localSelected[id] = null;
                 });
@@ -1150,7 +1155,7 @@
                 log('applying cutoff', cutoff);
                 setCutoff(cutoff);
                 
-                var isArray = $.isArray(cutoff), selected = getSelectedNodes();
+                var isArray = $.isArray(cutoff), selected = getSelectedNodes(true);
                 
                 sigInst.iterNodes(function(node) {
                     node.visibleDegree = node.degree;
@@ -1344,14 +1349,15 @@
                         break;
                     case "btn-view":
                     case "view-tabular":
-                        var selected = getSelection();
+                        var selected = getSelectedNodes(false);
+                        console.log(selected);
                         if (selected.length > 0) 
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
                         else
                             alertUser('Selection required', 'Please select one ore more genes to view');
                         break;
                     case "download-selected":
-                        var selected = getSelection();
+                        var selected = getSelectedNodes(false);
                         if (selected.length > 0) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         else
@@ -1364,8 +1370,8 @@
                         downloadXGMML();
                         break;
                     case "list-selected":
-                        var selected = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).label;}).sort());
-                        var selectedOrfs = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).orf;}).sort());
+                        var selected = getUnique(getSelectedNodes(false).map(function(s) {return getStrain(s).label;}).sort());
+                        var selectedOrfs = getUnique(getSelectedNodes(false).map(function(s) {return getStrain(s).orf;}).sort());
                         if (selected.length > 0)
                             alertUser('Selected genes', selected.join('<br>'), function(ele) {
                                 ele.find('.modal-footer').append(
@@ -1685,7 +1691,7 @@
                         break
                     case "context-hide":
                         autoState = true; // prevent selection change from changing the state
-                        var selected = getSelectedNodes();
+                        var selected = getSelectedNodes(true);
                         hoveredTargets.forEach(function(node) {
                             if (selected.indexOf(node) != -1) {
                                 selected.splice(selected.indexOf(node), 1);
@@ -1916,7 +1922,7 @@
                 }).bind('selectionStop', function(selection) {
                     noPulse = true;
                     if (selection.content.nodeSelect) {
-                        $("input.gene-search-input").select2("val", getSelectedNodes().concat(selection.content.selected), true);
+                        $("input.gene-search-input").select2("val", getSelectedNodes(true).concat(selection.content.selected), true);
                     } else {
                         onEdgesClick({content: state.edgeSelection.concat(selection.content.selected)});
                         changeState();
@@ -2151,7 +2157,7 @@
                         },
                         data: autocomp,
                     }).on('change', function(evt, a, b, c) {
-                        var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
+                        var selected = getSelectedNodes(true), numVisibleSelected = 0, strain;
                         var selectionLength, selection = getSelection();
                         
                         sigInst.iterNodes(function(node) {
