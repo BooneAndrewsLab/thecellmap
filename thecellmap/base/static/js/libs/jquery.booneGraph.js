@@ -1855,6 +1855,11 @@
                     evt.preventDefault();
                 });
                 
+                $(".btn-group > button.dropdown-toggle").click(function(evt) {
+                    evt.stopImmediatePropagation();
+//                    $(this).closest('.btn-group').children('.dropdown-menu').toggle();
+                });
+                
                 $("body").keydown(function(e) {
                     if (e.ctrlKey && (e.which == 97 || e.which == 65)){
                         var visibleNodes = sigInst._core.graph.nodes.filter(function(node) {
