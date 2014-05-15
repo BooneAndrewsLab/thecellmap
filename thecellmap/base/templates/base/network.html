@@ -120,7 +120,7 @@
                 updateLimits: false
             },
             uiUrl: "{% static 'ui.html' %}",
-            canBulkDownload: "{{ can_bulk_download }}"
+            canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %}
         });
     });
   })(jQuery);
