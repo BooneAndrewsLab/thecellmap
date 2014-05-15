@@ -1856,7 +1856,7 @@
                 });
                 
                 $(".btn-group > button.dropdown-toggle").click(function(evt) {
-                    evt.stopImmediatePropagation();
+//                    evt.stopImmediatePropagation();
 //                    $(this).closest('.btn-group').children('.dropdown-menu').toggle();
                 });
                 
