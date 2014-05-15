@@ -93,13 +93,13 @@ body {
     pointer-events: auto;
 }
 
-/* .top-left { */
-/*     display: table; */
-/* } */
+.top-left {
+    display: table;
+}
 
-/* .top-left > :last-child { */
-/*     margin-left: 5px; */
-/* } */
+.top-left > :last-child {
+    margin-left: 5px;
+}
 
 .top-right {
     right: 5px;
