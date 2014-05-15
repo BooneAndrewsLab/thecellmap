@@ -21,11 +21,11 @@ $('.vizualization-ui').ready(function() {
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li><a id="view-tabular" href="#" class="disabled"><span class="glyphicons table"></span> View data in table form</a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="view-tabular" href="#"><span class="glyphicons table"></span> View data in table form</a></li>
       <li class="divider"></li>
       <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span> Download visible network</a></li>
-      <li><a id="download-selected" class="disabled" href="#"><span class="filetype-icon xls"></span> Download data for selected genes</a></li>
-      <li data-toggle="tooltip" title="Unpublished data, will be available after publication" data-placement="right" data-delay="0"><a id="download-dataset" class="disabled" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0" data-selection-lt="20"><a id="download-selected" href="#"><span class="filetype-icon xls"></span> Download data for selected genes</a></li>
+      <li class="disabled" data-toggle="tooltip" title="Unpublished data, will be available after publication" data-placement="right" data-delay="0"><a id="download-dataset" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li>
       <li class="divider"></li>
       <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li>
       <li><a id="download-snapshot" href="#"><span class="filetype-icon png"></span> Export visible network to png</a></li>

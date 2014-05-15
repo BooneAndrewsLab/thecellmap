@@ -1361,18 +1361,16 @@
                         var selected = getSelectedNodes();
                         if (selected.length > 0) 
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
-                        else
-                            alertUser('Selection required', 'Please select one ore more genes to view');
                         break;
                     case "download-selected":
                         var selected = getSelectedNodes();
                         if (selected.length > 0) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
-                        else
-                            alertUser('Selection required', 'Please select one ore more genes to download');
                         break;
                     case "download-dataset":
-                        window.open('dl/','_blank');
+                        var selected = getSelectedNodes();
+                        if (selected.length > 0)
+                            window.open('dl/','_blank');
                         break;
                     case "download-xgmml":
                         downloadXGMML();
@@ -1391,8 +1389,6 @@
                                        </form>').submit();
                                 });
                             });
-                        else
-                            alertUser('Selection required', 'Please select one ore more genes to view');
                         
                         break;
                     }
@@ -2185,16 +2181,14 @@
                         
                         $('#btn-group-neighbourhood').toggleClass('hidden', numVisibleSelected == 0);
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
-                        $('#download-selected').toggleClass('disabled', selection.length == 0 || selection.length > opts.downloadLimit);
-                        $('#view-tabular').toggleClass('disabled', selection.length == 0);
                         
                         $('li[data-selection-constraint]').each(function() {
                             var enabled = true;
                             if ($(this).data('selection-gt') != undefined) {
-                                enabled &= numVisibleSelected > $(this).data('selection-gt');
+                                enabled &= selected.length > $(this).data('selection-gt');
                             }
                             if ($(this).data('selection-lt') != undefined) {
-                                enabled &= numVisibleSelected < $(this).data('selection-lt');
+                                enabled &= selected.length < $(this).data('selection-lt');
                             }
                             $(this).toggleClass('disabled', !enabled);
                         });
