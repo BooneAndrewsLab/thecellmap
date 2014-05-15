@@ -1344,14 +1344,14 @@
                         break;
                     case "btn-view":
                     case "view-tabular":
-                        var selected = getSelectedNodes();
+                        var selected = getSelection();
                         if (selected.length > 0) 
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
                         else
                             alertUser('Selection required', 'Please select one ore more genes to view');
                         break;
                     case "download-selected":
-                        var selected = getSelectedNodes();
+                        var selected = getSelection();
                         if (selected.length > 0) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         else
@@ -2152,7 +2152,7 @@
                         data: autocomp,
                     }).on('change', function(evt, a, b, c) {
                         var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
-                        var selectionLength;
+                        var selectionLength, selection = getSelection();
                         
                         sigInst.iterNodes(function(node) {
                             strain = getStrain(node.id);
@@ -2171,8 +2171,8 @@
                         
                         $('#btn-group-neighbourhood').toggleClass('hidden', numVisibleSelected == 0);
                         $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide && selected.length == 0);
-                        $('#download-selected').toggleClass('disabled', selected.length == 0 || selected.length > opts.downloadLimit);
-                        $('#view-tabular').toggleClass('disabled', selected.length == 0);
+                        $('#download-selected').toggleClass('disabled', selection.length == 0 || selection.length > opts.downloadLimit);
+                        $('#view-tabular').toggleClass('disabled', selection.length == 0);
                         
                         $('li[data-selection-constraint]').each(function() {
                             var enabled = true;
