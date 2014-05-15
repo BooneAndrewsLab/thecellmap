@@ -9,12 +9,16 @@ from django.views.decorators.http import require_POST
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term
 from base.utils import print_queries, is_integer, JsonResponse
+import os
 
 
 def _serve_dataset(request, dataset=None):
+    dataset = dataset or Dataset.get_default()
+    
     return render(request, 'base/network.html', {
-            'dataset': dataset or Dataset.get_default(),
-            'annotations': Annotation.objects.all()
+            'dataset': dataset,
+            'annotations': Annotation.objects.all(),
+            'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt'))
       })
 
 def about(request):
