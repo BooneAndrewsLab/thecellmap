@@ -35,6 +35,7 @@ DATABASES = {
 # Recipients of traceback emails and other notifications.
 ADMINS = (
     # ('Matej Usaj', 'm.usaj@thecellmap.org'),
+    # ('Anastasia Baryshnikova', 'abarysh@princeton.edu'),
 )
 MANAGERS = ADMINS
 
@@ -75,13 +76,25 @@ SECRET_KEY = 'j_t=nqdkbbrmuapo5qdnq(0gbbym&se7s0pk6v+$jxl1qww*60'
 
 ## Log settings
 
-# Remove this configuration variable to use your custom logging configuration
-LOGGING_CONFIG = None
 LOGGING = {
     'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'simple'
+        }
+    },
     'loggers': {
-        'thecellmap': {
-            'level': "DEBUG"
+        'django.request': {
+            'handlers': ['console',],
+            'level': 'DEBUG',
         }
     }
 }
@@ -94,3 +107,10 @@ BOONELAB_MANAGEMENT_DB = {
     'password': '',
     'database': ''
 }
+
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_HOST_USER=""
+EMAIL_HOST_PASSWORD=""
+EMAIL_USE_TLS=True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
