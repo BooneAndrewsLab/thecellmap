@@ -1,6 +1,6 @@
 """urlconf for the base application"""
 
-from django.conf.urls import url, patterns
+from django.conf.urls import url, patterns, include
 
 
 urlpatterns = patterns('base.views',
@@ -20,6 +20,9 @@ urlpatterns = patterns('base.views',
     
     # annotation urls
     url(r'^annotation/(?P<annotation_id>\d+)/$', 'annotation', name='annotation'),
+    
+    # contact
+    url(r'^contact/', include('contact_form.urls')),
     
     # DEBUG
     url(r'^testingdebug/$', 'foobar', name='foobar'),

@@ -1,0 +1,9 @@
+Received message body:
+
+----------
+{{ body }}
+----------
+
+From:
+{{ name }}
+{{ email }}
