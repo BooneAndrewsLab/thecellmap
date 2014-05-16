@@ -1328,8 +1328,8 @@
                         applyNeighbourhood($(evt.target).data('level'));
                         break;
                     case 'correlation-gi':
-                        var selection = getSelectedNodes();
-                        if (selection.length > 1)
+                        var selection = getSelectedNodes(true);
+                        if (selection.length > 1 && selection.length < 6)
                             showCorrelationDriving(true);
                         break;
                     }
@@ -1859,6 +1859,10 @@
                     evt.preventDefault();
                 });
                 
+                $("li.disabled > a").click(function(evt) {
+                    evt.preventDefault();
+                });
+                
                 $("body").keydown(function(e) {
                     if (e.ctrlKey && (e.which == 97 || e.which == 65)){
                         var visibleNodes = sigInst._core.graph.nodes.filter(function(node) {
@@ -1876,22 +1880,21 @@
                     $(".vizualization-ui").fadeIn(1000);
                     
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
-                    if (!Modernizr.pointerevents && !window.attachEvent) {
-                        var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
-                            console.log("THIS MANYZ OPENZES: ", $('.btn-group.open').length);
-                            var evt = document.createEvent("MouseEvents");
-                            evt.initMouseEvent(e.type, e.bubbles, e.cancelable, e.view, e.detail, 
-                                    e.screenX, e.screenY, 
-                                    e.clientX, e.clientY, 
-                                    e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button, null);
-                            target.dispatchEvent(evt);
-                        };
-                        
-                        ele.addEventListener('DOMMouseScroll', eventFwd, false);
-                        ele.addEventListener('mousewheel', eventFwd, false);
-                        ele.addEventListener('mousemove', eventFwd, false);
-                        ele.addEventListener('mousedown', eventFwd, false);
-                    }
+//                    if (!Modernizr.pointerevents && !window.attachEvent) {
+//                        var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
+//                            var evt = document.createEvent("MouseEvents");
+//                            evt.initMouseEvent(e.type, e.bubbles, e.cancelable, e.view, e.detail, 
+//                                    e.screenX, e.screenY, 
+//                                    e.clientX, e.clientY, 
+//                                    e.ctrlKey, e.altKey, e.shiftKey, e.metaKey, e.button, null);
+//                            target.dispatchEvent(evt);
+//                        };
+//                        
+//                        ele.addEventListener('DOMMouseScroll', eventFwd, false);
+//                        ele.addEventListener('mousewheel', eventFwd, false);
+//                        ele.addEventListener('mousemove', eventFwd, false);
+//                        ele.addEventListener('mousedown', eventFwd, false);
+//                    }
                 }, 0);
             }
             
@@ -2184,8 +2187,8 @@
                             }
                         });
                         
-                        $('li[data-selection-constraint]').each(function() {
-                            var enabled = true, size = selection.length;
+                        $('[data-selection-constraint]').each(function() {
+                            var enabled = true, size = selection.length, cls = $(this).data('selection-class') || 'disabled';
                             if ($(this).data('selection-type') == 'visible') {
                                 size = numVisibleSelected;
                             }
@@ -2196,7 +2199,7 @@
                                 enabled &= size < $(this).data('selection-lt');
                             }
                             
-                            $(this).toggleClass('disabled', !enabled);
+                            $(this).toggleClass(cls, !enabled);
                         });
                         
                         if (!tokenizing) {

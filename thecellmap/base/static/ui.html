@@ -58,7 +58,7 @@ $('.vizualization-ui').ready(function() {
 </div>
 
 <div class="top-right">
-  <div id="btn-group-neighbourhood" class="disabled btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible">
+  <div id="btn-group-neighbourhood" class="hidden btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
@@ -66,7 +66,7 @@ $('.vizualization-ui').ready(function() {
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
       <li class="divider"></li>
-      <li data-selection-constraint="true" data-selection-gt="1"><a href="#" data-toggle="download" data-type="correlation-gi">Genetic interactions driving these correlations</a></li>
+      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="6"><a href="#" data-toggle="download" data-type="correlation-gi">Genetic interactions driving these correlations</a></li>
     </ul>
   </div>
   
