@@ -1859,11 +1859,6 @@
                     evt.preventDefault();
                 });
                 
-                $(".btn-group > button.dropdown-toggle").click(function(evt) {
-//                    evt.stopImmediatePropagation();
-//                    $(this).closest('.btn-group').children('.dropdown-menu').toggle();
-                });
-                
                 $("body").keydown(function(e) {
                     if (e.ctrlKey && (e.which == 97 || e.which == 65)){
                         var visibleNodes = sigInst._core.graph.nodes.filter(function(node) {
@@ -1880,9 +1875,10 @@
                 setTimeout(function() {
                     $(".vizualization-ui").fadeIn(1000);
                     
-                    /* Some older browsers don't support this, add a workaround */
-                    if (!Modernizr.pointerevents) {
+                    /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
+                    if (!Modernizr.pointerevents && !window.attachEvent) {
                         var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
+                            console.log("THIS MANYZ OPENZES: ", $('.btn-group.open').length);
                             var evt = document.createEvent("MouseEvents");
                             evt.initMouseEvent(e.type, e.bubbles, e.cancelable, e.view, e.detail, 
                                     e.screenX, e.screenY, 
