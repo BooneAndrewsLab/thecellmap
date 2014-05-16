@@ -452,7 +452,7 @@
                 
                 vizdata.strains.forEach(function(strain) {
                     if (selectedByAnnotation.hasOwnProperty(strain.orf)) {
-                        result.push(strain.id);
+                        result.push(strain.id + "");
                     }
                 });
                 
