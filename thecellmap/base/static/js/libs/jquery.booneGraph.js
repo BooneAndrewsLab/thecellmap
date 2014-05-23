@@ -1329,7 +1329,7 @@
                         break;
                     case 'correlation-gi':
                         var selection = getSelectedNodes(true);
-                        if (selection.length > 1 && selection.length < 6)
+                        if (selection.length > 1 && selection.length < 7)
                             showCorrelationDriving(true);
                         break;
                     }
