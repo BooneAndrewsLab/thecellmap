@@ -63,33 +63,9 @@
                     modifierKey: null
             };
             
-            var state = {
-                    selection: [],
-                    edgeSelection: [],
-                    cutoff: {
-                        0: sliderProperties.value
-                    },
-                    style: {
-                        node: {
-                            nsize: 2,
-                            lsize: 14,
-                            lthr: 6,
-                            lcol: "ffffff"
-                        },
-                        edge: {
-                            width: 1
-                        },
-                        global: {
-                            background: "222222"
-                        }
-                    },
-                    layout: {
-                        attraction: 50,
-                        repulsion: 1
-                    },
-                    annotation: 'None',
-                    dataset: 0
-            };
+            var state = new State();
+            state.setProperty("cutoff_0", sliderProperties.value);
+            
             var undo = null;
             var autoState = false;
             var isInitializing = true;
@@ -109,34 +85,49 @@
             
             function setState(newState) {
                 autoState = true;
-                var ns = newState.style, reapplyCutoff = false;
+                var reapplyCutoff = false;
+                var difference = state.compareTo(newState.style);
                 
-                if (!($(ns.selection).not(state.selection).length == 0 && $(state.selection).not(ns.selection).length == 0)) {
-                    $("input.gene-search-input").select2("val", ns.selection, true);
-                } if (!($(ns.edgeSelection).not(state.edgeSelection).length == 0 && $(state.edgeSelection).not(ns.edgeSelection).length == 0)) {
-                    onEdgesClick({content: ns.edgeSelection})
-                } if (ns.style.node.nsize != state.style.node.nsize) {
-                    $('#style-slider-nsize').val(ns.style.node.nsize, true);
-                } if (ns.style.node.lsize != state.style.node.lsize) {
-                    $('#style-slider-lsize').val(ns.style.node.lsize, true);
-                } if (ns.style.node.lthr != state.style.node.lthr) {
-                    $('#style-slider-lthresh').val(ns.style.node.lthr, true);
-                } if (ns.style.node.lcol != state.style.node.lcol) {
-                    $('#style-label-color').val(ns.style.node.lcol).focus().blur().change(); // Stupid but effective
-                } if (ns.style.edge.width != state.style.edge.width) {
-                    $('#style-slider-esize').val(ns.style.edge.width, true);
-                } if (ns.style.global.background != state.style.global.background) {
-                    $('#canvas-background-color').val(ns.style.global.background).focus().blur().change(); // Stupid but effective
-                } if (ns.dataset != state.dataset) {
-                    $("#btn-group-datasets a[data-id=\"" + ns.dataset + "\"]").click();
-                    reapplyCutoff = true;
-                } if (ns.annotation != state.annotation) {
-                    loadAnnotation(ns.annotation);
+                for (key in difference) {
+                    switch (difference[key]) {
+                    case 'selection':
+                        $("input.gene-search-input").select2("val", newState.style.getProperty("selection"), true);
+                        break;
+                    case 'edgeSelection':
+                        onEdgesClick({content: newState.style.getProperty("edgeSelection")});
+                        break;
+                    case 'nodeSize':
+                        $('#style-slider-nsize').val(newState.style.getProperty("nodeSize"), true);
+                        break;
+                    case 'labelSize':
+                        $('#style-slider-lsize').val(newState.style.getProperty("labelSize"), true);
+                        break;
+                    case 'labelThreshold':
+                        $('#style-slider-lthresh').val(newState.style.getProperty("labelThreshold"), true);
+                        break;
+                    case 'labelColor':
+                        $('#style-label-color').val(newState.style.getProperty("labelColor")).focus().blur().change(); // Stupid but effective
+                        break;
+                    case 'edgeWidth':
+                        $('#style-slider-esize').val(newState.style.getProperty("edgeWidth"), true);
+                        break;
+                    case 'background':
+                        $('#canvas-background-color').val(newState.style.getProperty("background")).focus().blur().change(); // Stupid but effective
+                        break;
+                    case 'annotation':
+                        loadAnnotation(newState.style.getProperty("annotation"));
+                        break;
+                    case 'dataset':
+                        $("#btn-group-datasets a[data-id=\"" + newState.style.getProperty("dataset") + "\"]").click();
+                        reapplyCutoff = true;
+                        break;
+                    }
                 }
-                
-                for (var key in ns.cutoff) {
-                    if (ns.cutoff[key] != state.cutoff[key]) {
-                        state.cutoff[key] = ns.cutoff[key];
+                    
+                for (var i = 0; i < newState.style.numOfCutoffs(); i++) {
+                    if (newState.style.getProperty("cutoff_" + newState.style.getProperty("dataset")) != state.getProperty("cutoff_" + state.getProperty("dataset"))) {
+                        state.setProperty(("cutoff_" + i), newState.style.getProperty("cutoff_" + i));
+                        
                         reapplyCutoff = true;
                     }
                 }
@@ -157,18 +148,18 @@
                     }
                     
                     reapplyCutoff = true;
-                    $("input.gene-search-input").select2("val", ns.selection, true);
+                    $("input.gene-search-input").select2("val", newState.style.getProperty("selection"), true);
                     sigInst.draw();
                 }
                 
                 if (reapplyCutoff) {
-                    log("reapplying", state.dataset, state.cutoff, state.cutoff[state.dataset]);
-                    applyCutoff(state.cutoff[state.dataset]);
+                    log("reapplying", state.getProperty("dataset"), state.getProperty("cutoff"), state.getProperty("cutoff_" + state.getProperty("dataset")));
+                    applyCutoff(state.getProperty("cutoff_" + state.getProperty("dataset")));
                     
-                    if (state.dataset == 0) { // TEMPORARY HACK
-                        $(".cutoff-bar[data-dataset=\"" + state.dataset + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
+                    if (state.getProperty("dataset") == 0) { // TEMPORARY HACK
+                        $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
                     }
-                    $(".cutoff-bar[data-dataset=\"" + state.dataset + "\"]").val(state.cutoff[state.dataset], {update: true});
+                    $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(state.getProperty("cutoff_" + state.getProperty("dataset")), {update: true});
                 }
                 
                 autoState = false;
@@ -176,7 +167,7 @@
             
             function changeState() {
                 if (!isInitializing && !autoState && undo != null) {
-                    undo.addChange($.extend(true, {}, state));
+                    undo.addChange(state.clone());
                     _showNavigation();
                 }
             };
@@ -188,7 +179,7 @@
                         nodeState[node.id] = {x: node.x, y: node.y, hidden: node._hidden, color: node.color};
                     });
                     
-                    undo.addChange($.extend(true, {}, state), nodeState);
+                    undo.addChange(state.clone(), nodeState);
                     _showNavigation();
                 }
             };
@@ -198,11 +189,11 @@
             };
             
             function getCutoff() {
-                return state.cutoff[state.dataset];
+                return state.getProperty("cutoff_" + state.getProperty("dataset"));
             }
             
             function setCutoff(cutoff) {
-                return state.cutoff[state.dataset] = cutoff;
+                return state.setProperty("cutoff_" + state.getProperty("dataset"), cutoff);
             }
             
             function countVisibleNodes() {
@@ -316,7 +307,7 @@
             }
             
             function editNode(id) {
-                var modal = $('#edit-node-modal'), node = getNode(id), strain = getStrain(id), data = vizdata[state.annotation];
+                var modal = $('#edit-node-modal'), node = getNode(id), strain = getStrain(id), data = vizdata[state.getProperty("annotation")];
                 var url = 'http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.orf;
                 var annot, term, color;
                 
@@ -401,11 +392,12 @@
 
             function setNodeColor(node, color) {
                 if (color == undefined) {
-                    var annot = vizdata[state.annotation].map[node.id];
+                    var stateAnnot = state.getProperty("annotation");
+                    var annot = vizdata[stateAnnot].map[node.id];
                     if (annot != undefined) {
-                        color = vizdata[state.annotation].colorPalette[vizdata[state.annotation].terms[annot[0]].idx];
+                        color = vizdata[stateAnnot].colorPalette[vizdata[stateAnnot].terms[annot[0]].idx];
                     } else {
-                        color = vizdata[state.annotation].defaultColor;
+                        color = vizdata[stateAnnot].defaultColor;
                     }
                 }
                 
@@ -427,8 +419,8 @@
                     return !sel.startsWith('annot') && !sel.startsWith('action');
                 });
                 
-                if (vizdata.hasOwnProperty(state.annotation)) {
-                    map = vizdata[state.annotation].map;
+                if (vizdata.hasOwnProperty(state.getProperty("annotation"))) {
+                    map = vizdata[state.getProperty("annotation")].map;
                     
                     selected.forEach(function(sel) {
                         if (sel.startsWith('annot')) {
@@ -475,9 +467,9 @@
                     e.selected = false;
                 });
                 
-                if (state.selection.length > 0) {
+                if (state.getProperty("selection").length > 0) {
                     $("input.gene-search-input").select2('val', "", true);
-                    state.selection = [];
+                    state.setProperty("selection", []);
                 } else {
                     sigInst.draw();
                 }
@@ -530,7 +522,7 @@
                     $("#btn-group-datasets a[data-id=1]").addClass('active');
                     $("#selected-dataset").html("Genetic interactions");
                     
-                    state.dataset = 1;
+                    state.setProperty("dataset", 1);
                     
                     sigInst.draw();
                     
@@ -577,7 +569,7 @@
                     }
                 }
                 
-                state.dataset = value;
+                state.setProperty("dataset", value);
             };
             
             function updateEdges(ds) {
@@ -606,17 +598,17 @@
                 
                 if (ds == 0) {
                     ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                    ele.val([state.cutoff[ds] || minWeight]);
+                    ele.val([state.getProperty("cutoff_" + ds) || minWeight]);
                 } else {
-                    $("#cutoff-label-max").html(state.cutoff[ds][1]);
-                    $("#cutoff-label-min").html(state.cutoff[ds][0]);
+                    $("#cutoff-label-max").html(state.getProperty("cutoff_" + ds)[1]);
+                    $("#cutoff-label-min").html(state.getProperty("cutoff_" + ds)[0]);
                 }
                 
                 if (sliderProperties.updateLimits) {
                     if (ds == 0) {
                         ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: minWeight}, true);
                         ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                        ele.val([state.cutoff[ds] || minWeight]);
+                        ele.val([state.getProperty("cutoff_" + ds) || minWeight]);
                     } else {
                         ele.val([-0.08, 0.08]);
                     }
@@ -716,7 +708,7 @@
             }
 
             function loadAnnotation(id) {
-                state.annotation = id;
+                state.setProperty("annotation", id);
                 
                 if (vizdata[id] == undefined) {
                     if (id == 'None') {
@@ -783,7 +775,7 @@
             }
             
             function rebuildLegend() {
-                var id = state.annotation, terms = {}, strain = [], mapStrain = {};
+                var id = state.getProperty("annotation"), terms = {}, strain = [], mapStrain = {};
                 //select only visible strains
                 sigInst.iterNodes(function(node) {
                     if (!node.hidden) {
@@ -851,7 +843,7 @@
             }
             
             function applyAnnotationColors() {
-                var data = vizdata[state.annotation], strain, annot;
+                var data = vizdata[state.getProperty("annotation")], strain, annot;
                 sigInst.iterNodes(function(n) {
                     strain = getStrain(n.id);
                     annot = data.map[strain.orf];
@@ -880,7 +872,7 @@
 
             function onEdgesContext(targets) {
                 hoveredTargets = targets.content;
-                $("#contextmenu-edge-count").html(state.edgeSelection.length + ' edge' + (state.edgeSelection.length == 1 ? '' : 's') + ' selected');
+                $("#contextmenu-edge-count").html(state.getProperty("edgeSelection").length + ' edge' + (state.getProperty("edgeSelection").length == 1 ? '' : 's') + ' selected');
                 $("#contextmenu-edge-container").show().delay(2000).hide(200);
                 $("#contextmenu-edge-container").css({
                     left : mouseX,
@@ -889,7 +881,7 @@
             }
             
             function onEdgesClick(targets) {
-                state.edgeSelection = targets.content;
+                state.setProperty("edgeSelection", targets.content);
                 sigInst.iterEdges(function(e) {
                     e.selected = targets.content.indexOf(e.id) != -1;
                 });
@@ -899,12 +891,11 @@
                 });
                 var clicked = clicked.map(function(e) {return [e.source.id, e.target.id];});
                 var nodeClicked = [];
-                for(var i = 0; i < clicked.length;i++) {
+                for(var i = 0; i < clicked.length; i++) {
                     nodeClicked = nodeClicked.concat(clicked[i]);
                 }
-                
-                $("input.gene-search-input").select2("val", nodeClicked, true);
-            };
+                $("input.gene-search-input").select2("val", getSelection().concat(nodeClicked), true);
+            }
             
             function onNodesClick(targets) {
                 noPulse = true;
@@ -1037,7 +1028,7 @@
                     switch(layoutType || $(this).attr('data-layout-type') || 'force') {
                     case 'annotation':
                         annotations = {};
-                        data = vizdata[state.annotation];
+                        data = vizdata[state.getProperty("annotation")];
                         
                         iterVisibleNodes(function(n) {
                             strain = getStrain(n.id);
@@ -1169,9 +1160,9 @@
                     node.visibleDegree = node.degree;
                 }).iterEdges(function(edge) {
                     if (isArray) {
-                        edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]) || edge.ds != state.dataset;
+                        edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]) || edge.ds != state.getProperty("dataset");
                     } else {
-                        edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.dataset;
+                        edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.getProperty("dataset");
                     }
                     
                     if (edge.hidden || edge.source._hidden || edge.target._hidden) {
@@ -1410,7 +1401,7 @@
                         connect: "lower",
                         set: function() {
                             sigInst.graphProperties({maxNodeSize: $(this).val()}).draw();
-                            state.style.node.nsize = $(this).val();
+                            state.setProperty("nodeSize", $(this).val());
                             changeState();
                         }
                     },
@@ -1421,7 +1412,7 @@
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({defaultLabelSize: $(this).val()}).draw(-1, -1, 1);
-                            state.style.node.lsize = $(this).val();
+                            state.setProperty("labelSize", $(this).val());
                             changeState();
                         }
                     },
@@ -1432,7 +1423,7 @@
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({labelThreshold: $(this).val()}).draw(-1, -1, 1);
-                            state.style.node.lthr = $(this).val();
+                            state.setProperty("lableThreshold", $(this).val());
                             changeState();
                         }
                     },
@@ -1443,7 +1434,7 @@
                         connect: "lower",
                         set: function() {
                             sigInst.graphProperties({maxEdgeSize: $(this).val()}).draw();
-                            state.style.edge.width = $(this).val();
+                            state.setProperty("edgeWidth", $(this).val());
                             changeState();
                         }
                     }
@@ -1461,15 +1452,16 @@
                     $('#canvas-background-color').val('#222222').change();
                     
                     //revert annotation colors to default
-                    var data = vizdata[state.annotation], strain, annot;
+                    var stateAnnot = state.getProperty("annotation");
+                    var data = vizdata[stateAnnot], strain, annot;
                     sigInst.iterNodes(function(n) {
                         strain = getStrain(n.id);
                         annot = data.map[strain.orf];
                         if (annot != undefined)
                             $.removeCookie(data.terms[annot[0]].name);
                     });
-                    vizdata[state.annotation].colorPalette[data.terms["-1"].idx] = 'e3e3e3';
-                    vizdata[state.annotation].colorPalette[data.terms["-2"].idx] = 'e3e3e3';
+                    vizdata[stateAnnot].colorPalette[data.terms["-1"].idx] = 'e3e3e3';
+                    vizdata[stateAnnot].colorPalette[data.terms["-2"].idx] = 'e3e3e3';
                     
                     rebuildLegend();
                     applyAnnotationColors();
@@ -1653,15 +1645,15 @@
                 });
                 
                 $('#canvas-background-color').change(function() {
-                    state.style.global.background = $(this).val();
-                    $(rootElement).css('background-color', "#" + state.style.global.background);
-                    sigInst.drawingProperties({defaultLabelColor: invertColor(state.style.global.background)}).draw(-1, -1, 1);
+                    state.setProperty("background", $(this).val());
+                    $(rootElement).css('background-color', "#" + state.getProperty("background"));
+                    sigInst.drawingProperties({defaultLabelColor: invertColor(state.getProperty("background"))}).draw(-1, -1, 1);
                     changeState();
                 });
                 
                 $('#style-label-color').change(function() {
-                    state.style.node.lcol = $(this).val();
-                    sigInst.drawingProperties({defaultLabelColor: "#" + state.style.node.lcol}).draw(-1, -1, 1);
+                    state.setProperty("labelColor", $(this).val());
+                    sigInst.drawingProperties({defaultLabelColor: "#" + state.getProperty("labelColor")}).draw(-1, -1, 1);
                     changeState();
                 });
                 
@@ -1774,10 +1766,10 @@
                     node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
                     
                     modal.find('.annotation-color').each(function() {
-                        var color = '#' + $(this).val().toUpperCase();
+                        var color = '#' + $(this).val().toUpperCase(), annot = state.getProperty("annotation");
                         
-                        if (vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] != color) {
-                            vizdata[state.annotation].colorPalette[$(this).closest('tr').data('term')] = color;
+                        if (vizdata[annot].colorPalette[$(this).closest('tr').data('term')] != color) {
+                            vizdata[annot].colorPalette[$(this).closest('tr').data('term')] = color;
                             colorsChanged = true;
                         }
                     });
@@ -1820,15 +1812,16 @@
                         html: true,
                         content: '<div><input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '"></div>'
                     }).on('hide.bs.popover', function () {
-                        var value = $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(), cutoff = state.cutoff[state.dataset];
-                        if (state.dataset != 0) {
+                        var value = $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(), cutoff = state.getProperty("cutoff_" + state.getProperty("dataset"));
+                        var data = state.getProperty("dataset");
+                        if (data != 0) {
                             cutoff = cutoff.slice();
                         }
                         
                         if (isNumber(value)) {
                             value = parseFloat(value).toFixed(2);
                             if (label.attr('id') == 'cutoff-label-min') {
-                                if (state.dataset == 0) {
+                                if (data == 0) {
                                     cutoff = value;
                                 } else {
                                     cutoff[1] = -value;
@@ -1837,11 +1830,11 @@
                                 cutoff[0] = -value;
                             }
                             
-                            if (state.cutoff[state.dataset] != cutoff) {
-                                if (state.dataset == 0) { // TEMPORARY HACK
-                                    $(".cutoff-bar[data-dataset=\"" + state.dataset + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
+                            if (state.getProperty("cutoff_" + data) != cutoff) {
+                                if (data == 0) { // TEMPORARY HACK
+                                    $(".cutoff-bar[data-dataset=\"" + data + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
                                 }
-                                $(".cutoff-bar[data-dataset=\"" + state.dataset + "\"]").val(cutoff, {update: true, set: true});
+                                $(".cutoff-bar[data-dataset=\"" + data + "\"]").val(cutoff, {update: true, set: true});
                             }
                         }
                     }).on('shown.bs.popover', function () {
@@ -1900,12 +1893,12 @@
             
             function init() {
                 sigInst = sigma.init(rootElement).drawingProperties({
-                    defaultLabelSize: state.style.node.lsize,
+                    defaultLabelSize: state.getProperty("labelSize"),
                     defaultLabelHoverColor: '#000',
-                    labelThreshold: state.style.node.lthr,
+                    labelThreshold: state.getProperty("labelThreshold"),
                     font: 'Arial',
                     edgeColor : 'white',
-                    defaultLabelColor : "#" + state.style.node.lcol,
+                    defaultLabelColor : "#" + state.getProperty("labelColor"),
                     nodeColor : opts.defaultNodeColor,
                     defaultEdgeArrow: opts.arrows ? 'target' : 'none',
                 }).graphProperties(graphProperties).mouseProperties({
@@ -1936,8 +1929,7 @@
                     if (selection.content.nodeSelect) {
                         $("input.gene-search-input").select2("val", getSelection().concat(selection.content.selected), true);
                     } else {
-                        onEdgesClick({content: state.edgeSelection.concat(selection.content.selected)});
-                        changeState();
+                        onEdgesClick({content: state.getProperty("edgeSelection").concat(selection.content.selected)});
                     }
                     noPulse = false;
                 }).bind('selectionStart', function() {
@@ -1973,8 +1965,8 @@
                         fetched: []
                 }
                 
-                state.cutoff[1] = [-0.08, 0.08];
-                $('.cutoff-bar[data-dataset="1"]').val(state.cutoff[1], {update: true});
+                state.setProperty("cutoff_1", [-0.08, 0.08]);
+                $('.cutoff-bar[data-dataset="1"]').val(state.getProperty("cutoff_1"), {update: true});
                 
                 /* Fetch all node info */
                 $.getJSON(opts.nodesUrl, function(data) {
@@ -2019,13 +2011,13 @@
                             var id = $(element).val(), strain, result = [];
                             id.split(",").forEach(function(x) {
                                 if (x !== "") {
-                                    
+                                    var annot = state.getProperty("annotation");
                                     if (x.startsWith('annot')) {
                                         x = parseInt(x.replace('annot', ''));
-                                        for (var term in vizdata[state.annotation].terms) {
+                                        for (var term in vizdata[annot].terms) {
                                             if (x == term) {
                                                 result.push({
-                                                    text: 'Annotation: ' + vizdata[state.annotation].terms[term].name,
+                                                    text: 'Annotation: ' + vizdata[annot].terms[term].name,
                                                     id: 'annot' + x
                                                 });
                                             }
@@ -2135,7 +2127,7 @@
                             
                             var data = {results: []};
                             var term = query.term.replace('*', '').toLowerCase();
-                            var aterm, aterms = vizdata[state.annotation].terms, acount = 0;
+                            var aterm, aterms = vizdata[state.getProperty("annotation")].terms, acount = 0;
                             
                             autocomp.forEach(function(node) {
                                 if (query.term.length == 0){
@@ -2160,10 +2152,10 @@
                             
                             //load annotations
                             opts.annotations.forEach(function(annotation) {
-                                if (("load " + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.annotation)
+                                if (("load " + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.getProperty("annotation"))
                                     data.results.unshift({id: "action_loadannot " + annotation.name, text: "Load: " + annotation.name});
                             });
-                                
+                            
                             data.results = data.results.slice(0, 6);
                             query.callback(data);
                         },
@@ -2177,7 +2169,7 @@
                             if ($.inArray(strain.id + "", selected) >= 0) {
                                 node.selected = true;
                                 
-                                if (node.hidden) {
+                                if (node.hidden && !autoState) {
                                     messageUser('Gene you\'re looking for is below current threshold.')
                                 } else {
                                     numVisibleSelected++;
@@ -2206,10 +2198,10 @@
                             updateMissingMessage();
                             sigInst.draw();
                             
-                            if (!($(selected).not(state.selection).length == 0 && $(state.selection).not(selected).length == 0)) {
-                                var diff = $(selected).not(state.selection).get();
+                            if (!($(selected).not(state.getProperty("selection")).length == 0 && $(state.getProperty("selection")).not(selected).length == 0)) {
+                                var diff = $(selected).not(state.getProperty("selection")).get();
                                 
-                                state.selection = getSelection();
+                                state.setProperty("selection", getSelection());
                                 
 //                                if (!noPulse) {
 //                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
@@ -2237,7 +2229,7 @@
                     
                     // Load plot graph in Michael Jackson mode by
                     // default
-                    loadAnnotation(state.annotation);
+                    loadAnnotation(state.getProperty("annotation"));
                     loadLayout();
                 });
                 
