@@ -78,6 +78,7 @@ def tabular(request, dataset_id=None):
             'strains': list(strains_for_nodes(dataset, nodes))
       })
 
+@print_queries
 def tabular_data(request, dataset_id=None, node_id=None):
     if not node_id: raise Http404('Node ID is required')
     data = nodes_data(dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default(), [node_id])

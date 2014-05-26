@@ -120,3 +120,12 @@ class Term(models.Model):
     
     class Meta:
         unique_together = (('annotation', 'name'), )
+
+Dataset.correlation_axis.through._meta.verbose_name = 'Correlations axis'
+Dataset.correlation_axis.through._meta.verbose_name_plural = 'Correlations axes'
+
+Dataset.queries.through._meta.verbose_name = 'Queries axis'
+Dataset.queries.through._meta.verbose_name_plural = 'Queries axes'
+
+Dataset.arrays.through._meta.verbose_name = 'Arrays axis'
+Dataset.arrays.through._meta.verbose_name_plural = 'Arrays axes'
