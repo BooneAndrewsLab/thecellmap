@@ -44,6 +44,9 @@ class Command(CellMapCommand):
             help='Set this dataset as default'),
         )
     
+    seen_strains = set()
+    parsed_scores = False
+    
     @commit_on_success
     def handle(self, *args, **options):
         if len(args) != 3:
@@ -113,6 +116,7 @@ class Command(CellMapCommand):
                         sep='\t', 
                         header=None, 
                         names=['q', 'a', 'corr'],
+                        usecols=[0, 2, 4],
                     )
         
         corr = corr.pivot('q', 'a', 'corr')
@@ -154,7 +158,7 @@ class Command(CellMapCommand):
                         sep='\t', 
                         header=0, 
                         names=['qorf', 'aorf', 'score', 'pval'],
-                        usecols=[0, 2, 5, 7],
+#                         usecols=[0, 2, 5, 7],
                     )
         
         """ TODO: TEMPORARY CODE """
@@ -183,6 +187,8 @@ class Command(CellMapCommand):
             scores = scores.drop(drop_columns, axis=1, level=1)
         scores.columns = MultiIndex.from_tuples(new_columns, names=['data', 'array'])
         
+        self.parsed_scores = True
+        
         return scores
     
     def cleanup_axis_strains(self, ids):
@@ -202,6 +208,18 @@ class Command(CellMapCommand):
         if '+' in id:
             return False
         
+        if ',' in id:
+            found = False
+            for tmpid in id.split(','):
+                tmp = tmpid.split('_')[1].lower()
+                if tmp in self.seen_strains:
+                    found = True
+                    id = tmpid
+                    break
+            
+            if not found:
+                raise Exception("Nowhere to be found any of: %s" % id)
+        
         id = id.split('_')[1].lower()
         if id not in self.old_strains:
             return False
@@ -211,6 +229,8 @@ class Command(CellMapCommand):
         
         if not self.current_strains[id]:
             return False
+        
+        self.seen_strains.add(id)
         
         return self.current_strains[id]
     

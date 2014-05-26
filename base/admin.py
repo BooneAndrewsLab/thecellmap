@@ -20,6 +20,9 @@ class StrainAdmin(admin.ModelAdmin):
 
 class StrainDataAdmin(admin.ModelAdmin):
     list_display = ('dataset', 'strain')
+    search_fields = ('strain__gene__orf', 'strain__gene__name')
+    
+    raw_id_fields = ('strain', )
 
 class DatasetAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_default', 'number_of_queries', 'number_of_arrays', 'number_of_correlations', 'description')
@@ -51,9 +54,34 @@ class TermAdmin(admin.ModelAdmin):
     def term_color(self, term):
         return mark_safe('<span style="color: #%s; font-weight: bold;">%s</span>' % (term.color, term.color))
 
+class QueriesAdmin(admin.ModelAdmin):
+    list_display = ('dataset', 'strain')
+    search_fields = ('strain__gene__orf', 'strain__gene__name')
+    list_filter = ('dataset', )
+    raw_id_fields = ('strain', )
+    
+    verbose_name = 'vooo'
+    verbose_name_plural = 'boooo'
+
+class ArraysAdmin(admin.ModelAdmin):
+    list_display = ('dataset', 'strain')
+    search_fields = ('strain__gene__orf', 'strain__gene__name')
+    list_filter = ('dataset', )
+    raw_id_fields = ('strain', )
+
+class CorrelationsAdmin(admin.ModelAdmin):
+    list_display = ('dataset', 'strain')
+    search_fields = ('strain__gene__orf', 'strain__gene__name')
+    list_filter = ('dataset', )
+    raw_id_fields = ('strain', )
+
 admin.site.register(Gene, GeneAdmin)
 admin.site.register(Strain, StrainAdmin)
 admin.site.register(StrainData, StrainDataAdmin)
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(Annotation, AnnotationAdmin)
 admin.site.register(Term, TermAdmin)
+
+admin.site.register(Dataset.queries.through, QueriesAdmin)  # @UndefinedVariable
+admin.site.register(Dataset.arrays.through, ArraysAdmin)  # @UndefinedVariable
+admin.site.register(Dataset.correlation_axis.through, CorrelationsAdmin)  # @UndefinedVariable
