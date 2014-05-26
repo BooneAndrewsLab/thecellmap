@@ -2,7 +2,7 @@
 //(requires sigma.js to be loaded)
 sigma.publicPrototype.parseJson = function(opts) {
     var vizdata = opts.vizdata;
-    var annotations = vizdata[opts.state.annotation];
+    var annotations = vizdata[opts.state.getProperty("annotation")];    
     var start = new Date().getTime();
     var nodes, edges, extraData = {datasetName: 'Correlations'};
     var method = opts.method || 'get';
