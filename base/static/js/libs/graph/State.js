@@ -58,6 +58,10 @@
         
         clone: function() {
             return new State(this._storage);
+        },
+        
+        asJson: function() {
+            return $.extend({}, storage);
         }
     };
     

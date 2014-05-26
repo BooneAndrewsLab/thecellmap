@@ -1,8 +1,3 @@
-'''
-Created on Dec 16, 2013
-
-@author: matej
-'''
 from optparse import make_option
 
 from django.core.management.base import CommandError, BaseCommand
@@ -11,7 +6,13 @@ from pandas.core.frame import DataFrame
 
 from base.models import Annotation, Term
 from base.utils import CellMapCommand, gene_map, open_excel_file
+from datetime import datetime
 
+
+FORMAT_CHOICES = (
+    'orf2many',
+    'term2many',
+)
 
 class Command(CellMapCommand):
     help = 'Imports a dataset from a release file'
@@ -24,6 +25,12 @@ class Command(CellMapCommand):
         make_option('-a', '--alias',
             dest='alias',
             help='Alias for this annotation'),
+        make_option('-f', '--format',
+            type='choice',
+            choices=FORMAT_CHOICES,
+            default=FORMAT_CHOICES[0],
+            dest='format',
+            help='Format of the input data, one of: [%s]' % (','.join(FORMAT_CHOICES))),
         )
     
     @commit_on_success
@@ -31,15 +38,39 @@ class Command(CellMapCommand):
         if len(args) != 2:
             raise CommandError('Must provide arguments: ' + self.args)
         
-        xin = open_excel_file(args[0])
+        xin, name = args
+        xin = open_excel_file(self.get_path(xin))
         genemap = gene_map()
         
+        getattr(self, options['format'])(xin, genemap, name, options)
+    
+    def term2many(self, xin, genemap, name, options):
+        annotation = Annotation.objects.create(
+                name=name,
+                alias=options['alias'],
+                date=options['annot_date'] or datetime.now(),
+            )
+        
+        for term, orfs in xin:
+            geneterm, source = term.strip().split('|', 1)
+            
+            term = Term.objects.create(
+                    annotation=annotation,
+                    name=geneterm,
+                    alias=geneterm,
+                    source=source or None
+                )
+            
+            for gene in [genemap[g] for g in orfs.split(',') if g in genemap]:
+                term.genes.add(gene)
+    
+    def orf2many(self, xin, genemap, name, options):
         data = DataFrame.from_records(xin[:], columns=('orf', 'name', 'annotation'))
         
         annotation = Annotation.objects.create(
-                name=args[1],
+                name=name,
                 alias=options['alias'],
-                date=options['annot_date'],
+                date=options['annot_date'] or datetime.now(),
             )
         
         terms = {}

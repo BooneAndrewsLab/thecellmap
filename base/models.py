@@ -119,7 +119,7 @@ class Term(models.Model):
         return u'%s' % self.name
     
     class Meta:
-        unique_together = (('annotation', 'name'), )
+        unique_together = (('annotation', 'name', 'source'), )
 
 Dataset.correlation_axis.through._meta.verbose_name = 'Correlations axis'
 Dataset.correlation_axis.through._meta.verbose_name_plural = 'Correlations axes'
