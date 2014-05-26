@@ -40,7 +40,7 @@
                     },
                     modifiedCallback: null,
                     uiUrl: "url/",
-                    downloadLimit: 30
+                    downloadLimit: 30,
             };
             
             var sliderProperties = $.extend({}, DEFAULTS.slider, o.slider || {});
@@ -1384,6 +1384,8 @@
                             });
                         
                         break;
+                    case "download-get-object":
+                        console.log(JSON.stringify(state.asJson()));
                     }
                     
                     evt.preventDefault();

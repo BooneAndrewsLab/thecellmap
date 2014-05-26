@@ -121,7 +121,8 @@
                 updateLimits: false
             },
             uiUrl: "{% static 'ui.html' %}",
-            canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %}
+            canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
+            preloadedState: {"selection":[],"edgeSelection":[],"nodeSize":2,"labelSize":14,"labelThreshold":6,"labelColor":"ffffff","edgeWidth":1,"background":"222222","layoutAttraction":50,"layoutRepulsion":1,"annotation":"None","dataset":0}
         });
     });
   })(jQuery);
