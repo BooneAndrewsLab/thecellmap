@@ -150,4 +150,4 @@ def annotation(request, annotation_id):
     return JsonResponse(response)
 
 def foobar(request):
-    return render(request, 'base/foobar.html')
+    return render(request, 'base/matrix.html')

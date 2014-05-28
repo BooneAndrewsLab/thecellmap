@@ -33,7 +33,7 @@ class Strain(models.Model):
     boonelab_id = models.CharField(max_length=24, help_text="Boonelab strain id, ex: tsq123")
     genotype = models.CharField(max_length=512)
     mating_type = models.CharField(max_length=8)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     
     def __unicode__(self):
         return self.full_id()
@@ -50,6 +50,7 @@ class Dataset(models.Model):
     arrays = models.ManyToManyField(Strain, related_name='as_array')
     correlation_axis = models.ManyToManyField(Strain, related_name='as_correlation')
     is_default = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
     description = models.TextField()
     
     def __unicode__(self):
