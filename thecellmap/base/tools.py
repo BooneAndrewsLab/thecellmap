@@ -1,13 +1,18 @@
 from datetime import datetime
+import hashlib
+import os
+from time import time
 
+from django.core.urlresolvers import reverse
 from django.forms.fields import CharField
 from django.forms.forms import Form
 from django.forms.models import ModelChoiceField
 from django.forms.widgets import Textarea
+from django.http.response import HttpResponseBadRequest
 from django.shortcuts import render
 
-from base.models import Annotation, Term
-from base.utils import gene_map, write_excel_file
+from base.models import Annotation, Term, Custom
+from base.utils import gene_map, write_excel_file, JsonResponse
 
 
 ### FORMS ###
@@ -43,3 +48,33 @@ def annotations(request):
     return render(request, 'base/annotations.html', {
             'form': form,
       })
+
+def custom(request):
+    if request.POST:
+        if 'nodes' not in request.POST or 'layout' not in request.POST or 'dataset' not in request.POST:
+            return HttpResponseBadRequest('missing values')
+        
+        nodes = request.POST['nodes']
+        layout = request.POST['layout']
+        dataset = request.POST['dataset']
+        
+        hash = hashlib.sha1()
+        hash.update(str(time()) + nodes + layout + dataset)
+        hash = hash.hexdigest()
+        
+        custom, _created = Custom.objects.get_or_create(user=request.user.is_authenticated() and request.user or None, hash=hash)
+        
+        os.makedirs(custom.path())
+        
+        with open(custom.path('nodes.json'), 'w') as fp:
+            fp.write(nodes)
+        
+        with open(custom.path('layout.json'), 'w') as fp:
+            fp.write(layout)
+        
+        with open(custom.path('correlations.json'), 'w') as fp:
+            fp.write(dataset)
+        
+        return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
+    
+    return render(request, 'base/custom.html')
