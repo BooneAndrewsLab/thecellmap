@@ -6,6 +6,7 @@ import dbarray
 from django.db import models
 
 from thecellmap import settings
+from django.contrib.auth.models import User
 
 
 class Gene(models.Model):
@@ -20,6 +21,9 @@ class Gene(models.Model):
     stop = models.IntegerField(help_text='Stop coordinate')
     sorting_value = models.IntegerField()
     description = models.TextField()
+    
+    def as_object(self):
+        return {'id':self.id, 'orf': self.orf, 'name': self.name, 'aliases': self.aliases}
     
     def __unicode__(self):
         return ('%s (%s)' % (self.orf, self.name or '')).replace(' ()', '')
@@ -125,6 +129,16 @@ class Term(models.Model):
     
     class Meta:
         unique_together = (('annotation', 'name', 'source'), )
+
+class Custom(models.Model):
+    user = models.ForeignKey(User, null=True)
+    hash = models.CharField(max_length=40, unique=True)
+    
+    def path(self, *args):
+        return os.path.join(settings.STATIC_ROOT, 'upload', 'custom', self.hash, *args)
+    
+    def static_url(self, *args):
+        return os.path.join(settings.STATIC_URL, 'upload', 'custom', self.hash, *args)
 
 Dataset.correlation_axis.through._meta.verbose_name = 'Correlations axis'
 Dataset.correlation_axis.through._meta.verbose_name_plural = 'Correlations axes'

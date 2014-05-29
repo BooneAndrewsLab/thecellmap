@@ -13,7 +13,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
-from base.models import Dataset, Annotation, Term
+from base.models import Dataset, Annotation, Term, Gene, Custom
 from base.utils import print_queries, is_integer, JsonResponse
 
 
@@ -69,6 +69,22 @@ def home(request):
 def dataset(request, dataset_id):
     return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
 
+def genes(request):
+    return JsonResponse([g.as_object() for g in Gene.objects.all()])
+
+def custom_dataset(request, hash):
+    custom = Custom.objects.get(hash=hash)
+    
+    return render(request, 'base/network.html', {
+            'dataset': {
+                'id': hash,
+                'static_url': custom.static_url(),
+                'name': hash,
+                
+            },
+            'annotations': Annotation.objects.all(),
+            'can_bulk_download': False
+      })
 
 @require_POST
 def interactions(request, dataset_id=None):

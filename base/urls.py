@@ -13,6 +13,7 @@ urlpatterns = patterns('base.views',
     url(r'^network/(?P<dataset_id>\d+)/dl/$', 'nodes_download', name='nodes_download'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/$', 'tabular', name='tabular'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/(?P<node_id>\d+)/$', 'tabular_data', name='tabular_fetch'),
+    url(r'^network/(?P<hash>.{40})/$', 'custom_dataset', name='custom_dataset'),
     
     # default dataset urls
     url(r'^interactions/$', 'interactions', name='interactions_default'),
@@ -22,7 +23,9 @@ urlpatterns = patterns('base.views',
     
     # annotation urls
     url(r'^annotation/(?P<annotation_id>\d+)/$', 'annotation', name='annotation'),
-
+    
+    url(r'^genes/$', 'genes', name='genes'),
+    
     # contact
     url(r'^contact/', include('contact_form.urls')),
     
@@ -33,4 +36,5 @@ urlpatterns = patterns('base.views',
 urlpatterns += patterns('base.tools',
     # annotations
     url(r'^tools/annotations/', 'annotations', name='tools_annotations'),
+    url(r'^tools/custom/', 'custom', name='tools_custom'),
 )
