@@ -1,7 +1,13 @@
 """ Views for the base application """
 
 import datetime
+import os
 
+from django.contrib.auth import authenticate, login as django_login, logout as django_logout
+from django.core.exceptions import ValidationError
+from django.forms.fields import CharField
+from django.forms.forms import Form
+from django.forms.widgets import PasswordInput
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
@@ -9,26 +15,60 @@ from django.views.decorators.http import require_POST
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term
 from base.utils import print_queries, is_integer, JsonResponse
-import os
 
+
+class LoginForm(Form):
+    username = CharField()
+    password = CharField(widget=PasswordInput)
+    
+    def clean(self):
+        cleaned_data = super(LoginForm, self).clean()
+        if 'username' not in cleaned_data or 'password' not in cleaned_data:
+            return cleaned_data
+        user = authenticate(username=cleaned_data['username'], password=cleaned_data['password'])
+        if user is not None:
+            if not user.is_active:
+                raise ValidationError('Your account has been disabled')
+        else:
+            raise ValidationError('Wrong username or password')
+        cleaned_data['user'] = user
+        return cleaned_data
 
 def _serve_dataset(request, dataset=None):
     dataset = dataset or Dataset.get_default()
-    
-    return render(request, 'base/network.html', {
-            'dataset': dataset,
-            'annotations': Annotation.objects.all(),
-            'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt'))
-      })
+    if request.user.is_authenticated() or dataset.is_published:
+        return render(request, 'base/network.html', {
+                'dataset': dataset,
+                'annotations': Annotation.objects.all(),
+                'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt'))
+          })
+    else:
+        return HttpResponseForbidden("Permission Required")
 
 def about(request):
     return render(request, 'base/about.html')
+
+def login(request):
+    form = LoginForm()
+    if request.POST:
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            django_login(request, form.cleaned_data['user'])
+            return HttpResponseRedirect(request.GET.get('next', '/'))
+    return render(request, 'base/login.html', {
+                'form': form
+        })
+
+def logout(request):
+    django_logout(request)
+    return render(request, 'base/logout.html')
 
 def home(request):
     return _serve_dataset(request)
 
 def dataset(request, dataset_id):
     return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
+
 
 @require_POST
 def interactions(request, dataset_id=None):

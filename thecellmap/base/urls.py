@@ -6,6 +6,8 @@ from django.conf.urls import url, patterns, include
 urlpatterns = patterns('base.views',
     url(r'^$', 'home', name='home'),
     url(r'^about/$', 'about', name='about'),
+    url(r'^login/$', 'login', name='login'),
+    url(r'^logout/$', 'logout', name='logout'),
     url(r'^network/(?P<dataset_id>\d+)/$', 'dataset', name='dataset'),
     url(r'^network/(?P<dataset_id>\d+)/interactions/$', 'interactions', name='interactions'),
     url(r'^network/(?P<dataset_id>\d+)/dl/$', 'nodes_download', name='nodes_download'),
