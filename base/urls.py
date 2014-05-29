@@ -20,10 +20,15 @@ urlpatterns = patterns('base.views',
     
     # annotation urls
     url(r'^annotation/(?P<annotation_id>\d+)/$', 'annotation', name='annotation'),
-    
+
     # contact
     url(r'^contact/', include('contact_form.urls')),
     
     # DEBUG
     url(r'^testingdebug/$', 'foobar', name='foobar'),
+)
+
+urlpatterns += patterns('base.tools',
+    # annotations
+    url(r'^tools/annotations/', 'annotations', name='tools_annotations'),
 )
