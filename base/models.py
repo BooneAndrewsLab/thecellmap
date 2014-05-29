@@ -52,6 +52,7 @@ class Dataset(models.Model):
     is_default = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
     description = models.TextField()
+    date = models.DateField()
     
     def __unicode__(self):
         return self.name
@@ -76,6 +77,9 @@ class Dataset(models.Model):
         ds = Dataset.objects.order_by('-pk')
         if ds.count(): return ds[0]
         raise Dataset.DoesNotExist()
+    
+    class Meta:
+        ordering = ("date", )
 
 class StrainData(models.Model):
     TYPE_QUERY = 'Q'
