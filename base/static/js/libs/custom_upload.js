@@ -1,10 +1,11 @@
 (function() {
-    var results = null, genes = null;
+    var results = null, genes = null, maxid = 0;
     
     $(document).ready(function() {
         $.get(genes_url, function(data) {
             genes = {};
             data.forEach(function(gene) {
+                maxid = Math.max(gene.id, maxid);
                 genes[gene.orf] = gene;
                 gene.label = gene.orf;
                 if (gene.name != '') {
@@ -66,7 +67,8 @@
                         id = gene.id, obj = gene;
                     } else {
                         if (seen.hasOwnProperty(g)) return;
-                        id = g, obj = {label: g, orf: g};
+                        id = ++maxid, obj = {label: g, orf: g, id: maxid};
+                        seen[g] = null;
                     }
                     
                     nodes.push(obj);
