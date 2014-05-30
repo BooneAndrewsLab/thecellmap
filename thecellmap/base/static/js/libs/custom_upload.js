@@ -32,12 +32,23 @@
                 },
                 error: function(data) {
                 },
-                complete: function(data) { 
+                complete: function(data) {
                     results = data.results;
                     var table = $('#data-table').clone().removeAttr('id'), body = table.find('tbody'), row;
-                    
+                    var ids = ['source', 'target', 'weight'], numOfField = [0, 0, 0], i = 0;
                     data.results.fields.forEach(function(field) {
-                        table.find('thead tr').append('<th>' + field + '</th>');
+                        table.find('thead tr').append('<th><div class="btn-group"><a class="btn dropdown-toggle" data-toggle="dropdown" href="#">'
+                                + field + '<span class="caret"></span></a><ul class="dropdown-menu">'
+                                + '<li data-field="source" class=source><a href="#">source</a></li>'
+                                + '<li data-field="target" class=target><a href="#">target</a></li>'
+                                + '<li data-field="weight" class=weight><a href="#">weight</a></li>'
+                                + '</ul></div></th>');
+                        i++;
+                        
+                        for (var j = 0; j < 3; j++) {
+                            if (field == ids[j])
+                                numOfField[j]++;
+                        }
                     });
                     
                     data.results.rows.forEach(function(r) {
@@ -49,7 +60,35 @@
                     });
                     
                     $("#file-contents").append(table);
-                    $("#generate-btn").removeClass('disabled');
+                    
+                    $('.dropdown-menu li').click(function() {
+                        var newField = $(this).closest("li").data("field");
+                        var field = $(this).closest("div").find("a").text().replace("sourcetargetweight","").toLowerCase();
+                        
+                        data.results.rows.forEach(function(r) {
+                            r[newField] = r[field];
+                        });
+                        
+                        $(this).parents('.btn-group').find('.dropdown-toggle').html($(this).text()
+                                + '<span class="caret"></span>');
+                        
+                        for (j = 0; j < 3; j++) {
+                            if (newField == ids[j])
+                                numOfField[j]++;
+                            if (field == ids[j])
+                                numOfField[j]--;
+                        }
+                        
+                        if (numOfField[0] == 1 && numOfField[1] == 1 && numOfField[2] < 2) {
+                            $("#generate-btn").removeClass('disabled');
+                        }
+                        else
+                            $("#generate-btn").addClass('disabled');
+                    });
+                    
+                    if (numOfField[0] == 1 && numOfField[1] == 1) {
+                        $("#generate-btn").removeClass('disabled');
+                    }
                 }
             });
         });
@@ -77,7 +116,7 @@
                     if (idx == 0) src = id;
                     else if (idx == 1) dst = id;
                 });
-                
+                if (row.weight == null || row.weight == undefined) row.weight == 0.1;
                 dataset.push({s: src, t: dst, w: row.weight});
             });
             
