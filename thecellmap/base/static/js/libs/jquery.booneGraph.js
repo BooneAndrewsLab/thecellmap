@@ -889,12 +889,12 @@
                 var clicked = sigInst._core.graph.edges.filter(function(e) {
                     return e.selected;
                 });
-                var clicked = clicked.map(function(e) {return [e.source.id, e.target.id];});
+                clicked = clicked.map(function(e) {return [e.source.id, e.target.id];});
                 var nodeClicked = [];
                 for(var i = 0; i < clicked.length; i++) {
                     nodeClicked = nodeClicked.concat(clicked[i]);
                 }
-                $("input.gene-search-input").select2("val", getSelection().concat(nodeClicked), true);
+                $("input.gene-search-input").select2("val", nodeClicked, true);
             }
             
             function onNodesClick(targets) {
@@ -1938,8 +1938,10 @@
                 }).bind('rightclickedges', onEdgesContext
                  ).bind('ctrlclickedges', onEdgesContext
                  ).bind('upedges', function(targeted) {
-                     onEdgesClick(targeted);
-                     changeState();
+                     if (!clicking.wasDragging) {
+                         onEdgesClick(targeted);
+                         changeState();
+                     }
                  });
                 
                 buildNewUI();
