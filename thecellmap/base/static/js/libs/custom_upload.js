@@ -87,8 +87,6 @@
                 workbook = XLS.read(data, {type:'binary'});
                 processFun = processXlsWorkbook;
                 
-                processXlsWorkbook(workbook, [], [], []);
-                
                 $("#generate-btn").removeClass('disabled');
             };
             reader.readAsBinaryString(f);
