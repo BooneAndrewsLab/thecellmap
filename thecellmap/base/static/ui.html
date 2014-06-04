@@ -84,6 +84,7 @@ $('.vizualization-ui').ready(function() {
       <li><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"><span class="glyphicons share_alt"></span> GI-directed layout </a></li>
       <li class="divider"></li>
       <li><a id="tool-rotate" href="#"><span class="glyphicons roundabout"></span> Rotate graph </a></li>
+      <li><a id="tool-rotate-arbitrary" href="#">&nbsp;&nbsp; <span class="glyphicons roundabout"></span> By arbitrary degrees</a></li>
       <li class="disabled"><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
       <li class="divider"></li>
       <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="circle" tabindex="-1" href="#"> Arrange selected in a circle </a></li>
@@ -276,6 +277,28 @@ $('.vizualization-ui').ready(function() {
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="rotation-modal" tabindex="-1" role="dialog" aria-labelledby="rotation-modal-label" 
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" id="rotation-modal-label">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Rotate graph by an arbitrary angle</h4>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <input type="text" class="form-control rotation-input" placeholder="Degrees">
+          <span class="input-group-addon">degrees</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary modal-confirm">Rotate</button>
       </div>
     </div>
   </div>

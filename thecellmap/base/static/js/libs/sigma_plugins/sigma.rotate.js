@@ -1,14 +1,14 @@
 // Mathieu Jacomy @ Sciences Po Médialab & WebAtlas
 // (requires sigma.js to be loaded)
 sigma.rotate = sigma.rotate || {};
-sigma.rotate.Rotate = function(graph, instance, properties) {
+sigma.rotate.Rotate = function(graph, instance, properties, angle) {
     sigma.classes.Cascade.call(this);
     var self = this;
     var inst = instance;
     this.graph = graph;
     this.p = {
         runtime: 1,
-        degrees: 90,
+        degrees: angle || 90,
         nodes : this.graph.nodes.filter(function(n) {
             return !n.hidden;
         })
@@ -61,8 +61,8 @@ sigma.rotate.Rotate = function(graph, instance, properties) {
     };
 };
 
-sigma.publicPrototype.rotateNodes = function(properties) {
-    this.rotate = new sigma.rotate.Rotate(this._core.graph, this, properties);
+sigma.publicPrototype.rotateNodes = function(properties, angle) {
+    this.rotate = new sigma.rotate.Rotate(this._core.graph, this, properties, angle);
     this.rotate.init();
     var rt = this.rotate;
     

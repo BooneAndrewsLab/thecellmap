@@ -1307,6 +1307,7 @@
                 $("#contextmenu-container").appendTo("body");
                 $("#contextmenu-edge-container").appendTo("body");
                 $("#edit-node-modal").appendTo("body");
+                $("#rotation-modal").appendTo("body");
             }
             
             function initUI() {
@@ -1798,6 +1799,24 @@
                 
                 $("#tool-rotate").click(function(e) {
                     sigInst.rotateNodes({callback: function() {changeNodesState();}});
+                    e.preventDefault();
+                });
+                
+                $("#tool-rotate-arbitrary").click(function(e) {
+                    $("#rotation-modal").modal('show');
+                    
+                    $("#rotation-modal").on("shown.bs.modal", function() {
+                        $("#rotation-modal input").focus();
+                    });
+                });
+                
+                $("#rotation-modal").find(".modal-confirm").click(function(e) {
+                    var angle = $(".rotation-input").val();
+                    if (isNumber(angle) && angle < 361 && angle > 0) {
+                        angle = parseInt(angle);
+                        sigInst.rotateNodes({callback: function() {changeNodesState();}}, angle);
+                    }
+                    $("#rotation-modal").modal("hide");
                     e.preventDefault();
                 });
                 
