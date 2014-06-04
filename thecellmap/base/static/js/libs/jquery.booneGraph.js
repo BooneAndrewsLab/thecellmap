@@ -1922,6 +1922,7 @@
                     if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$(".btn-group").hasClass('open')) { // Clear selection
                         log(evt.isDropDownToggleEvent);
                         clearSelection();
+                        state.setProperty("edgeSelection", []);
                     }
                 }).bind('draggedNode', function() {
                     clicking.wasDragging = true;
