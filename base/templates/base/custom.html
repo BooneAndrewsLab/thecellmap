@@ -5,6 +5,8 @@
 {% block cdn_js %}
 {{ block.super }}
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/xls/0.6.20/xls.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/xlsx/0.7.5/xlsx.js"></script>
 {% endblock cdn_js %}
 
 {% block js %}
@@ -44,7 +46,7 @@
 <!--     <div class="row"> -->
 <!--       <div id="file-contents" class="col-md-6 col-md-offset-3"> -->
 <!--         <div class="alert alert-danger fade in"> -->
-<!--           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">��</button> -->
+<!--           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button> -->
 <!--           <h4>Oh snap! Gene definition is not loaded yet!</h4> -->
 <!--           <p>Please wait a little while longer for us to load all required data.</p> -->
 <!--           <p> -->
@@ -60,6 +62,8 @@
     </div>
   </div>
   <div style="display: none;">
+    
+    
     <table id="data-table" class="table table-condensed table-striped sortable">
       <thead>
         <tr>
