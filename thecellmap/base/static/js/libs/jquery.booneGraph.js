@@ -347,6 +347,20 @@
                             <td><input type="radio" name="dominant"></td></tr>');
                 });
                 
+                var attributes = strain["attributes"];
+                if (attributes == undefined || attributes == null) $('#attribute-head').empty();
+                $('#attribute-body').empty();
+                
+                if (attributes != undefined || attributes != null) {
+                    $('#attribute-head').append('<tr><th>Attribute</th><th style="width: 25%;">Attribute Details</th></tr>');
+                    
+                    for (var attr in attributes) {
+                        console.log(attr)
+                        $('#attribute-body').append('<tr class="attribute-row">\
+                            <td>' + attr + '</td>\
+                            <td>' + attributes[attr] + '</td></tr>');
+                    }
+                }
                 $('#node-annotation-table .pick-a-color[value="' + node.color + '"]').closest('tr').find('input[type="radio"]').prop('checked', true);
                 $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false}).on("change", function() {
                     if ($(this).closest('tr').find('input[name=dominant]').prop('checked')) {
@@ -1118,6 +1132,7 @@
                     sigInst.startForceLayout(lopts);
                     _setRunningLayout(true);
                 }
+                
             }
             
             function applyNeighbourhood(level) {
@@ -1797,11 +1812,6 @@
                 
                 $("a.tool-arange").click(arangeNodes);
                 
-                $("#tool-rotate").click(function(e) {
-                    sigInst.rotateNodes({callback: function() {changeNodesState();}});
-                    e.preventDefault();
-                });
-                
                 $("#tool-rotate-arbitrary").click(function(e) {
                     $("#rotation-modal").modal('show');
                     
@@ -1812,9 +1822,14 @@
                 
                 $("#rotation-modal").find(".modal-confirm").click(function(e) {
                     var angle = $(".rotation-input").val();
-                    if (isNumber(angle) && angle < 361 && angle > 0) {
+                    
+                    if (isNumber(angle)) {
                         angle = parseInt(angle);
-                        sigInst.rotateNodes({callback: function() {changeNodesState();}}, angle);
+                        
+                        if (angle < 361 && angle > -361) {
+                            angle = parseInt(angle);
+                            sigInst.rotateNodes({callback: function() {changeNodesState();}}, angle);
+                        }
                     }
                     $("#rotation-modal").modal("hide");
                     e.preventDefault();
