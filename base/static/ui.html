@@ -83,8 +83,7 @@ $('.vizualization-ui').ready(function() {
       <li><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"><span class="glyphicons share_alt"></span> Annotation-directed layout </a></li>
       <li><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"><span class="glyphicons share_alt"></span> GI-directed layout </a></li>
       <li class="divider"></li>
-      <li><a id="tool-rotate" href="#"><span class="glyphicons roundabout"></span> Rotate graph </a></li>
-      <li><a id="tool-rotate-arbitrary" href="#">&nbsp;&nbsp; <span class="glyphicons roundabout"></span> By arbitrary degrees</a></li>
+      <li><a id="tool-rotate-arbitrary" href="#"><span class="glyphicons roundabout"></span> Rotate graph by arbitrary angle</a></li>
       <li class="disabled"><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
       <li class="divider"></li>
       <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="circle" tabindex="-1" href="#"> Arrange selected in a circle </a></li>
@@ -268,6 +267,16 @@ $('.vizualization-ui').ready(function() {
                         </tr>
                     </thead>
                     <tbody id="node-annotation-table">
+                    </tbody>
+                </table>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12">
+                <table class="table" id="attribute-table">
+                    <thead id="attribute-head">
+                    </thead>
+                    <tbody id="attribute-body">
                     </tbody>
                 </table>
             </div>
