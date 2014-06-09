@@ -1127,6 +1127,40 @@
                         }
                         
                         break;
+                    case 'attribute':
+                        var attribute = $(this).data('layout-attribute');
+                        
+                        lopts.edges = [];
+                        groups = {'noattr': []};
+                        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
+                        var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;});
+                        
+                        etmp.forEach(function(e) {
+                            lopts.edges.push(e);
+                        });
+                        
+                        ntmp.forEach(function(n) {
+                            strain = getStrain(n.id);
+                            
+                            if (strain.attributes && strain.attributes.hasOwnProperty(attribute)) {
+                                if (!groups.hasOwnProperty(strain.attributes[attribute])) groups[strain.attributes[attribute]] = [];
+                                groups[strain.attributes[attribute]].push(n);
+                            } else {
+                                groups['noattr'].push(n);
+                            }
+                        });
+                        
+                        for (key in groups) {
+                            k_combinations(groups[key], 2).forEach(function(x) {
+                                lopts.edges.push({
+                                    weight: 0.1,
+                                    absweight: 0.1,
+                                    source: x[0],
+                                    target: x[1]
+                                })
+                            });
+                        }
+                        break;
                     }
                     
                     sigInst.startForceLayout(lopts);
@@ -1904,6 +1938,19 @@
                 });
             };
             
+            function addAttributeLayouts() {
+                $('#attribute-layout-list').closest('li').toggleClass('disabled', opts.attributes.length == 0);
+                
+                opts.attributes.forEach(function(att) {
+                    $('#attribute-layout-list').append('<li><a class="tool-layout" data-layout-type="attribute" data-layout-attribute="' + att + '" href="#">' + att + '</a></li>');
+                });
+                
+                // Update the click listener
+                $('#btn-layout, .tool-layout').click(toggleLayout);
+                
+                console.log("Available attributes: " + opts.attributes);
+            };
+            
             function showUI() {
                 setTimeout(function() {
                     $(".vizualization-ui").fadeIn(1000);
@@ -2013,6 +2060,7 @@
                     vizdata['annotations'] = data.annotations;
                     vizdata['index'] = {};
                     autocomp = [];
+                    opts.attributes = [];
                     
                     var strain;
                     var tokens;
@@ -2035,7 +2083,15 @@
                             tokens: strain.terms,
                             id: strain.id
                           });
+                        
+                        if (strain.attributes) {
+                            for (var att in strain.attributes) {
+                                if (opts.attributes.indexOf(att) == -1) opts.attributes.push(att);
+                            }
+                        }
                     }
+                    
+                    addAttributeLayouts();
                     
                     var tokenizing = false;
                     $("input.gene-search-input").select2({
