@@ -27,22 +27,34 @@
         return obj;
     }
     
-    function processXlsWorkbook(workbook, nodes, layout, dataset) {
-        var gene, src, dst, id, obj, h;
+    function processXlsWorkbook(workbook, nodes, layout, dataset, annotations) {
+        var gene, src, dst, id, obj, h, an;
         nodeAttrs = {};
         seen = {};
         
         if (workbook.SheetNames.indexOf('nodes') != -1) {
             XLS.utils.sheet_to_row_object_array(workbook.Sheets['nodes']).forEach(function(row) {
                 obj = {};
-                for (h in row) {
+                for (h in row)
                     if (row.hasOwnProperty(h) && h.indexOf('__') != 0 && h != "node") {
                         obj[h] = row[h];
+                        
+                        if (!annotations.hasOwnProperty(h))
+                            annotations[h] = {terms: {}, map: {}, idx: {}, i: 0};
+                        
+                        an = annotations[h];
+                        if (!an.idx.hasOwnProperty(row[h])) an.idx[row[h]] = an.i++;
+                        if (!an.terms.hasOwnProperty(an.idx[row[h]])) an.terms[an.idx[row[h]]] = {name: row[h]};
+                        
+                        if (!an.map.hasOwnProperty(row.node)) an.map[row.node] = [];
+                        an.map[row.node].push(an.idx[row[h]]);
                     }
-                }
+                
                 nodeAttrs[row.node] = obj;
             });
         }
+        
+        console.log(annotations);
         
         XLS.utils.sheet_to_row_object_array(workbook.Sheets['edges']).forEach(function(row) {
             obj = {};
@@ -61,6 +73,12 @@
             genes = {};
             data.forEach(function(gene) {
                 maxid = Math.max(gene.id, maxid);
+                
+                if (!!gene.alel) {
+                    genes[gene.alel] = gene;
+                    return;
+                }
+                
                 genes[gene.orf] = gene;
                 gene.label = gene.orf;
                 if (gene.name != '') {
@@ -87,15 +105,17 @@
                 workbook = XLS.read(data, {type:'binary'});
                 processFun = processXlsWorkbook;
                 
+                processFun(workbook, [], [], [], {});
+                
                 $("#generate-btn").removeClass('disabled');
             };
             reader.readAsBinaryString(f);
         });
         
         $("#generate-btn").click(function() {
-            var nodes = [], layout = [], dataset = [];
+            var nodes = [], layout = [], dataset = [], annotations = {};
             
-            processFun(workbook, nodes, layout, dataset);
+            processFun(workbook, nodes, layout, dataset, annotations);
             
             $.ajax({
                 dataType: 'json', 

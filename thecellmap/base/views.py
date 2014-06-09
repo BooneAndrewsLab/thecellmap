@@ -13,8 +13,9 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
-from base.models import Dataset, Annotation, Term, Gene, Custom
+from base.models import Dataset, Annotation, Term, Gene, Custom, Strain
 from base.utils import print_queries, is_integer, JsonResponse
+from django.db.models.aggregates import Max
 
 
 class LoginForm(Form):
@@ -70,7 +71,13 @@ def dataset(request, dataset_id):
     return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
 
 def genes(request):
-    return JsonResponse([g.as_object() for g in Gene.objects.all()])
+    genes = [g.as_object() for g in Gene.objects.all()]
+    maxid = Gene.objects.aggregate(mx=Max('id'))['mx']
+    for strain in Strain.objects.filter(allele__isnull=False).exclude(allele='').distinct('allele').select_related('gene'):
+        maxid += 1
+        genes.append({'orf': strain.gene.orf, 'aliases': strain.gene.aliases, 'id': maxid, 'name': strain.gene.name, 'alel': strain.allele})
+    
+    return JsonResponse(genes)
 
 def custom_dataset(request, hash):
     custom = Custom.objects.get(hash=hash)
