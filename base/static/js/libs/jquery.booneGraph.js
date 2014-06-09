@@ -1114,6 +1114,8 @@
                         });
                         
                         for (key in groups) {
+                            if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
+                            
                             weight = Math.log(groups[key].keylen) + 0.01;
                             
                             k_combinations(groups[key].nodes, 2).forEach(function(x) {
@@ -1162,6 +1164,8 @@
                         }
                         break;
                     }
+                    
+                    console.log(lopts.edges);
                     
                     sigInst.startForceLayout(lopts);
                     _setRunningLayout(true);
