@@ -1946,7 +1946,7 @@
                 });
                 
                 // Update the click listener
-                $('#btn-layout, .tool-layout').click(toggleLayout);
+//                $('#btn-layout, .tool-layout').click(toggleLayout);
                 
                 console.log("Available attributes: " + opts.attributes);
             };
