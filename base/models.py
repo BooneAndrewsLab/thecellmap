@@ -133,6 +133,7 @@ class Term(models.Model):
 class Custom(models.Model):
     user = models.ForeignKey(User, null=True)
     hash = models.CharField(max_length=40, unique=True)
+    private = models.BooleanField(default=False)
     
     def path(self, *args):
         return os.path.join(settings.STATIC_ROOT, 'upload', 'custom', self.hash, *args)

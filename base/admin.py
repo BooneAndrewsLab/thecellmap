@@ -16,6 +16,8 @@ class GeneAdmin(admin.ModelAdmin):
 
 class StrainAdmin(admin.ModelAdmin):
     list_display = ('gene', 'allele', 'boonelab_id', 'genotype', 'mating_type', 'description')
+    search_fields = ('gene__orf', 'gene__name', 'boonelab_id', 'allele')
+    
     raw_id_fields = ('gene', )
 
 class StrainDataAdmin(admin.ModelAdmin):

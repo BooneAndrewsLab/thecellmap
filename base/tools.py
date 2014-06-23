@@ -57,12 +57,13 @@ def custom(request):
         nodes = request.POST['nodes']
         layout = request.POST['layout']
         dataset = request.POST['dataset']
+        private = request.POST.get('private', False)
         
         hash = hashlib.sha1()
         hash.update(str(time()) + nodes + layout + dataset)
         hash = hash.hexdigest()
         
-        custom, _created = Custom.objects.get_or_create(user=request.user.is_authenticated() and request.user or None, hash=hash)
+        custom, _created = Custom.objects.get_or_create(user=request.user.is_authenticated() and request.user or None, hash=hash, private=private)
         
         os.makedirs(custom.path())
         
