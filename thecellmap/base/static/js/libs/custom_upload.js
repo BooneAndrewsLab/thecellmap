@@ -284,6 +284,9 @@
         $("#sheet-selection .list-group").empty();
         $("#edges-column-selection").find(".selection").empty();
         
+        $("#on-load").addClass("hidden");
+        $("#after-load").removeClass("hidden");
+        
         $("#sheet-selection .list-group").append("<li class='list-group-item'>Sheet: " + name.replace(".csv", "") + "\
                 <select id='edges-sheet' class='sheet-selection pull-right'><option></option>\
                 <option value='edges'>Edges</option></select>");
@@ -329,6 +332,7 @@
         isFirst = false;
         
         $("#edges-column-selection").find(".selection").append(table);
+        $(".wizard-buttons-container").removeClass("hidden");
         
         $(".column-selection select").on("change", function(e) {
             var index = $(this).attr("id"), val = e.val;
