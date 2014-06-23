@@ -30,7 +30,7 @@
             // Add any extra annotation
             obj.attributes = nodeAttrs[label];
         };
-        
+
         nodes.push(obj);
         if (obj.attributes != undefined && obj.attributes["x"] != undefined && obj.attributes["y"] != undefined) {
             layout.push({x: parseFloat(obj.attributes["x"]), y: parseFloat(obj.attributes["y"]), id: id});
@@ -224,10 +224,9 @@
             for (key in colMap) {
                 if (colMap[key] != null) {
                     table.find("#" + colMap[key]).val(key).change();
-                    if (key == "x" || key == "y") annotMap[key] = colMap[key];
+                    if (key == "x" || key == "y") annotMap[colMap[key]] = key;
                 }
             }
-            
             count = 0;
             sheetData.forEach(function(r) {
                 row = $("<tr></tr>");
@@ -276,7 +275,6 @@
             }
             
             if (val != "default") for (var i = 0; i < selects.length; i++) if ($(selects[i]).val() == val) $(selects[i]).val("default").change();
-            console.log(annotMap, colMap)
         });
     }
     
