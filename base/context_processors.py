@@ -5,5 +5,5 @@ def datasets(request):
     lists = {'datasetlist': Dataset.objects.order_by("-date")}
     if not request.user.is_anonymous():
         lists['customlist'] = Custom.objects.filter(user=request.user
-                        ).exclude(Q(name="") | Q(name__isnull=True)).order_by("-date")
+                        ).exclude(Q(name="") | Q(name__isnull=True)).extra(where=['LENGTH(base_custom.name) <= 32']).order_by("-date")
     return lists
