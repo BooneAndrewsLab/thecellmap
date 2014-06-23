@@ -82,6 +82,9 @@ def genes(request):
 def custom_dataset(request, hash):
     custom = Custom.objects.get(hash=hash)
     
+    if custom.private and custom.user != request.user:
+        return HttpResponseForbidden()
+    
     return render(request, 'base/network.html', {
             'dataset': {
                 'id': hash,
