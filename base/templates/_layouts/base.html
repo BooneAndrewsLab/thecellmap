@@ -73,12 +73,12 @@
                   <li {% if data == dataset %} class="disabled"{% endif %}><a href="{% url 'dataset' data.id %}">{{ data.name }}</a></li>
                 {% endif %}
               {% endfor %}
-               <li class="divider"></li>
-              {% for data in customlist %}
-                {% if user.is_authenticated %}
+              {% if user.is_authenticated %}
+                <li class="divider"></li>
+                {% for data in customlist %}
                   <li {% if data == custom_dataset %} class="disabled"{% endif %}><a href="{% url 'custom_dataset' data.hash %}">{{ data.name }}</a></li>
-                {% endif %}
-              {% endfor %}
+                {% endfor %}
+              {% endif %}
             </ul>
           </li>
           <li class="dropdown">

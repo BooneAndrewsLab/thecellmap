@@ -58,7 +58,7 @@ def custom(request):
         layout = request.POST['layout']
         dataset = request.POST['dataset']
         private = request.POST['private']
-        name = request.POST['name']
+        name = request.POST.get('name', '')
         
         hash = hashlib.sha1()
         hash.update(str(time()) + nodes + layout + dataset)
