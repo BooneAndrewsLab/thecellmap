@@ -134,6 +134,9 @@ class Custom(models.Model):
     user = models.ForeignKey(User, null=True)
     hash = models.CharField(max_length=40, unique=True)
     private = models.BooleanField(default=False)
+    name = models.CharField(max_length=32, null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    permanent = models.BooleanField(default=False)
     
     def path(self, *args):
         return os.path.join(settings.STATIC_ROOT, 'upload', 'custom', self.hash, *args)

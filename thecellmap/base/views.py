@@ -83,7 +83,7 @@ def custom_dataset(request, hash):
     custom = Custom.objects.get(hash=hash)
     
     if custom.private and custom.user != request.user:
-        return HttpResponseForbidden()
+        return HttpResponseForbidden("Sorry the network you're trying to access is private")
     
     return render(request, 'base/network.html', {
             'dataset': {

@@ -1,0 +1,20 @@
+.sheet-selection {
+    top: -7px;
+    width: 150px;
+}
+
+.column-selection-button {
+    width: 150px;
+}
+
+.alert-danger {
+    margin-bottom: 0px;	
+}
+
+h3 {
+    margin-top: 0;
+    margin-bottom: -5px;
+    font-size: 21px;
+    line-height: 40px;
+    font-weight: normal;
+}

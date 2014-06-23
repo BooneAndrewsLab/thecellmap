@@ -510,6 +510,8 @@
                 var nodes = [];
                 autoState = true; // Prevent automatic state change on loadDataset
                 
+                $(".dataset-constraint").removeClass("disabled");
+                
                 if (fromNodes) {
                     nodes = getSelectedNodes(true);
                     console.log(nodes);
@@ -556,6 +558,7 @@
                 if (value == 0) { // Correlations
                     dsEle.addClass('active');
                     $("#selected-dataset").html("Correlations");
+                    $(".dataset-constraint").addClass("disabled");
                     updateEdges(value);
                 } else { // Interactions
                     var newVisible = [];
@@ -563,7 +566,7 @@
                         if (!node.hidden && dataset.fetched.indexOf(node.id) == -1) newVisible.push(node.id);
                     });
                     
-                    if (newVisible.length > 50) {
+                    if (newVisible.length > 50 && !autoState) {
                         alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.\
                                 Maximum number of nodes is 50 but you have ' + newVisible.length + ' visible.');
                         $("#btn-group-datasets a[data-id=\"0\"]").addClass('active');
@@ -575,6 +578,7 @@
                     
                     dsEle.addClass('active');
                     $("#selected-dataset").html("Genetic interactions");
+                    $(".dataset-constraint").removeClass("disabled");
                     
                     if (!newVisible.length) {
                         updateEdges(value);
@@ -723,6 +727,11 @@
 
             function loadAnnotation(id) {
                 state.setProperty("annotation", id);
+                
+                if (id == "None")
+                    $(".annotation-constraint").addClass("disabled");
+                else
+                    $(".annotation-constraint").removeClass("disabled");
                 
                 if (vizdata[id] == undefined) {
                     if (id == 'None') {
@@ -1014,6 +1023,11 @@
                 if (justStop.preventDefault != undefined) {
                     justStop.preventDefault();
                 }
+                
+                if ($(this).data("layout-type") == "annotation" && state.getProperty("annotation") == "None")
+                    return;
+                else if ($(this).data("layout-type") == "gi" && state.getProperty("dataset") == 0)
+                    return;
                 
                 var layoutButton = $("#btn-layout");
                 if (countVisibleEdges() > 20000) {
@@ -1355,6 +1369,7 @@
                         $('#btn-group-annotation .dropdown-menu').append('<li><a href="#">' + annotation.name + '</a></li>');
                     });
                 }
+                
                 $(".changed-network").hide().removeClass('hidden');
                 $("#modal-style").appendTo("body");
                 $("#contextmenu-container").appendTo("body");
