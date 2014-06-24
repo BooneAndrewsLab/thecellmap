@@ -73,7 +73,7 @@
                   <li {% if data == dataset %} class="disabled"{% endif %}><a href="{% url 'dataset' data.id %}">{{ data.name }}</a></li>
                 {% endif %}
               {% endfor %}
-              {% if user.is_authenticated %}
+              {% if user.is_authenticated and customlist|length > 0 %}
                 <li class="divider"></li>
                 {% for data in customlist %}
                   <li {% if data == custom_dataset %} class="disabled"{% endif %}><a href="{% url 'custom_dataset' data.hash %}">{{ data.name }}</a></li>
@@ -88,6 +88,9 @@
               <li><a href="{% url 'tools_custom' %}">Custom Uploads</a>
               <li class="divider"></li>
               {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                  <li><a href="{% url 'admin:index' %}">Admin</a></li>
+                {% endif %}
                 <li><a href="{% url 'logout' %}">Logout</a></li>
               {% else %}
                 <li><a href="{% url 'login' %}?next={{ request.path }}">Login</a></li>

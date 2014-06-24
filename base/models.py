@@ -134,7 +134,7 @@ class Custom(models.Model):
     user = models.ForeignKey(User, null=True)
     hash = models.CharField(max_length=40, unique=True)
     private = models.BooleanField(default=False)
-    name = models.CharField(max_length=32, null=True, blank=True)
+    name = models.CharField(max_length=40, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     permanent = models.BooleanField(default=False)
     
@@ -143,6 +143,9 @@ class Custom(models.Model):
     
     def static_url(self, *args):
         return os.path.join(settings.STATIC_URL, 'upload', 'custom', self.hash, *args)
+    
+    class Meta:
+        unique_together = (('name', 'user'), )
 
 Dataset.correlation_axis.through._meta.verbose_name = 'Correlations axis'
 Dataset.correlation_axis.through._meta.verbose_name_plural = 'Correlations axes'

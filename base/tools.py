@@ -58,11 +58,12 @@ def custom(request):
         layout = request.POST['layout']
         dataset = request.POST['dataset']
         private = request.POST['private'].lower() == 'true'
-        name = request.POST.get('name', '')
         
         hash = hashlib.sha1()
         hash.update(str(time()) + nodes + layout + dataset)
         hash = hash.hexdigest()
+        
+        name = request.POST.get('name', hash)
         
         custom, _created = Custom.objects.get_or_create(
                 user=request.user.is_authenticated() and request.user or None, 
