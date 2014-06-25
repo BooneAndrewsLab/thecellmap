@@ -568,7 +568,7 @@
                     
                     if (newVisible.length > 100 && !autoState) {
                         alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.\
-                                Maximum number of nodes is 50 but you have ' + newVisible.length + ' visible.');
+                                Maximum number of nodes is 100 but you have ' + newVisible.length + ' visible.');
                         $("#btn-group-datasets a[data-id=\"0\"]").addClass('active');
                         $("#selected-dataset").html("Correlations");
                         return;

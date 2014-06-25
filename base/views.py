@@ -5,6 +5,7 @@ import os
 
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.core.exceptions import ValidationError
+from django.db.models.aggregates import Max
 from django.forms.fields import CharField
 from django.forms.forms import Form
 from django.forms.widgets import PasswordInput
@@ -15,7 +16,6 @@ from django.views.decorators.http import require_POST
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain
 from base.utils import print_queries, is_integer, JsonResponse
-from django.db.models.aggregates import Max
 
 
 class LoginForm(Form):
