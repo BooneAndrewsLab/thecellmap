@@ -3,6 +3,7 @@ Created on Dec 16, 2013
 
 @author: matej
 '''
+from datetime import datetime
 from optparse import make_option
 import re
 
@@ -11,6 +12,7 @@ from django.db.transaction import commit_on_success
 from pandas.core.frame import DataFrame
 from pandas.core.index import MultiIndex
 from pandas.io.parsers import read_table
+from pandas.util.testing import assert_frame_equal
 import psycopg2
 
 from base.models import Strain, Dataset, StrainData
@@ -70,6 +72,7 @@ class Command(CellMapCommand):
         ds = Dataset.objects.create(
             name=dataset_name,
             is_default=is_default,
+            date=datetime.now()
         )
          
         for query, row in scores.iterrows():
@@ -116,7 +119,7 @@ class Command(CellMapCommand):
                         sep='\t', 
                         header=None, 
                         names=['q', 'a', 'corr'],
-                        usecols=[0, 2, 4],
+#                         usecols=[0, 2, 4],
                     )
         
         corr = corr.pivot('q', 'a', 'corr')
@@ -140,16 +143,21 @@ class Command(CellMapCommand):
         corr.index = indices.index
         corr.columns = indices.index
         
-        nanmask = np.isnan(corr)
-        tnanmask = np.isnan(corr.T)
-         
-        if (~nanmask & ~tnanmask).sum().sum() > 0:
-            # We would sum reciprocal values!! Check that each pair appears only once
-            raise CommandError("Problem with correlation matrix.")
+#         try:
+#             assert_frame_equal(corr, corr.T, check_dtype=False, check_names=False)
+#             print "Matrix already symmetric"
+#         except:
+#             nanmask = np.isnan(corr)
+#             tnanmask = np.isnan(corr.T)
+#             
+#             if (~nanmask & ~tnanmask).sum().sum() > 0:
+#                 # We would sum reciprocal values!! Check that each pair appears only once
+#                 raise CommandError("Problem with correlation matrix.")
+#             
+#             corr[nanmask] = 0
+#             corr += corr.T
+#             corr[nanmask & tnanmask] = np.nan
         
-        corr[nanmask] = 0
-        corr += corr.T
-        corr[nanmask & tnanmask] = np.nan
         return corr
     
     def parse_scores(self, path):
