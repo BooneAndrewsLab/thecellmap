@@ -318,10 +318,11 @@
                 modal.find('#node-allele').html(strain.alel);
                 modal.find('#node-sgd').html('<a href="' + url + '">' + url + '</a>');
                 
-                modal.find('#edit-node-id').attr("value", id);
-                modal.find('#edit-node-label').attr("value", node.label);
+                modal.find('#edit-node-id').val(id);
+                modal.find('#edit-node-label').val(node.label);
                 modal.find('#edit-node-color').val(node.color).focus().blur().change();
                 modal.find('#edit-node-label-force').prop('checked', !!node.forceLabel);
+                modal.find('#edit-node-size-multiplier').val(node.size_mult || 1);
                 
                 $('#node-annotation-table').empty();
                 
@@ -348,14 +349,13 @@
                 });
                 
                 var attributes = strain["attributes"];
-                if (attributes == undefined || attributes == null) $('#attribute-head').empty();
+                $('#attribute-head').empty();
                 $('#attribute-body').empty();
                 
                 if (attributes != undefined || attributes != null) {
                     $('#attribute-head').append('<tr><th>Attribute</th><th style="width: 25%;">Attribute Details</th></tr>');
                     
                     for (var attr in attributes) {
-                        console.log(attr)
                         $('#attribute-body').append('<tr class="attribute-row">\
                             <td>' + attr + '</td>\
                             <td>' + attributes[attr] + '</td></tr>');
@@ -566,7 +566,7 @@
                         if (!node.hidden && dataset.fetched.indexOf(node.id) == -1) newVisible.push(node.id);
                     });
                     
-                    if (newVisible.length > 50 && !autoState) {
+                    if (newVisible.length > 100 && !autoState) {
                         alertUser('Too many nodes', 'Too many nodes are visible to switch to genetic interaction data.\
                                 Maximum number of nodes is 50 but you have ' + newVisible.length + ' visible.');
                         $("#btn-group-datasets a[data-id=\"0\"]").addClass('active');
@@ -1177,9 +1177,73 @@
                             });
                         }
                         break;
+                    case 'force+':
+                        lopts.edges = [];
+                        groups = {};
+                        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
+                        var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;});
+                        var other, weight;
+                        
+                        etmp.forEach(function(e) {
+                            lopts.edges.push(e);
+                        });
+                        
+                        ntmp.forEach(function(n) {
+                            var tmp = [], tmpkey;
+                            etmp.forEach(function(e) {
+                                if (e.source.id == n.id || e.target.id == n.id) {
+                                    // try excluding nodes driving this correlation
+                                    other = e.source.id == n.id ? e.target : e.source;
+                                    tmp.push(e.weight < 0 ? "-" + other.id : other.id);
+                                }
+                            });
+                            
+                            if (tmp.length > 100) {
+                                return;
+                            }
+                            
+                            tmp = tmp.sort();
+                            tmpkey = tmp.join();
+                            if (!groups.hasOwnProperty(tmpkey)) {
+                                groups[tmpkey] = {nodes: [], keylen: tmp.length};
+                            }
+                            
+                            groups[tmpkey].nodes.push(n);
+                        });
+                        
+                        data = vizdata[state.getProperty("annotation")];
+                        
+                        for (key in groups) {
+                            if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
+                            
+                            annotations = {};
+                            
+                            groups[key].nodes.forEach(function(n) {
+                                strain = getStrain(n.id);
+                                annot = data.map[strain.orf] || [-1];
+                                
+                                annot.forEach(function(a) {
+                                    if (!annotations.hasOwnProperty(a)) {
+                                        annotations[a] = [];
+                                    }
+                                    annotations[a].push(n);
+                                })
+                            });
+                            
+                            for (key in annotations) {
+                                k_combinations(annotations[key], 2).forEach(function(x) {
+                                    lopts.edges.push({
+                                        weight: .01,
+                                        absweight: .01,
+                                        source: x[0],
+                                        target: x[1]
+                                    })
+                                });
+                            }
+                        }
+                        
+                        break;
                     }
-                    
-                    console.log(lopts.edges);
                     
                     sigInst.startForceLayout(lopts);
                     _setRunningLayout(true);
@@ -1835,6 +1899,8 @@
                     node.label = modal.find('#edit-node-label').val();
                     node.color = "#" + modal.find('#edit-node-color').val().toUpperCase();
                     node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
+                    node.size_mult = modal.find('#edit-node-size-multiplier').val();
+                    node.size = node.size_init * node.size_mult;
                     
                     modal.find('.annotation-color').each(function() {
                         var color = '#' + $(this).val().toUpperCase(), annot = state.getProperty("annotation");
@@ -1965,7 +2031,7 @@
                 });
                 
                 // Update the click listener
-//                $('#btn-layout, .tool-layout').click(toggleLayout);
+                $('#attribute-layout-list .tool-layout').click(toggleLayout);
                 
                 console.log("Available attributes: " + opts.attributes);
             };
@@ -2213,26 +2279,26 @@
                             }
                             if (original!==input) return input;
                         },
-//                        createSearchChoice: function(term) {
-//                            var wildcard = term.indexOf('*') != -1;
-//                            term = term.replace('*', '').toLowerCase();
-//                            
-//                            if (term.length > 0) {
-//                                var results = [], seen = {};
-//                                
-//                                autocomp.forEach(function(node) {
-//                                    node.tokens.forEach(function(token) {
-//                                        if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
-//                                            results.push({id: node.id, text: node.value });
-//                                            seen[node.id] = 0;
-//                                            return;
-//                                        }
-//                                    });
-//                                });
-//                                
-//                                if (results.length !== 0) return results;
-//                            }
-//                        },
+                        createSearchChoice: function(term) {
+                            var wildcard = term.indexOf('*') != -1;
+                            term = term.replace('*', '').toLowerCase();
+                            
+                            if (term.length > 0) {
+                                var results = [], seen = {};
+                                
+                                autocomp.forEach(function(node) {
+                                    node.tokens.forEach(function(token) {
+                                        if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+                                            results.push({id: node.id, text: node.value });
+                                            seen[node.id] = 0;
+                                            return;
+                                        }
+                                    });
+                                });
+                                
+                                if (results.length !== 0) return results;
+                            }
+                        },
                         query: function(query) {
                             if (query.term === undefined) {
                                 query.callback({results: []});
