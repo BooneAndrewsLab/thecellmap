@@ -5,7 +5,6 @@ from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     help = '''Check if boonelab and thecellmap users are syncronized'''
-    args = '<username>'
 
     def handle(self, *args, **options):
         is_sync = True

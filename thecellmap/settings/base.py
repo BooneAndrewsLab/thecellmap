@@ -300,3 +300,5 @@ LOGGING = {
 #CEF_DEVICE_VERSION = '0'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+LOGIN_URL = 'login'
