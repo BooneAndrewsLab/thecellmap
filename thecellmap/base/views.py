@@ -90,7 +90,6 @@ def custom_dataset(request, hash):
                 'id': hash,
                 'static_url': custom.static_url(),
                 'name': hash,
-                
             },
             'annotations': Annotation.objects.all(),
             'can_bulk_download': False

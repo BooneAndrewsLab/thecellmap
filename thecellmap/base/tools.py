@@ -3,22 +3,37 @@ import hashlib
 import os
 from time import time
 
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.forms.fields import CharField
 from django.forms.forms import Form
-from django.forms.models import ModelChoiceField
+from django.forms.models import ModelChoiceField, ModelForm
 from django.forms.widgets import Textarea
-from django.http.response import HttpResponseBadRequest
+from django.http.response import HttpResponseBadRequest, HttpResponseRedirect, \
+    HttpResponseForbidden
 from django.shortcuts import render
 
+from base.filter import CustomFilter
 from base.models import Annotation, Term, Custom
 from base.utils import gene_map, write_excel_file, JsonResponse
+from django.contrib.auth.decorators import login_required
 
 
 ### FORMS ###
 class AnnotationsForm(Form):
     annotation = ModelChoiceField(Annotation.objects)
     genes = CharField(widget=Textarea)
+
+class CustomForm(ModelForm):
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        if len(cleaned_data['name']) > 32:
+            self._errors.setdefault('name', self.error_class()).append("Name must be under 32 characters.")
+        return cleaned_data
+    
+    class Meta:
+        model = Custom
+        fields = ['name', 'private', 'permanent']
 
 def annotations(request):
     form = AnnotationsForm()
@@ -85,3 +100,39 @@ def custom(request):
         return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
     
     return render(request, 'base/custom.html')
+
+@login_required
+def edit(request):
+    f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).exclude(name=""))
+    
+    if request.POST:
+        selection = request.POST.getlist('selection')
+        selection = Custom.objects.filter(id__in=selection)
+        
+        action = request.POST.get('action')
+        if action == 'delete':
+            selection.delete()
+        elif action == 'renew':
+            selection.update(date=datetime.now())
+            
+    return render(request, 'base/edit.html', {'filter': f})
+
+@login_required
+def edit_dataset(request, id):
+    custom = Custom.objects.get(id=id)
+    
+    if request.user != custom.user:
+        return HttpResponseForbidden("Permission Required")
+    
+    if request.POST:
+        form = CustomForm(request.POST, instance=custom)
+        if form.is_valid():
+            if "update" in request.POST:
+                form.save()
+            elif "delete" in request.POST:
+                custom.delete()
+            return HttpResponseRedirect(reverse("tools_edit"))
+    else:
+        form = CustomForm(instance=custom)
+    
+    return render(request, 'base/editdataset.html', {'form': form})
