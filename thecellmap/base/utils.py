@@ -103,14 +103,15 @@ def orf_sorting_value(orf):
 def ordered_orfs(orfs):
     return sorted(orfs, cmp=orf_comparator)
 
-def gene_map():
+def gene_map(keyfun=lambda x: x):
     genemap = {}
     for g in Gene.objects.all():
-        genemap[g.orf] = g
-        genemap[g.name] = g
+        genemap[keyfun(g.orf)] = g
+        if g.name:
+            genemap[keyfun(g.name)] = g
         for a in g.aliases:
-            if a not in genemap:
-                genemap[a] = g
+            if a and a not in genemap:
+                genemap[keyfun(a)] = g
     return genemap
 
 COLORS = {'blue':34, 'cyan':36, 'green':32, 'grey':30, 'magenta':35, 'red':31, 'white':37, 'yellow':33}
