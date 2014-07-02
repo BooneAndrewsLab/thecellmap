@@ -2,37 +2,6 @@
 
 {% load crispy_forms_tags static %}
 
-{% block cdn_css %}
-{{ block.super }}
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.css">
-{% endblock cdn_css %}
-
-{% block css %}
-{{ block.super }}
-    <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> <!-- The cdnjs version of this is still not ready... firefox problems with height -->
-{% endblock css %}
-
-{% block js %}
-{{ block.super }}
-    <script src="{% static 'js/libs/select2.js' %}"></script>
-    
-    <!-- <script type="text/javascript">
-      $("#action").select2({
-          placeholder: "Action", 
-          minimumResultsForSearch: -1,
-          width: "300px"
-      });
-      
-      $("#main-checkbox").change(function() {
-          if (this.checked) {
-              $(".body-checkbox").prop("checked", true);
-          } else {
-              $(".body-checkbox").prop("checked", false);
-          }
-      });
-    </script> -->
-{% endblock js %}
-
 {% block content %}
     <div class="container">
       <div class="row">

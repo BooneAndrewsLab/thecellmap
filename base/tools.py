@@ -5,10 +5,10 @@ from time import time
 
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.forms.fields import CharField
+from django.forms.fields import CharField, BooleanField
 from django.forms.forms import Form
 from django.forms.models import ModelChoiceField, ModelForm
-from django.forms.widgets import Textarea
+from django.forms.widgets import Textarea, HiddenInput
 from django.http.response import HttpResponseBadRequest, HttpResponseRedirect, \
     HttpResponseForbidden
 from django.shortcuts import render
@@ -22,13 +22,30 @@ from base.utils import gene_map, write_excel_file, JsonResponse
 class AnnotationsForm(Form):
     annotation = ModelChoiceField(Annotation.objects)
     genes = CharField(widget=Textarea)
+    fileType = CharField(widget=HiddenInput, initial="xls")
+    remove = BooleanField(widget=HiddenInput, initial=False, required=False)
 
 class CustomForm(ModelForm):
     def clean(self):
-        cleaned_data = self.cleaned_data
+        cleaned_data = super(CustomForm, self).clean()
+        
         if len(cleaned_data['name']) > 32:
             self._errors.setdefault('name', self.error_class()).append("Name must be under 32 characters.")
+        
+        if not self.instance.permanent and cleaned_data['permanent']:
+            custom = Custom.objects.filter(user=self.instance.user, permanent=True)
+            if custom.count() >= 10:
+                self._errors.setdefault('permanent', self.error_class()).append("Only 10 permanent datasets allowed per user.")
+        
         return cleaned_data
+    
+    def validate_unique(self):
+        exclude = self._get_validation_exclusions()
+        exclude.remove('user')
+        try:
+            self.instance.validate_unique(exclude=exclude)
+        except ValidationError:
+            self._errors.setdefault('name', self.error_class()).append("Custom dataset with this name already exists.")
     
     class Meta:
         model = Custom
@@ -41,9 +58,10 @@ def annotations(request):
         form = AnnotationsForm(request.POST)
         
         if form.is_valid():
+            print form.cleaned_data['remove']
             genes = form.cleaned_data['genes'].splitlines()
             annotation = form.cleaned_data['annotation']
-            response = write_excel_file('annotated_genes_%s.xls' % (datetime.now().strftime('%Y%m%d-%H%M%S'), ))
+            response = write_excel_file('annotated_genes_%s.%s' % ((datetime.now().strftime('%Y%m%d-%H%M%S')), form.cleaned_data['fileType']), override_ext=True)
             response.add_sheet("Annotated", ['Input label', 'Label', 'ORF', 'Name', 'Annotations'])
             
             gmap = gene_map(keyfun=lambda x: x.upper())
@@ -65,12 +83,15 @@ def annotations(request):
                     strain = gene
                     gene = gene.gene
                     row += [strain.allele, gene.orf, gene.name, ';'.join([(hasattr(t, 'name') and t.name or t) for t in tmap.get(gene.id, ['NOT ANNOTATED'])])]
-                response.write_row(row)
+                
+                if gene is not None or not form.cleaned_data['remove']:
+                    response.write_row(row)
             
             return response.as_response()
     
     return render(request, 'base/annotations.html', {
             'form': form,
+            'page_name': 'annotation',
       })
 
 def custom(request):
@@ -87,7 +108,10 @@ def custom(request):
         hash.update(str(time()) + nodes + layout + dataset)
         hash = hash.hexdigest()
         
-        name = request.POST.get('name', hash)
+        if request.POST['name']:
+            name = request.POST['name']
+        else:
+            name = hash
         
         custom, _created = Custom.objects.get_or_create(
                 user=request.user.is_authenticated() and request.user or None, 
@@ -108,11 +132,11 @@ def custom(request):
         
         return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
     
-    return render(request, 'base/custom.html')
+    return render(request, 'base/custom.html', {'page_name': 'custom_upload'})
 
 @login_required
 def edit(request):
-    f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).exclude(name=""))
+    f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).extra(where=["CHAR_LENGTH(name) <= 32"]).order_by("name"))
     
     if request.POST:
         selection = request.POST.getlist('selection')
@@ -124,7 +148,10 @@ def edit(request):
         elif action == 'renew':
             selection.update(date=datetime.now())
             
-    return render(request, 'base/edit.html', {'filter': f})
+    return render(request, 'base/edit.html', {
+            'filter': f, 
+            'page_name': 'custom_upload',
+        })
 
 @login_required
 def edit_dataset(request, id):
@@ -135,6 +162,7 @@ def edit_dataset(request, id):
     
     if request.POST:
         form = CustomForm(request.POST, instance=custom)
+        
         if form.is_valid():
             if "update" in request.POST:
                 form.save()

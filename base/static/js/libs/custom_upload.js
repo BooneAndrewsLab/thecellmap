@@ -1,6 +1,6 @@
 (function() {
     var results = null, genes = null, maxid = 0, seen;
-    var workbook, nodeAttrs, wizard, networkName, fileType, isFirst = true, isPrivate = false;
+    var workbook, nodeAttrs, wizard, networkName, fileType, isFirst = true, isPrivate = settings["isPrivate"];
     var colMap = {
             source: null,
             target: null,
@@ -560,11 +560,11 @@
             return true;
         });
         
-        if (wizard.cards["settings"] != undefined) {
-            wizard.cards["settings"].on("validate", function(card) {
+        if (wizard.cards["settings-card"] != undefined) {
+            wizard.cards["settings-card"].on("validate", function(card) {
                 var val = $("#network-name").val();
                 if ((val != null || val != undefined) && val.length > 32) {
-                    messageUser("alerts-panel-settings", "The name of the network must be under <strong>32</strong> characters.");
+                    messageUser("alerts-panel-settings-card", "The name of the network must be under <strong>32</strong> characters.");
                     return false;
                 }
                 
@@ -583,6 +583,8 @@
             annotMap = {};
             isFirst = true;
         });
+        
+        $('#network-private').prop("checked", isPrivate);
         
         $('#network-private').change(function() {
             if (this.checked) {
