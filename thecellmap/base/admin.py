@@ -7,7 +7,7 @@ Created on Dec 16, 2013
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term
+from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term, Custom
 
 
 class GeneAdmin(admin.ModelAdmin):
@@ -77,12 +77,16 @@ class CorrelationsAdmin(admin.ModelAdmin):
     list_filter = ('dataset', )
     raw_id_fields = ('strain', )
 
+class CustomAdmin(admin.ModelAdmin):
+    list_display = ('user', 'hash', 'private', 'name', 'date', 'permanent')
+
 admin.site.register(Gene, GeneAdmin)
 admin.site.register(Strain, StrainAdmin)
 admin.site.register(StrainData, StrainDataAdmin)
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(Annotation, AnnotationAdmin)
 admin.site.register(Term, TermAdmin)
+admin.site.register(Custom, CustomAdmin)
 
 admin.site.register(Dataset.queries.through, QueriesAdmin)  # @UndefinedVariable
 admin.site.register(Dataset.arrays.through, ArraysAdmin)  # @UndefinedVariable
