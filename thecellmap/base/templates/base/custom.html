@@ -68,7 +68,7 @@
     
     <div class="wizard" id="custom-setting-wizard" data-title="Custom Upload">
       {% if user.is_authenticated %}
-      <div class="wizard-card" id="settings" data-cardname="settings">
+      <div class="wizard-card" id="settings-card" data-cardname="settings-card">
         <h4 id="on-load">Please wait a little while longer for us to load all required data.</h4>
         <div class="hidden" id="after-load">
           <h3>General settings</h3>
@@ -93,7 +93,7 @@
           </form>
           
         </div>
-        <div id="alerts-panel-settings"></div>
+        <div id="alerts-panel-settings-cards"></div>
       </div>
       {% endif %}
       

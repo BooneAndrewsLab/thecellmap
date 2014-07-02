@@ -30,6 +30,10 @@
               $(".body-checkbox").prop("checked", false);
           }
       });
+      
+      $("#action").change(function() {
+          $("#sumbit-button").removeClass("hidden");
+      });
     </script>
 {% endblock js %}
 
@@ -49,7 +53,7 @@
                   <option value="delete">Delete selected datasets</option>
                   <option value="renew">Renew for a week</option>
                 </select>
-              <button type="submit" class="btn btn-default">Submit</button>
+              <button type="submit" id="sumbit-button" class="btn btn-default hidden">Submit</button>
             </div>
             <table class="table table-condensed table-striped sortable">
               <thead>

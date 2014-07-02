@@ -156,10 +156,10 @@ def colored(text, color=None):
 
 class GenericXlsWriter():
     def __init__(self, fd):
+        self.fd = fd
         self.workbook = self._create_wb()
         self.sheets = SortedDict()
         self.active_sheet = None
-        self.fd = fd
     
     def _format_sheet_name(self, name):
         return name and name.replace(':', '-')[:31] or None
@@ -328,20 +328,55 @@ class XlsxWriter(GenericXlsWriter):
         return ws
     
     def _write_cell(self, sheet, row, col, value, style=None, number_format=None):
-        cell = sheet.cell(row=row, column=col)
+        cell = sheet.cell(row=row+1, column=col+1)
         cell.value = value
         
-        if style == STYLE_BOLD:
-            cell.style.font.bold = True
-        elif style:
-            cell.style.fill.fill_type = Fill.FILL_SOLID
-            cell.style.fill.start_color.index = STYLES[style][1]
+#         if style == STYLE_BOLD:
+#             cell.style.font.bold = True
+#         elif style:
+#             cell.style.fill.fill_type = Fill.FILL_SOLID
+#             cell.style.fill.start_color.index = STYLES[style][1]
     
     def _save(self):
         self.workbook.save(self.fd)
 
+class CsvWriter(GenericXlsWriter):
+    mime = 'text/csv'
+    
+    def __init__(self, fd, delimiter):
+        self.file_name = ''
+        self.delimiter = delimiter
+        GenericXlsWriter.__init__(self, fd)
+        if delimiter == '\t':
+            self.mime = 'text/tab-separated-values'
+    
+    def _create_wb(self):
+        if not hasattr(self.fd, 'write'):
+            self.file_name = self.fd
+            self.fd = StringIO()
+            
+        return csv.writer(self.fd, delimiter=self.delimiter,
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    
+    def _add_sheet(self, name):
+        return self.workbook
+    
+    def write_row(self, values, sheet=None, **kwarg):
+        sheet = self._write_get_sheet(sheet)
+        sheet['sheet'].writerow(values)
+    
+    def as_response(self):
+        if not self.file_name:
+            raise Exception()
+        
+        response = HttpResponse(mimetype=self.mime)
+        response['Content-Disposition'] = 'attachment; filename=%s' % (self.file_name, )
+        self.fd.seek(0)
+        response.write(self.fd.read())
+        return response
+
 def write_excel_file(fd=None, type='xls', override_ext=False):
-    if isinstance(fd, (str, unicode)) and not override_ext:
+    if isinstance(fd, (str, unicode)) and override_ext:
         type = os.path.splitext(fd)[1].strip('.')
     elif fd == None:
         fd = StringIO()
@@ -352,6 +387,10 @@ def write_excel_file(fd=None, type='xls', override_ext=False):
         return XlsWriter(fd)
     elif type == 'xlsx':
         return XlsxWriter(fd)
+    elif type == 'csv':
+        return CsvWriter(fd, ',')
+    elif type == 'tsv':
+        return CsvWriter(fd, '\t')
     
     raise BadXlsFile()
 

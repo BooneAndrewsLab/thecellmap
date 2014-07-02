@@ -76,7 +76,7 @@
               {% if user.is_authenticated and customlist|length > 0 %}
                 <li class="divider"></li>
                 {% for data in customlist %}
-                  <li {% if data == custom_dataset %} class="disabled"{% endif %}><a href="{% url 'custom_dataset' data.hash %}">{{ data.name }}</a></li>
+                  <li {% if data.hash == dataset.id %} class="disabled"{% endif %}><a href="{% url 'custom_dataset' data.hash %}">{{ data.name }}</a></li>
                 {% endfor %}
               {% endif %}
             </ul>
@@ -87,9 +87,10 @@
               <li><a href="{% url 'tools_annotations' %}">Annotations</a></li>
               <li><a href="{% url 'tools_custom' %}">Custom Uploads</a>
               {% if user.is_authenticated %}
-                <li><a href="{% url 'tools_edit' %}">Edit Custom Datasets</a></li>
+                <li><a href="{% url 'tools_edit' %}">Edit Custom Uploads</a></li>
               {% endif %}
               <li class="divider"></li>
+              <li><a href="#" id="tools-settings">Settings</a></li>
               {% if user.is_authenticated %}
                 {% if user.is_superuser %}
                   <li><a href="{% url 'admin:index' %}">Admin</a></li>
@@ -112,7 +113,9 @@
   <div class="content" role="main">
     {% block content %}{% endblock %}
   </div>
-
+  
+  
+  
   <footer>
     {% block footer %}
     <div class="container">
@@ -132,6 +135,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
   {% endblock cdn_js %}
 
+  {% include "includes/settings.html" %}
   <!-- scripts concatenated and minified via django-compressor -->
   {% compress js %}
   {% block js %}

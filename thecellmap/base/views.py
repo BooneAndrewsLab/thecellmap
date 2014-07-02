@@ -55,6 +55,7 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             django_login(request, form.cleaned_data['user'])
+            print request.GET.get('next', '/')
             return HttpResponseRedirect(request.GET.get('next', '/'))
     return render(request, 'base/login.html', {
                 'form': form

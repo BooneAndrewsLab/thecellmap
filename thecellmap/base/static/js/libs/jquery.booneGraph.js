@@ -1279,7 +1279,29 @@
                 });
                 
                 applyCutoff(getCutoff());
+                applySettings(settings);
             };
+            
+            function applySettings(s) {
+                for (key in s) {
+                    if (s[key]) {
+                        switch(key) {
+                        case 'zoom':
+                            $('#btn-home').click();
+                            break;
+                        case 'label':
+                            var numVisible = 0;
+                            sigInst.iterNodes(function(node) {
+                                if (!node.hidden) {
+                                    node.forceLabel = true;
+                                    numVisible++;
+                                }
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
             
             function applyCutoff(cutoff) {
                 log('applying cutoff', cutoff);

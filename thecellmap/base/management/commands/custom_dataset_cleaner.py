@@ -1,14 +1,13 @@
-from __builtin__ import sorted
 from datetime import datetime, timedelta
 from optparse import make_option
+import os
 import shutil
 
+from django.conf import settings
+from django.core.mail import mail_admins
 from django.core.management.base import BaseCommand
 
 from base.models import Custom
-from django.core.mail import mail_admins
-import os
-from django.conf import settings
 
 
 class Command(BaseCommand):
@@ -27,7 +26,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         expire = datetime.utcnow().replace() - timedelta(days=options['days'])
-        custom = Custom.objects.filter(date__lte=expire).order_by('user', 'name')
+        custom = Custom.objects.filter(date__lte=expire, permanent=False).order_by('user', 'name')
         problem = []
         
         if options['if_list']:
