@@ -105,7 +105,7 @@ $('.vizualization-ui').ready(function() {
       <li><a id="btn-style-node" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-node" href="#"><span class="glyphicons adjust_alt"></span> Node style </a></li>
       <li><a id="btn-style-edge" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-edge" href="#"><span class="glyphicons adjust_alt"></span> Edge style </a></li>
       <li><a id="btn-style-general" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-general" href="#"><span class="glyphicons adjust_alt"></span> General style </a></li>
-      <li><a id="btn-style-annotation" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-annotation" href="#"><span class="glyphicons adjust_alt"></span> Annotation legend </a></li>
+      <li><a id="btn-style-annotation" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-annotation" href="#"><span class="glyphicons adjust_alt"></span> Annotation style </a></li>
       
       <li class="divider"></li>
       
@@ -323,3 +323,29 @@ $('.vizualization-ui').ready(function() {
     </div>
   </div>
 </div>
+
+<div class="panel panel-default" id="legend">
+  <div class="panel-heading" id="legend-handle">
+    <button type="button" class="close" id="btn-legend-close">&times;</button>
+    <h4 class="modal-title">Legend</h4>
+  </div>
+  <div class="panel-body">
+    <ul id="legend-list">
+    </ul>
+  </div>
+</div>
+<!-- 
+<div class="modal fade in" id="legend" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" id="btn-legend-close">&times;</button>
+        <h4 class="modal-title">Legend</h4>
+      </div>
+      <div class="modal-body" >
+        <ul id="legend-list">
+        </ul>
+      </div>
+    </div>
+  </div>
+</div> -->
