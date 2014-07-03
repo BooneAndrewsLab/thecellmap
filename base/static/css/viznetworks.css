@@ -199,3 +199,24 @@ body {
 #modal-style .pick-a-color-markup .input-group-btn {
     width: 100%!important;
 }
+
+#legend {
+    position: fixed;
+    display: none;
+    overflow-y: auto;
+    width: 250px;
+    max-height: 400px;
+    z-index: 9999;
+}
+
+#legend-list {
+    list-style-type: none;
+}
+
+.legend-box {
+    height: 10px;
+    width: 10px;
+    display: inline-block;
+    margin-right: 10px;
+    margin-left: -40px;
+}

@@ -823,6 +823,7 @@
                 }
                 
                 $("#style-annotation").empty();
+                $("#legend-list").empty();
                 $("#style-annotation").append('<table class="annotation-table"><thead><tr>\
                       <th style="width: 1%;"></th>\
                       <th>Annotation</th></tr></thead>\
@@ -831,13 +832,23 @@
                 for (n in terms) {
                     var term = terms[n];
                     var color;
-                    if ($.cookie(term.name) == undefined)
+                    if ($.cookie(term.name) == undefined) {
                         color = vizdata[id].colorPalette[term.idx];
-                    else
+                    }
+                    else {
                         color = $.cookie(term.name);
+                    }
+                    
+                    var name = term.name;
+                    if (name.length > 20) {
+                        name = name.substring(0, index) + "...";
+                    }
+                    
                     $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
                             <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
                             <td>' + term.name + '</td></td></tr>');
+                    $('#legend-list').append('<li><div class="legend-box"></div><span title="' + term.name + '">' + name + '</span></li>');
+                    $('#legend-list .legend-box').last().css( "background-color", color );
                 }
                 
                 $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false, showSavedColors: false});
@@ -1452,9 +1463,11 @@
                 
                 if (opts.annotations.length > 0) {
                     opts.annotations.forEach(function(annotation) {
-                        $('#btn-group-annotation .dropdown-menu').append('<li><a href="#">' + annotation.name + '</a></li>');
+                        $('#btn-group-annotation .dropdown-menu').append('<li><a class="load-annotation" href="#">' + annotation.name + '</a></li>');
                     });
                 }
+                
+                $('#btn-group-annotation .dropdown-menu').append('<li class="divider"></li><li><a id="btn-legend" href="#"> Annotation legend </a></li>');
                 
                 $(".changed-network").hide().removeClass('hidden');
                 $("#modal-style").appendTo("body");
@@ -1462,6 +1475,10 @@
                 $("#contextmenu-edge-container").appendTo("body");
                 $("#edit-node-modal").appendTo("body");
                 $("#rotation-modal").appendTo("body");
+                $("#legend").appendTo("body");
+                $("#legend").css("top", ($('canvas:first').height() - $("#legend").show().height())/2);
+                $("#legend").css("left", ($('canvas:first').width() - $("#legend").width())/2);
+                $("#legend").hide();
             }
             
             function initUI() {
@@ -1491,7 +1508,7 @@
 //                    $(this).dropdown('toggle').dropdown('toggle');
                 });
                 
-                $('#btn-group-annotation li a').click(function(evt) {
+                $('#btn-group-annotation .load-annotation').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
                     loadAnnotation(evt.target.text); 
@@ -1623,6 +1640,19 @@
                     rebuildLegend();
                     applyAnnotationColors();
                 });
+                
+                $('#btn-legend').click(function() {
+                    $('#legend').show();
+                });
+                
+                $('#btn-legend-close').click(function() {
+                    $('#legend').hide();
+                });
+                
+                
+                var box = $(".content:first")[0].getBoundingClientRect();
+                Drag.init(document.getElementById("legend-handle"),document.getElementById("legend"), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
+                
                 $('.btn-style').click(function() {
                     $('#style-tabs a[href="' + $(this).data('tab') + '"]').tab('show');
                 });
@@ -1955,7 +1985,6 @@
                 
                 $("#tool-rotate-arbitrary").click(function(e) {
                     $("#rotation-modal").modal('show');
-                    
                     $("#rotation-modal").on("shown.bs.modal", function() {
                         $("#rotation-modal input").focus();
                     });
