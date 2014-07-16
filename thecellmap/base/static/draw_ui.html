@@ -1,0 +1,51 @@
+<script type="text/javascript">
+$('.draw-ui').ready(function() {
+  $( window ).resize(function() {
+      var parent = $('.draw-ui').parent();
+      $('.draw-ui').css('height', parent.innerHeight());
+      $('.draw-ui').css('width', parent.innerWidth());
+  }).resize();
+});
+</script>
+
+<div class="draw-top-right">
+  <div class="btn-group-vertical fill-radio" data-toggle="buttons">
+    <label class="btn btn-default disabled">Fill</label>
+    <label class="btn btn-primary disabled">
+      <input type="radio" name="fill" value="true">
+        <span class="glyphicon glyphicon-ok"></span>
+    </label>
+    <label class="btn btn-primary disabled active">
+      <input type="radio" name="fill" value="false" checked>
+        <span class="glyphicon glyphicon-remove"></span>
+    </label>
+  </div>
+</div>
+<div class="draw-top-left">
+  <div class="btn-group-vertical shape-radio" data-toggle="buttons">
+    <label class="btn btn-default">Shape</label>
+    <label class="btn btn-primary">
+      <input type="radio" name="shape-square" data-shape="square">
+        <span class="glyphicons white vector_path_square"></span>
+    </label>
+    <label class="btn btn-primary">
+      <input type="radio" name="shape-circle" data-shape="circle">
+        <span class="glyphicons white vector_path_circle"></span>
+    </label>
+    <label class="btn btn-primary">
+      <input type="radio" name="shape-line" data-shape="line">
+        <span class="glyphicons white vector_path_line"></span>
+    </label>
+    <label class="btn btn-primary active">
+      <input type="radio" name="free" data-shape="free" checked>
+        <span class="glyphicons white pencil"></span>
+    </label>
+  </div>
+</div>
+
+<div class="draw-bottom-right">
+  <div class="btn-group">
+    <button type="button" class="btn btn-primary" id="draw-confirm"> Confirm</button>
+    <button type="button" class="btn btn-default" id="draw-cancel"> Cancel</button>
+  </div>
+</div>
