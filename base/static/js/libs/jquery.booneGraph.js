@@ -2282,6 +2282,7 @@
                     sigInst.moveNodes({destinations: draw, runtime: 1}, function() {
                         changeNodesState();
                     });
+                    x = [], y = [];
                 });
                 
                 $("#draw-cancel").click(function() {
