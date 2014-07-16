@@ -220,3 +220,38 @@ body {
     margin-right: 10px;
     margin-left: -40px;
 }
+
+/** Draw UI **/
+.draw-ui {
+    padding: 5px 5px; /* make a nice 5px gap between ui and network border */
+    pointer-events: none;
+    position: absolute;
+}
+
+.draw-ui > * > * {
+    pointer-events: auto;
+}
+
+#draw-canvas {
+    position: absolute;
+    z-index: 1000;
+}
+
+.draw-bottom-right {
+    position: fixed;
+    bottom: 25px;
+    right: 20px;
+    z-index: 2000;
+}
+
+.draw-top-right {
+    position: fixed;
+    right: 20px;
+    z-index: 2000;
+}
+
+.draw-top-left {
+    position: fixed;
+    z-index: 2000;
+}
+

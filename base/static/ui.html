@@ -91,11 +91,8 @@ $('.vizualization-ui').ready(function() {
       <li><a id="tool-rotate-arbitrary" href="#"><span class="glyphicons roundabout"></span> Rotate graph by arbitrary angle</a></li>
       <li class="disabled"><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
       <li class="divider"></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="circle" tabindex="-1" href="#"> Arrange selected in a circle </a></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="crescent-left" tabindex="-1" href="#"> Arrange selected in a left crescent </a></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="crescent-top" tabindex="-1" href="#"> Arrange selected in a top crescent </a></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="crescent-right" tabindex="-1" href="#"> Arrange selected in a right crescent </a></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="2"><a class="tool-arange" data-arange-type="crescent-bottom" tabindex="-1" href="#"> Arrange selected in a bottom crescent </a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="2"><a id="custom-arange" tabindex="-1" href="#"> Arrange selected in custom shape </a></li>
+      
     </ul>
   </div>
   
@@ -334,18 +331,3 @@ $('.vizualization-ui').ready(function() {
     </ul>
   </div>
 </div>
-<!-- 
-<div class="modal fade in" id="legend" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" id="btn-legend-close">&times;</button>
-        <h4 class="modal-title">Legend</h4>
-      </div>
-      <div class="modal-body" >
-        <ul id="legend-list">
-        </ul>
-      </div>
-    </div>
-  </div>
-</div> -->

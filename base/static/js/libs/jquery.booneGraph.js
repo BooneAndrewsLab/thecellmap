@@ -932,6 +932,7 @@
             }
             
             function onNodesClick(targets) {
+                console.log(getNode(targets.content[0]))
                 noPulse = true;
                 
                 switch(clicking.modifierKey) {
@@ -973,61 +974,6 @@
                     ladda.start();
                     button.removeAttr("disabled");
                 }
-            }
-            
-            function arangeNodes() {
-                var selected = getSelectedNodes(true), xmin, xmax, ymin, ymax, n = 0;
-                if (selected.length < 3) return;
-                
-                selected.forEach(function(node){
-                    node = getNode(node);
-                    xmin = xmin ? Math.min(xmin, node.x) : node.x;
-                    xmax = xmax ? Math.max(xmax, node.x) : node.x;
-                    ymin = ymin ? Math.min(ymin, node.y) : node.y;
-                    ymax = ymax ? Math.max(ymax, node.y) : node.y;
-                });
-                
-                switch($(this).data('arange-type')) {
-                case "circle":
-                    var node, cx, cy, r, theta, alpha = Math.PI * 2 / selected.length, i = -1;
-                    cx = xmin + ((xmax - xmin) / 2);
-                    cy = ymin + ((ymax - ymin) / 2);
-                    r = (Math.abs(xmax - xmin) < Math.abs(ymax - ymin) ? Math.abs(xmax - xmin) : Math.abs(ymax - ymin)) / 2;
-                    
-                    while (++i < selected.length) {
-                        node = getNode(selected[i]);
-                        theta = alpha * i;
-                        node.x = cx + (Math.cos(theta) * r);
-                        node.y = cy + (Math.sin(theta) * r);
-                    }
-                    
-                    changeNodesState();
-                    break;
-                case "crescent-right":
-                    n += selected.length / 2;
-                case "crescent-top":
-                    n += selected.length / 2;
-                case "crescent-left":
-                    n += selected.length / 2;
-                case "crescent-bottom":
-                    var node, cx, cy, r, theta, alpha = Math.PI * 2 / (selected.length * 2), i = n - 1;
-                    cx = xmin + ((xmax - xmin) / 2);
-                    cy = ymin + ((ymax - ymin) / 2);
-                    r = (Math.abs(xmax - xmin) > Math.abs(ymax - ymin) ? Math.abs(xmax - xmin) : Math.abs(ymax - ymin)) / 2;
-                    
-                    while (++i < selected.length + n) {
-                        node = getNode(selected[i - n]);
-                        theta = alpha * i;
-                        node.x = cx + (Math.cos(theta) * r);
-                        node.y = cy + (Math.sin(theta) * r);
-                    }
-                    
-                    changeNodesState();
-                    break;
-                default: return;
-                }
-                
-                sigInst.draw();
             }
             
             function toggleLayout(justStop, layoutType) {
@@ -1981,7 +1927,11 @@
                     }
                 });
                 
-                $("a.tool-arange").click(arangeNodes);
+                $("#custom-arange").click(function() {
+                    $('.vizualization-ui').hide();
+                    $('.draw-ui').fadeIn(1000);
+                    $('#draw-canvas').fadeIn(1000);
+                });
                 
                 $("#tool-rotate-arbitrary").click(function(e) {
                     $("#rotation-modal").modal('show');
@@ -2110,6 +2060,237 @@
                 }, 0);
             }
             
+            function buildDrawUI() {
+                $.ajax(opts.drawUIUrl, {
+                    async: false,
+                    processData: false,
+                    success: function(data) {
+                        $(rootElement).append('<canvas id="draw-canvas" width="' + $("canvas:first").width() + 'px" height="' + $("canvas:first").height() + 'px" style="display: none;"></canvas>')
+                        $(rootElement).append($('<div class="draw-ui" style="display: none;">').html(data));
+                    }
+                  });
+            }
+            
+            function initDrawUI() {
+                var isDrawing = false, fillOn = false, drawShape = "free", x, y, deltaX, deltaY;
+                var canvas = $("#draw-canvas"), context = canvas[0].getContext("2d"), mouseEvent;
+                
+                $("#draw-canvas").mousedown(function(e) {
+                    context.strokeStyle = "rgba(255, 0, 0, 1)";
+                    context.fillStyle = "rgba(255, 0, 0, 0.5)";
+                    x = [], y = [];
+                    context.clearRect(0, 0, canvas.width(), canvas.height());
+                    isDrawing = true;
+                    x.push(e.offsetX);
+                    y.push(e.offsetY);
+                });
+                
+                var drawFunc = function(e) {
+                    if (isDrawing) {
+                        if (e.type != "mousemove" && e.keyCode == 16) {
+                            e = mouseEvent;
+                            e.shiftKey = true;
+                        }
+                        
+                        context.clearRect(0, 0, canvas.width(), canvas.height());
+                        context.beginPath();
+                        
+                        var centerX = (e.offsetX - x[0])/2 + x[0], centerY = (e.offsetY - y[0])/2 + y[0]
+                        var width = e.offsetX - x[0], height = e.offsetY - y[0];
+                        
+                        if (e.shiftKey && drawShape == "square") {
+                            width = Math.abs(width)/width*Math.max(Math.abs(width), Math.abs(height));
+                            height = Math.abs(height)/height*Math.max(Math.abs(width), Math.abs(height));
+                            centerX = width/2 + x[0], centerY = height/2 + y[0];
+                            x.push(x[0] + width);
+                            y.push(y[0] + height);
+                        } else {
+                            x.push(e.offsetX);
+                            y.push(e.offsetY);
+                        }
+                        
+                        switch (drawShape) {
+                        case "circle":
+                            context.arc(centerX, centerY, Math.sqrt(Math.pow(width/2, 2) + Math.pow(height/2, 2)), 0, 2*Math.PI);
+                            break;
+                        case "square":
+                            context.rect(x[0], y[0], width, height);
+                            break;
+                        case "line":
+                            context.moveTo(x[0], y[0]);
+                            context.lineTo(e.offsetX, e.offsetY);
+                            break;
+                        default:
+                            context.moveTo(x[0], y[0]);
+                            for (var i = 1; i < x.length; i++) {
+                                context.lineTo(x[i], y[i]);
+                            }
+                        }
+                        context.stroke();
+                        if (fillOn && drawShape != "free") context.fill();
+                        context.closePath();
+                        mouseEvent = e;
+                    }
+                };
+                
+                $("#draw-canvas").on("mousemove", drawFunc);
+                window.addEventListener("keydown", drawFunc, false);
+                
+                $("#draw-canvas").on("mouseup", function(e) {
+                    isDrawing = false;
+                });
+                
+                $(".fill-radio input").on("change", function() {
+                    fillOn = $(this).val() == "true";
+                    isDrawing = true;
+                    drawFunc(mouseEvent);
+                    isDrawing = false;
+                });
+                
+                $(".shape-radio input").on("change", function() {
+                    context.clearRect(0, 0, canvas.width(), canvas.height());
+                    drawShape = $(this).data("shape");
+                    if (drawShape == "free" || drawShape == "line") {
+                        $(".fill-radio label").addClass("disabled");
+                    } else {
+                        $(".fill-radio label").removeClass("disabled");
+                    }
+                });
+                
+                $("#draw-confirm").click(function() {
+                    context.clearRect(0, 0, canvas.width(), canvas.height());
+                    var draw = [], cursor = {x: x[0], y: y[0]}, selected = getSelectedNodes(true);
+                    var delta = 0, length = 0, i = 1, dS = selected.length - 1;
+                    
+                    if (drawShape == "free" || drawShape == "line" || !fillOn) {
+                        switch (drawShape) {
+                        case "circle":
+                            var theta = Math.PI * 2 / selected.length;
+                            var mX = (x[x.length - 1] - x[0])/2, mY = (y[y.length - 1] - y[0])/2, r = Math.sqrt(mX*mX + mY*mY);
+                            for (var i = 0; i < selected.length; i++) {
+                                draw.push({x: x[0] + mX + r*Math.cos(theta * i), y: y[0] + mY + r*Math.sin(theta * i)});
+                            }
+                            break;
+                        case "line":
+                            var dX = (x[x.length - 1] - x[0]) / (selected.length - 1), dY = (y[y.length - 1] - y[0]) / (selected.length - 1);
+                            for (i = 0; i < selected.length; i++) {
+                                draw.push({x: x[0] + i*dX, y: y[0] + i*dY});
+                            }
+                            break;
+                        case "square":
+                            dS = selected.length;
+                            x = [x[0], x[x.length - 1], x[x.length - 1], x[0], x[0]];
+                            y = [y[0], y[0], y[y.length - 1], y[y.length - 1], y[0]];
+                        default:
+                            draw.push(cursor);
+                            
+                            for (count = 0; count < x.length - 1; count++) {
+                                delta += Math.sqrt(Math.pow(x[count+1] - x[count], 2) + Math.pow(y[count+1] - y[count], 2));
+                            }
+                            delta /= dS;
+                            
+                            while (i < x.length) {
+                               var nxtX = x[i], nxtY = y[i];
+                               var dist = Math.sqrt(Math.pow((nxtX-cursor["x"]), 2) + Math.pow((nxtY-cursor["y"]), 2));
+                               var next_jump = length + dist;
+                               
+                               if (next_jump == delta) {
+                                   draw.push({x: nxtX, y: nxtY});
+                                   cursor = {x: nxtX, y: nxtY};
+                                   length = 0;
+                                   i += 1;
+                               } else if (next_jump < delta) {
+                                   cursor = {x: nxtX, y: nxtY};
+                                   length += dist;
+                                   i += 1;
+                               } else {
+                                   var remainder = delta - length;
+                                   var angle = Math.atan2(nxtY - cursor["y"], nxtX - cursor["x"]);
+                                   cursor = {x: cursor["x"] + (Math.cos(angle) * remainder), y: cursor["y"] + (Math.sin(angle) * remainder)}
+                                   draw.push(cursor)
+                                   length = 0;
+                               }
+                               if (draw.length == selected.length) break;
+                            }
+                            if (draw.length < selected.length) draw.push({x: x[x.length-1], y: y[y.length-1]});
+                        }
+                    } else {
+                        // fillOn
+                        var mX = (x[x.length - 1] - x[0])/2., mY = (y[y.length - 1] - y[0])/2.;
+                        
+                        switch (drawShape) {
+                        case "circle":
+                            var i = level = 1, coor = [];
+                            while (i < selected.length) {
+                                i += level * 6;
+                                level += 1;
+                            }
+                            
+                            level -= 1;
+                            
+                            for (i = -level; i <= level; i++) {
+                                for (var j = -level; j <= level; j++) {
+                                    if (Math.abs(i + j) <= level) coor.push({x: 0.5 * i * 3/2, y: Math.sqrt(3) * 0.5 *(j + i/2)});
+                                }
+                            }
+                            
+                            var r = 0.95 * Math.sqrt(mX*mX + mY*mY) / level;
+                            for (i = 0; i < coor.length; i++) {
+                                coor[i]["x"] = coor[i]["x"] * r + x[0] + mX;
+                                coor[i]["y"] = coor[i]["y"] * r + y[0] + mY;
+                            }
+                            
+                            for (i = 0; i < selected.length; i++) {
+                                var n = Math.floor(Math.random() * coor.length);
+                                draw.push(coor[n]);
+                                coor.splice(n, 1);
+                            }
+                            break;
+                        default:
+                            var r = Math.max(mX / mY) / Math.min (mX / mY);
+                            var bSide = Math.ceil(Math.sqrt(selected.length / r)), sSide = Math.ceil(selected.length / bSide);
+                            
+                            var nX = mX > mY ? bSide : sSide, dX = mX * 2 / (nX - 1);
+                            var nY = mY > mX ? bSide : sSide, dY = mY * 2 / (nY - 1);
+                            
+                            for (var i = 0; i < nY; i++) {
+                                var n = selected.length - draw.length, count;
+                                if (n >= nX) {
+                                    count = nX;
+                                } else {
+                                    dX = mX * 2  / (n - 1);
+                                    count = n;
+                                }
+                                for (j = 0; j < count; j++) {
+                                    draw.push({x: x[0] + j * dX, y: y[0] + i * dY});
+                                }
+                            }
+                        }
+                    }
+                    var position = sigInst.position(), size = sigInst.size();
+                    var n1 = getNode(selected[0]), n2 = getNode(selected[1]);
+                    var dAbs = Math.sqrt(Math.pow(n1.x - n2.x, 2) + Math.pow(n1.y - n2.y, 2));
+                    var dDis = Math.sqrt(Math.pow(n1.displayX - n2.displayX, 2) + Math.pow(n1.displayY - n2.displayY, 2));
+                    var ratio = dAbs/dDis;
+                    
+                    for (var i = 0; i < selected.length; i++) {
+                        var n = getNode(selected[i]);
+                        draw[i]["x"] = n.x + ((draw[i]["x"]) - n.displayX)*ratio;
+                        draw[i]["y"] = n.y + ((draw[i]["y"]) - n.displayY)*ratio;
+                        draw[i]["node"] = n;
+                    }
+                    sigInst.moveNodes({destinations: draw, runtime: 1}, function() {
+                        changeNodesState();
+                    });
+                });
+                
+                $("#draw-cancel").click(function() {
+                    $("#draw-canvas").hide();
+                    $(".draw-ui").hide();
+                    $(".vizualization-ui").fadeIn(1000);
+                });
+            }
+            
             function init() {
                 sigInst = sigma.init(rootElement).drawingProperties({
                     defaultLabelSize: state.getProperty("labelSize"),
@@ -2164,6 +2345,8 @@
                 
                 buildNewUI();
                 initUI();
+                buildDrawUI();
+                initDrawUI();
                 
                 if (opts.highlight) sigInst.hoverHighlight(opts);
                 
