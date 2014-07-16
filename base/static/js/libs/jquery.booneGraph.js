@@ -2142,9 +2142,11 @@
                 
                 $(".fill-radio input").on("change", function() {
                     fillOn = $(this).val() == "true";
-                    isDrawing = true;
-                    drawFunc(mouseEvent);
-                    isDrawing = false;
+                    if (mouseEvent != undefined || mouseEvent != null) {
+                        isDrawing = true;
+                        drawFunc(mouseEvent);
+                        isDrawing = false;
+                    }
                 });
                 
                 $(".shape-radio input").on("change", function() {
