@@ -1004,7 +1004,7 @@
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
-                            Ladda.getInstance(layoutButton.attr('id')).setProgress(p);
+                            setTimeout(function(){Ladda.getInstance(layoutButton.attr('id')).setProgress(p);}, 0);
                         },
                         attraction_multiplier: $("#layout-slider-att").val() || 50,
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
