@@ -31,6 +31,8 @@ urlpatterns = patterns('base.views',
     
     # DEBUG
     url(r'^testingdebug/$', 'foobar', name='foobar'),
+    
+    url(r'^circlepack/$', 'circle_pack', name='circle_pack')
 )
 
 urlpatterns += patterns('base.tools',

@@ -11,11 +11,13 @@ from django.forms.forms import Form
 from django.forms.widgets import PasswordInput
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain
 from base.utils import print_queries, is_integer, JsonResponse
+import math
+from django.conf import settings
 
 
 class LoginForm(Form):
@@ -214,6 +216,23 @@ def annotation(request, annotation_id):
             response['terms'][term_id] = {'name': term, 'color': color}
     
     return JsonResponse(response)
+
+@require_GET
+def circle_pack(request):
+    try:
+        node_num = int(request.GET['num'])
+    except:
+        return HttpResponseBadRequest('Input number of nodes')
+    
+    range =  os.path.join('packomania', '%i-%i' % (int(math.floor(node_num / 1000.0)) * 1000 + 1, 
+                                (int(math.floor(node_num / 1000.0)) + 1) * 1000),
+                                '%i-%i' % (int(math.floor(node_num / 100.0)) * 100 + 1, 
+                                (int(math.floor(node_num / 100.0)) + 1) * 100), str(node_num) + '.json')
+    
+    if os.path.exists(os.path.join(settings.STATIC_ROOT, range)):
+        return HttpResponseRedirect(os.path.join(settings.STATIC_URL, range))
+    else:
+        return JsonResponse([])
 
 def foobar(request):
     return render(request, 'base/matrix.html')
