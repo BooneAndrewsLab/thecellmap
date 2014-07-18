@@ -1206,7 +1206,6 @@
                     sigInst.startForceLayout(lopts);
                     _setRunningLayout(true);
                 }
-                
             }
             
             function applyNeighbourhood(level) {
@@ -1463,7 +1462,7 @@
                 });
                 $('#btn-layout, .tool-layout').click(toggleLayout);
                 
-                $("#btn-group-download a, #btn-group-download button").click(function(evt) {
+                $("#btn-group-download a, #btn-group-download #btn-view").click(function(evt) {
                     switch ($(this).attr('id')) {
                     case "download-visible":
                         downloadShownData();
@@ -1971,9 +1970,11 @@
                     e.preventDefault();
                 });
                 
-                $(".disabled a").click(function(e) {
-                    e.preventDefault();
-                    return false;
+                $("a").click(function(e) {
+                    if ($(this).parent().hasClass('disabled')) {
+                        e.preventDefault();
+                        return false;
+                    }
                 });
                 
                 $(".cutoff-label").each(function() {
