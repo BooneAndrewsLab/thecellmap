@@ -426,7 +426,7 @@
             }
             
             function getSelectedNodes(visible) {
-                var selected = getSelection(), map, annotations = [], result;
+                var selected = getSelection(), map, annotations = [], result, byAnnot = {};
                 var i, j, selectedByAnnotation = {}, strain, node;
                 
                 result = selected.filter(function(sel) {
@@ -459,6 +459,7 @@
                 vizdata.strains.forEach(function(strain) {
                     if (selectedByAnnotation.hasOwnProperty(strain.orf)) {
                         result.push(strain.id + "");
+                        byAnnot[strain.id] = null;
                     }
                 });
                 
@@ -469,7 +470,7 @@
                     });
                 }
                 
-                return result;
+                return {selected: result, byAnnot: byAnnot};
             }
             
             function getSelection() {
@@ -841,7 +842,7 @@
                     
                     var name = term.name;
                     if (name.length > 20) {
-                        name = name.substring(0, index) + "...";
+                        name = name.substring(0, 20) + "...";
                     }
                     
                     $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
@@ -1469,12 +1470,12 @@
                         break;
                     case "btn-view":
                     case "view-tabular":
-                        var selected = getSelectedNodes();
+                        var selected = getSelectedNodes().selected;
                         if (selected.length > 0) 
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
                         break;
                     case "download-selected":
-                        var selected = getSelectedNodes();
+                        var selected = getSelectedNodes().selected;
                         if (selected.length > 0 && selected.length < 20) 
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         break;
@@ -1487,9 +1488,25 @@
                         downloadXGMML();
                         break;
                     case "list-selected":
-                        var selected = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).label;}).sort());
-                        var selectedOrfs = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).orf;}).sort());
-                        if (selected.length > 0)
+                        var selected = getUnique(getSelectedNodes().selected.map(function(s) {return getStrain(s).label;}).sort());
+                        var selectedOrfs = getUnique(getSelectedNodes().selected.map(function(s) {return getStrain(s).orf;}).sort());
+                        var hasFlash = false;
+                        
+                        try {
+                          var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
+                          if (fo) {
+                            hasFlash = true;
+                          }
+                        } catch (e) {
+                          if (navigator.mimeTypes
+                                && navigator.mimeTypes['application/x-shockwave-flash'] != undefined
+                                && navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin) {
+                            hasFlash = true;
+                          }
+                        }
+                        if (hasFlash) {
+                            messageUser("Selected genes were copied to clipboard");
+                        } else if (selected.length > 0) {
                             alertUser('Selected genes', selected.join('<br>'), function(ele) {
                                 ele.find('.modal-footer').append(
                                     '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit ORFs to YeastMine</button>');
@@ -1500,10 +1517,8 @@
                                        </form>').submit();
                                 });
                             });
-                        
+                        }
                         break;
-                    case "download-get-object":
-                        console.log(JSON.stringify(state.asJson()));
                     }
                     
                     evt.preventDefault();
@@ -1928,6 +1943,7 @@
                 });
                 
                 $("#custom-arange").click(function() {
+                    if (state.getProperty('selection').length < 3) return;
                     $('.vizualization-ui').hide();
                     $('.draw-ui').fadeIn(1000);
                     $('#draw-canvas').fadeIn(1000);
@@ -2022,6 +2038,27 @@
                         return false;
                     }
                 });
+                
+                var hasFlash = false;
+                try {
+                    var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
+                    if (fo) {
+                      hasFlash = true;
+                    }
+                } catch (e) {
+                    if (navigator.mimeTypes
+                        && navigator.mimeTypes['application/x-shockwave-flash'] != undefined
+                        && navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin) {
+                        hasFlash = true;
+                    }
+                }
+                
+                if (hasFlash) {
+                    ZeroClipboard.config({
+                        forceEnhancedClipboard: true
+                    });
+                    var client = new ZeroClipboard($("#list-selected"));
+                }
             };
             
             function addAttributeLayouts() {
@@ -2067,6 +2104,11 @@
                     success: function(data) {
                         $(rootElement).append('<canvas id="draw-canvas" width="' + $("canvas:first").width() + 'px" height="' + $("canvas:first").height() + 'px" style="display: none;"></canvas>')
                         $(rootElement).append($('<div class="draw-ui" style="display: none;">').html(data));
+                        
+                        window.addEventListener('resize', function() {
+                            $('#draw-canvas').attr('width', $("canvas:first").width());
+                            $('#draw-canvas').attr('height', $("canvas:first").height());
+                        });
                     }
                   });
             }
@@ -2222,30 +2264,49 @@
                         
                         switch (drawShape) {
                         case "circle":
-                            var i = level = 1, coor = [];
-                            while (i < selected.length) {
-                                i += level * 6;
-                                level += 1;
-                            }
+                            var num = selected.length;
                             
-                            level -= 1;
+                            var path = opts.circleUrl;
+                                            
+                            $.ajax({dataType: 'json', type: 'get', data: {num: num}, url: path, async: false, success: function(data) {
+                                draw = data
+                            }});
                             
-                            for (i = -level; i <= level; i++) {
-                                for (var j = -level; j <= level; j++) {
-                                    if (Math.abs(i + j) <= level) coor.push({x: 0.5 * i * 3/2, y: Math.sqrt(3) * 0.5 *(j + i/2)});
+                            if (draw.length == selected.length) {
+                                r = Math.sqrt(mX*mX + mY*mY)
+                                for (i = 0; i < draw.length; i++) {
+                                    draw[i]["x"] = draw[i]["x"] * r + x[0] + mX;
+                                    draw[i]["y"] = draw[i]["y"] * r + y[0] + mY;
                                 }
-                            }
-                            
-                            var r = 0.95 * Math.sqrt(mX*mX + mY*mY) / level;
-                            for (i = 0; i < coor.length; i++) {
-                                coor[i]["x"] = coor[i]["x"] * r + x[0] + mX;
-                                coor[i]["y"] = coor[i]["y"] * r + y[0] + mY;
-                            }
-                            
-                            for (i = 0; i < selected.length; i++) {
-                                var n = Math.floor(Math.random() * coor.length);
-                                draw.push(coor[n]);
-                                coor.splice(n, 1);
+                            } else {
+                                var i = level = 1, coor = [];
+                                while (i < selected.length) {
+                                    i += level * 6;
+                                    level += 1;
+                                }
+                               
+                                level -= 1;
+                                 
+                                for (i = -level; i <= level - 1; i++) {
+                                    for (var j = -level; j <= level - 1; j++) {
+                                        if (Math.abs(i + j) <= level) {
+                                            coor.push({x: 0.5 * i * 3/2, y: Math.sqrt(3) * 0.5 *(j + i/2)});
+                                            coor.push({x: Math.sqrt(3) * 0.5 *(j + i/2), y: 0.5 * i * 3/2});
+                                        }
+                                    }
+                                }
+                                
+                                var r = Math.sqrt(mX*mX + mY*mY) / level;
+                                for (i = 0; i < coor.length; i++) {
+                                    coor[i]["x"] = coor[i]["x"] * r + x[0] + mX;
+                                    coor[i]["y"] = coor[i]["y"] * r + y[0] + mY;
+                                }
+                                
+                                for (i = 0; i < selected.length; i++) {
+                                    var n = Math.floor(Math.random() * coor.length);
+                                    draw.push(coor[n]);
+                                    coor.splice(n, 1);
+                                }
                             }
                             break;
                         default:
@@ -2581,13 +2642,17 @@
                         var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
                         var selectionLength, selection = getSelection();
                         
+                        var toPaste = getUnique(getSelectedNodes().selected.map(function(s) {return getStrain(s).label;}).sort());
+                        $("#copy-area").html(toPaste.toString())
+                        
                         sigInst.iterNodes(function(node) {
                             strain = getStrain(node.id);
-                            if ($.inArray(strain.id + "", selected) >= 0) {
+                            if ($.inArray(strain.id + "", selected.selected) >= 0) {
                                 node.selected = true;
                                 
-                                if (node.hidden && !autoState) {
-                                    messageUser('Gene you\'re looking for is below current threshold.')
+                                if (node.hidden && !autoState ) {
+                                    if (!selected.byAnnot.hasOwnProperty(node.id))
+                                        messageUser('Gene you\'re looking for is below current threshold.')
                                 } else {
                                     numVisibleSelected++;
                                 }
@@ -2597,7 +2662,7 @@
                         });
                         
                         $('[data-selection-constraint]').each(function() {
-                            var enabled = true, size = selection.length, cls = $(this).data('selection-class') || 'disabled';
+                            var enabled = true, size = selected.selected.length, cls = $(this).data('selection-class') || 'disabled';
                             if ($(this).data('selection-type') == 'visible') {
                                 size = numVisibleSelected;
                             }
@@ -2615,8 +2680,8 @@
                             updateMissingMessage();
                             sigInst.draw();
                             
-                            if (!($(selected).not(state.getProperty("selection")).length == 0 && $(state.getProperty("selection")).not(selected).length == 0)) {
-                                var diff = $(selected).not(state.getProperty("selection")).get();
+                            if (!($(selected.selected).not(state.getProperty("selection")).length == 0 && $(state.getProperty("selection")).not(selected).length == 0)) {
+                                var diff = $(selected.selected).not(state.getProperty("selection")).get();
                                 
                                 state.setProperty("selection", getSelection());
                                 
@@ -2649,8 +2714,6 @@
                     loadAnnotation(state.getProperty("annotation"));
                     loadLayout();
                 });
-                
-                
                 $(document).mousemove(updateMousePosition);
             }
             

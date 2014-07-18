@@ -42,6 +42,7 @@
 <!--   <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.js"></script> -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
   {% endif %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.1.5/ZeroClipboard.min.js"></script>
 {% endblock cdn_js %}
 
 {% block js %}
@@ -125,6 +126,7 @@
             uiUrl: "{% static 'ui.html' %}",
             drawUIUrl: "{% static 'draw_ui.html' %}",
             canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
+            circleUrl: "{% url 'circle_pack' %}"
             //preloadedState: JSON.parse(localStorage.savedState)
         });
     });

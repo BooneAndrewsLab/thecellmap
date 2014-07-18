@@ -10,6 +10,7 @@
   <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
   <link href="{% static 'css/filetypes.css' %}" rel="stylesheet">
   <link href="{% static 'css/bootstrap-sortable.css' %}" rel="stylesheet">
+  <link href="{% static 'css/tabdrop.css' %}" rel="stylesheet">
   <style>
     html {
         overflow-y: scroll; 
@@ -42,6 +43,7 @@
   <script src="{% static 'js/libs/utils.js' %}"></script>
   <script src="{% static 'js/libs/moment.min.js' %}"></script>
   <script src="{% static 'js/libs/bootstrap-sortable.js' %}"></script>
+  <script src="{% static 'js/libs/bootstrap-tabdrop.js' %}"></script>
   <script type="text/javascript">
   (function($) {
     function add_to_table(tbody, data, val_idx) {
@@ -200,6 +202,7 @@
             load_strain($($(e.target).attr('href')));
         });
         load_strain($(".container .tab-pane.active"));
+        //$("#strain-tabs").tabdrop({text: "More Strains"});
     });
   })(jQuery);
   </script>
@@ -209,7 +212,7 @@
 <div class="container">
   <div class="row">
     <div class="col-md-offset-2 col-md-10">
-      <ul class="nav nav-pills nav-justified">
+      <ul class="nav nav-pills nav-justified" id="strain-tabs">
         {% for node, strain in strains %}
         <li{% if forloop.first %} class="active"{% endif %}><a href="#tab{{ node }}" data-toggle="tab">{{ strain.basic_id }}</a></li>
         {% endfor %}
