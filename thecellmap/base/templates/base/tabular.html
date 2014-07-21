@@ -202,7 +202,7 @@
             load_strain($($(e.target).attr('href')));
         });
         load_strain($(".container .tab-pane.active"));
-        //$("#strain-tabs").tabdrop({text: "More Strains"});
+        $("#strain-tabs").tabdrop({text: "More Strains"});
     });
   })(jQuery);
   </script>
@@ -212,7 +212,7 @@
 <div class="container">
   <div class="row">
     <div class="col-md-offset-2 col-md-10">
-      <ul class="nav nav-pills nav-justified" id="strain-tabs">
+      <ul class="nav nav-pills" id="strain-tabs">
         {% for node, strain in strains %}
         <li{% if forloop.first %} class="active"{% endif %}><a href="#tab{{ node }}" data-toggle="tab">{{ strain.basic_id }}</a></li>
         {% endfor %}
