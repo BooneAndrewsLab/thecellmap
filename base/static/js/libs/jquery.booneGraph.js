@@ -728,7 +728,6 @@
 
             function loadAnnotation(id) {
                 state.setProperty("annotation", id);
-                
                 if (id == "None")
                     $(".annotation-constraint").addClass("disabled");
                 else
@@ -933,7 +932,6 @@
             }
             
             function onNodesClick(targets) {
-                console.log(getNode(targets.content[0]))
                 noPulse = true;
                 
                 switch(clicking.modifierKey) {
@@ -988,7 +986,8 @@
                     return;
                 
                 var layoutButton = $("#btn-layout");
-                if (countVisibleEdges() > 20000) {
+                console.log(countVisibleEdges())
+                if (countVisibleEdges() > 7000) {
                     alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + countVisibleEdges());
                     return;
                 }
@@ -1454,6 +1453,10 @@
 //                    $(this).dropdown('toggle').dropdown('toggle');
                 });
                 
+                $(".dropdown-toggle a").click(function(evt) {
+                    e.stopImmediatePropagation();
+                });
+                
                 $('#btn-group-annotation .load-annotation').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
@@ -1601,12 +1604,14 @@
                     applyAnnotationColors();
                 });
                 
-                $('#btn-legend').click(function() {
+                $('#btn-legend').click(function(e) {
                     $('#legend').show();
+                    e.preventDefault();
                 });
                 
-                $('#btn-legend-close').click(function() {
+                $('#btn-legend-close').click(function(e) {
                     $('#legend').hide();
+                    e.preventDefault();
                 });
                 
                 
@@ -2124,8 +2129,10 @@
                     x = [], y = [];
                     context.clearRect(0, 0, canvas.width(), canvas.height());
                     isDrawing = true;
-                    x.push(e.offsetX);
-                    y.push(e.offsetY);
+                    var xPos = e.offsetX != undefined ? e.offsetX : e.pageX - this.offsetLeft;
+                    var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - this.offsetTop;
+                    x.push(xPos);
+                    y.push(yPos);
                 });
                 
                 var drawFunc = function(e) {
@@ -2138,8 +2145,11 @@
                         context.clearRect(0, 0, canvas.width(), canvas.height());
                         context.beginPath();
                         
-                        var centerX = (e.offsetX - x[0])/2 + x[0], centerY = (e.offsetY - y[0])/2 + y[0]
-                        var width = e.offsetX - x[0], height = e.offsetY - y[0];
+                        var xPos = e.offsetX != undefined ? e.offsetX : e.pageX - $("#draw-canvas")[0].offsetLeft;
+                        var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - $("#draw-canvas")[0].offsetTop;
+                        
+                        var centerX = (xPos - x[0])/2 + x[0], centerY = (yPos - y[0])/2 + y[0]
+                        var width = xPos - x[0], height = yPos - y[0];
                         
                         if (e.shiftKey && drawShape == "square") {
                             width = Math.abs(width)/width*Math.max(Math.abs(width), Math.abs(height));
@@ -2148,8 +2158,8 @@
                             x.push(x[0] + width);
                             y.push(y[0] + height);
                         } else {
-                            x.push(e.offsetX);
-                            y.push(e.offsetY);
+                            x.push(xPos);
+                            y.push(yPos);
                         }
                         
                         switch (drawShape) {
@@ -2161,7 +2171,7 @@
                             break;
                         case "line":
                             context.moveTo(x[0], y[0]);
-                            context.lineTo(e.offsetX, e.offsetY);
+                            context.lineTo(xPos, yPos);
                             break;
                         default:
                             context.moveTo(x[0], y[0]);
@@ -2343,7 +2353,7 @@
                         draw[i]["y"] = n.y + ((draw[i]["y"]) - n.displayY)*ratio;
                         draw[i]["node"] = n;
                     }
-                    sigInst.moveNodes({destinations: draw, runtime: 1}, function() {
+                    sigInst.moveNodes({destinations: draw, runtime: 3}, function() {
                         changeNodesState();
                     });
                     x = [], y = [];
@@ -2701,9 +2711,12 @@
                         var selection = e.val, annot;
                         if (selection.length > 17 && selection.indexOf("action_loadannot ") == 0) {
                             annot = selection.replace("action_loadannot ", '');
+                            var dropdown = $('#btn-group-annotation li:contains('+ annot +')');
+                            $('#btn-group-annotation li').removeClass('active');
+                            dropdown.addClass('active');
                             loadAnnotation(annot);
-                            e.preventDefault();
                             $(".gene-search-input").select2("close");
+                            e.preventDefault();
                         }
                     });
                     
