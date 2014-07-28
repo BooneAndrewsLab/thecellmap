@@ -13,7 +13,6 @@ sigma.move.Move = function(graph, instance, properties) {
     this.m = jQuery.extend({}, this.m, properties || {});
     
     var step = self.m.runtime*10;
-    var currentPos = 0;
     
     this.init = function() {
         // one move

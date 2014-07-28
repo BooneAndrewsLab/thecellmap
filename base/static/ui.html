@@ -9,8 +9,8 @@ $('.vizualization-ui').ready(function() {
 </script>
 
 <div class="top-left hidden-sm hidden-xs">
-  <div style="position: relative; display: inline-block; vertical-align: middle;">
-    <div id="search-bar" class="input-group">
+  <div data-step="1" data-intro="<p>Welcome to TheCellMap! <br> This is the search bar. Try search for a gene.</p><p id='error-step-one'>Please select at least one gene to move onto the next step.</p>" data-position="right" style="position: relative; display: inline-block; vertical-align: middle;">
+    <div id="search-bar" class="input-group" data-step="5" data-intro="You can also load annotations from the search bar by typing 'load'." data-position="right">
       <span class="input-group-addon glyphicon glyphicon-search"></span>
       <input class="gene-search-input form-control" type="hidden">
     </div>
@@ -49,7 +49,8 @@ $('.vizualization-ui').ready(function() {
     <button id="btn-zoom-in" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
       <span class="glyphicon glyphicon-zoom-in"></span>
     </button>
-    <button id="btn-home" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui">
+    <button id="btn-home" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui"
+        data-step="4" data-intro="The zoom and centre button will automatically adjust the screen to fit the network" data-position="left">
       <span class="glyphicon glyphicon-record"></span>
     </button>
     <button id="btn-zoom-out" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom out" data-container=".vizualization-ui">
@@ -60,7 +61,7 @@ $('.vizualization-ui').ready(function() {
 
 <div class="top-right hidden-sm hidden-xs">
   <div id="btn-group-neighbourhood" class="hidden btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown" data-step="2" data-intro="This button extracts the selected nodes and their neighbousrs from the network." data-position="bottom-left-aligned"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="1">&nbsp; + 1st neighbours</a></li>
@@ -71,8 +72,8 @@ $('.vizualization-ui').ready(function() {
     </ul>
   </div>
   
-  <div id="btn-group-layout" class="btn-group">
-    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-layout-type="force" data-style="zoom-out" data-size="s">
+  <div id="btn-group-layout" class="btn-group" data-step="6" data-intro="You can also arrange the nodes by annotation layout" data-position="bottom-right-aligned">
+    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-layout-type="force" data-style="zoom-out" data-size="s" data-step="3" data-intro="The layout button maps the network by the correlation between the nodes" data-position="bottom-right-aligned">
         <span class="ladda-label">Layout</span>
     </button>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
@@ -89,14 +90,14 @@ $('.vizualization-ui').ready(function() {
       </li>
       <li class="divider"></li>
       <li><a id="tool-rotate-arbitrary" href="#"><span class="glyphicons roundabout"></span> Rotate graph by arbitrary angle</a></li>
-      <li class="disabled"><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
+      <li><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
       <li class="divider"></li>
       <li class="disabled" data-selection-constraint data-selection-gt="2"><a id="custom-arange" tabindex="-1" href="#"> Arrange selected in custom shape </a></li>
       
     </ul>
   </div>
   
-  <div id="btn-group-style" class="btn-group">
+  <div id="btn-group-style" class="btn-group" data-step="7" data-intro="The display style can be changed here." data-position="bottom-right-aligned">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a id="btn-style-node" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-node" href="#"><span class="glyphicons adjust_alt"></span> Node style </a></li>

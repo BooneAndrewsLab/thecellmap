@@ -28,6 +28,7 @@
   <link href="{% static 'css/jquery.nouislider.css' %}" rel="stylesheet">
   <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> <!-- The cdnjs version of this is still not ready... firefox problems with height -->
   <link href="{% static 'css/bootstrap-submenu.css' %}" rel="stylesheet">
+  <link href="{% static 'css/introjs.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block cdn_js %}
@@ -82,6 +83,9 @@
   <script src="{% static 'js/libs/modernizr-pointerevents.min.js' %}"></script>
   <script src="{% static 'js/libs/dom-drag.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.move.js' %}"></script>
+  <script src="{% static 'js/libs/sigma_plugins/sigma.packing.js' %}"></script>
+  <script src="{% static 'js/libs/intro.js' %}"></script>
+  <script src="{% static 'js/libs/packer.growing.js' %}"></script>
   
   <script type="text/javascript">
   (function($) {
