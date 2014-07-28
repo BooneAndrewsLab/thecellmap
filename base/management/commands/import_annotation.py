@@ -65,7 +65,7 @@ class Command(CellMapCommand):
                 term.genes.add(gene)
     
     def orf2many(self, xin, genemap, name, options):
-        data = DataFrame.from_records(xin[:], columns=('orf', 'name', 'annotation'))
+        data = DataFrame.from_records(xin[:], columns=('orf', 'annotation'))
         
         annotation = Annotation.objects.create(
                 name=name,
@@ -75,12 +75,16 @@ class Command(CellMapCommand):
         
         terms = {}
         
-        for orf, _, geneterms in data.itertuples(index=False):
+        for orf, geneterms in data.itertuples(index=False):
             if orf not in genemap:
                 print 'SKIPPING', orf
                 continue
             
-            geneterm, source = geneterms.strip().split('|', 1)
+            if '|' in geneterms:
+                geneterm, source = geneterms.strip().split('|', 1)
+            else:
+                geneterm = geneterms.strip()
+                source = None
             
             if geneterm not in terms:
                 term = Term.objects.create(
