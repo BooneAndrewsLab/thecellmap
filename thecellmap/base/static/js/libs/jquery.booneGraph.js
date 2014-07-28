@@ -1987,9 +1987,9 @@
                 
                 $("a").click(function(e) {
                     if ($(this).parent().hasClass('disabled')) {
-                        e.preventDefault();
                         return false;
                     }
+                    e.preventDefault();
                 });
                 
                 $(".cutoff-label").each(function() {
