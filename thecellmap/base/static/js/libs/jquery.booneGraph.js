@@ -515,7 +515,6 @@
                 
                 if (fromNodes) {
                     nodes = getSelectedNodes(true);
-                    console.log(nodes);
                 } else {
                     hoveredTargets.forEach(function(e) {
                         e = getEdge(e);
@@ -843,12 +842,11 @@
                     if (name.length > 20) {
                         name = name.substring(0, 20) + "...";
                     }
-                    
                     $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
                             <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
                             <td>' + term.name + '</td></td></tr>');
-                    $('#legend-list').append('<li><div class="legend-box"></div><span title="' + term.name + '">' + name + '</span></li>');
-                    $('#legend-list .legend-box').last().css( "background-color", color );
+                    $('#legend-list').append('<li><div class="legend-box" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>');
+                    $('#legend-list .legend-box').last().css("background-color", color);
                 }
                 
                 $('#style-annotation-table').find(".pick-a-color").pickAColor({showHexInput: false, showSavedColors: false});
@@ -864,14 +862,16 @@
                     if (n != -1 && n != -2){
                         $.cookie(term.name, color);
                     }
-                    else
+                    else {
                         vizdata[id].colorPalette[term.idx] = color;
+                    }
                     
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
                     $("#panel-annotation-" + term.id + " .panel-heading").css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
                     applyAnnotationColors();
+                    applyLegendColor(term.idx, color);
                     changeNodesState();
                 });
             }
@@ -882,10 +882,8 @@
                     strain = getStrain(n.id);
                     annot = data.map[strain.orf];
                     if (annot != undefined) {
-                        if (annot.length == 1 && $.cookie(data.terms[annot[0]].name) == undefined)
-                            n.color = data.colorPalette[data.terms[annot[0]].idx];
-                        else if (annot.length == 1)
-                            n.color = $.cookie(data.terms[annot[0]].name)
+                        if (annot.length == 1)
+                            n.color = $.cookie(data.terms[annot[0]].name) == undefined ? data.colorPalette[data.terms[annot[0]].idx] : $.cookie(data.terms[annot[0]].name);
                         else
                             n.color = data.colorPalette[data.terms["-2"].idx];
                     } else {
@@ -893,6 +891,14 @@
                         n.color = data.colorPalette[data.terms["-1"].idx];
                     }
                 }).draw();
+            }
+            
+            function applyLegendColor(id, color) {
+                $(".legend-box").each(function(){
+                    if (id == $(this).data("idx")) {
+                        $(this).css("background-color", color);
+                    }
+                });
             }
             
             function onNodesContext(targets) {
@@ -986,7 +992,7 @@
                     return;
                 
                 var layoutButton = $("#btn-layout");
-                console.log(countVisibleEdges())
+                
                 if (countVisibleEdges() > 7000) {
                     alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + countVisibleEdges());
                     return;
@@ -1240,21 +1246,25 @@
             
             function applySettings(s) {
                 for (key in s) {
-                    if (s[key]) {
-                        switch(key) {
-                        case 'zoom':
-                            $('#btn-home').click();
-                            break;
-                        case 'label':
-                            var numVisible = 0;
-                            sigInst.iterNodes(function(node) {
-                                if (!node.hidden) {
-                                    node.forceLabel = true;
-                                    numVisible++;
-                                }
-                            });
-                            break;
-                        }
+                    switch(key) {
+                    case 'zoom':
+                        if (s[key]) $('#btn-home').click();
+                        break;
+                    case 'label':
+                        var numVisible = 0, nodes = [];
+                        sigInst.iterNodes(function(node) {
+                            if (!node.hidden && s[key]) {
+                                numVisible++;
+                                nodes.push(node);
+                            } else if (!s[key]) {
+                                node.forceLabel = false;
+                            }
+                        });
+                        if (numVisible <= 100) for (n in nodes) nodes[n].forceLabel = true;
+                        sigInst.draw();
+                        break;
+                    case 'showDemo':
+                        localStorage.setItem("showDemo", s[key]);
                     }
                 }
             }
@@ -2065,7 +2075,103 @@
                     });
                     var client = new ZeroClipboard($("#list-selected"));
                 }
+                
+                $("#settings-modal .modal-confirm").click(function() {
+                    applySettings(settings);
+                });
+                
+                $("#tool-stack").click(function() {
+                    var nodes = sigInst._core.graph.nodes.filter(function(node) { return !node.hidden; });
+                    var edges = sigInst._core.graph.edges.filter(function(e) { return !e.source.hidden && !e.target.hidden && !e.hidden; });
+                    var subnetwork = -1, offset = 100, subnetworks = [], blocks = [], packer = new GrowingPacker();
+                    
+                    nodes.forEach(function(n) {
+                        n.layout = {
+                            connections : {},
+                            subnetwork : null
+                        };
+                    });
+                    
+                    edges.forEach(function(e) {
+                        e.source.layout.connections[e.target.id] = e.target;
+                        e.target.layout.connections[e.source.id] = e.source;
+                    });
+                    
+                    nodes.forEach(function(n) {
+                        if (n.layout.subnetwork == null) {
+                            subnetwork++;
+                            traverseRec(n, subnetwork, 0);
+                        }
+                        
+                        if (subnetworks[n.layout.subnetwork] == undefined) {
+                            subnetworks[n.layout.subnetwork] = [n];
+                        } else {
+                            subnetworks[n.layout.subnetwork].push(n);
+                        }
+                    });
+                    
+                    for (var i = 0; i < subnetworks.length; i++) {
+                        var xmax = xmin = subnetworks[i][0].x, ymax = ymin = subnetworks[i][0].y;
+                        for (var j = 0; j < subnetworks[i].length; j++) {
+                            xmax = Math.max(xmax, subnetworks[i][j].x);
+                            xmin = Math.min(xmin, subnetworks[i][j].x);
+                            ymax = Math.max(ymax, subnetworks[i][j].y);
+                            ymin = Math.min(ymin, subnetworks[i][j].y);
+                        }
+                        blocks.push({x: xmin, y: ymin, w: xmax - xmin + offset, h: ymax - ymin + offset, area: Math.abs((xmax - xmin) * (ymax - ymin))});
+                    }
+                    
+                    for (var i = 0; i < blocks.length; i++) {
+                        blocks[i]["subnetwork"] = subnetworks[i];
+                    }
+                    
+                    blocks.sort(function (a, b) { return b.area - a.area; });
+                    packer.fit(blocks);
+                    
+                    var newPositions = [];
+                    for(var i = 0; i < blocks.length; i++) {
+                        for (var j = 0; j < blocks[i].subnetwork.length; j++) {
+                            var n = blocks[i].subnetwork[j], x = n.x, y = n.y;
+                            if ((x - blocks[i].x) < blocks[i].w) {
+                                x += offset;
+                            } else {
+                                x -= offset;
+                            }
+                            
+                            if ((y - blocks[i].y) < blocks[i].h) {
+                                y += offset;
+                            } else {
+                                y -= offset;
+                            }
+                            
+                            newPositions.push({x: x - blocks[i].x + blocks[i].fit.x,
+                                              y: y - blocks[i].y + blocks[i].fit.y,
+                                              node: n});
+                        }
+                    }
+                    
+                    node.forEach(function(n) {
+                        delete n.layout;
+                    });
+                    
+                    sigInst.moveNodes({destinations: newPositions, runtime: 3}, function() {
+                        changeNodesState();
+                        $('#btn-home').click();
+                    });
+                });
             };
+            
+            function traverseRec(node, netNum, len) {
+                var nextNode;
+                if (node.layout.subnetwork != null) return len;
+                
+                node.layout.subnetwork = netNum;
+                for (nextNode in node.layout.connections) {
+                    nextNode = node.layout.connections[nextNode];
+                    len = traverseRec(nextNode, netNum, len);
+                }
+                return len + 1;
+            }
             
             function addAttributeLayouts() {
                 $('#attribute-layout-list').closest('li').toggleClass('disabled', opts.attributes.length == 0);
@@ -2082,8 +2188,9 @@
             
             function showUI() {
                 setTimeout(function() {
-                    $(".vizualization-ui").fadeIn(1000);
-                    
+                    $(".vizualization-ui").fadeIn(1000, function() {
+                        if (localStorage.getItem("showDemo") == "true") initTour();
+                    });
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
 //                    if (!Modernizr.pointerevents && !window.attachEvent) {
 //                        var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
@@ -2363,6 +2470,32 @@
                     $("#draw-canvas").hide();
                     $(".draw-ui").hide();
                     $(".vizualization-ui").fadeIn(1000);
+                });
+            }
+            
+            function initTour() {
+                var intro = introJs();
+                intro.setOption("keyboardNavigation", false);
+                intro.setOption("exitOnOverlayClick", false);
+                intro.setOption("showStepNumbers", false);
+                intro.start();
+                $("#error-step-one").hide();
+                
+                intro.onchange(function(e) {
+                    if ($(e).data("step") == 2) {
+                        $("input.gene-search-input").select2("close");
+                    }
+                });
+                
+                intro.onbeforechange(function(e) {
+                    if ($(e).data("step") == 2 && state.getProperty("selection").length < 1) {
+                        $("#error-step-one").show();
+                        return false;
+                    }
+                });
+                
+                intro.oncomplete(function(e) {
+                    localStorage.setItem("showDemo", false);
                 });
             }
             

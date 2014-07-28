@@ -4,7 +4,8 @@
             label: localStorage.getItem("label") || false,
             isPrivate: localStorage.getItem("isPrivate") || false,
             remove: localStorage.getItem("remove") || false,
-            fileType: localStorage.getItem("fileType") || "xls"
+            fileType: localStorage.getItem("fileType") || "xls",
+            showDemo: localStorage.getItem("demo") || true
     };
     
     var bool = {
@@ -12,7 +13,8 @@
             label: true,
             isPrivate: true,
             remove: true,
-            fileType: false
+            fileType: false,
+            demo: true
     }
     
     $(".file-type-select").select2({
