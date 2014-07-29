@@ -2150,7 +2150,7 @@
                         }
                     }
                     
-                    node.forEach(function(n) {
+                    nodes.forEach(function(n) {
                         delete n.layout;
                     });
                     
