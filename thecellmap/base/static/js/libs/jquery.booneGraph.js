@@ -1265,6 +1265,7 @@
                         break;
                     case 'showDemo':
                         localStorage.setItem("showDemo", s[key]);
+                        if (s[key]) initTour();
                     }
                 }
             }
@@ -2189,7 +2190,7 @@
             function showUI() {
                 setTimeout(function() {
                     $(".vizualization-ui").fadeIn(1000, function() {
-                        if (localStorage.getItem("showDemo") == "true") initTour();
+                        if (localStorage.getItem("showDemo") != "false") initTour();
                     });
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
 //                    if (!Modernizr.pointerevents && !window.attachEvent) {
@@ -2255,18 +2256,13 @@
                         var xPos = e.offsetX != undefined ? e.offsetX : e.pageX - $("#draw-canvas")[0].offsetLeft;
                         var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - $("#draw-canvas")[0].offsetTop;
                         
-                        var centerX = (xPos - x[0])/2 + x[0], centerY = (yPos - y[0])/2 + y[0]
+                        var centerX = (xPos - x[0])/2 + x[0], centerY = (yPos - y[0])/2 + y[0];
                         var width = xPos - x[0], height = yPos - y[0];
                         
                         if (e.shiftKey && drawShape == "square") {
                             width = Math.abs(width)/width*Math.max(Math.abs(width), Math.abs(height));
                             height = Math.abs(height)/height*Math.max(Math.abs(width), Math.abs(height));
                             centerX = width/2 + x[0], centerY = height/2 + y[0];
-                            x.push(x[0] + width);
-                            y.push(y[0] + height);
-                        } else {
-                            x.push(xPos);
-                            y.push(yPos);
                         }
                         
                         switch (drawShape) {
@@ -2282,6 +2278,8 @@
                             break;
                         default:
                             context.moveTo(x[0], y[0]);
+                            x.push(xPos);
+                            y.push(yPos);
                             for (var i = 1; i < x.length; i++) {
                                 context.lineTo(x[i], y[i]);
                             }
@@ -2297,6 +2295,19 @@
                 window.addEventListener("keydown", drawFunc, false);
                 
                 $("#draw-canvas").on("mouseup", function(e) {
+                    var xPos = e.offsetX != undefined ? e.offsetX : e.pageX - $("#draw-canvas")[0].offsetLeft;
+                    var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - $("#draw-canvas")[0].offsetTop;
+                    var width = xPos - x[0], height = yPos - y[0];
+                    
+                    if (e.shiftKey && drawShape == "square") {
+                        width = Math.abs(width)/width*Math.max(Math.abs(width), Math.abs(height));
+                        height = Math.abs(height)/height*Math.max(Math.abs(width), Math.abs(height));
+                        x.push(x[0] + width);
+                        y.push(y[0] + height);
+                    } else {
+                        x.push(xPos);
+                        y.push(yPos);
+                    }
                     isDrawing = false;
                 });
                 
@@ -2320,6 +2331,8 @@
                 });
                 
                 $("#draw-confirm").click(function() {
+                    if (x.length == 0) return;
+                    
                     context.clearRect(0, 0, canvas.width(), canvas.height());
                     var draw = [], cursor = {x: x[0], y: y[0]}, selected = getSelectedNodes(true);
                     var delta = 0, length = 0, i = 1, dS = selected.length - 1;

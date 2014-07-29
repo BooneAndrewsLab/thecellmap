@@ -5,7 +5,7 @@
             isPrivate: localStorage.getItem("isPrivate") || false,
             remove: localStorage.getItem("remove") || false,
             fileType: localStorage.getItem("fileType") || "xls",
-            showDemo: localStorage.getItem("demo") || true
+            showDemo: localStorage.getItem("showDemo") || true
     };
     
     var bool = {
@@ -13,8 +13,17 @@
             label: true,
             isPrivate: true,
             remove: true,
-            fileType: false,
-            demo: true
+            showDemo: true,
+            fileType: false
+    }
+    
+    for (key in settings) {
+        if (bool[key]) {
+            settings[key] = settings[key].toString() == "true";
+            $("#" + key).prop("checked", settings[key]);
+        } else if (key == "fileType") {
+            $("#fileType").val(settings["fileType"]).change();
+        }
     }
     
     $(".file-type-select").select2({
@@ -41,15 +50,6 @@
         $("#settings-modal").modal("hide");
         e.preventDefault();
     });
-    
-    for (key in settings) {
-        if (bool[key]) {
-            settings[key] = settings[key] == "true";
-            $("#" + key).prop("checked", settings[key]);
-        } else if (key == "fileType") {
-            $("#fileType").val(settings["fileType"]).change();
-        }
-    }
     
     $(document).ready(function() {
     })
