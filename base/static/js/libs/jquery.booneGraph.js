@@ -1265,7 +1265,7 @@
                         break;
                     case 'showDemo':
                         localStorage.setItem("showDemo", s[key]);
-                        if (s[key]) initTour();
+//                        if (s[key]) initTour();
                     }
                 }
             }
@@ -2190,7 +2190,7 @@
             function showUI() {
                 setTimeout(function() {
                     $(".vizualization-ui").fadeIn(1000, function() {
-                        if (localStorage.getItem("showDemo") != "false") initTour();
+//                        if (localStorage.getItem("showDemo") != "false") initTour();
                     });
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
 //                    if (!Modernizr.pointerevents && !window.attachEvent) {
