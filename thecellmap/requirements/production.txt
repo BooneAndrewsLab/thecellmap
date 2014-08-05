@@ -42,3 +42,13 @@ django-contact-form
 openpyxl
 xlwt
 xlrd
+
+# REST stuff
+djangorestframework
+markdown
+django-filter
+defusedxml
+django-oauth-plus
+oauth2
+django-oauth2-provider
+django-guardian
