@@ -71,6 +71,8 @@
             var isInitializing = true;
             var noPulse = false;
             
+            var showingDemo = false;
+            
             function _updateNavigation() {
                 $(".undo-network").toggleClass('disabled', !undo.hasUndo());
                 $(".redo-network").toggleClass('disabled', !undo.hasRedo());
@@ -1005,7 +1007,10 @@
                     var lopts, annotations, data, strain, annot, key;
                     
                     lopts = {
-                        callback: function() {
+                        callback: function(n) {
+                                if (Object.keys(n).length - 1 > 1) {
+                                    $("#tool-stack").click();
+                                }
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
@@ -1265,7 +1270,7 @@
                         break;
                     case 'showDemo':
                         localStorage.setItem("showDemo", s[key]);
-//                        if (s[key]) initTour();
+                        if (s[key] && !showingDemo) initTour();
                     }
                 }
             }
@@ -1986,7 +1991,7 @@
                     e.preventDefault();
                 });
                 
-                $("a").click(function(e) {
+                $(".vizualization-ui a").click(function(e) {
                     if ($(this).parent().hasClass('disabled')) {
                         return false;
                     }
@@ -2190,7 +2195,7 @@
             function showUI() {
                 setTimeout(function() {
                     $(".vizualization-ui").fadeIn(1000, function() {
-//                        if (localStorage.getItem("showDemo") != "false") initTour();
+                        if (localStorage.getItem("showDemo") != "false") initTour();
                     });
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
 //                    if (!Modernizr.pointerevents && !window.attachEvent) {
@@ -2493,6 +2498,7 @@
                 intro.setOption("showStepNumbers", false);
                 intro.start();
                 $("#error-step-one").hide();
+                showingDemo = true;
                 
                 intro.onchange(function(e) {
                     if ($(e).data("step") == 2) {
@@ -2507,8 +2513,16 @@
                     }
                 });
                 
+                //on complete the demo
                 intro.oncomplete(function(e) {
                     localStorage.setItem("showDemo", false);
+                    showingDemo = false;
+                });
+                
+                //on skipping the demo
+                intro.onexit(function(e) {
+                    localStorage.setItem("showDemo", false);
+                    showingDemo = false;
                 });
             }
             
