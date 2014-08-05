@@ -149,7 +149,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
             for ( var j = i + 1; j < nodes_length; j++) {
                 node_u = nodes[j];
                 
-//                if (node_v.layout.subnetwork != node_u.layout.subnetwork) continue;
+                if (node_v.layout.subnetwork != node_u.layout.subnetwork) continue;
                 
                 if (i == 0) {
                     node_u.layout.offset_x = 0;
@@ -250,6 +250,10 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         box.y = Math.abs(ymax - ymin);
         return box;
     }
+    
+    this.numSubnetworks = function() {
+        return self.p.subnetworkLengths;
+    }
 };
 
 sigma.publicPrototype.startForceLayout = function(properties) {
@@ -263,7 +267,7 @@ sigma.publicPrototype.startForceLayout = function(properties) {
         }
         
         if (fl.isDone()) {
-            properties.callback();
+            properties.callback(fl.numSubnetworks());
             return false;
         }
         return true;
