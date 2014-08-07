@@ -3,10 +3,9 @@
 import os
 
 import dbarray
-from django.db import models
-
-from thecellmap import settings
 from django.contrib.auth.models import User
+from django.db import models
+from thecellmap import settings
 
 
 class Gene(models.Model):
@@ -164,3 +163,9 @@ Dataset.queries.through._meta.verbose_name_plural = 'Queries axes'
 
 Dataset.arrays.through._meta.verbose_name = 'Arrays axis'
 Dataset.arrays.through._meta.verbose_name_plural = 'Arrays axes'
+
+# from base.serializing import FloatArrayField, CharArrayField
+# from rest_framework.serializers import ModelSerializer
+# ModelSerializer.field_mapping[dbarray.FloatArrayField] = FloatArrayField
+# ModelSerializer.field_mapping[dbarray.CharArrayField] = CharArrayField
+
