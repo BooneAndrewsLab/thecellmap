@@ -16,7 +16,7 @@ body {
 
 #alerts-panel {
     position: absolute;
-    top: 0;
+    bottom: 5px;
     width: 66%;
     left: 17%;
     z-index: 1040;
