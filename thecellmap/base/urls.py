@@ -42,3 +42,8 @@ urlpatterns += patterns('base.tools',
     url(r'^tools/edit/$', 'edit', name="tools_edit"),
     url(r'^tools/edit/(?P<id>[0-9]+)/$', 'edit_dataset', name="tools_edit_dataset"),
 )
+
+urlpatterns += patterns('base.api',
+    url(r'^api/', include('base.api.v1.urls')),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+)
