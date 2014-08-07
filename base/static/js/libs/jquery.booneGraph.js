@@ -608,7 +608,6 @@
                         minWeight = Math.min(minWeight || edge.absweight, edge.absweight);
                         maxWeight = Math.max(maxWeight || edge.absweight, edge.absweight);
                     }
-                    
                     edge.hidden = edge.ds != ds;
                     if (!edge.hidden) visibleCount++;
                 });
@@ -652,6 +651,12 @@
             
             function loadDataset(dsid, data, preloaded, callback) {
                 var dataset = opts.datasets[dsid];
+                var dataType = dataset.type == 'I' ? 1 : 0;
+                
+                if (dataset.type) {
+                    $("#btn-group-datasets button").addClass("disabled");
+                    $("#btn-group-neighbourhood li[data-selection-constraint='true']").removeAttr("data-selection-constraint");
+                }
                 
                 var loadDatasetCallback = function (nodes, edges, extraContext) {
                     var edgesAdded = 0;
@@ -663,7 +668,14 @@
                         }
                     });
                     
-                    updateEdges(dsid);
+                    if (dataType == 1) {
+                        var dsEle = $("#btn-group-datasets a[data-id=\"" + dataType + "\"]");
+                        dsEle.addClass('active');
+                        $("#selected-dataset").html("Genetic interactions");
+                        $(".dataset-constraint").removeClass("disabled");
+                        state.setProperty("dataset", 1);
+                    }
+                    updateEdges(dataType);
                     
                     if (callback != undefined) {
                         callback(edges);
@@ -673,7 +685,7 @@
                 if (preloaded == undefined) {
                     getParser(dataset.parser)({
                             jq: $, sigInst: sigInst, url: dataset.url, vizdata: vizdata, cb: loadDatasetCallback,
-                            data: data, method: dataset.method, state: state
+                            data: data, method: dataset.method, state: state, type: dataset.type
                         });
                 } else {
                     loadDatasetCallback(null, preloaded.edges);
@@ -682,7 +694,7 @@
             
             function loadLayout(e) {
                 var layout = opts.layout;
-                var dataset = opts.datasets[0];
+                var dataset = opts.datasets;
                 
                 opts.loadedDataset = null;
                 opts.loadedLayout = null;
@@ -716,6 +728,9 @@
                         loadDataset(0, null, {edges: edges, dataset: extraContext});
                     } else {
                         // LOAD DEFAULT DATASET
+//                        for (var i = 0; i < datasets; i++) {
+//                            loadDataset(i)
+//                        }
                         loadDataset(0);
                     }
                     
@@ -1278,7 +1293,6 @@
             function applyCutoff(cutoff) {
                 log('applying cutoff', cutoff);
                 setCutoff(cutoff);
-                
                 var isArray = $.isArray(cutoff), selected = getSelectedNodes(true), strain;
                 
                 sigInst.iterNodes(function(node) {
@@ -1467,6 +1481,14 @@
 //                    evt.stopPropagation();
 ////                    while (!$(this).parent().hasClass('open'))
 //                    $(this).dropdown('toggle').dropdown('toggle');
+                });
+                
+                $(".sigma_mouse_canvas").dblclick(function(e) {
+                    var position = sigInst.position();
+                    var xPos = e.offsetX != undefined ? e.offsetX : e.pageX - this.offsetLeft;
+                    var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - this.offsetTop;
+                    
+                    sigInst.goTo(xPos, yPos, position.ratio * 2).draw();
                 });
                 
                 $(".dropdown-toggle a").click(function(evt) {
@@ -1896,7 +1918,7 @@
                     switch ($(this).attr('id')) {
                     case "context-edge-gi":
                         showCorrelationDriving();
-                        break
+                        break;
                     }
                     evt.preventDefault();
                 });
@@ -1978,15 +2000,28 @@
                 
                 $("#rotation-modal").find(".modal-confirm").click(function(e) {
                     var angle = $(".rotation-input").val();
+                    var onlySelected = $(".rotation-select").is(':checked');
+                    var nodes = getSelectedNodes(true), selected = [];
+                    
+                    if (onlySelected) {
+                        for (var i = 0; i < nodes.length; i++) {
+                            selected.push(getNode(nodes[i]));
+                        }
+                    } else {
+                        selected = sigInst._core.graph.nodes.filter(function(node) {
+                            return !node.hidden;
+                        });
+                    }
                     
                     if (isNumber(angle)) {
                         angle = parseInt(angle);
                         
                         if (angle < 361 && angle > -361) {
                             angle = parseInt(angle);
-                            sigInst.rotateNodes({callback: function() {changeNodesState();}}, angle);
+                            sigInst.rotateNodes({callback: function() {changeNodesState();}, degrees: angle, nodes: selected});
                         }
                     }
+                    
                     $("#rotation-modal").modal("hide");
                     e.preventDefault();
                 });
@@ -2597,12 +2632,22 @@
                     }
                 });
                 
-                /* Add extra dataset */
-                opts.datasets[1] = {
-                        parser: 'json',
-                        url: 'interactions/',
-                        method: 'post',
-                        fetched: []
+                
+                if (!opts.datasets[0].type) {
+                    /* Add extra dataset */
+                    opts.datasets[1] = {
+                            parser: 'json',
+                            url: 'interactions/',
+                            method: 'post',
+                            fetched: []
+                    }
+                } else {
+                    opts.datasets[1] = {
+                            parser: 'json',
+                            url: opts.datasets[0].url,
+                            method: 'get',
+                            fetched: []
+                    }
                 }
                 
                 state.setProperty("cutoff_1", [-0.08, 0.08]);

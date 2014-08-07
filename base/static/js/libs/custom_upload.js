@@ -1,6 +1,6 @@
 (function() {
-    var results = null, genes = null, maxid = 0, seen;
-    var workbook, nodeAttrs, wizard, networkName, fileType, isFirst = true, isPrivate = settings["isPrivate"];
+    var results = null, genes = null, maxid = 0, seen, workbook, nodeAttrs, wizard;
+    var networkName, fileType, isFirst = true, isPrivate = settings["isPrivate"], overlay = null, dataType = 'C';
     var colMap = {
             source: null,
             target: null,
@@ -14,6 +14,7 @@
             nodes: null
     };
     var annotMap = {};
+    
     function getGeneObj(label, nodes, layout) {
         var gene, id, obj;
         
@@ -69,7 +70,6 @@
                 nodeAttrs[row[colMap['nodes']]] = obj;
             });
         }
-        console.log(annotations);
         
         toArray(workbook.Sheets[sheetMap['edges']]).forEach(function(row) {
             obj = {};
@@ -587,11 +587,15 @@
         $('#network-private').prop("checked", isPrivate);
         
         $('#network-private').change(function() {
-            if (this.checked) {
-                isPrivate = true;
-            } else {
-                isPrivate = false;
-            }
+            isPrivate = this.checked;
+        });
+        
+        $('#overlay-selection').change(function() {
+            overlay = $(this).val();
+        });
+        
+        $('#dataset-type').change(function() {
+            dataType = $(this).val();
         });
         
         $('input[type=file]').bootstrapFileInput();
@@ -655,7 +659,9 @@
                        layout: JSON.stringify({nodes: layout}), 
                        dataset: JSON.stringify({edges: dataset}),
                        "private": isPrivate,
-                       name: networkName},
+                       name: networkName,
+                       overlay: overlay,
+                       type: dataType},
                 type: 'post',
                 url: '.', 
                 success: function(data) {

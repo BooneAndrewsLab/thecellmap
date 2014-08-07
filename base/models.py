@@ -131,12 +131,21 @@ class Term(models.Model):
         unique_together = (('annotation', 'name', 'source'), )
 
 class Custom(models.Model):
+    TYPE_INTERACTION = 'I'
+    TYPE_CORRELATION = 'C'
+    TYPE_CHOICES = (
+        (TYPE_INTERACTION, 'Interaction'),
+        (TYPE_CORRELATION, 'Correlation'),
+    )
+    
     user = models.ForeignKey(User, null=True)
     hash = models.CharField(max_length=40, unique=True)
     private = models.BooleanField(default=False)
     name = models.CharField(max_length=40, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     permanent = models.BooleanField(default=False)
+    dataset = models.ForeignKey(Dataset, null=True)
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_CORRELATION)
     
     def path(self, *args):
         return os.path.join(settings.STATIC_ROOT, 'upload', 'custom', self.hash, *args)
