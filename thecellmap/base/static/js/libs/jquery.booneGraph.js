@@ -249,12 +249,17 @@
                 sigInst._core.graph.edgesIndex = {};
             }
             
-            function messageUser(text) {
+            function messageUser(text, element) {
                 var alert = $('<div class="alert alert-warning fade in"> \
                         <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
                         ' + text + ' \
                       </div>');
-                $('#alerts-panel').append(alert);
+                if (element) {
+                    $("#" + element).empty();
+                    $("#" + element).append(alert);
+                } else {
+                    $('#alerts-panel').append(alert);
+                }
                 alert.alert();
                 setTimeout(function() { alert.alert('close'); }, 3000);
             }
@@ -650,8 +655,13 @@
             }
             
             function loadDataset(dsid, data, preloaded, callback) {
-                var dataset = opts.datasets[dsid];
-                var dataType = dataset.type == 'I' ? 1 : 0;
+                var dataset = opts.datasets[dsid], dataType;
+                
+                if (!dataset.type) {
+                    dataType = dsid;
+                } else {
+                    dataType = dataset.type == 'I' ? 1 : 0;
+                }
                 
                 if (dataset.type) {
                     $("#btn-group-datasets button").addClass("disabled");
@@ -668,7 +678,7 @@
                         }
                     });
                     
-                    if (dataType == 1) {
+                    if (dataset.type && dataType == 1) {
                         var dsEle = $("#btn-group-datasets a[data-id=\"" + dataType + "\"]");
                         dsEle.addClass('active');
                         $("#selected-dataset").html("Genetic interactions");
@@ -1284,8 +1294,8 @@
                         sigInst.draw();
                         break;
                     case 'showDemo':
-                        localStorage.setItem("showDemo", s[key]);
                         if (s[key] && !showingDemo) initTour();
+                        break;
                     }
                 }
             }
@@ -2019,10 +2029,18 @@
                         if (angle < 361 && angle > -361) {
                             angle = parseInt(angle);
                             sigInst.rotateNodes({callback: function() {changeNodesState();}, degrees: angle, nodes: selected});
+                            $("#rotation-modal").modal("hide");
+                        } else {
+                            messageUser("Please enter an angle between -360 and 360 degrees.", "alerts-panel-rotate");
                         }
+                    } else {
+                        messageUser("Please enter a valid angle.", "alerts-panel-rotate");
                     }
                     
-                    $("#rotation-modal").modal("hide");
+                    if (text) {
+                        
+                    }
+                    
                     e.preventDefault();
                 });
                 
@@ -2368,6 +2386,7 @@
                     } else {
                         $(".fill-radio label").removeClass("disabled");
                     }
+                    x = [], y = [];
                 });
                 
                 $("#draw-confirm").click(function() {
@@ -2501,6 +2520,7 @@
                             }
                         }
                     }
+                    
                     var position = sigInst.position(), size = sigInst.size();
                     var n1 = getNode(selected[0]), n2 = getNode(selected[1]);
                     var dAbs = Math.sqrt(Math.pow(n1.x - n2.x, 2) + Math.pow(n1.y - n2.y, 2));
@@ -2531,6 +2551,7 @@
                 intro.setOption("keyboardNavigation", false);
                 intro.setOption("exitOnOverlayClick", false);
                 intro.setOption("showStepNumbers", false);
+                
                 intro.start();
                 $("#error-step-one").hide();
                 showingDemo = true;
@@ -2542,10 +2563,13 @@
                 });
                 
                 intro.onbeforechange(function(e) {
-                    if ($(e).data("step") == 2 && state.getProperty("selection").length < 1) {
-                        $("#error-step-one").show();
-                        return false;
+                    var nodes = state.getProperty("selection");
+                    for (var i = 0; i < nodes.length; i++) {
+                        if (getNode(nodes[i])) return true;
                     }
+                    
+                    $("#error-step-one").show();
+                    return false;
                 });
                 
                 //on complete the demo

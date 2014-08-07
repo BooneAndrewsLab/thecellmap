@@ -61,7 +61,7 @@ $('.vizualization-ui').ready(function() {
 
 <div class="top-right hidden-sm hidden-xs">
   <div id="btn-group-neighbourhood" class="hidden btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown" data-step="2" data-intro="This button extracts the selected nodes and their neighbousrs from the network." data-position="bottom-left-aligned"> Extract <span class="caret"></span></button>
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown" data-step="2" data-intro="This button extracts the selected nodes and their neighbours from the network.<br>Try extracting a neighbourhood." data-position="bottom-left-aligned"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="1">&nbsp; + 1st neighbours</a></li>
@@ -315,10 +315,11 @@ $('.vizualization-ui').ready(function() {
         </div>
         <div class="checkbox">
           <label>
-            <input type="checkbox" class="form-contro rotation-select">
+            <input type="checkbox" class="rotation-select">
             Rotate selected nodes only
           </label>
         </div>
+        <div id="alerts-panel-rotate"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
