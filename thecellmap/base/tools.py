@@ -14,7 +14,7 @@ from django.http.response import HttpResponseBadRequest, HttpResponseRedirect, \
 from django.shortcuts import render
 
 from base.filter import CustomFilter
-from base.models import Annotation, Term, Custom, Strain, Gene
+from base.models import Annotation, Term, Custom, Strain, Gene, Dataset
 from base.utils import gene_map, write_excel_file, JsonResponse
 
 
@@ -99,16 +99,28 @@ def custom(request):
         if 'nodes' not in request.POST or 'layout' not in request.POST or 'dataset' not in request.POST:
             return HttpResponseBadRequest('missing values')
         
+        if request.POST['overlay']:
+            try:
+                overlay = Dataset.objects.get(pk=request.POST['overlay'])
+            except:
+                return HttpResponseBadRequest("dataset does not exist")
+            
+            if not request.user.is_authenticated() or overlay.is_published:
+                return HttpResponseForbidden('Permission Required')
+        else:
+            overlay = None
+            
         nodes = request.POST['nodes']
         layout = request.POST['layout']
         dataset = request.POST['dataset']
         private = request.POST['private'].lower() == 'true'
+        type = request.POST['type']
         
         hash = hashlib.sha1()
         hash.update(str(time()) + nodes + layout + dataset)
         hash = hash.hexdigest()
         
-        if request.POST['name']:
+        if 'name' in request.POST and request.POST['name']:
             name = request.POST['name']
         else:
             name = hash
@@ -117,7 +129,9 @@ def custom(request):
                 user=request.user.is_authenticated() and request.user or None, 
                 hash=hash, 
                 private=private,
-                name=name)
+                name=name,
+                dataset=overlay,
+                type=type)
         
         os.makedirs(custom.path())
         
@@ -132,7 +146,16 @@ def custom(request):
         
         return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
     
-    return render(request, 'base/custom.html', {'page_name': 'custom_upload'})
+    datasets = []
+    
+    for data in Dataset.objects.all():
+        if request.user.is_authenticated() or data.is_published:
+            datasets.append(data)
+    
+    return render(request, 'base/custom.html', {
+            'page_name': 'custom_upload',
+            'datasets': datasets,
+        })
 
 @login_required
 def edit(request):

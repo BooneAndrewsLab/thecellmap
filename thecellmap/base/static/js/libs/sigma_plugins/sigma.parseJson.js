@@ -7,6 +7,7 @@ sigma.publicPrototype.parseJson = function(opts) {
     var nodes, edges, extraData = {datasetName: 'Correlations'};
     var method = opts.method || 'get';
     var data = opts.data || null;
+    var type = opts.type || 'C';
     
     /* Fetch all node info */
     opts.jq.ajax({dataType: 'json', data: data, type: method, url: opts.url, success: function(data) {
@@ -47,7 +48,7 @@ sigma.publicPrototype.parseJson = function(opts) {
             edge.color = edge.color || edge.c; // c == color
             edge.size = edge.absweight;
             
-            if (edge.color == undefined && extraData.datasetName == "Interactions") {
+            if (edge.color == undefined && (extraData.datasetName == "Interactions" || type == "I")) {
                 edge.color = edge.weight < 0. ? "red" : "green";
                 edge.size = 1;
             }

@@ -94,6 +94,29 @@
         }).resize();
         
         $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
+        var dataType = null;
+        {% if dataset.type %}
+            dataType = '{{ dataset.type }}';
+        {% endif %}
+        
+        var datasets = [{
+            id: "{{ dataset.id }}",
+            url: "{{ dataset.static_url }}/correlations.json",
+            name: "Correlations",
+            parser: "json",
+            type: dataType,
+        }];
+        
+        
+        {% if extra %}
+            datasets[2] = ({
+                id: "{{ extra.id }}",
+                url: "{{ extra.static_url }}/correlations.json",
+                name: "{{ extra.name }}",
+                parser: "json",
+                type: "{{ extra.type }}",
+            });
+        {% endif %}
         
         $("#network-container").booneGraph({
             layout: {
@@ -108,13 +131,7 @@
                     name: "{{ annot.name }}",
                     url: "{% url 'annotation' annot.id %}"
                 },{% endfor %}],
-            datasets: [{
-                  id: "{{ dataset.id }}",
-                  url: "{{ dataset.static_url }}/correlations.json",
-                  name: "Correlations",
-                  parser: "json",
-                  type: 1
-            }],
+            datasets: datasets,
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
             debug: {% if debug %}true{% else %}false{% endif %},

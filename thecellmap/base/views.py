@@ -88,15 +88,32 @@ def custom_dataset(request, hash):
     if custom.private and custom.user != request.user:
         return HttpResponseForbidden("Sorry the network you're trying to access is private")
     
-    return render(request, 'base/network.html', {
-            'dataset': {
-                'id': hash,
-                'static_url': custom.static_url(),
-                'name': hash,
-            },
-            'annotations': Annotation.objects.all(),
-            'can_bulk_download': False
-      })
+    if custom.dataset:
+        if request.user.is_authenticated() or custom.dataset.is_published:
+            return render(request, 'base/network.html', {
+                    'dataset': custom.dataset,
+                    'annotations': Annotation.objects.all(),
+                    'can_bulk_download': False,
+                    'extra': {
+                            'id': hash,
+                            'static_url': custom.static_url(),
+                            'name': hash,
+                            'type': custom.type,
+                        },
+              })
+        else:
+            return HttpResponseForbidden("Permission Required")
+    else:
+        return render(request, 'base/network.html', {
+                'dataset': {
+                    'id': hash,
+                    'static_url': custom.static_url(),
+                    'name': hash,
+                    'type': custom.type,
+                },
+                'annotations': Annotation.objects.all(),
+                'can_bulk_download': False
+          })
 
 @require_POST
 def interactions(request, dataset_id=None):
