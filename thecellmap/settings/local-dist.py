@@ -128,5 +128,6 @@ REST_FRAMEWORK = {
     ],
     
     'PAGINATE_BY_PARAM': 'page_size',
-    
 }
+
+ANONYMOUS_USER_ID = 131
