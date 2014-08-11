@@ -69,6 +69,9 @@ class Dataset(models.Model):
     def correlation_axis_qs(self):
         return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
     
+    def has_permission(self, request):
+        return self.is_published or request.user.is_authenticated() and request.user.is_active
+    
     @staticmethod
     def pk_or_default(pk=None):
         return pk and Dataset.objects.get(pk=pk) or Dataset.get_default()
