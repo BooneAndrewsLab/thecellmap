@@ -18,7 +18,10 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     
     // performance test
     var mean_time = 0;
-
+    
+    // Hard reset
+    this.force_done = false;
+    
     this.p = {
         attraction_multiplier : 1,
         repulsion_multiplier : .75, // 0.75
@@ -231,7 +234,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     }
     
     this.isDone = function() {
-        return layout_iterations == 160;
+        return layout_iterations == 160 || this.force_done;
     }
     
     this.percentDone = function() {
@@ -275,7 +278,7 @@ sigma.publicPrototype.startForceLayout = function(properties) {
 };
 
 sigma.publicPrototype.stopForceLayout = function() {
-    var fl = this.forcelayout;
-    this.removeGenerator('forcelayout');
-    setTimeout(function () {fl.p.callback(fl.numSubnetworks());}, 0);
+    this.forcelayout.force_done = true;
+//    this.removeGenerator('forcelayout');
+//    setTimeout(function () {fl.p.callback(fl.numSubnetworks());}, 10);
 };
