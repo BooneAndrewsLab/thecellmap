@@ -1,7 +1,7 @@
 (function() {
     var settings = {
-            zoom: localStorage.getItem("zoom") || false,
-            label: localStorage.getItem("label") || false,
+            zoom: localStorage.getItem("zoom") || true,
+            label: localStorage.getItem("label") || true,
             isPrivate: localStorage.getItem("isPrivate") || false,
             remove: localStorage.getItem("remove") || false,
             fileType: localStorage.getItem("fileType") || "xls",
@@ -17,14 +17,7 @@
             fileType: false
     }
     
-    for (key in settings) {
-        if (bool[key]) {
-            settings[key] = settings[key].toString() == "true";
-            $("#" + key).prop("checked", settings[key]);
-        } else if (key == "fileType") {
-            $("#fileType").val(settings["fileType"]).change();
-        }
-    }
+    updateSettings(settings)
     
     $(".file-type-select").select2({
         minimumResultsForSearch: -1
@@ -51,9 +44,21 @@
         e.preventDefault();
     });
     
+    function updateSettings(settings) {
+        for (key in settings) {
+            if (bool[key]) {
+                settings[key] = settings[key].toString() == "true";
+                $("#" + key).prop("checked", settings[key]);
+            } else if (key == "fileType") {
+                $("#fileType").val(settings["fileType"]).change();
+            }
+        }
+    }
+    
     $(document).ready(function() {
     })
     
+    window.updateSettings = updateSettings
     if (!window.settings) {
         window.settings = settings;
     }
