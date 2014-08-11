@@ -1294,8 +1294,7 @@
                         sigInst.draw();
                         break;
                     case 'showDemo':
-                        if (s[key] && !showingDemo) initTour();
-                        break;
+                      if (s[key] && !showingDemo) initTour();
                     }
                 }
             }
@@ -2575,13 +2574,17 @@
                 //on complete the demo
                 intro.oncomplete(function(e) {
                     localStorage.setItem("showDemo", false);
+                    settings["showDemo"] = false;
                     showingDemo = false;
+                    updateSettings(settings)
                 });
                 
                 //on skipping the demo
                 intro.onexit(function(e) {
                     localStorage.setItem("showDemo", false);
+                    settings["showDemo"] = false;
                     showingDemo = false;
+                    updateSettings(settings)
                 });
             }
             

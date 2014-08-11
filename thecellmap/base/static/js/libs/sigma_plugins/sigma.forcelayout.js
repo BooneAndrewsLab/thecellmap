@@ -275,5 +275,7 @@ sigma.publicPrototype.startForceLayout = function(properties) {
 };
 
 sigma.publicPrototype.stopForceLayout = function() {
+    var fl = this.forcelayout;
     this.removeGenerator('forcelayout');
+    setTimeout(function () {fl.p.callback(fl.numSubnetworks());}, 0);
 };
