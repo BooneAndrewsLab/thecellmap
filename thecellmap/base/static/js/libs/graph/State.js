@@ -61,7 +61,7 @@
         },
         
         asJson: function() {
-            return $.extend({}, storage);
+            return $.extend({}, this._storage);
         }
     };
     

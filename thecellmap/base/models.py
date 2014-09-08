@@ -87,6 +87,20 @@ class Dataset(models.Model):
     class Meta:
         ordering = ("date", )
 
+class Heatmap(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    description = models.TextField()
+    date = models.DateField()
+    
+    def static_path(self, *args):
+        return os.path.join(settings.STATIC_ROOT, 'visualization', 'heatmap', self.name, *args)
+    
+    def static_url(self, *args):
+        return os.path.join(settings.STATIC_URL, 'visualization', 'heatmap', self.name, *args)
+    
+    class Meta:
+        ordering = ("date", )
+
 class StrainData(models.Model):
     TYPE_QUERY = 'Q'
     TYPE_ARRAY = 'A'

@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'contact_form',
     'rest_framework',
+    'rest_framework_swagger',
 )
 
 # Place bcrypt first in the list, so it will be the default password hashing

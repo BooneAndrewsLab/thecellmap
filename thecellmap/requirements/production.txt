@@ -52,3 +52,4 @@ django-oauth-plus
 oauth2
 django-oauth2-provider
 django-guardian
+django-rest-swagger

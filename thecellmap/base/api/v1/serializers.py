@@ -1,14 +1,14 @@
 from rest_framework import serializers
 
-from base.models import Dataset, Gene, Strain
+from base.models import Dataset
 
 
 class DatasetSerializer(serializers.ModelSerializer):
-    detail = serializers.HyperlinkedIdentityField(view_name='dataset-detail',)
+    dataset_detail = serializers.HyperlinkedIdentityField(view_name='dataset-detail',)
     
     class Meta:
         model = Dataset
-        fields = ('name', 'id', 'detail')
+        fields = ('name', 'id', 'dataset_detail')
 
 class DatasetDetailSerializer(serializers.ModelSerializer):
     class Meta:
