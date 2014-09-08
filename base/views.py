@@ -14,7 +14,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
-from base.models import Dataset, Annotation, Term, Gene, Custom, Strain
+from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap
 from base.utils import print_queries, is_integer, JsonResponse
 import math
 from django.conf import settings
@@ -72,6 +72,12 @@ def home(request):
 
 def dataset(request, dataset_id):
     return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
+
+def heatmap(request, heatmap_id):
+    heatmap = Heatmap.objects.get(pk=heatmap_id)
+    return render(request, 'base/heatmap.html', {
+            'heatmap': heatmap,
+            })
 
 def genes(request):
     genes = [g.as_object() for g in Gene.objects.all()]

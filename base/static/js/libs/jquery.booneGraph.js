@@ -31,6 +31,7 @@
                         updateLimits: true,
                     },
                     graphProperties: {
+                          type: 'network',
                           minEdgeSize : 0,
                           maxEdgeSize : 1.5,
                           nodesPowRatio : 1,
@@ -64,6 +65,7 @@
             };
             
             var state = new State();
+            
             state.setProperty("cutoff_0", sliderProperties.value);
             
             var undo = null;
@@ -89,6 +91,44 @@
                 autoState = true;
                 var reapplyCutoff = false;
                 var difference = state.compareTo(newState.style);
+                
+                if (newState.nodes != null) {
+                    var node, n;
+                    for (n in newState.nodes) {
+                        if (newState.nodes.hasOwnProperty(n)) {
+                            node = getNode(n);
+                            n = newState.nodes[n];
+                            node.x = n.x;
+                            node.y = n.y;
+                            node.hidden = n.hidden;
+                            node._hidden = n.hidden;
+                            node.color = n.color;
+                            node.forceLabel = n.forceLabel;
+                        }
+                    }
+                    
+                    reapplyCutoff = true;
+                    $("input.gene-search-input").select2("val", newState.style.getProperty("selection"), true);
+                    sigInst.draw();
+                }
+                
+                for (var i = 0; i < newState.style.numOfCutoffs(); i++) {
+                    if (newState.style.getProperty("cutoff_" + newState.style.getProperty("dataset")) != state.getProperty("cutoff_" + state.getProperty("dataset"))) {
+                        state.setProperty(("cutoff_" + i), newState.style.getProperty("cutoff_" + i));
+                        
+                        reapplyCutoff = true;
+                    }
+                }
+                
+                if (reapplyCutoff) {
+                    log("reapplying", state.getProperty("dataset"), state.getProperty("cutoff"), state.getProperty("cutoff_" + state.getProperty("dataset")));
+                    applyCutoff(state.getProperty("cutoff_" + state.getProperty("dataset")));
+                    
+                    if (state.getProperty("dataset") == 0) { // TEMPORARY HACK
+                        $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
+                    }
+                    $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(state.getProperty("cutoff_" + state.getProperty("dataset")), {update: true});
+                }
                 
                 for (key in difference) {
                     switch (difference[key]) {
@@ -121,47 +161,8 @@
                         break;
                     case 'dataset':
                         $("#btn-group-datasets a[data-id=\"" + newState.style.getProperty("dataset") + "\"]").click();
-                        reapplyCutoff = true;
                         break;
                     }
-                }
-                    
-                for (var i = 0; i < newState.style.numOfCutoffs(); i++) {
-                    if (newState.style.getProperty("cutoff_" + newState.style.getProperty("dataset")) != state.getProperty("cutoff_" + state.getProperty("dataset"))) {
-                        state.setProperty(("cutoff_" + i), newState.style.getProperty("cutoff_" + i));
-                        
-                        reapplyCutoff = true;
-                    }
-                }
-                
-                if (newState.nodes != null) {
-                    var node, n;
-                    for (n in newState.nodes) {
-                        if (newState.nodes.hasOwnProperty(n)) {
-                            node = getNode(n);
-                            n = newState.nodes[n];
-                            node.x = n.x;
-                            node.y = n.y;
-                            node.hidden = n.hidden;
-                            node._hidden = n.hidden;
-                            node.color = n.color;
-                            node.forceLabel = n.forceLabel;
-                        }
-                    }
-                    
-                    reapplyCutoff = true;
-                    $("input.gene-search-input").select2("val", newState.style.getProperty("selection"), true);
-                    sigInst.draw();
-                }
-                
-                if (reapplyCutoff) {
-                    log("reapplying", state.getProperty("dataset"), state.getProperty("cutoff"), state.getProperty("cutoff_" + state.getProperty("dataset")));
-                    applyCutoff(state.getProperty("cutoff_" + state.getProperty("dataset")));
-                    
-                    if (state.getProperty("dataset") == 0) { // TEMPORARY HACK
-                        $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                    }
-                    $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(state.getProperty("cutoff_" + state.getProperty("dataset")), {update: true});
                 }
                 
                 autoState = false;
@@ -175,7 +176,7 @@
             };
             
             function changeNodesState() {
-                if (!autoState && undo != null) {
+                if (!isInitializing && !autoState && undo != null) {
                     var nodeState = {};
                     sigInst._core.graph.nodes.filter(function(node) {
                         nodeState[node.id] = {x: node.x, y: node.y, hidden: node._hidden, color: node.color};
@@ -570,7 +571,11 @@
                 } else { // Interactions
                     var newVisible = [];
                     sigInst._core.graph.nodes.filter(function(node) {
-                        if (!node.hidden && dataset.fetched.indexOf(node.id) == -1) newVisible.push(node.id);
+                        if (!node.hidden && dataset.fetched.indexOf(node.id) == -1) {
+                            newVisible.push(node.id);
+                        } else if (node.hidden) {
+                            node._hidden = true; //Force hide the nodes so that they will not appear when cutoff is changed
+                        }
                     });
                     
                     if (newVisible.length > 100 && !autoState) {
@@ -649,14 +654,12 @@
                 $(".cutoff-bar").css('display', 'none');
                 ele.css('display', 'block');
                 
-                changeState();
+                changeNodesState();
                 sigInst.draw();
-                isInitializing = false;
             }
             
             function loadDataset(dsid, data, preloaded, callback) {
                 var dataset = opts.datasets[dsid], dataType;
-                
                 if (!dataset.type) {
                     dataType = dsid;
                 } else {
@@ -685,10 +688,20 @@
                         $(".dataset-constraint").removeClass("disabled");
                         state.setProperty("dataset", 1);
                     }
+                    
                     updateEdges(dataType);
                     
                     if (callback != undefined) {
                         callback(edges);
+                    }
+                    
+                    if (opts.preloadedState && isInitializing) {
+                        var savedState = new State(opts.preloadedState);
+                        var savedNodes = JSON.parse(localStorage.getItem("savedNodes"));
+                        setState({style: savedState, nodes: savedNodes});
+                        
+                        applySettings(settings);
+                        isInitializing = false;
                     }
                 };
                 
@@ -715,7 +728,7 @@
                         if (strain != undefined) {
                             if (strain.color != undefined) 
                                 node.color = strain.color;
-                            sigInst.addNode(node.id, node); 
+                            sigInst.addNode(node.id, node);
                         }
                     });
                     
@@ -738,9 +751,6 @@
                         loadDataset(0, null, {edges: edges, dataset: extraContext});
                     } else {
                         // LOAD DEFAULT DATASET
-//                        for (var i = 0; i < datasets; i++) {
-//                            loadDataset(i)
-//                        }
                         loadDataset(0);
                     }
                     
@@ -819,7 +829,6 @@
                 autoState = oldState;
                 applyAnnotationColors();
                 rebuildLegend();
-                
                 changeNodesState();
             }
             
@@ -882,7 +891,7 @@
                     for (n in terms) {
                         term = vizdata[id].terms[n];
                         if(terms[n].idx == a) {
-                            break
+                            break;
                         }
                     }
                     
@@ -2036,10 +2045,6 @@
                         messageUser("Please enter a valid angle.", "alerts-panel-rotate");
                     }
                     
-                    if (text) {
-                        
-                    }
-                    
                     e.preventDefault();
                 });
                 
@@ -2217,7 +2222,34 @@
                         $('#btn-home').click();
                     });
                 });
-            };
+                
+                $("#btn-save-state").click(function() {
+                    localStorage.setItem("savedState", JSON.stringify(state.asJson()));
+                    
+                    var nodesState = {};
+                    sigInst._core.graph.nodes.forEach(function(node) {
+                        nodesState[node.id] = {
+                             x: node.x,
+                             y: node.y,
+                             color: node.color,
+                             label: node.label,
+                             hidden: node.hidden
+                        }
+                    });
+                    
+                    localStorage.setItem("savedNodes", JSON.stringify(nodesState));
+                    
+                    messageUser("Saved State")
+                });
+                
+                $("#search-bar").mouseenter(function(e) {
+                    $(".select2-container-multi .select2-choices").css("max-height", "300px");
+                }).mouseleave(function(e) {
+                    if (!$("input.gene-search-input").data("open")) {
+                        $(".select2-container-multi .select2-choices").css("max-height", "34px");
+                    }
+                });
+            }
             
             function traverseRec(node, netNum, len) {
                 var nextNode;
@@ -2265,7 +2297,7 @@
 //                        ele.addEventListener('mousemove', eventFwd, false);
 //                        ele.addEventListener('mousedown', eventFwd, false);
 //                    }
-                }, 0);
+                }, 1000);
             }
             
             function buildDrawUI() {
@@ -2845,7 +2877,6 @@
                                 query.callback({results: []});
                                 return;
                             }
-                            
                             var data = {results: []};
                             var term = query.term.replace('*', '').toLowerCase();
                             var aterm, aterms = vizdata[state.getProperty("annotation")].terms, acount = 0;
@@ -2950,6 +2981,16 @@
                             $(".gene-search-input").select2("close");
                             e.preventDefault();
                         }
+                    }).on('select2-opening', function(e) {
+                        $(this).data('open', true);
+                    }).on('select2-close', function(e) {
+                        $(this).data('open', false);
+                        $(".select2-container-multi .select2-choices").css("max-height", "34px");
+                    }).on('select2-focus', function(e) {
+                        setTimeout(function() {
+                            var height = $(".select2-container-multi .select2-choices")[0].scrollHeight;
+                            $(".select2-container-multi .select2-choices").scrollTop(height);
+                        }, 0);
                     });
                     
                     updateTooltips();

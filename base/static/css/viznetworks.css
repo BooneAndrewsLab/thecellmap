@@ -131,7 +131,7 @@ body {
 }
 
 .select2-choices {
-    max-height: 300px;
+    max-height: 34px;
     overflow-y: auto!important;
 }
 
@@ -254,4 +254,3 @@ body {
     position: fixed;
     z-index: 2000;
 }
-

@@ -5,7 +5,8 @@
             isPrivate: localStorage.getItem("isPrivate") || false,
             remove: localStorage.getItem("remove") || false,
             fileType: localStorage.getItem("fileType") || "xls",
-            showDemo: localStorage.getItem("showDemo") || true
+            showDemo: localStorage.getItem("showDemo") || true,
+            openSearchbar: localStorage.getItem("openSearchbar") || false,
     };
     
     var bool = {
@@ -14,7 +15,8 @@
             isPrivate: true,
             remove: true,
             showDemo: true,
-            fileType: false
+            fileType: false,
+            openSearchbar: true,
     }
     
     updateSettings(settings)

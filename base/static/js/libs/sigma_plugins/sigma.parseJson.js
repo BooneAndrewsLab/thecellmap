@@ -7,7 +7,7 @@ sigma.publicPrototype.parseJson = function(opts) {
     var nodes, edges, extraData = {datasetName: 'Correlations'};
     var method = opts.method || 'get';
     var data = opts.data || null;
-    var type = opts.type || 'C';
+    var datasetType = opts.type || 'C';
     
     /* Fetch all node info */
     opts.jq.ajax({dataType: 'json', data: data, type: method, url: opts.url, success: function(data) {
@@ -24,18 +24,23 @@ sigma.publicPrototype.parseJson = function(opts) {
                 strain = {};
             }
             
-            annot = annotations.map[strain.id];
-            if (annot != undefined) {
-                color = annotations.colorPalette[annotations.terms[annot[0]].idx];
-            } else {
-                color = annotations.defaultColor;
-            }
+//            annot = annotations.map[strain.id];
+//            if (annot != undefined) {
+//                color = annotations.colorPalette[annotations.terms[annot[0]].idx];
+//            } else {
+//                color = annotations.defaultColor;
+//            }
             
             node.label = strain.verboseName;
-            node.size = 2;
+            
+            
+            node.weight = strain.weight;
+            node.col = strain.col_name;
+            node.row = strain.row_name;
+            node.size = 0.5;                                        // changed to 0.5 for heatmap
             node.color = color;
-            node.x = node.x || (Math.random() * 100);
-            node.y = node.y || (Math.random() * 100);
+            node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
+            node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
         });
         
         edges.forEach(function (edge, edgeIdx) {
@@ -48,7 +53,7 @@ sigma.publicPrototype.parseJson = function(opts) {
             edge.color = edge.color || edge.c; // c == color
             edge.size = edge.absweight;
             
-            if (edge.color == undefined && (extraData.datasetName == "Interactions" || type == "I")) {
+            if (edge.color == undefined && (extraData.datasetName == "Interactions" || datasetType == "I")) {
                 edge.color = edge.weight < 0. ? "red" : "green";
                 edge.size = 1;
             }

@@ -55,7 +55,7 @@
   <script src="{% static 'js/libs/chroma.js' %}"></script>
   <script src="{% static 'js/libs/chroma.palette-gen.js' %}"></script>
   
-  <script src="{% static 'js/libs/isigma.js' %}"></script>
+  <script src="{% static 'js/libs/isigma_heatmap.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.parseJson.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.forcelayout.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.boonetools.js' %}"></script>
@@ -69,7 +69,7 @@
   <script src="{% static 'js/libs/graph/Undo.js' %}"></script>
   <script src="{% static 'js/libs/graph/State.js' %}"></script>
   
-  <script src="{% static 'js/libs/jquery.booneGraph.js' %}"></script>
+  <script src="{% static 'js/libs/jquery.booneHeatmap.js' %}"></script>
   <script src="{% static 'js/libs/FileSaver.js' %}"></script>
   <script src="{% static 'js/libs/Blob.js' %}"></script>
   <script src="{% static 'js/libs/canvas-toBlob.js' %}"></script>
@@ -94,35 +94,17 @@
         }).resize();
         
         $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
-        var dataType = null;
-        {% if dataset.type %}
-            dataType = '{{ dataset.type }}';
-        {% endif %}
         
-        var datasets = [{
-            id: "{{ dataset.id }}",
-            url: "{{ dataset.static_url }}/correlations.json",
-            name: "Correlations",
+        var heatmap = [{
+            id: "{{ heatmap.id }}",
             parser: "json",
-            type: dataType,
         }];
-        
-        
-        {% if extra %}
-            datasets[2] = ({
-                id: "{{ extra.id }}",
-                url: "{{ extra.static_url }}/correlations.json",
-                name: "{{ extra.name }}",
-                parser: "json",
-                type: "{{ extra.type }}",
-            });
-        {% endif %}
         
         $("#network-container").booneGraph({
             layout: {
-                    id: "{{ dataset.id }}",
-                    url: "{{ dataset.static_url }}/layout.json",
-                    name: "{{ dataset.name }}",
+                    id: "{{ heatmap.id }}",
+                    url: "{{ heatmap.static_url }}/layout.json",
+                    name: "{{ heatmap.name }}",
                     parser: "json",
                     dataset: 1
                 },
@@ -131,9 +113,9 @@
                     name: "{{ annot.name }}",
                     url: "{% url 'annotation' annot.id %}"
                 },{% endfor %}],
-            datasets: datasets,
+//            datasets: datasets,
             layoutAlgo: ['fl'],
-            nodesUrl: "{{ dataset.static_url }}/nodes.json",
+            nodesUrl: "{{ heatmap.static_url }}/nodes.json",
             debug: {% if debug %}true{% else %}false{% endif %},
             layoutButtonHide: false,
             slider: {
@@ -143,7 +125,7 @@
                 max : 1,
                 updateLimits: false
             },
-            uiUrl: "{% static 'ui.html' %}",
+            uiUrl: "{% static 'heatmap_ui.html' %}",
             drawUIUrl: "{% static 'draw_ui.html' %}",
             canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
             circleUrl: "{% url 'circle_pack' %}",

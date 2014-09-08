@@ -14,6 +14,7 @@ urlpatterns = patterns('base.views',
     url(r'^network/(?P<dataset_id>\d+)/tabular/$', 'tabular', name='tabular'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/(?P<node_id>\d+)/$', 'tabular_data', name='tabular_fetch'),
     url(r'^network/(?P<hash>.{40})/$', 'custom_dataset', name='custom_dataset'),
+    url(r'^heatmap/(?P<heatmap_id>\d+)/$', 'heatmap', name='heatmap'),
     
     # default dataset urls
     url(r'^interactions/$', 'interactions', name='interactions_default'),
@@ -45,5 +46,5 @@ urlpatterns += patterns('base.tools',
 
 urlpatterns += patterns('base.api',
     url(r'^api/', include('base.api.v1.urls')),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
 )
