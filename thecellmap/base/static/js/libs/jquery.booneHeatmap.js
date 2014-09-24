@@ -202,7 +202,7 @@
             };
 
             function getStrain(id) {
-                return vizdata.strains[vizdata.index[id]];
+                return vizdata.cells[id];
             }
 
             function getNode(id) {
@@ -327,12 +327,8 @@
             }
             
             function getSelectedNodes(visible) {
-                var selected = getSelection(), result;
+                var result = getSelection(), result;
                 var strain, node;
-                
-                result = selected.filter(function(sel) {
-                    return !sel.startsWith('annot') && !sel.startsWith('action');
-                });
                 
                 if (!!visible) {
                     return result.filter(function(strainid) {
@@ -375,21 +371,19 @@
             };
             
             function loadLayout(e) {
-                var layout = opts.layout;
+                var matrix = opts.matrix;
                 var dataset = opts.datasets;
                 
                 opts.loadedDataset = null;
                 opts.loadedLayout = null;
                 
-                var layoutCallback = function (nodes, edges, extraContext) {
+                var layoutCallback = function (nodes) {
                     nodes.forEach(function(node) {
-                        var strain = getStrain(node.id);
-                        if (strain != undefined) {
-                            if (strain.color != undefined) 
-                                node.color = strain.color;
-                            sigInst.addNode(node.id, node);
-                        }
+//                        if (!isNaN(node.w) && node.w != 0)
+                        sigInst.addNode(node.id, node);
                     });
+                    
+                    loadSearch(nodes);
                     
                     var nodesState = {};
                     sigInst._core.graph.nodes.forEach(function(node) {
@@ -413,9 +407,211 @@
                     var r = Math.max(size.w, size.h) / max / 3;
                     
                     sigInst.goTo(size.w / 2, size.h / 2, position.ratio * r).draw();
+                    isInitializing = false;
                 }
-                getParser(layout.parser)({
-                    jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback, state: state
+                
+                getParser(matrix.parser)({
+                    jq: $, sigInst: sigInst, url: matrix.url, vizdata: vizdata, cb: layoutCallback, state: state
+                });
+            }
+            
+            function loadSearch(nodes) {
+                autocomp = [];
+                var column = vizdata['col'], row = vizdata['row'];
+                
+                for (n in nodes) {
+                    var node = nodes[n];
+                    if (node.w == 0) continue;
+                    
+                    autocomp.push({
+                        value: node.label,
+                        tokens: [node.col, node.row],
+                        id: node.id,
+                    });
+                }
+                
+                var tokenizing = false;
+                $("input.gene-search-input").select2({
+                    multiple: true,
+                    minimumInputLength: 2,
+                    containerCssClass: 'form-control', 
+                    placeholder: 'Start typing terms...',
+                    allowClear: true,
+                    width: '350px',
+                    tokenSeparators: [",", " ", "\t", "\n"],
+                    initSelection: function (element, callback) {
+                        var id = $(element).val(), strain, result = [];
+                        id.split(",").forEach(function(x) {
+                            if (x !== "") {
+                                node = getNode(x);
+                                result.push({
+                                    text: node.label,
+                                    id: node.id
+                                });
+                            }
+                        });
+                        callback(result);
+                    },
+                    tokenizer: function (input, selection, selectCallback, opts) {
+                        var original = input, // store the original so we can compare and know if we need to tell the search to update its text
+                        dupe = false, // check for whether a token we extracted represents a duplicate selected choice
+                        token, // token
+                        index, // position at which the separator was found
+                        i, l, // looping variables
+                        separator; // the matched separator
+                        
+                        if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
+                        
+                        tokenizing = true;
+                        var addedNew = false;
+                        while (true) {
+                            index = -1;
+                            
+                            for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
+                                separator = opts.tokenSeparators[i];
+                                index = input.indexOf(separator);
+                                if (index >= 0) break;
+                            }
+                            
+                            if (index < 0) break; // did not find any token separator in the input string, bail
+                            
+                            token = input.substring(0, index);
+                            input = input.substring(index + separator.length);
+                            
+                            if (token.length > 0) {
+                                var tokens = opts.createSearchChoice.call(this, token, selection);
+                                if (tokens !== undefined && tokens !== null) {
+                                    if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) {
+                                        tokens = [tokens];
+                                    }
+                                    
+                                    tokens.forEach(function(token) {
+                                        if (opts.id(token) !== undefined && opts.id(token) !== null) {
+                                            dupe = false;
+                                            for (i = 0, l = selection.length; i < l; i++) {
+                                                if (opts.id(token) == opts.id(selection[i])) {
+                                                    dupe = true; break;
+                                                }
+                                            }
+                                            
+                                            if (!dupe) {
+                                                selectCallback(token);
+                                                addedNew = true;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        
+                        tokenizing = false;
+                        if (addedNew) {
+                            this.triggerChange({foo: "bar"});
+                        }
+                        if (original!==input) return input;
+                    },
+                    createSearchChoice: function(term) {
+                        var wildcard = term.indexOf('*') != -1;
+                        term = term.replace('*', '').toLowerCase();
+                        
+                        if (term.length > 0) {
+                            var results = [], seen = {};
+                            
+                            autocomp.forEach(function(node) {
+                                node.tokens.forEach(function(token) {
+                                    if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+                                        results.push({id: node.id, text: node.value });
+                                        seen[node.id] = 0;
+                                        return;
+                                    }
+                                });
+                            });
+                            if (results.length !== 0) return results;
+                        }
+                    },
+                    query: function(query) {
+                        if (query.term === undefined) {
+                            query.callback({results: []});
+                            return;
+                        }
+                        var data = {results: []};
+                        var term = query.term.replace('*', '').toLowerCase();
+                        
+                        autocomp.forEach(function(node) {
+                            if (query.term.length == 0){
+                                data.results.push({id: node.id, text: node.value });
+                            } else {
+                                for (var x in node.tokens) {
+                                    if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
+                                        data.results.push({id: node.id, text: node.value });
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        
+                        data.results = data.results.slice(0, 6);
+                        query.callback(data);
+                    },
+                    data: autocomp,
+                }).on('change', function(evt, a, b, c) {
+                    var selected = getSelectedNodes(), numVisibleSelected = 0, node;
+                    var selectionLength, selection = getSelection();
+                    
+                    sigInst.iterNodes(function(node) {
+                        if ($.inArray(node.id + "", selected) >= 0) {
+                            node.selected = true;
+                            
+                            if (node.hidden && !autoState) {
+                                if (!selected.byAnnot.hasOwnProperty(node.id))
+                                    messageUser('Gene you\'re looking for is below current threshold.')
+                            } else {
+                                numVisibleSelected++;
+                            }
+                        } else {
+                            node.selected = false;
+                        }
+                    });
+                    
+//                    $('[data-selection-constraint]').each(function() {
+//                        var enabled = true, size = selected.length, cls = $(this).data('selection-class') || 'disabled';
+//                        if ($(this).data('selection-type') == 'visible') {
+//                            size = numVisibleSelected;
+//                        }
+//                        if ($(this).data('selection-gt') != undefined) {
+//                            enabled &= size > $(this).data('selection-gt');
+//                        }
+//                        if ($(this).data('selection-lt') != undefined) {
+//                            enabled &= size < $(this).data('selection-lt');
+//                        }
+//                        
+//                        $(this).toggleClass(cls, !enabled);
+//                    });
+                    
+                    if (!tokenizing) {
+                        updateMissingMessage();
+                        sigInst.draw();
+                        
+                        if (!($(selected).not(state.getProperty("selection")).length == 0 && $(state.getProperty("selection")).not(selected).length == 0)) {
+                            var diff = $(selected).not(state.getProperty("selection")).get();
+                            
+                            state.setProperty("selection", getSelection());
+                            changeState();
+                            
+                            /* Set the tooltips */
+                            updateTooltips();
+                        }
+                    }
+                }).on('select2-opening', function(e) {
+                    $(this).data('open', true);
+                }).on('select2-close', function(e) {
+                    $(this).data('open', false);
+                    $(".select2-container-multi .select2-choices").css("max-height", "34px");
+                }).on('select2-focus', function(e) {
+                    setTimeout(function() {
+                        var height = $(".select2-container-multi .select2-choices")[0].scrollHeight;
+                        $(".select2-container-multi .select2-choices").scrollTop(height);
+                    }, 0);
                 });
             }
             
@@ -1021,220 +1217,12 @@
                 });
                 
                 /* Fetch all node info */
-                $.getJSON(opts.nodesUrl, function(data) {
-                    vizdata['strains'] = data.nodes;
-                    vizdata['index'] = {};
-                    autocomp = [];
-                    opts.attributes = [];
+                $.getJSON(opts.axisUrl, function(data) {
+                    var column = data.axis.x, row = data.axis.y;
                     
-                    var strain;
-                    var tokens;
-                    for (i in data.nodes) {
-                        strain = data.nodes[i];
-                        strain.verboseName = strain.col_name + '  /  ' + strain.row_name;
-                        
-                        vizdata.index[strain.id] = i;
-                        
-                        autocomp.push({
-                            value: strain.verboseName,
-                            tokens: [strain.col_name, strain.row_name],
-                            id: strain.id
-                          });
-                    }
-                    
-                    var tokenizing = false;
-                    $("input.gene-search-input").select2({
-                        multiple: true,
-                        minimumInputLength: 2,
-                        containerCssClass: 'form-control', 
-                        placeholder: 'Start typing terms...',
-                        allowClear: true,
-                        width: '350px',
-                        tokenSeparators: [",", " ", "\t", "\n"],
-                        initSelection: function (element, callback) {
-                            var id = $(element).val(), strain, result = [];
-                            id.split(",").forEach(function(x) {
-                                if (x !== "") {
-                                    strain = getStrain(x);
-                                    result.push({
-                                        text: strain.verboseName,
-                                        id: strain.id
-                                    });
-                                }
-                            });
-                            callback(result);
-                        },
-                        tokenizer: function (input, selection, selectCallback, opts) {
-                            var original = input, // store the original so we can compare and know if we need to tell the search to update its text
-                            dupe = false, // check for whether a token we extracted represents a duplicate selected choice
-                            token, // token
-                            index, // position at which the separator was found
-                            i, l, // looping variables
-                            separator; // the matched separator
-                            
-                            if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-                            
-                            tokenizing = true;
-                            var addedNew = false;
-                            while (true) {
-                                index = -1;
-                                
-                                for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
-                                    separator = opts.tokenSeparators[i];
-                                    index = input.indexOf(separator);
-                                    if (index >= 0) break;
-                                }
-                                
-                                if (index < 0) break; // did not find any token separator in the input string, bail
-                                
-                                token = input.substring(0, index);
-                                input = input.substring(index + separator.length);
-                                
-                                if (token.length > 0) {
-                                    var tokens = opts.createSearchChoice.call(this, token, selection);
-                                    if (tokens !== undefined && tokens !== null) {
-                                        if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) {
-                                            tokens = [tokens];
-                                        }
-                                        
-                                        tokens.forEach(function(token) {
-                                            if (opts.id(token) !== undefined && opts.id(token) !== null) {
-                                                dupe = false;
-                                                for (i = 0, l = selection.length; i < l; i++) {
-                                                    if (opts.id(token) == opts.id(selection[i])) {
-                                                        dupe = true; break;
-                                                    }
-                                                }
-                                                
-                                                if (!dupe) {
-                                                    selectCallback(token);
-                                                    addedNew = true;
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                            
-                            tokenizing = false;
-                            if (addedNew) {
-                                this.triggerChange({foo: "bar"});
-                            }
-                            if (original!==input) return input;
-                        },
-                        createSearchChoice: function(term) {
-                            var wildcard = term.indexOf('*') != -1;
-                            term = term.replace('*', '').toLowerCase();
-                            
-                            if (term.length > 0) {
-                                var results = [], seen = {};
-                                
-                                autocomp.forEach(function(node) {
-                                    node.tokens.forEach(function(token) {
-                                        if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
-                                            results.push({id: node.id, text: node.value });
-                                            seen[node.id] = 0;
-                                            return;
-                                        }
-                                    });
-                                });
-                                if (results.length !== 0) return results;
-                            }
-                        },
-                        query: function(query) {
-                            if (query.term === undefined) {
-                                query.callback({results: []});
-                                return;
-                            }
-                            var data = {results: []};
-                            var term = query.term.replace('*', '').toLowerCase();
-                            
-                            autocomp.forEach(function(node) {
-                                if (query.term.length == 0){
-                                    data.results.push({id: node.id, text: node.value });
-                                } else {
-                                    for (var x in node.tokens) {
-                                        if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
-                                            data.results.push({id: node.id, text: node.value });
-                                            break;
-                                        }
-                                    }
-                                }
-                            });
-                            
-                            data.results = data.results.slice(0, 6);
-                            query.callback(data);
-                        },
-                        data: autocomp,
-                    }).on('change', function(evt, a, b, c) {
-                        var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
-                        var selectionLength, selection = getSelection();
-                        
-                        var toPaste = getUnique(getSelectedNodes().map(function(s) {return getStrain(s).label;}).sort());
-                        $("#copy-area").html(toPaste.toString())
-                        
-                        sigInst.iterNodes(function(node) {
-                            strain = getStrain(node.id);
-                            if ($.inArray(strain.id + "", selected) >= 0) {
-                                node.selected = true;
-                                
-                                if (node.hidden && !autoState ) {
-                                    if (!selected.byAnnot.hasOwnProperty(node.id))
-                                        messageUser('Gene you\'re looking for is below current threshold.')
-                                } else {
-                                    numVisibleSelected++;
-                                }
-                            } else {
-                                node.selected = false;
-                            }
-                        });
-                        
-                        $('[data-selection-constraint]').each(function() {
-                            var enabled = true, size = selected.length, cls = $(this).data('selection-class') || 'disabled';
-                            if ($(this).data('selection-type') == 'visible') {
-                                size = numVisibleSelected;
-                            }
-                            if ($(this).data('selection-gt') != undefined) {
-                                enabled &= size > $(this).data('selection-gt');
-                            }
-                            if ($(this).data('selection-lt') != undefined) {
-                                enabled &= size < $(this).data('selection-lt');
-                            }
-                            
-                            $(this).toggleClass(cls, !enabled);
-                        });
-                        
-                        if (!tokenizing) {
-                            updateMissingMessage();
-                            sigInst.draw();
-                            
-                            if (!($(selected).not(state.getProperty("selection")).length == 0 && $(state.getProperty("selection")).not(selected).length == 0)) {
-                                var diff = $(selected).not(state.getProperty("selection")).get();
-                                
-                                state.setProperty("selection", getSelection());
-                                
-//                                if (!noPulse) {
-//                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
-//                                        return diff.indexOf(node.id) != -1;
-//                                    })});
-//                                }
-                                changeState();
-                                
-                                /* Set the tooltips */
-                                updateTooltips();
-                            }
-                        }
-                    }).on('select2-opening', function(e) {
-                        $(this).data('open', true);
-                    }).on('select2-close', function(e) {
-                        $(this).data('open', false);
-                        $(".select2-container-multi .select2-choices").css("max-height", "34px");
-                    }).on('select2-focus', function(e) {
-                        setTimeout(function() {
-                            var height = $(".select2-container-multi .select2-choices")[0].scrollHeight;
-                            $(".select2-container-multi .select2-choices").scrollTop(height);
-                        }, 0);
-                    });
+                    vizdata['col'] = column; 
+                    vizdata['row'] = row;
+                    vizdata['cells'] = [];
                     
                     updateTooltips();
                     showUI();

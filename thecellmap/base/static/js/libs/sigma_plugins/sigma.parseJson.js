@@ -24,20 +24,15 @@ sigma.publicPrototype.parseJson = function(opts) {
                 strain = {};
             }
             
-//            annot = annotations.map[strain.id];
-//            if (annot != undefined) {
-//                color = annotations.colorPalette[annotations.terms[annot[0]].idx];
-//            } else {
-//                color = annotations.defaultColor;
-//            }
+            annot = annotations.map[strain.id];
+            if (annot != undefined) {
+                color = annotations.colorPalette[annotations.terms[annot[0]].idx];
+            } else {
+                color = annotations.defaultColor;
+            }
             
             node.label = strain.verboseName;
-            
-            
-            node.weight = strain.weight;
-            node.col = strain.col_name;
-            node.row = strain.row_name;
-            node.size = 0.5;                                        // changed to 0.5 for heatmap
+            node.size = 2;
             node.color = color;
             node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
             node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
