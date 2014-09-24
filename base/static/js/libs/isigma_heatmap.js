@@ -1747,25 +1747,13 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    * @return {Plotter} Returns itself.
    */
   function drawNode(node) {
-    var size = 0.5 * node['displaySize'] / node['size'];
+    var size = node['displaySize'];
     var ctx = nodesCtx;
-    var weight = node['attr']['weight'];
+    var weight = node['attr']['w'];
     
     if (weight == 0 || node['hidden']) {
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        ctx.beginPath();
-        ctx.rect(node['displayX'] - size, node['displayY'] - size, size*2, size*2);
-        ctx.closePath();
-        ctx.fill();
-        
         return self;
     }
-    
-    ctx.fillStyle = "rgb(255, 255, 255)";
-    ctx.beginPath();
-    ctx.rect(node['displayX'] - size, node['displayY'] - size, size*2, size*2);
-    ctx.closePath();
-    ctx.fill();
     
     if (weight < 0.) {
         ctx.fillStyle = "rgba(255, 0, 0, " + Math.abs(weight) + ")";
@@ -1807,8 +1795,8 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    */
   function drawHoverNode(node) {
     var ctx = hoverCtx;
-    var size = 0.5 * node['displaySize'] / node['size'];
-    var weight = node['attr']['weight'];
+    var size = node['displaySize'];
+    var weight = node['attr']['w'];
     
     if (weight == 0) return self;
     
@@ -2022,7 +2010,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    */
   function drawLabel(node) {
     var ctx = labelsCtx;
-    var fontSize = (node['displaySize'] / node['size']) / 1.5;
+    var fontSize = node['displaySize'];
     ctx.font = self.p.fontStyle + fontSize + 'px ' + self.p.font;
     ctx.fillStyle = self.p.labelColor == 'node' ?
                    (node['color'] || self.p.defaultNodeColor) :
@@ -2032,7 +2020,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
         ctx.textAlign="end";
         ctx.fillText(
          node['attr']['row'],
-         Math.round(node['displayX'] - node['displaySize'] / node['size']),
+         Math.round(node['displayX'] - node['displaySize'] * 2),
          Math.round(node['displayY'] + fontSize / 2 - 3)
         );
     }
@@ -2040,7 +2028,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     if (node.y == 0) {
         var textWidth = ctx.measureText(node['attr']['col']).width;
         ctx.save();
-        ctx.translate(Math.round(node['displayX'] + fontSize / 2 - 3), Math.round(node['displayY'] - node['displaySize'] / node['size']));
+        ctx.translate(Math.round(node['displayX'] + fontSize / 2 - 3), Math.round(node['displayY'] - node['displaySize'] * 2));
         ctx.rotate(-Math.PI/2);
         ctx.fillText(node['attr']['col'], textWidth, 0);
         ctx.restore();
@@ -2873,41 +2861,9 @@ function Sigma(root, id) {
     
   }).bind('move', function(e) {
     draggedMouse = true;
-    if (eventType == 'downnodes') {
-      var targetedNode = self.graph.nodesIndex[targeted[0]];
-      draggedNode = true;
-      var diff = self.graph.translateNodes(
-              targeted.slice(0, 1),
-              self.mousecaptor.mouseX,
-              self.mousecaptor.mouseY,
-              e.content['stageX'],
-              e.content['stageY'],
-              self.width,
-              self.height,
-              e.content['ratio']
-            );
-      
-      if (targetedNode.selected) {
-          selected.forEach(function(nodeid) {
-              if (nodeid == targeted[0]) return;
-              var node = self.graph.nodesIndex[nodeid];
-              node.x -= diff.x;
-              node.y -= diff.y;
-          });
-      }
-      
-      self.domElements.hover.getContext('2d').clearRect(
-        0,
-        0,
-        self.domElements.hover.width,
-        self.domElements.hover.height
-      );
-      self.draw(
-        self.p.auto ? 2 : self.p.drawNodes,
-        self.p.auto ? 2 : self.p.drawEdges,
-        self.p.auto ? 2 : self.p.drawLabels,
-        self.p.auto ? 0 : self.p.drawEdgeLabels
-      );
+    if (eventType == 'downgraph' || eventType == 'downedges') {
+        self.mousecaptor.drag();
+        self.refresh();
     } else {
       self.refresh();
     }
@@ -2976,7 +2932,7 @@ function Sigma(root, id) {
       self.width = self.domRoot.offsetWidth;
       self.height = self.domRoot.offsetHeight;
     }
-
+    
     if (oldW != self.width || oldH != self.height) {
       for (var k in self.domElements) {
         self.domElements[k].setAttribute('width', self.width + 'px');

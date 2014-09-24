@@ -56,10 +56,9 @@
   <script src="{% static 'js/libs/chroma.palette-gen.js' %}"></script>
   
   <script src="{% static 'js/libs/isigma_heatmap.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.parseJson.js' %}"></script>
+  <script src="{% static 'js/libs/sigma_plugins/sigma.parseJsonHeatmap.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.forcelayout.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.boonetools.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.rotate.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.pulse.js' %}"></script>
   <script src="{% static 'js/libs/jquery.contextMenu.js' %}"></script>
   <script src="{% static 'js/libs/fullScreenApi.js' %}"></script>
@@ -101,9 +100,9 @@
         }];
         
         $("#network-container").booneGraph({
-            layout: {
+            matrix: {
                     id: "{{ heatmap.id }}",
-                    url: "{{ heatmap.static_url }}/layout.json",
+                    url: "{{ heatmap.static_url }}/matrix.json",
                     name: "{{ heatmap.name }}",
                     parser: "json",
                     dataset: 1
@@ -115,7 +114,7 @@
                 },{% endfor %}],
 //            datasets: datasets,
             layoutAlgo: ['fl'],
-            nodesUrl: "{{ heatmap.static_url }}/nodes.json",
+            axisUrl: "{{ heatmap.static_url }}/axis.json",
             debug: {% if debug %}true{% else %}false{% endif %},
             layoutButtonHide: false,
             slider: {
