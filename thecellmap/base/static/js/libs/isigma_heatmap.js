@@ -2019,18 +2019,18 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     if (node.x == 0) {
         ctx.textAlign="end";
         ctx.fillText(
-         node['attr']['row'],
+         node['attr']['row']['label'],
          Math.round(node['displayX'] - node['displaySize'] * 2),
          Math.round(node['displayY'] + fontSize / 2 - 3)
         );
     }
     
     if (node.y == 0) {
-        var textWidth = ctx.measureText(node['attr']['col']).width;
+        var textWidth = ctx.measureText(node['attr']['col']['label']).width;
         ctx.save();
         ctx.translate(Math.round(node['displayX'] + fontSize / 2 - 3), Math.round(node['displayY'] - node['displaySize'] * 2));
         ctx.rotate(-Math.PI/2);
-        ctx.fillText(node['attr']['col'], textWidth, 0);
+        ctx.fillText(node['attr']['col']['label'], textWidth, 0);
         ctx.restore();
     }
     

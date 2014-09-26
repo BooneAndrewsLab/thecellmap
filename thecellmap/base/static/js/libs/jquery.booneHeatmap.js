@@ -71,6 +71,7 @@
             var autoState = false;
             var isInitializing = true;
             var noPulse = false;
+            var annotation, network; 
             
             var showingDemo = false;
             
@@ -573,20 +574,20 @@
                         }
                     });
                     
-//                    $('[data-selection-constraint]').each(function() {
-//                        var enabled = true, size = selected.length, cls = $(this).data('selection-class') || 'disabled';
-//                        if ($(this).data('selection-type') == 'visible') {
-//                            size = numVisibleSelected;
-//                        }
-//                        if ($(this).data('selection-gt') != undefined) {
-//                            enabled &= size > $(this).data('selection-gt');
-//                        }
-//                        if ($(this).data('selection-lt') != undefined) {
-//                            enabled &= size < $(this).data('selection-lt');
-//                        }
-//                        
-//                        $(this).toggleClass(cls, !enabled);
-//                    });
+                    $('[data-selection-constraint]').each(function() {
+                        var enabled = true, size = selected.length, cls = $(this).data('selection-class') || 'disabled';
+                        if ($(this).data('selection-type') == 'visible') {
+                            size = numVisibleSelected;
+                        }
+                        if ($(this).data('selection-gt') != undefined) {
+                            enabled &= size > $(this).data('selection-gt');
+                        }
+                        if ($(this).data('selection-lt') != undefined) {
+                            enabled &= size < $(this).data('selection-lt');
+                        }
+                        
+                        $(this).toggleClass(cls, !enabled);
+                    });
                     
                     if (!tokenizing) {
                         updateMissingMessage();
@@ -1015,6 +1016,15 @@
                         break
                     case "context-edit-node":
                         editNode(hoveredTargets[0]);
+                    case "context-complex":
+                        var node = getNode(hoveredTargets[0]);
+                        var storage = {
+                                annotation: annotation,
+                                terms: [node.attr.row.dk, node.attr.col.dk],
+                        }
+                        
+                        sessionStorage.setItem(sessionStorage.length + 1, JSON.stringify(storage))
+                        window.location.href = '/network/' + network + '?' + $.param({'hmid': sessionStorage.length}, true);
                         break;
                     }
                     
@@ -1219,6 +1229,7 @@
                 /* Fetch all node info */
                 $.getJSON(opts.axisUrl, function(data) {
                     var column = data.axis.x, row = data.axis.y;
+                    annotation = data.annotation, network = data.network;
                     
                     vizdata['col'] = column; 
                     vizdata['row'] = row;

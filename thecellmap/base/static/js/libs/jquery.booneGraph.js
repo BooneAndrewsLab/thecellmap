@@ -755,19 +755,51 @@
                     }
                     
                     vizdata['edges'] = {};
+                    
+                    var hmid = window.location.href.slice(window.location.href.indexOf('hmid=')).replace('hmid=', '');
+                    var data = JSON.parse(sessionStorage.getItem(hmid)), hmAnnot;
+                    
+                    for (annot in opts.annotations) {
+                        if (opts.annotations[annot].id == data.annotation) {
+                            hmAnnot = opts.annotations[annot].name;
+                            sigInst.iterNodes(function(node) {
+                                node.hidden = true;
+                            });
+                            break;
+                        }
+                    }
+                    
+                    if (hmAnnot) {
+                        var annotLayout = function() {
+                            sigInst.iterNodes(function(node) {
+                                var strain = getStrain(node.id), hidden = true;
+                                
+                                for (term in data.terms) {
+                                    if (vizdata[hmAnnot]['map'][strain.orf] != undefined && vizdata[hmAnnot]['map'][strain.orf].indexOf(data.terms[term]) != -1) hidden = false;
+                                }
+                                
+                                if (!hidden) node.hidden = false;
+                            });
+                        }
+                        
+                        loadAnnotation(hmAnnot, annotLayout);
+                    }
+                    
                     rebuildLegend();
                 }
                 getParser(layout.parser)({
                     jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback, state: state
                 });
             }
-
-            function loadAnnotation(id) {
+            
+            function loadAnnotation(id, callback) {
+                console.log($('.vizualization-ui').is(":visible"))
                 state.setProperty("annotation", id);
-                if (id == "None")
+                if (id == "None") {
                     $(".annotation-constraint").addClass("disabled");
-                else
+                } else {
                     $(".annotation-constraint").removeClass("disabled");
+                }
                 
                 if (vizdata[id] == undefined) {
                     if (id == 'None') {
@@ -830,6 +862,7 @@
                 applyAnnotationColors();
                 rebuildLegend();
                 changeNodesState();
+                if (callback) callback();
             }
             
             function rebuildLegend() {
@@ -2998,6 +3031,7 @@
                     
                     // Load plot graph in Michael Jackson mode by
                     // default
+                    
                     loadAnnotation(state.getProperty("annotation"));
                     loadLayout();
                 });
