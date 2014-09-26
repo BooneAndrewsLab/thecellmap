@@ -107,12 +107,6 @@
                     parser: "json",
                     dataset: 1
                 },
-            annotations: [{% for annot in annotations %}{
-                    id: {{ annot.id }},
-                    name: "{{ annot.name }}",
-                    url: "{% url 'annotation' annot.id %}"
-                },{% endfor %}],
-//            datasets: datasets,
             layoutAlgo: ['fl'],
             axisUrl: "{{ heatmap.static_url }}/axis.json",
             debug: {% if debug %}true{% else %}false{% endif %},
@@ -125,9 +119,6 @@
                 updateLimits: false
             },
             uiUrl: "{% static 'heatmap_ui.html' %}",
-            drawUIUrl: "{% static 'draw_ui.html' %}",
-            canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
-            circleUrl: "{% url 'circle_pack' %}",
             //preloadedState: JSON.parse(localStorage.getItem("savedState"))
         });
     });

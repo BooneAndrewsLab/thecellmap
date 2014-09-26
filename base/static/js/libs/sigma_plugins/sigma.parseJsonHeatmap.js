@@ -15,12 +15,11 @@ sigma.publicPrototype.parseJson = function(opts) {
         nodes.forEach(function (node) {
             node.size = 2.5;
             
-            node.x = !isNaN(node.x) ? node.x * 5 : (Math.random() * 100);
-            node.y = !isNaN(node.y) ? node.y * 5 : (Math.random() * 100);
-            node.col = vizdata['col'][node.x / 5]['label'];
-            node.row = vizdata['row'][node.y / 5]['label'];
-            node.label = node.col + ' / ' + node.row;
-            node.id = node.x * vizdata['col'].length + node.y;
+            node.x = !isNaN(node.x) ? node.x * node.size * 2 : (Math.random() * 100);
+            node.y = !isNaN(node.y) ? node.y * node.size * 2 : (Math.random() * 100);
+            node.col = vizdata['col'][node.x / (node.size * 2)];
+            node.row = vizdata['row'][node.y / (node.size * 2)];
+            node.label = node.col['label'] + ' / ' + node.row['label'];
         });
         
         var end = new Date().getTime();

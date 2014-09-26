@@ -49,6 +49,7 @@ class TermAdmin(admin.ModelAdmin):
     list_display = ('annotation', 'name', 'alias', 'term_color', 'number_of_genes')
     exclude = ('genes', )
     list_filter = ('annotation', )
+    search_fields = ('name', )
     
     def number_of_genes(self, ds):
         return ds.genes.count()
