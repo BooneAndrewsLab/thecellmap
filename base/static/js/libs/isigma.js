@@ -1578,6 +1578,8 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    */
   var edgehoverCtx = edgehoverCtx;
 
+  var oldNodesCtx, oldEdgesCtx, oldLabelsCtx;
+
   /**
    * A reference to the graph to draw.
    * @type {Graph}
@@ -2474,6 +2476,22 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     return nodeCoordinates;
   };
 
+  this.switchCxt = function(ctx) {
+      oldNodesCtx = nodesCtx;
+      oldEdgesCtx = edgesCtx;
+      oldLabelsCtx = labelsCtx;
+      
+      nodesCtx = ctx;
+      edgesCtx = ctx;
+      labelsCtx = ctx;
+  };
+  
+  this.restoreCxt = function() {
+      nodesCtx = oldNodesCtx;
+      edgesCtx = oldEdgesCtx;
+      labelsCtx = oldLabelsCtx;
+  }
+  
   this.task_drawLabel = task_drawLabel;
   this.task_drawEdgeLabel = task_drawEdgeLabel;
   this.task_drawEdge = task_drawEdge;
@@ -2483,6 +2501,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
   this.drawHoverEdge = drawHoverEdge;
   this.isOnScreen = isOnScreen;
   this.resize = resize;
+  this._ctx
 }
 
 /**
