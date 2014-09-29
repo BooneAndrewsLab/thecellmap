@@ -2884,16 +2884,16 @@ function Sigma(root, id) {
           selected.forEach(function(node) {
               switch (event.which) {
               case 37:
-                  self.graph.translateCol(node, -1, yMax, yMin);
+                  self.graph.translateCol(node, -node.size * 2, yMax, yMin);
                   break;
               case 38:
-                  self.graph.translateRow(node, -1, xMax, xMin);
+                  self.graph.translateRow(node, -node.size * 2, xMax, xMin);
                   break;
               case 39:
-                  self.graph.translateCol(node, 1, yMax, yMin);
+                  self.graph.translateCol(node, node.size * 2, yMax, yMin);
                   break;
               case 40:
-                  self.graph.translateRow(node, 1, xMax, xMin);
+                  self.graph.translateRow(node, node.size * 2, xMax, xMin);
                   break;
               }
           });
