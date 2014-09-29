@@ -276,7 +276,7 @@ class GenericXlsWriter():
         return self.fd
     
     def as_response(self):
-        response = HttpResponse(mimetype=self.mime)
+        response = HttpResponse(content_type=self.mime)
         response['Content-Disposition'] = 'attachment; filename=%s' % (self.fd, )
         self.fd = response
         self.save()
@@ -369,7 +369,7 @@ class CsvWriter(GenericXlsWriter):
         if not self.file_name:
             raise Exception()
         
-        response = HttpResponse(mimetype=self.mime)
+        response = HttpResponse(content_type=self.mime)
         response['Content-Disposition'] = 'attachment; filename=%s' % (self.file_name, )
         self.fd.seek(0)
         response.write(self.fd.read())
@@ -539,7 +539,7 @@ is_integer = lambda x: not not re.match('\d+', x)
 
 class JsonResponse(HttpResponse):
     def __init__(self, obj):
-        super(JsonResponse, self).__init__(json.dumps(obj), mimetype="application/json")
+        super(JsonResponse, self).__init__(json.dumps(obj), content_type="application/json")
 
 try:
     PROFILE_LOG_BASE = settings.PROFILE_LOG_BASE  # @UndefinedVariable

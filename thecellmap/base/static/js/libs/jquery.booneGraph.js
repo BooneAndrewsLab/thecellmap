@@ -759,13 +759,15 @@
                     var hmid = window.location.href.slice(window.location.href.indexOf('hmid=')).replace('hmid=', '');
                     var data = JSON.parse(sessionStorage.getItem(hmid)), hmAnnot;
                     
-                    for (annot in opts.annotations) {
-                        if (opts.annotations[annot].id == data.annotation) {
-                            hmAnnot = opts.annotations[annot].name;
-                            sigInst.iterNodes(function(node) {
-                                node.hidden = true;
-                            });
-                            break;
+                    if (data) {
+                        for (annot in opts.annotations) {
+                            if (opts.annotations[annot].id == data.annotation) {
+                                hmAnnot = opts.annotations[annot].name;
+                                sigInst.iterNodes(function(node) {
+                                    node.hidden = true;
+                                });
+                                break;
+                            }
                         }
                     }
                     
@@ -793,7 +795,6 @@
             }
             
             function loadAnnotation(id, callback) {
-                console.log($('.vizualization-ui').is(":visible"))
                 state.setProperty("annotation", id);
                 if (id == "None") {
                     $(".annotation-constraint").addClass("disabled");
@@ -1388,6 +1389,17 @@
                 });
             }
             
+            function downloadCanvasSvg() {
+                var canvas = new C2S($('canvas:first').width(), $('canvas:first').height());
+                
+                sigInst._core.plotter.switchCxt(canvas);
+                sigInst.draw(2,2,2,2);
+                sigInst._core.plotter.restoreCxt();
+                
+                var blob = new Blob([canvas.getSerializedSvg()], {type: "text/svg+xml;charset=utf-8"});
+                saveAs(blob, 'boonelab_network.svg');
+            }
+            
             function downloadShownData() {
                 var data = ['Gene A ORF\tGene A allele\tGene B ORF\tGene B allele\tCorrelation\n'];
                 var src, trg;
@@ -1871,6 +1883,7 @@
                     }
                 });
                 $('#download-snapshot').click(downloadCanvasSnapshot);
+                $('#download-svg').click(downloadCanvasSvg);
                 
                 $('#btn-zoom-in').click(function() {
                     var position = sigInst.position();
