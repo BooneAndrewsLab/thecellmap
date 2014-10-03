@@ -7,6 +7,8 @@
             fileType: localStorage.getItem("fileType") || "xls",
             showDemo: localStorage.getItem("showDemo") || true,
             openSearchbar: localStorage.getItem("openSearchbar") || false,
+            showBgSvg: localStorage.getItem("showBgSve") || true,
+            showLegendSvg: localStorage.getItem("showLegendSvg") || true,
     };
     
     var bool = {
@@ -17,6 +19,8 @@
             showDemo: true,
             fileType: false,
             openSearchbar: true,
+            showBgSvg: true,
+            showLegendSvg: true,
     }
     
     updateSettings(settings)
