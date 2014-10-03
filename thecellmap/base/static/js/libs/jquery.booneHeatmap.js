@@ -737,7 +737,7 @@
                 var isArray = $.isArray(cutoff), selected = getSelectedNodes(true), strain;
                 
                 sigInst.iterNodes(function(node) {
-                    node.hidden = node.attr.weight < -cutoff[0] &&  node.attr.weight > -cutoff[1];
+                    node.hidden = node.attr.w < -cutoff[0] &&  node.attr.w > -cutoff[1];
                 });
                 
                 sigInst.draw();

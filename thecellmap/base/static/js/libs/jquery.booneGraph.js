@@ -547,11 +547,8 @@
                     $("#selected-dataset").html("Genetic interactions");
                     
                     state.setProperty("dataset", 1);
-                    
                     sigInst.draw();
-                    
                     autoState = false;
-                    
                     changeNodesState();
                 });
             };
@@ -701,8 +698,9 @@
                         setState({style: savedState, nodes: savedNodes});
                         
                         applySettings(settings);
-                        isInitializing = false;
                     }
+                    
+                    isInitializing = false;
                 };
                 
                 if (preloaded == undefined) {
@@ -759,7 +757,7 @@
                     var hmid = window.location.href.slice(window.location.href.indexOf('hmid=')).replace('hmid=', '');
                     var data = JSON.parse(sessionStorage.getItem(hmid)), hmAnnot;
                     
-                    if (data) {
+                    if (data && hmid) {
                         for (annot in opts.annotations) {
                             if (opts.annotations[annot].id == data.annotation) {
                                 hmAnnot = opts.annotations[annot].name;
@@ -769,22 +767,24 @@
                                 break;
                             }
                         }
-                    }
-                    
-                    if (hmAnnot) {
-                        var annotLayout = function() {
+                        var annotCallback = function() {
                             sigInst.iterNodes(function(node) {
-                                var strain = getStrain(node.id), hidden = true;
+                                var strain = getStrain(node.id), hidden = true, nodeTerm;
                                 
                                 for (term in data.terms) {
-                                    if (vizdata[hmAnnot]['map'][strain.orf] != undefined && vizdata[hmAnnot]['map'][strain.orf].indexOf(data.terms[term]) != -1) hidden = false;
+                                    if (vizdata[hmAnnot]['map'][strain.orf] != undefined && vizdata[hmAnnot]['map'][strain.orf].indexOf(data.terms[term]) != -1) {
+                                        node.hidden = false;
+                                        nodeTerm = vizdata[hmAnnot]['terms'][data.terms[term]];
+                                        node.color = vizdata[hmAnnot]['colorPalette'][nodeTerm.idx];
+                                    }
                                 }
-                                
-                                if (!hidden) node.hidden = false;
                             });
+                            switchDataset(1);
+                            toggleLayout(false, 'annotation');
+                            applySettings(settings);
                         }
                         
-                        loadAnnotation(hmAnnot, annotLayout);
+                        loadAnnotation(hmAnnot, annotCallback);
                     }
                     
                     rebuildLegend();
@@ -1390,14 +1390,39 @@
             }
             
             function downloadCanvasSvg() {
-                var canvas = new C2S($('canvas:first').width(), $('canvas:first').height());
+                var width = $('canvas:first').width(), height = $('canvas:first').height(), date = new Date();
+                var canvas = new C2S(width * 1.25, height);
+                var filename = 'boonelab_network_' + date.getDate() + '_' + date.getHours() + '_' + date.getMinutes() + '_' + date.getSeconds() + '.svg';
+                
+                if (settings['showBgSvg']) {
+                    canvas.fillStyle = $('#canvas-background-color').val();
+                    canvas.fillRect(0, 0, settings['showLegendSvg'] ? width * 1.25 : width, height);
+                }
                 
                 sigInst._core.plotter.switchCxt(canvas);
-                sigInst.draw(2,2,2,2);
+                sigInst.draw(0,2,0,0);
+                sigInst.draw(2,0,0,0);
+                sigInst.draw(0,0,2,0);
                 sigInst._core.plotter.restoreCxt();
+                sigInst.draw();
                 
-                var blob = new Blob([canvas.getSerializedSvg()], {type: "text/svg+xml;charset=utf-8"});
-                saveAs(blob, 'boonelab_network.svg');
+                if (settings['showLegendSvg']) {
+                    canvas.fillStyle = $('#canvas-background-color').val();
+                    canvas.fillRect(width, 0, width/4, height)
+                    var annot = state.getProperty('annotation');
+                    canvas.font = "10px Arial";
+                    var x = width + 5, y = 10;
+                    for (t in vizdata[annot].terms) {
+                        var term = vizdata[annot].terms[t];
+                        canvas.fillStyle = vizdata[annot].colorPalette[term.idx];
+                        canvas.fillRect(x, y, 5, 5);
+                        canvas.fillText(term.name, x + 10, y + 5);
+                        y += 10;
+                    }
+                }
+                
+                var blob = new Blob([canvas.getSerializedSvg()], {type: 'text/svg+xml;charset=utf-8'});
+                saveAs(blob, filename);
             }
             
             function downloadShownData() {
@@ -2269,24 +2294,21 @@
                     });
                 });
                 
-                $("#btn-save-state").click(function() {
-                    localStorage.setItem("savedState", JSON.stringify(state.asJson()));
-                    
-                    var nodesState = {};
-                    sigInst._core.graph.nodes.forEach(function(node) {
-                        nodesState[node.id] = {
-                             x: node.x,
-                             y: node.y,
-                             color: node.color,
-                             label: node.label,
-                             hidden: node.hidden
-                        }
-                    });
-                    
-                    localStorage.setItem("savedNodes", JSON.stringify(nodesState));
-                    
-                    messageUser("Saved State")
-                });
+//                $("#btn-save-state").click(function() {
+//                    localStorage.setItem("savedState", JSON.stringify(state.asJson()));
+//                    var nodesState = {};
+//                    sigInst._core.graph.nodes.forEach(function(node) {
+//                        nodesState[node.id] = {
+//                             x: node.x,
+//                             y: node.y,
+//                             color: node.color,
+//                             label: node.label,
+//                             hidden: node.hidden
+//                        }
+//                    });
+//                    localStorage.setItem("savedNodes", JSON.stringify(nodesState));
+//                    messageUser("Saved State")
+//                });
                 
                 $("#search-bar").mouseenter(function(e) {
                     $(".select2-container-multi .select2-choices").css("max-height", "300px");
