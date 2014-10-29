@@ -96,9 +96,10 @@
         
         $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
         var dataType = null;
-        {% if dataset.type %}
-            dataType = '{{ dataset.type }}';
-        {% endif %}
+        {% if dataset.type %}dataType = '{{ dataset.type }}';{% endif %}
+        
+        var directed = false;
+        {% if dataset.directed %}directed = true;{% endif %}
         
         var datasets = [{
             id: "{{ dataset.id }}",
@@ -148,6 +149,7 @@
             drawUIUrl: "{% static 'draw_ui.html' %}",
             canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
             circleUrl: "{% url 'circle_pack' %}",
+            arrows: directed,
             //preloadedState: JSON.parse(localStorage.getItem("savedState"))
         });
     });

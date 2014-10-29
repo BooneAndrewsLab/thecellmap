@@ -105,6 +105,7 @@ def custom_dataset(request, hash):
                             'static_url': custom.static_url(),
                             'name': hash,
                             'type': custom.type,
+                            'directed': custom.network_type == Custom.NET_DIRECTED,
                         },
               })
         else:
@@ -116,6 +117,7 @@ def custom_dataset(request, hash):
                     'static_url': custom.static_url(),
                     'name': hash,
                     'type': custom.type,
+                    'directed': custom.network_type == Custom.NET_DIRECTED,
                 },
                 'annotations': Annotation.objects.all(),
                 'can_bulk_download': False

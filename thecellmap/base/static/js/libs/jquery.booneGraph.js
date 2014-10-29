@@ -1555,7 +1555,7 @@
                         break;
                     case 'correlation-gi':
                         var selection = getSelectedNodes(true);
-                        if (selection.length > 1 && selection.length < 7)
+                        if (selection.length < 7)
                             showCorrelationDriving(true);
                         break;
                     }
@@ -1994,7 +1994,7 @@
                         break;
                     case "context-node-gi":
                         var selection = getSelectedNodes(true);
-                        if (selection > 1 && selection < 6)
+                        if (selection.length < 6)
                             showCorrelationDriving(true);
                         break;
                     }
@@ -3005,6 +3005,7 @@
                         
                         $('[data-selection-constraint]').each(function() {
                             var enabled = true, size = selected.selected.length, cls = $(this).data('selection-class') || 'disabled';
+                            
                             if ($(this).data('selection-type') == 'visible') {
                                 size = numVisibleSelected;
                             }
