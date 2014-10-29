@@ -66,6 +66,9 @@ class Command(CellMapCommand):
         self.old_strains = self.get_old_strains()
         self.current_strains = {s.boonelab_id: s for s in Strain.objects.select_related()}
         
+        self.seen_strains.update(self.current_strains.keys())
+        self.seen_strains.update(self.old_strains.keys())
+        
         scores = self.parse_scores(release_file)
         correlations = self.parse_correlations(correlations_file)
         
@@ -114,6 +117,7 @@ class Command(CellMapCommand):
             Dataset.objects.exclude(pk=ds.pk).update(is_default=True)
     
     def parse_correlations(self, path):
+        print 'Parsing correlations'
         corr = read_table(
                         path, 
                         sep='\t', 
@@ -143,36 +147,37 @@ class Command(CellMapCommand):
         corr.index = indices.index
         corr.columns = indices.index
         
-#         try:
-#             assert_frame_equal(corr, corr.T, check_dtype=False, check_names=False)
-#             print "Matrix already symmetric"
-#         except:
-#             nanmask = np.isnan(corr)
-#             tnanmask = np.isnan(corr.T)
-#             
-#             if (~nanmask & ~tnanmask).sum().sum() > 0:
-#                 # We would sum reciprocal values!! Check that each pair appears only once
-#                 raise CommandError("Problem with correlation matrix.")
-#             
-#             corr[nanmask] = 0
-#             corr += corr.T
-#             corr[nanmask & tnanmask] = np.nan
+        try:
+            assert_frame_equal(corr, corr.T, check_dtype=False, check_names=False)
+            print "Matrix already symmetric"
+        except:
+            nanmask = np.isnan(corr)
+            tnanmask = np.isnan(corr.T)
+             
+            if (~nanmask & ~tnanmask).sum().sum() > 0:
+                # We would sum reciprocal values!! Check that each pair appears only once
+                raise CommandError("Problem with correlation matrix.")
+             
+            corr[nanmask] = 0
+            corr += corr.T
+            corr[nanmask & tnanmask] = np.nan
         
         return corr
     
     def parse_scores(self, path):
+        print 'Parsing scores'
         scores = read_table(
                         path, 
                         sep='\t', 
                         header=0, 
                         names=['qorf', 'aorf', 'score', 'pval'],
-#                         usecols=[0, 2, 5, 7],
+                        usecols=[0, 1, 2, 3],
                     )
         
         """ TODO: TEMPORARY CODE """
-        scores['abssc'] = scores.score.abs()
-        scores = scores.sort('abssc', ascending=False).groupby(('qorf', 'aorf'), as_index=False).first()
-        scores = scores.drop('abssc', axis=1)
+#         scores['abssc'] = scores.score.abs()
+#         scores = scores.sort('abssc', ascending=False).groupby(('qorf', 'aorf'), as_index=False).first()
+#         scores = scores.drop('abssc', axis=1)
         """ TODO: TEMPORARY CODE """
         
         scores = scores.pivot('qorf', 'aorf')
@@ -219,7 +224,11 @@ class Command(CellMapCommand):
         if ',' in id:
             found = False
             for tmpid in id.split(','):
-                tmp = tmpid.split('_')[1].lower()
+                if '_' in tmpid:
+                    tmp = tmpid.split('_')[1].lower()
+                else:
+                    tmp = tmpid.lower()
+                
                 if tmp in self.seen_strains:
                     found = True
                     id = tmpid
@@ -228,7 +237,11 @@ class Command(CellMapCommand):
             if not found:
                 raise Exception("Nowhere to be found any of: %s" % id)
         
-        id = id.split('_')[1].lower()
+        if '_' in id:
+            id = id.split('_')[1].lower()
+        else:
+            id = id.lower()
+        
         if id not in self.old_strains:
             return False
         

@@ -154,14 +154,22 @@ class Custom(models.Model):
         (TYPE_CORRELATION, 'Correlation'),
     )
     
+    NET_UNDIRECTED = 'U'
+    NET_DIRECTED = 'D'
+    NET_CHOICES = (
+        (NET_UNDIRECTED, 'Undirected'),
+        (NET_DIRECTED, 'Directed'),
+    )
+    
     user = models.ForeignKey(User, null=True)
     hash = models.CharField(max_length=40, unique=True)
     private = models.BooleanField(default=False)
     name = models.CharField(max_length=40, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     permanent = models.BooleanField(default=False)
-    dataset = models.ForeignKey(Dataset, null=True)
+    dataset = models.ForeignKey(Dataset, null=True, related_name='customs')
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_CORRELATION)
+    network_type = models.CharField(max_length=1, choices=NET_CHOICES, default=NET_UNDIRECTED)
     
     def path(self, *args):
         return os.path.join(settings.STATIC_ROOT, 'upload', 'custom', self.hash, *args)

@@ -4,6 +4,7 @@ import os
 from time import time
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.forms.fields import CharField, BooleanField
 from django.forms.forms import Form
@@ -115,6 +116,7 @@ def custom(request):
         dataset = request.POST['dataset']
         private = request.POST['private'].lower() == 'true'
         type = request.POST['type']
+        network_type = request.POST['network-type']
         
         hash = hashlib.sha1()
         hash.update(str(time()) + nodes + layout + dataset)
@@ -131,7 +133,8 @@ def custom(request):
                 private=private,
                 name=name,
                 dataset=overlay,
-                type=type)
+                type=type,
+                network_type=network_type)
         
         os.makedirs(custom.path())
         

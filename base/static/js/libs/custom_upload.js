@@ -1,6 +1,6 @@
 (function() {
     var results = null, genes = null, maxid = 0, seen, workbook, nodeAttrs, wizard;
-    var networkName, fileType, isFirst = true, isPrivate = settings["isPrivate"], overlay = null, dataType = 'C';
+    var networkName, fileType, isFirst = true, isPrivate = settings["isPrivate"], overlay = null, dataType = 'C', networkType = 'U';
     var colMap = {
             source: null,
             target: null,
@@ -598,6 +598,10 @@
             dataType = $(this).val();
         });
         
+        $('#network-type').change(function() {
+            networkType = $(this).val();
+        });
+        
         $('input[type=file]').bootstrapFileInput();
         $('input[type=file]').click(function() {
             this.value = null;
@@ -661,7 +665,8 @@
                        "private": isPrivate,
                        name: networkName,
                        overlay: overlay,
-                       type: dataType},
+                       type: dataType,
+                       "network-type": networkType},
                 type: 'post',
                 url: '.', 
                 success: function(data) {
