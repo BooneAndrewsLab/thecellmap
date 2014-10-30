@@ -27,6 +27,15 @@
     .table-empty {
         text-align: center;
     }
+    
+    table tbody tr td:first-child {
+        color: #309bbf;
+        cursor: pointer;
+    }
+    
+    table tbody tr td:first-child:hover {
+        color: #444;
+    }
   </style>
 {% endblock css %}
 
@@ -191,11 +200,20 @@
                     $.get(clicked.closest('.tab-pane[data-node]').data('node') + "/", data, function(d) {
                         add_to_table(clicked.closest('tbody'), d, 2);
                         clicked.closest('tr').remove();
+                        update_links();
                     });
                 });
+                
+                update_links();
             });
         }
     };
+    
+    function update_links() {
+        $("table tbody tr td:first-child:not([colspan=3])").click(function() {
+            window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).data('value'), '_blank');
+        });
+    }
     
     $(document).ready(function() {
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
