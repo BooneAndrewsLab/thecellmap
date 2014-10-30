@@ -166,13 +166,13 @@
                 target.find('li[data-toggle="tooltip"]').tooltip();
                 
                 $('#c' + node_id + ' tbody').append(
-                        '<tr class="row-more"><td colspan="3" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="c" data-cutoff="1"> \
-                            Load all <span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                        '<tr class="row-more"><td colspan="3" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="c" data-cutoff="1">\
+Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
                 add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
                 
                 $('#s' + node_id + ' tbody').append(
-                        '<tr class="row-more"><td colspan="4" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="s" data-cutoff="1"> \
-                            Load all <span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                        '<tr class="row-more"><td colspan="4" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="s" data-cutoff="1">\
+Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
                 $('#s' + node_id + ' .score-neg .load-more').data('cutoff', -1);
                 add_to_table($('#s' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
                 add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2);
