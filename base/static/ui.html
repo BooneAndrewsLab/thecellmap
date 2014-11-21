@@ -46,7 +46,7 @@ $('.vizualization-ui').ready(function() {
   
   <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label"></button>
   
-  <div class="btn-group-vertical">
+  <div class="btn-group-vertical" data-hidden-zoom>
     <button id="btn-zoom-in" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
       <span class="glyphicon glyphicon-zoom-in"></span>
     </button>
@@ -60,7 +60,7 @@ $('.vizualization-ui').ready(function() {
   </div>
 </div>
 
-<div class="top-right hidden-sm hidden-xs">
+<div class="top-right hidden-sm hidden-xs" data-hidden-ui>
   <!-- <button type="button" class="btn btn-primary" id="btn-save-state">Save State</button> -->
   <div id="btn-group-neighbourhood" class="hidden btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown" data-step="2" data-intro="This button extracts the selected nodes and their neighbours from the network.<br>Try extracting a neighbourhood." data-position="bottom-left-aligned"> Extract <span class="caret"></span></button>
@@ -70,7 +70,7 @@ $('.vizualization-ui').ready(function() {
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
       <li class="divider"></li>
-      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Show Genetic interactions</a></li>
+      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Genetic interactions driving these correlations</a></li>
     </ul>
   </div>
   
@@ -83,7 +83,7 @@ $('.vizualization-ui').ready(function() {
     </button>
     <ul class="dropdown-menu" role="menu">
       <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"><span class="glyphicons resize_full"></span> Force-directed layout </a></li>
-      <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"><span class="glyphicons resize_full"></span> Force-directed layout + (experimental) </a></li>
+<!--       <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"><span class="glyphicons resize_full"></span> Force-directed layout + </a></li> -->
       <li class="annotation-constraint disabled"><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"><span class="glyphicons share_alt"></span> Annotation-directed layout </a></li>
       <li class="dataset-constraint disabled"><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"><span class="glyphicons share_alt"></span> GI-directed layout </a></li>
       <li class="dropdown-submenu pull-left disabled"><a id="tool-layout-attr" href="#"><span class="glyphicons share_alt"></span> Layout by attribute </a>
@@ -119,7 +119,7 @@ $('.vizualization-ui').ready(function() {
   </div>
 </div>
 
-<div class="bottom-left">
+<div class="bottom-left" data-hidden-ui>
   <div id="btn-group-datasets" class="btn-group dropup">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> <span id="selected-dataset">Correlations</span> <span class="caret"></span></button>
     <div class="list-group dropdown-menu menu-right" role="menu">
@@ -195,14 +195,15 @@ $('.vizualization-ui').ready(function() {
     <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
     <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li>
     <li class="divider"></li>
-    <li data-selection-constraint data-selection-ls="6"><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions </a></li>
+    <li data-selection-constraint data-selection-ls="6" data-selection-gt="1"><a id="context-nodes-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions </a></li>
+    <li><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li>
   </ul>
 </div>
 
 <div id="contextmenu-edge-container" class="dropdown clearfix contextmenu" style="display: none;">
   <ul id="contextmenu-edge" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
     <li class="disabled"><a id="contextmenu-edge-count"></a></li>
-    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this correlation </a></li>
+    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this awesome correlation </a></li>
   </ul>
 </div>
 
@@ -264,7 +265,7 @@ $('.vizualization-ui').ready(function() {
           <div class="form-group">
             <label for="edit-node-size-multiplier" class="col-sm-2 control-label">Node size multiplier</label>
             <div class="col-sm-10">
-              <input class="form-control" id="edit-node-size-multiplier">
+              <div id="style-slider-snsize"></div>
             </div>
           </div>
           <div class="form-group">

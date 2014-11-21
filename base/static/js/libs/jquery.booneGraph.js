@@ -515,14 +515,16 @@
                 return sigInst.parseBooneGexf;
             };
             
-            function showCorrelationDriving(fromNodes) {
+            function showCorrelationDriving(fromNodes, single) {
                 var nodes = [];
                 autoState = true; // Prevent automatic state change on loadDataset
                 
                 $(".dataset-constraint").removeClass("disabled");
                 
-                if (fromNodes) {
+                if (fromNodes && !single) {
                     nodes = getSelectedNodes(true);
+                } else if (fromNodes && single) {
+                    nodes.push(getNode(hoveredTargets[0]).id);
                 } else {
                     hoveredTargets.forEach(function(e) {
                         e = getEdge(e);
@@ -1317,7 +1319,7 @@
                 
                 applyCutoff(getCutoff());
                 applySettings(settings);
-            };
+            }
             
             function applySettings(s) {
                 for (key in s) {
@@ -1339,7 +1341,14 @@
                         sigInst.draw();
                         break;
                     case 'showDemo':
-                      if (s[key] && !showingDemo) initTour();
+                        if (s[key] && !showingDemo) initTour();
+                        break;
+                    case 'showUI':
+                        if (s[key]) {
+                            $('[data-hidden-ui]').each(function() { $(this).removeAttr('data-hidden-ui'); });
+                            $('[data-hidden-zoom]').each(function() { $(this).removeAttr('data-hidden-zoom'); });
+                        }
+                        break;
                     }
                 }
             }
@@ -1369,7 +1378,7 @@
                 
                 rebuildLegend();
                 sigInst.draw();
-            };
+            }
             
             function downloadCanvasSnapshot() {
                 var canvas = $('canvas:first').clone(), ctx = canvas[0].getContext("2d"), cx;
@@ -1408,10 +1417,10 @@
                 sigInst._core.plotter.restoreCxt();
                 sigInst.draw();
                 
-                if (settings['showLegendSvg']) {
+                var annot = state.getProperty('annotation');
+                if (settings['showLegendSvg'] && annot != 'None') {
                     canvas.fillStyle = $('#canvas-background-color').val();
-                    canvas.fillRect(width, 0, width/4, height)
-                    var annot = state.getProperty('annotation');
+                    canvas.fillRect(width, 0, width/4 + 25, height);
                     canvas.font = "10px Arial";
                     var x = width + 5, y = 10;
                     for (t in vizdata[annot].terms) {
@@ -1579,6 +1588,11 @@
                     var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - this.offsetTop;
                     
                     sigInst.goTo(xPos, yPos, position.ratio * 2).draw();
+                    
+                    $('[data-hidden-zoom]').each(function() {
+                        $(this).fadeIn(750).toggleClass('hidden', false);
+                        $(this).removeAttr('data-hidden-zoom');
+                    })
                 });
                 
                 $(".dropdown-toggle a").click(function(evt) {
@@ -1601,7 +1615,7 @@
                     case "btn-view":
                     case "view-tabular":
                         var selected = getSelectedNodes().selected;
-                        if (selected.length > 0) 
+                        if (selected.length > 0)
                             window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
                         break;
                     case "download-selected":
@@ -1702,8 +1716,15 @@
                             state.setProperty("edgeWidth", $(this).val());
                             changeState();
                         }
-                    }
-                } 
+                    },
+                    snsize: {
+                        range: {min: 1, max: 10},
+                        step: 1,
+                        start: 1,
+                        connect: "lower",
+                        set: function() {},
+                    },
+                }
                 
                 for (slider in styleSliders) {
                     $('#style-slider-' + slider).noUiSlider(styleSliders[slider]).on('set', styleSliders[slider].set);
@@ -1811,8 +1832,18 @@
                         upper: [new Link({target: function(val){$("#cutoff-label-min").html(-val);}})]
                     }
                 }).on('set', function() {
-                    applyCutoff($(this).val());
-                    changeState();
+                    var val = $(this).val();
+                    if (val[0] < 0 && val[1] > 0) {
+                        applyCutoff(val);
+                        changeState();
+                    }
+                }).on('slide', function() {
+                    var val = $(this).val();
+                    if (val[0] > 0) {
+                        $(this).val([0, null]);
+                    } else if (val[1] < 0) {
+                        $(this).val([null, 0]);
+                    };
                 });
                 
                 $("#cutoff-label-min").html(sliderProperties.value);
@@ -1899,7 +1930,12 @@
                             }
                         }
                         
-                    }, timeout); 
+                    }, timeout);
+                    
+                    $('[data-hidden-zoom]').each(function() {
+                        $(this).fadeIn(750).toggleClass('hidden', false);
+                        $(this).removeAttr('data-hidden-ui');
+                    })
                 });
                 $('#btn-fullscreen').click(function() {
                     log($().isFullScreen());
@@ -1994,10 +2030,13 @@
                     case "context-edit-node":
                         editNode(hoveredTargets[0]);
                         break;
-                    case "context-node-gi":
+                    case "context-nodes-gi":
                         var selection = getSelectedNodes(true);
-                        if (selection.length < 6)
+                        if (selection.length < 6 && selection.length > 0)
                             showCorrelationDriving(true);
+                        break;
+                    case "context-node-gi":
+                        showCorrelationDriving(true, true);
                         break;
                     }
                     
@@ -2045,7 +2084,7 @@
                     node.label = modal.find('#edit-node-label').val();
                     node.color = "#" + modal.find('#edit-node-color').val().toUpperCase();
                     node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
-                    node.size_mult = modal.find('#edit-node-size-multiplier').val();
+                    node.size_mult = modal.find('#style-slider-snsize').val();
                     node.size = node.size_init * node.size_mult;
                     
                     modal.find('.annotation-color').each(function() {
@@ -2219,7 +2258,7 @@
                 $("#tool-stack").click(function() {
                     var nodes = sigInst._core.graph.nodes.filter(function(node) { return !node.hidden; });
                     var edges = sigInst._core.graph.edges.filter(function(e) { return !e.source.hidden && !e.target.hidden && !e.hidden; });
-                    var subnetwork = -1, offset = 100, subnetworks = [], blocks = [], packer = new GrowingPacker();
+                    var subnetwork = -1, offset, subnetworks = [], blocks = [], packer = new GrowingPacker();
                     
                     nodes.forEach(function(n) {
                         n.layout = {
@@ -2254,6 +2293,8 @@
                             ymax = Math.max(ymax, subnetworks[i][j].y);
                             ymin = Math.min(ymin, subnetworks[i][j].y);
                         }
+                        offset = Math.max(offset || (xmax-xmin)/10, (ymax-ymin)/10);
+                        
                         blocks.push({x: xmin, y: ymin, w: xmax - xmin + offset, h: ymax - ymin + offset, area: Math.abs((xmax - xmin) * (ymax - ymin))});
                     }
                     
@@ -3020,6 +3061,15 @@
                             
                             $(this).toggleClass(cls, !enabled);
                         });
+                        
+                        $('[data-hidden-ui]').each(function() {
+                            var size = selected.selected.length;
+                            
+                            if (size > 0) {
+                                $(this).fadeIn(750).toggleClass('hidden', false);
+                                $(this).removeAttr('data-hidden-ui');
+                            }
+                        })
                         
                         if (!tokenizing) {
                             updateMissingMessage();

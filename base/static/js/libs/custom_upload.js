@@ -27,7 +27,7 @@
             id = ++maxid, obj = {orf: label, id: maxid, label: label};
             seen[label] = obj;
         }
-        if (nodeAttrs.hasOwnProperty(label)) {
+        if (nodeAttrs && nodeAttrs.hasOwnProperty(label)) {
             // Add any extra annotation
             obj.attributes = nodeAttrs[label];
         };
@@ -86,26 +86,12 @@
     function processCsv(data, nodes, layout, dataset) {
         var gene, src, dst, id, obj; 
         seen = {};
-        
         data.results.rows.forEach(function(row) {
             [row[colMap["source"]], row[colMap["target"]]].forEach(function(g, idx) {
-                if (genes.hasOwnProperty(g)) {
-                    gene = genes[g];
-                    if (seen.hasOwnProperty(gene.id)) return;
-                    id = gene.id, obj = gene;
-                } else {
-                    if (seen.hasOwnProperty(g)) return;
-                    id = ++maxid, obj = {label: g, orf: g, id: maxid};
-                    seen[g] = null;
-                }
-                
-                nodes.push(obj);
-                seen[id] = null;
-                layout.push({x: Math.random() * 2000 - 1000, y: Math.random() * 2000 - 1000, id: id});
-                if (idx == 0) src = id;
-                else if (idx == 1) dst = id;
+                gene = getGeneObj(g, nodes, layout);
+                if (idx == 0) src = gene.id;
+                else if (idx == 1) dst = gene.id;
             });
-            
             if (colMap["weight"] == null) row[colMap["weight"]] = 0.21;
             dataset.push({s: src, t: dst, w: row[colMap["weight"]] });
         });
@@ -131,7 +117,7 @@
                 var name = id.replace("sheet", "").replace(/[\. ,:]+/g, "");
                 var diff = levDist(key, name.toLowerCase()), maxLength = Math.max(key.length, name.length);
                 
-                if (diff/maxLength < 0.5) {
+                if (diff/maxLength < 0.5 || (key == 'edges' && workbook.SheetNames.length == 1)) {
                     sheetMap[key] = workbook.SheetNames[i];
                     $("#" + id).val(key).change();
                 }
@@ -307,9 +293,10 @@
             
             for (key in colMap) {
                 var diff = levDist(key, field.toLowerCase()), maxLength = Math.max(key.length, field.length);
+                
                 if (diff/maxLength < 0.5 && colMap[key] == null) {
                     colMap[key] = field;
-                    table.find("#" + fieldId).val(key).change();
+                    table.find("#" + field).val(key).change();
                 } else if (colMap[key] != null) {
                     table.find("#" + colMap[key]).val(key).change();
                 }
