@@ -1214,6 +1214,8 @@
                         }
                         break;
                     case 'force+':
+                        if (state.getProperty("annotation") == 'None') break;
+                        
                         lopts.edges = [];
                         groups = {};
                         var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});

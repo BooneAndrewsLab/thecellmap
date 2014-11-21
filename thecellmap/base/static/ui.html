@@ -70,7 +70,7 @@ $('.vizualization-ui').ready(function() {
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
       <li class="divider"></li>
-      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Genetic interactions driving these correlations</a></li>
+      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Show Genetic interactions</a></li>
     </ul>
   </div>
   
@@ -83,7 +83,7 @@ $('.vizualization-ui').ready(function() {
     </button>
     <ul class="dropdown-menu" role="menu">
       <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"><span class="glyphicons resize_full"></span> Force-directed layout </a></li>
-<!--       <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"><span class="glyphicons resize_full"></span> Force-directed layout + </a></li> -->
+      <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"><span class="glyphicons resize_full"></span> Force-directed layout + (experimental) </a></li>
       <li class="annotation-constraint disabled"><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"><span class="glyphicons share_alt"></span> Annotation-directed layout </a></li>
       <li class="dataset-constraint disabled"><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"><span class="glyphicons share_alt"></span> GI-directed layout </a></li>
       <li class="dropdown-submenu pull-left disabled"><a id="tool-layout-attr" href="#"><span class="glyphicons share_alt"></span> Layout by attribute </a>
@@ -195,14 +195,14 @@ $('.vizualization-ui').ready(function() {
     <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
     <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li>
     <li class="divider"></li>
-    <li data-selection-constraint data-selection-ls="6"><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving these correlations </a></li>
+    <li data-selection-constraint data-selection-ls="6"><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions </a></li>
   </ul>
 </div>
 
 <div id="contextmenu-edge-container" class="dropdown clearfix contextmenu" style="display: none;">
   <ul id="contextmenu-edge" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
     <li class="disabled"><a id="contextmenu-edge-count"></a></li>
-    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this awesome correlation </a></li>
+    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this correlation </a></li>
   </ul>
 </div>
 
@@ -262,7 +262,7 @@ $('.vizualization-ui').ready(function() {
             </div>
           </div>
           <div class="form-group">
-            <label for="edit-node-size-multiplier" class="col-sm-2 control-label">Label always visible?</label>
+            <label for="edit-node-size-multiplier" class="col-sm-2 control-label">Node size multiplier</label>
             <div class="col-sm-10">
               <input class="form-control" id="edit-node-size-multiplier">
             </div>
