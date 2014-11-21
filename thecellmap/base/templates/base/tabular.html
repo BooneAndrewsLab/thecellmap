@@ -167,12 +167,12 @@
                 
                 $('#c' + node_id + ' tbody').append(
                         '<tr class="row-more"><td colspan="3" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="c" data-cutoff="1">\
-Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                        Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
                 add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
                 
                 $('#s' + node_id + ' tbody').append(
                         '<tr class="row-more"><td colspan="4" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="s" data-cutoff="1">\
-Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                        Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
                 $('#s' + node_id + ' .score-neg .load-more').data('cutoff', -1);
                 add_to_table($('#s' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
                 add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2);
@@ -215,7 +215,186 @@ Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>')
         });
     }
     
+    function search() {
+        var vizdata = {};
+        $.getJSON('/static/visualization/Science/nodes.json', function(data) {
+            vizdata['strains'] = data.nodes;
+            vizdata['annotations'] = data.annotations;
+            vizdata['index'] = {};
+            autocomp = [];
+            
+            var strain;
+            var tokens;
+            for (i in data.nodes) {
+                strain = data.nodes[i];
+                strain.o = strain.orf.toLowerCase();
+                tokens = [strain.o];
+                strain.n = strain.name && strain.name.toLowerCase();
+                if (!!strain.n) tokens.push(strain.n);
+                strain.a = strain.alel && strain.alel.toLowerCase();
+                if (!!strain.a) tokens.push(strain.a);
+                
+                strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
+                strain.terms = strain.terms || tokens;
+                
+                vizdata.index[strain.id] = i;
+                
+                autocomp.push({
+                    value: strain.verboseName,
+                    tokens: strain.terms,
+                    id: strain.id
+                  });
+                
+                if (strain.attributes) {
+                    for (var att in strain.attributes) {
+                        if (opts.attributes.indexOf(att) == -1) opts.attributes.push(att);
+                    }
+                }
+            }
+            
+            var tokenizing = false;
+            $("input.gene-search-input").select2({
+                multiple: true,
+                minimumInputLength: 2,
+                containerCssClass: 'form-control', 
+                placeholder: 'Start typing genes or annotations...',
+                allowClear: true,
+                width: '350px',
+                tokenSeparators: [",", " ", "\t", "\n"],
+                initSelection: function (element, callback) {
+                    var id = $(element).val(), strain, result = [];
+                    id.split(",").forEach(function(x) {
+                        if (x !== "") {
+	                        strain = getStrain(x);
+	                        result.push({
+	                            text: strain.verboseName,
+	                            id: strain.id
+	                        });
+                        }
+                    });
+                    callback(result);
+                },
+                tokenizer: function (input, selection, selectCallback, opts) {
+                    var original = input, // store the original so we can compare and know if we need to tell the search to update its text
+                    dupe = false, // check for whether a token we extracted represents a duplicate selected choice
+                    token, // token
+                    index, // position at which the separator was found
+                    i, l, // looping variables
+                    separator; // the matched separator
+                    
+                    if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
+                    
+                    tokenizing = true;
+                    var addedNew = false;
+                    while (true) {
+                        index = -1;
+                        
+                        for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
+                            separator = opts.tokenSeparators[i];
+                            index = input.indexOf(separator);
+                            if (index >= 0) break;
+                        }
+                        
+                        if (index < 0) break; // did not find any token separator in the input string, bail
+                        
+                        token = input.substring(0, index);
+                        input = input.substring(index + separator.length);
+                        
+                        if (token.length > 0) {
+                            var tokens = opts.createSearchChoice.call(this, token, selection);
+                            if (tokens !== undefined && tokens !== null) {
+                                if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) {
+                                    tokens = [tokens];
+                                }
+                                
+                                tokens.forEach(function(token) {
+                                    if (opts.id(token) !== undefined && opts.id(token) !== null) {
+                                        dupe = false;
+                                        for (i = 0, l = selection.length; i < l; i++) {
+                                            if (opts.id(token) == opts.id(selection[i])) {
+                                                dupe = true; break;
+                                            }
+                                        }
+                                        
+                                        if (!dupe) {
+                                            selectCallback(token);
+                                            addedNew = true;
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    
+                    tokenizing = false;
+                    if (addedNew) {
+                        this.triggerChange({foo: "bar"});
+                    }
+                    if (original!==input) return input;
+                },
+                createSearchChoice: function(term) {
+                    var wildcard = term.indexOf('*') != -1;
+                    term = term.replace('*', '').toLowerCase();
+                    
+                    if (term.length > 0) {
+                        var results = [], seen = {};
+                        
+                        autocomp.forEach(function(node) {
+                            node.tokens.forEach(function(token) {
+                                if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+                                    results.push({id: node.id, text: node.value });
+                                    seen[node.id] = 0;
+                                    return;
+                                }
+                            });
+                        });
+                        
+                        if (results.length !== 0) return results;
+                    }
+                },
+                query: function(query) {
+                    if (query.term === undefined) {
+                        query.callback({results: []});
+                        return;
+                    }
+                    var data = {results: []};
+                    var term = query.term.replace('*', '').toLowerCase();
+                    
+                    autocomp.forEach(function(node) {
+                        if (query.term.length == 0){
+                            data.results.push({id: node.id, text: node.value });
+                        } else {
+                            for (var x in node.tokens) {
+                                if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
+                                    data.results.push({id: node.id, text: node.value });
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    
+                    data.results = data.results.slice(0, 6);
+                    query.callback(data);
+                },
+                data: autocomp,
+            }).on('change', function(evt, a, b, c) {
+                //do something here. add stuff to list.. and change css. and the node url is hardcodded atm. 
+            }).on('select2-opening', function(e) {
+                $(this).data('open', true);
+            }).on('select2-close', function(e) {
+                $(this).data('open', false);
+                $(".select2-container-multi .select2-choices").css("max-height", "34px");
+            }).on('select2-focus', function(e) {
+                setTimeout(function() {
+                    var height = $(".select2-container-multi .select2-choices")[0].scrollHeight;
+                    $(".select2-container-multi .select2-choices").scrollTop(height);
+                }, 0);
+            });
+        });
+    }
+    
     $(document).ready(function() {
+        //search();
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             load_strain($($(e.target).attr('href')));
         });
@@ -228,6 +407,12 @@ Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>')
 
 {% block content %}
 <div class="container">
+  <!-- <div class="row">
+    <div id="search-bar" class="input-group">
+      <span class="input-group-addon glyphicon glyphicon-search"></span>
+      <input class="gene-search-input form-control">
+    </div>
+  </div> -->
   <div class="row">
     <div class="col-md-offset-2 col-md-10">
       <ul class="nav nav-pills" id="strain-tabs">

@@ -9,6 +9,7 @@
             openSearchbar: localStorage.getItem("openSearchbar") || false,
             showBgSvg: localStorage.getItem("showBgSve") || true,
             showLegendSvg: localStorage.getItem("showLegendSvg") || true,
+            showUI: localStorage.getItem("showUI") || false,
     };
     
     var bool = {
@@ -21,6 +22,7 @@
             openSearchbar: true,
             showBgSvg: true,
             showLegendSvg: true,
+            showUI: true,
     }
     
     updateSettings(settings)
