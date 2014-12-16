@@ -12,6 +12,7 @@ from datetime import datetime
 FORMAT_CHOICES = (
     'orf2many',
     'term2many',
+    'orf2list',
 )
 
 class Command(CellMapCommand):
@@ -96,4 +97,31 @@ class Command(CellMapCommand):
                 terms[geneterm] = term
             
             terms[geneterm].genes.add(genemap[orf])
+            
+    def orf2list(self, xin, genemap, name, options):
+        data = DataFrame.from_records(xin[:], columns=('orf', 'annotations'))
+        
+        annotation = Annotation.objects.create(
+                name=name,
+                alias=options['alias'],
+                date=options['annot_date'] or datetime.now(),
+            )
+        
+        terms = {}
+        
+        for orf, geneterms in data.itertuples(index=False):
+            if orf not in genemap:
+                print 'SKIPPING', orf
+                continue
+            
+            for geneterm in [x.strip() for x in geneterms.split(',')]:
+                if geneterm not in terms:
+                    term = Term.objects.create(
+                            annotation=annotation,
+                            name=geneterm,
+                            alias=geneterm,
+                        )
+                    terms[geneterm] = term
+                
+                terms[geneterm].genes.add(genemap[orf])
             

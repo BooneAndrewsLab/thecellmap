@@ -20,7 +20,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.http.response import HttpResponse
 from django.utils.datastructures import SortedDict
 import openpyxl
-from openpyxl.styles.fills import Fill
+# from openpyxl.styles.fills import Fill
 from xlwt import Style
 import xlwt
 
@@ -30,6 +30,8 @@ from thecellmap import settings
 from xlrd.biffh import XLRDError
 import xlrd
 
+
+RE_ORF = re.compile("^Y[A-P][LR]\d{3}[CW](\-[A-Z])?$")
 
 xlwt.add_palette_colour("red_stringent", 0x21)
 xlwt.add_palette_colour("red_lenient", 0x22)
@@ -109,7 +111,7 @@ def gene_map(keyfun=lambda x: x):
         genemap[keyfun(g.orf)] = g
         if g.name:
             genemap[keyfun(g.name)] = g
-        for a in g.aliases:
+        for a in g.aliases or []:
             if a and a not in genemap:
                 genemap[keyfun(a)] = g
     return genemap
@@ -580,3 +582,7 @@ def profile(log_file):
 
         return _inner
     return _outer
+
+def dump_clean_json(obj, f):
+    with open(f, 'wb') as out:
+        out.write(json.dumps(obj).replace(' ', ''))

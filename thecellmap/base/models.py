@@ -10,7 +10,7 @@ from thecellmap import settings
 
 class Gene(models.Model):
     primary_sgdid = models.CharField(max_length=10, help_text='Primary SGDID', unique=True, db_index=True)
-    feature_qualifier = models.CharField(max_length=24, help_text='Feature qualifier')
+    feature_qualifier = models.CharField(max_length=32, help_text='Feature qualifier')
     orf = models.CharField(max_length=16, help_text='Feature name', unique=True, db_index=True)
     name = models.CharField(max_length=16, blank=True, null=True, help_text='Standard gene name', unique=True, db_index=True)
     aliases = dbarray.CharArrayField(max_length=152, blank=True, null=True, help_text='Alias')
@@ -46,6 +46,10 @@ class Strain(models.Model):
     
     def basic_id(self):
         return '%s%s' % (self.gene, self.allele and ' - %s' % self.allele or '')
+    
+    def label(self):
+        suffix = 'damp' in self.boonelab_id.lower() and '_damp' or ''
+        return self.allele or (self.gene.name and (self.gene.name + suffix)) or (self.gene.orf + suffix)
 
 class Dataset(models.Model):
     name = models.CharField(max_length=64, unique=True)
