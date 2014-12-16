@@ -1,14 +1,14 @@
 """ Views for the base application """
 
 import datetime
+import math
 import os
 
-from django.contrib.auth import authenticate, login as django_login, logout as django_logout
-from django.core.exceptions import ValidationError
+from django.conf import settings
+from django.contrib.auth import login as django_login, logout as django_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
-from django.forms.fields import CharField
-from django.forms.forms import Form
-from django.forms.widgets import PasswordInput
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
@@ -16,26 +16,7 @@ from django.views.decorators.http import require_POST, require_GET
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap
 from base.utils import print_queries, is_integer, JsonResponse
-import math
-from django.conf import settings
 
-
-class LoginForm(Form):
-    username = CharField()
-    password = CharField(widget=PasswordInput)
-    
-    def clean(self):
-        cleaned_data = super(LoginForm, self).clean()
-        if 'username' not in cleaned_data or 'password' not in cleaned_data:
-            return cleaned_data
-        user = authenticate(username=cleaned_data['username'], password=cleaned_data['password'])
-        if user is not None:
-            if not user.is_active:
-                raise ValidationError('Your account has been disabled')
-        else:
-            raise ValidationError('Wrong username or password')
-        cleaned_data['user'] = user
-        return cleaned_data
 
 def _serve_dataset(request, dataset=None):
     dataset = dataset or Dataset.get_default()
@@ -51,16 +32,29 @@ def _serve_dataset(request, dataset=None):
 def about(request):
     return render(request, 'base/about.html')
 
-def login(request):
-    form = LoginForm()
+@login_required
+def password_change(request):
+    form = PasswordChangeForm(request.user)
     if request.POST:
-        form = LoginForm(request.POST)
+        form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
-            django_login(request, form.cleaned_data['user'])
-            print request.GET.get('next', '/')
+            form.save()
             return HttpResponseRedirect(request.GET.get('next', '/'))
-    return render(request, 'base/login.html', {
-                'form': form
+    return render(request, 'base/generic_form.html', {
+                'form': form,
+                'suffix': 'Change password'
+        })
+
+def login(request):
+    form = AuthenticationForm(request)
+    if request.POST:
+        form = AuthenticationForm(request, request.POST)
+        if form.is_valid():
+            django_login(request, form.get_user())
+            return HttpResponseRedirect(request.GET.get('next', '/'))
+    return render(request, 'base/generic_form.html', {
+                'form': form,
+                'suffix': 'Login'
         })
 
 def logout(request):

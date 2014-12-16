@@ -69,7 +69,7 @@ class Command(CellMapCommand):
         self.seen_strains.update(self.current_strains.keys())
         self.seen_strains.update(self.old_strains.keys())
         
-        scores = self.parse_scores(release_file)
+        scores = self.parse_scores(self.get_fd(release_file))
         correlations = self.parse_correlations(correlations_file)
         
         ds = Dataset.objects.create(

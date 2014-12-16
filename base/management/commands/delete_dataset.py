@@ -3,9 +3,12 @@ Created on Jan 06, 2014
 
 @author: matej
 '''
+import shutil
+
 from django.core.management.base import CommandError
-from django.db.transaction import commit_on_success
 from django.db import connection
+from django.db.transaction import commit_on_success
+
 from base.models import Dataset, StrainData
 from base.utils import CellMapCommand, print_queries
 
@@ -35,3 +38,5 @@ class Command(CellMapCommand):
         cur.execute(delete_stmt % Dataset.correlation_axis.through._meta.db_table, [dataset.pk])
         
         cur.execute("DELETE FROM %s WHERE id=%%s;" % Dataset._meta.db_table, [dataset.pk])
+        
+        shutil.rmtree(outpath)

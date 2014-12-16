@@ -10,7 +10,8 @@
 {{ block.super }}
 {% endblock js %}
 
-{% block page_title_suffix %} - Login{% endblock %}
+{% block page_title_suffix %}{% if suffix %} - {{ suffix }}{% endif %}{% endblock %}
+
 {% block content %}
   <div class="container">
     <div class="row"><div class="col-md-4 col-md-offset-4"><h1> </h1></div></div>
