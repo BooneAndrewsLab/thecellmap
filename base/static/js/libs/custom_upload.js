@@ -497,13 +497,16 @@
                 
                 genes[gene.orf] = gene;
                 gene.label = gene.orf;
-                if (gene.name != '') {
+                if (gene.name != '' && gene.name != null) {
                     gene.label = gene.name;
                     genes[gene.name] = gene;
                 }
-                gene.aliases.forEach(function(a) {
-                    if (genes.hasOwnProperty(a) == -1) genes[a] = gene;
-                });
+                
+                if (gene.aliases != null) {
+                    gene.aliases.forEach(function(a) {
+                        if (genes.hasOwnProperty(a) == -1) genes[a] = gene;
+                    });
+                }
             });
         });
         

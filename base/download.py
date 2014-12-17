@@ -5,6 +5,7 @@ Created on Jan 13, 2014
 '''
 import cPickle
 
+from django.core.paginator import Paginator
 from django.utils.datastructures import SortedDict
 from pandas.core.frame import DataFrame
 
@@ -76,6 +77,38 @@ def collect_scores(ds, nodes):
     scores = DataFrame.from_records(scores, columns=['source', 'target', 'score']).groupby(['source', 'target']).agg({'score': np.mean}).reset_index()
     
     return scores[scores.score.abs() > 0.08]
+
+@print_queries
+def collect_correlations(ds, nodes, cutoff):
+    with open(ds.static_path('nodes_inv.pickle')) as fp:
+        nodes_inv = cPickle.load(fp)
+    
+    nodes_inv_inv = {}
+    for nid, sids in nodes_inv.iteritems():
+        for sid in sids:
+            nodes_inv_inv[sid] = nid
+    
+    axis = [nodes_inv_inv[strain] for strain, in ds.correlation_axis.through.objects.filter(dataset=ds).order_by('id').values_list('strain_id')]
+    
+    scores = []
+    strains = []
+    
+    nodes = list(set(map(int, nodes)))
+    
+    for node in nodes:
+        node = int(node)
+        strains.extend(nodes_inv[node])
+    
+    p = Paginator(strains, 100)
+    
+    for i in p.page_range:
+        for corr, strain in ds.data.filter(strain__in=p.page(i).object_list, correlations__isnull=False, correlations__gte=cutoff).values_list('correlations', 'strain'):
+            dat = filter(lambda x: not np.isnan(x[2]), zip([nodes_inv_inv[strain]]*len(axis), axis, corr))
+            scores.extend(dat)
+    
+    scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation']).groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
+    
+    return scores
 
 def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:

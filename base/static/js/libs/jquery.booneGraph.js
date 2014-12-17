@@ -698,7 +698,9 @@
                         var savedState = new State(opts.preloadedState);
                         var savedNodes = JSON.parse(localStorage.getItem("savedNodes"));
                         setState({style: savedState, nodes: savedNodes});
-                        
+                    }
+                    
+                    if (isInitializing) {
                         applySettings(settings);
                     }
                     
@@ -783,7 +785,6 @@
                             });
                             switchDataset(1);
                             toggleLayout(false, 'annotation');
-                            applySettings(settings);
                         }
                         
                         loadAnnotation(hmAnnot, annotCallback);
@@ -1345,8 +1346,14 @@
                         break;
                     case 'showUI':
                         if (s[key]) {
-                            $('[data-hidden-ui]').each(function() { $(this).removeAttr('data-hidden-ui'); });
-                            $('[data-hidden-zoom]').each(function() { $(this).removeAttr('data-hidden-zoom'); });
+                            $('[data-hidden-ui]').each(function() { 
+                                $(this).toggleClass('hidden', false);
+                                $(this).removeAttr('data-hidden-ui'); }
+                            );
+                            $('[data-hidden-zoom]').each(function() { 
+                                $(this).toggleClass('hidden', false);
+                                $(this).removeAttr('data-hidden-zoom');
+                            });
                         }
                         break;
                     }
@@ -1812,8 +1819,17 @@
                     
                     $(this).find('.noUi-handle').toggleClass('cutoff-unreliable', $(this).val() < sliderProperties.value);
                     
+                    var nodes = sigInst._core.graph.nodes.filter(function(node) {
+                        return !node.hidden;
+                    }).map(function(node) {
+                        return node.id;
+                    });
+                    
                     if ($(this).find('.noUi-handle').hasClass('cutoff-unreliable')) {
-                        alertUser('Not implemented yet', 'Loading correlations below the significant cutoff is not available yet.');
+                        $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: $(this).val()}, function(data) {
+                            sliderProperties.value = $(this).val();
+                            console.log(data)
+                        });
                     }
                     
                     changeState();
