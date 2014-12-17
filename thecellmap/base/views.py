@@ -136,6 +136,29 @@ def interactions(request, dataset_id=None):
     
     return JsonResponse({'dataset': 'Interactions', 'edges': response})
 
+@require_POST
+def correlations(request, dataset_id=None):
+    nodes = request.POST.getlist('nodes[]')
+    if not nodes:
+        raise Http404('No nodes requested')
+    
+    cutoff = request.POST.get('cutoff')
+    if not cutoff:
+        raise Http404('No cutoff requested')
+    
+    response = []
+    
+    data = collect_correlations(Dataset.pk_or_default(dataset_id), nodes, cutoff)
+    for s, t, w in data.itertuples(index=False):
+        response.append({
+            'id': '%04d%04d' % (s, t),
+            's': int(s),
+            't': int(t),
+            'w': float(w)
+         })
+    
+    return JsonResponse({'dataset': 'Correlations', 'edges': response})
+
 @print_queries
 def nodes_download(request, dataset_id=None):
     dataset = dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default()
@@ -147,10 +170,12 @@ def nodes_download(request, dataset_id=None):
     if len(nodes) > 20:
         return HttpResponseForbidden('Trying to download too many nodes')
     
+    filename = 'tcm-%s-%s.xlsx' % ('_'.join(labels)[:(255-18)], datetime.datetime.now().strftime('%y%m%d'))
+    
     return nodes_xls(
                  dataset, 
                  nodes, 
-                 'thecellmap_data_%s.xls' % (datetime.datetime.now().strftime('%y%m%d'), )
+                 filename
         ).as_response()
 
 def tabular(request, dataset_id=None):
@@ -162,7 +187,8 @@ def tabular(request, dataset_id=None):
     
     return render(request, 'base/tabular.html', {
             'dataset': dataset,
-            'strains': list(strains_for_nodes(dataset, nodes))
+            'strains': list(strains_for_nodes(dataset, nodes)),
+            'nodes_url': dataset.static_url('nodes.json'),
       })
 
 @print_queries
