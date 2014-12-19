@@ -40,10 +40,10 @@ sigma.publicPrototype.parseJson = function(opts) {
         
         edges.forEach(function (edge, edgeIdx) {
             // input file size optimizations 
-            edge.id = edge.id || edgeIdx; // We can ommit ids, can be auto generated here
             edge.source = edge.source || edge.s; // s == source
             edge.target = edge.target || edge.t; // t == target
             edge.weight = edge.weight || edge.w; // w == weight
+            edge.id = edge.source + '+' + edge.target; // We can ommit ids, can be auto generated here
             edge.absweight = Math.abs(edge.weight);
             edge.color = edge.color || edge.c; // c == color
             edge.size = edge.absweight;

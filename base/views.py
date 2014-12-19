@@ -155,7 +155,7 @@ def correlations(request, dataset_id=None):
     
     response = []
     
-    data = collect_correlations(Dataset.pk_or_default(dataset_id, request.user), nodes, cutoff)
+    data, new_nodes = collect_correlations(Dataset.pk_or_default(dataset_id, request.user), nodes, cutoff)
     for s, t, w in data.itertuples(index=False):
         response.append({
             'id': '%04d%04d' % (s, t),
@@ -164,7 +164,7 @@ def correlations(request, dataset_id=None):
             'w': float(w)
          })
     
-    return JsonResponse({'dataset': 'Correlations', 'edges': response})
+    return JsonResponse({'dataset': 'Correlations', 'edges': response, 'node': list(new_nodes)})
 
 @print_queries
 def nodes_download(request, dataset_id=None):
