@@ -60,6 +60,7 @@ class Dataset(models.Model):
     is_published = models.BooleanField(default=False)
     description = models.TextField()
     date = models.DateField()
+    verbose_name = models.CharField(max_length=64)
     
     def __unicode__(self):
         return self.name
@@ -77,15 +78,19 @@ class Dataset(models.Model):
         return self.is_published or request.user.is_authenticated() and request.user.is_active
     
     @staticmethod
-    def pk_or_default(pk=None):
-        return pk and Dataset.objects.get(pk=pk) or Dataset.get_default()
+    def pk_or_default(pk=None, user=None):
+        return pk and Dataset.objects.get(pk=pk) or Dataset._get_default(user)
     
     @staticmethod
-    def get_default():
-        ds = Dataset.objects.order_by('-pk').filter(is_default=True)
-        if ds.count(): return ds[0]
-        ds = Dataset.objects.order_by('-pk')
-        if ds.count(): return ds[0]
+    def _get_default(user=None):
+        datasets = list(Dataset.objects.order_by('-pk'))
+        if user.is_authenticated():
+            ds = filter(lambda x: x.is_default and not x.is_published, datasets)
+            if ds: return ds[0]
+        
+        ds = filter(lambda x: x.is_default and x.is_published, datasets)
+        if ds: return ds[0]
+        if datasets: return datasets[0]
         raise Dataset.DoesNotExist()
     
     class Meta:

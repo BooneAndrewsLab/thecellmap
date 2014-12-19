@@ -93,7 +93,8 @@ def collect_correlations(ds, nodes, cutoff):
     scores = []
     strains = []
     
-    nodes = list(set(map(int, nodes)))
+    nodes_idx = set(map(int, nodes))
+    nodes = list(nodes_idx)
     
     for node in nodes:
         node = int(node)
@@ -102,13 +103,19 @@ def collect_correlations(ds, nodes, cutoff):
     p = Paginator(strains, 100)
     
     for i in p.page_range:
-        for corr, strain in ds.data.filter(strain__in=p.page(i).object_list, correlations__isnull=False, correlations__gte=cutoff).values_list('correlations', 'strain'):
-            dat = filter(lambda x: not np.isnan(x[2]), zip([nodes_inv_inv[strain]]*len(axis), axis, corr))
+        for corr, strain in ds.data.filter(strain__in=p.page(i).object_list, correlations__isnull=False).values_list('correlations', 'strain'):
+            dat = filter(
+                    lambda x: not np.isnan(x[2]) and x[2] >= cutoff and x[0] in nodes_idx and x[1] in nodes_idx, 
+                    zip([nodes_inv_inv[strain]]*len(axis), axis, corr)
+                )
             scores.extend(dat)
     
-    scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation']).groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
+    scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation']) #.groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
+    piv = scores.pivot('source', 'target', 'correlation')
+    piv.values[np.tril_indices_from(piv)] = np.nan
+    piv = piv.stack().reset_index()
     
-    return scores
+    return piv
 
 def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:

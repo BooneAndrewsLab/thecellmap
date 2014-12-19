@@ -13,13 +13,15 @@ from django.http.response import HttpResponseRedirect, Http404, HttpResponseForb
 from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap
 from base.utils import print_queries, is_integer, JsonResponse
+from django.utils import simplejson
 
 
 def _serve_dataset(request, dataset=None):
-    dataset = dataset or Dataset.get_default()
+    dataset = Dataset.pk_or_default(dataset, request.user)
+    print dataset 
     if request.user.is_authenticated() or dataset.is_published:
         return render(request, 'base/network.html', {
                 'dataset': dataset,
@@ -65,7 +67,7 @@ def home(request):
     return _serve_dataset(request)
 
 def dataset(request, dataset_id):
-    return _serve_dataset(request, Dataset.objects.get(pk=dataset_id))
+    return _serve_dataset(request, dataset_id)
 
 def heatmap(request, heatmap_id):
     heatmap = Heatmap.objects.get(pk=heatmap_id)
@@ -125,7 +127,7 @@ def interactions(request, dataset_id=None):
     
     response = []
     
-    data = collect_scores(Dataset.pk_or_default(dataset_id), nodes)
+    data = collect_scores(Dataset.pk_or_default(dataset_id, request.user), nodes)
     for s, t, w in data.itertuples(index=False):
         response.append({
             'id': '%04d%04d' % (s, t),
@@ -146,9 +148,14 @@ def correlations(request, dataset_id=None):
     if not cutoff:
         raise Http404('No cutoff requested')
     
+    try:
+        cutoff = float(cutoff)
+    except ValueError:
+        raise Http404('Cutoff is not a number')
+    
     response = []
     
-    data = collect_correlations(Dataset.pk_or_default(dataset_id), nodes, cutoff)
+    data = collect_correlations(Dataset.pk_or_default(dataset_id, request.user), nodes, cutoff)
     for s, t, w in data.itertuples(index=False):
         response.append({
             'id': '%04d%04d' % (s, t),
@@ -161,7 +168,7 @@ def correlations(request, dataset_id=None):
 
 @print_queries
 def nodes_download(request, dataset_id=None):
-    dataset = dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default()
+    dataset = Dataset.pk_or_default(dataset_id, request.user)
     nodes = filter(is_integer, request.GET.getlist('n'))
     
     if not nodes:
@@ -169,6 +176,13 @@ def nodes_download(request, dataset_id=None):
     
     if len(nodes) > 20:
         return HttpResponseForbidden('Trying to download too many nodes')
+    
+    nodes_idx = set(map(int, nodes))
+    
+    labels = []
+    for n in simplejson.load(open(dataset.static_path('nodes.json')))['nodes']:
+        if n['id'] in nodes_idx:
+            labels.append(n['label'])
     
     filename = 'tcm-%s-%s.xlsx' % ('_'.join(labels)[:(255-18)], datetime.datetime.now().strftime('%y%m%d'))
     
@@ -179,7 +193,7 @@ def nodes_download(request, dataset_id=None):
         ).as_response()
 
 def tabular(request, dataset_id=None):
-    dataset = dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default()
+    dataset = Dataset.pk_or_default(dataset_id, request.user)
     nodes = filter(is_integer, request.GET.getlist('n'))
     
     if not nodes:
@@ -194,7 +208,9 @@ def tabular(request, dataset_id=None):
 @print_queries
 def tabular_data(request, dataset_id=None, node_id=None):
     if not node_id: raise Http404('Node ID is required')
-    data = nodes_data(dataset_id and Dataset.objects.get(pk=dataset_id) or Dataset.get_default(), [node_id])
+    dataset = Dataset.pk_or_default(dataset_id, request.user)
+    
+    data = nodes_data(dataset, [node_id])
     response = {'correlations': [], 'scores_pos': [], 'scores_neg': []}
     data = data[data.keys()[0]]
     c = data['correlations']
