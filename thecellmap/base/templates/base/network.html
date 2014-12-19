@@ -2,7 +2,7 @@
 
 {% load staticfiles base_extras %}
 
-{% block page_title_suffix %} - Network{% endblock %}
+{% block page_title_suffix %} - {{ dataset.verbose_name }} network{% endblock %}
 
 {% block meta %}
 {{ block.super }}
@@ -136,7 +136,7 @@
             datasets: datasets,
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
-            debug: {% if debug %}true{% else %}false{% endif %},
+            debug: false, // {% if debug %}true{% else %}false{% endif %},
             layoutButtonHide: false,
             slider: {
                 min : 0,

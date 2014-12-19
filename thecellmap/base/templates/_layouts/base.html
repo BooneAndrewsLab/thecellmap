@@ -70,7 +70,7 @@
             <ul class="dropdown-menu">
               {% for data in datasetlist %}
                 {% if data.is_published or user.is_authenticated %}
-                  <li {% if data == dataset %} class="disabled"{% endif %}><a href="{% url 'dataset' data.id %}">{{ data.name }}</a></li>
+                  <li {% if data == dataset %} class="disabled"{% endif %}><a href="{% url 'dataset' data.id %}">{{ data.verbose_name }}</a></li>
                 {% endif %}
               {% endfor %}
               {% if user.is_authenticated and customlist|length > 0 %}

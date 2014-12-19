@@ -304,3 +304,5 @@ LOGGING = {
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 LOGIN_URL = 'login'
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'

@@ -1827,8 +1827,9 @@
                     
                     if ($(this).find('.noUi-handle').hasClass('cutoff-unreliable')) {
                         $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: $(this).val()}, function(data) {
-                            sliderProperties.value = $(this).val();
-                            console.log(data)
+                            console.log(data);
+//                            sliderProperties.value = $(this).val();
+//                            console.log(data)
                         });
                     }
                     
