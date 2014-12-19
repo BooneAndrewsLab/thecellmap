@@ -1827,10 +1827,35 @@
                     
                     if ($(this).find('.noUi-handle').hasClass('cutoff-unreliable')) {
                         $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: $(this).val()}, function(data) {
-                            console.log(data);
-//                            sliderProperties.value = $(this).val();
-//                            console.log(data)
+                            for (n in data["nodes"]) {
+                                var node = data["nodes"][n];
+                                var strain = getStrain(node);
+                                if (!nodeExists(node)) {
+                                    sigInst.addNode(node, {
+                                        x: (Math.random() * 100),
+                                        y: (Math.random() * 100),
+                                    });
+                                }
+                            }
+                            
+                            for (e in data["edges"]) {
+                                var edge = data["edges"][e];
+                                var edgeId = edge.s + '+' + edge.t, edgeReverseId = edge.t + '+' + edge.s;
+                                if (nodeExists(edge.s) && nodeExists(edge.t) && !sigInst._core.graph.edgesIndex[edgeId] && !sigInst._core.graph.edgesIndex[edgeReverseId]) {
+                                    sigInst.addEdge(edgeId, edge.s, edge.t, edge);
+                                    
+                                    var addedEdge = getEdge(edgeId), source = getNode(edge.s), target = getNode(edge.t);
+                                    addedEdge.weight = addedEdge.absweight = addedEdge.size = edge.w;
+                                    
+                                    source.hidden = source._hidden = false;
+                                    target.hidden = target._hidden = false;
+                                }
+                            }
+                            
+                            sigInst.draw();
+                            
                         });
+                        sliderProperties.value = $(this).val();
                     }
                     
                     changeState();
