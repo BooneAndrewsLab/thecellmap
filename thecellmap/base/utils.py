@@ -145,7 +145,11 @@ def print_queries(func, filter=None):
         print colored('Query Time:  %ss (longest: %ss)' % (sqltime, longest), 'yellow')
         print colored('Num Queries: %s (%s hidden)\n' % (numqueries, numhidden), 'yellow')
         return result
-    return wrapper1
+    
+    """ Use this only in debug mode (aka non production mode) """
+    if settings.DEBUG:
+        return wrapper1
+    return func
 
 def colored(text, color=None):
     """ Colorize text {red, green, yellow, blue, magenta, cyan, white}. """
