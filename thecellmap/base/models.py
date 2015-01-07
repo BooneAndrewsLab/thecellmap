@@ -6,6 +6,7 @@ import dbarray
 from django.contrib.auth.models import User
 from django.db import models
 from thecellmap import settings
+from django.http.response import Http404
 
 
 class Gene(models.Model):
@@ -79,7 +80,13 @@ class Dataset(models.Model):
     
     @staticmethod
     def pk_or_default(pk=None, user=None):
-        return pk and Dataset.objects.get(pk=pk) or Dataset._get_default(user)
+        if pk:
+            try:
+                return Dataset.objects.get(pk=pk)
+            except Dataset.DoesNotExist:
+                raise Http404
+        
+        return Dataset._get_default(user)
     
     @staticmethod
     def _get_default(user=None):
