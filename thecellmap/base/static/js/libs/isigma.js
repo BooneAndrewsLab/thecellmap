@@ -3066,7 +3066,7 @@ function Sigma(root, id) {
     for (var k in self.domElements) {
       if (
         self.domElements[k].nodeName.toLowerCase() == 'canvas' &&
-        (params[k] == undefined || params[k] >= 0)
+        (params[k] == undefined || params[k] >= 0) && self.domElements[k].className.indexOf('sigma_mouse_canvas') == -1
       ) {
         self.domElements[k].getContext('2d').clearRect(
           0,

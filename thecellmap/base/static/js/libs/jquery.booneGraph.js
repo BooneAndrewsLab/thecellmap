@@ -1815,18 +1815,15 @@
                         lower: [new Link({target: $("#cutoff-label-min")})]
                     }
                 }).on('set', function() {
-                    applyCutoff($(this).val());
-                    
-                    $(this).find('.noUi-handle').toggleClass('cutoff-unreliable', $(this).val() < sliderProperties.value);
-                    
                     var nodes = sigInst._core.graph.nodes.filter(function(node) {
                         return !node.hidden;
                     }).map(function(node) {
                         return node.id;
                     });
                     
-                    if ($(this).find('.noUi-handle').hasClass('cutoff-unreliable')) {
-                        $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: $(this).val()}, function(data) {
+                    var val = $(this).val(), setR = sigInst._core.graph.nodes.length / 0.2, actualR = nodes.length / val;
+                    if (val < sliderProperties.value && actualR <= setR) {
+                        $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
                             for (n in data["nodes"]) {
                                 var node = data["nodes"][n];
                                 var strain = getStrain(node);
@@ -1851,13 +1848,18 @@
                                     target.hidden = target._hidden = false;
                                 }
                             }
-                            
                             sigInst.draw();
-                            
                         });
-                        sliderProperties.value = $(this).val();
+                    } else if (actualR > setR) {
+                        $("#cutoff-bar-cor").val(sliderProperties.value)
+                        var nodeCount = Math.floor(val * setR);
+                        alertUser('Too many nodes', 'Too many nodes are visible, number of visible nodes should be lower than ' + nodeCount + 
+                                  ' for the selected cutoff.<br>Node count: ' + countVisibleNodes());
+                        return;
                     }
                     
+                    sliderProperties.value = val;
+                    applyCutoff(val);
                     changeState();
                 });
                 
@@ -3087,6 +3089,11 @@
                                 node.selected = false;
                             }
                         });
+                        
+                        var newSelected = getNode(selection[selection.length-1]);
+                        if (newSelected) {
+                            sigInst.locateSearchedNodes({x: newSelected.displayX, y: newSelected.displayY, runtime: 3});
+                        }
                         
                         $('[data-selection-constraint]').each(function() {
                             var enabled = true, size = selected.selected.length, cls = $(this).data('selection-class') || 'disabled';
