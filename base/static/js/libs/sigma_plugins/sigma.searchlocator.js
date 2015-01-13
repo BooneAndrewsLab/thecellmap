@@ -5,6 +5,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     sigma.classes.Cascade.call(this);
     var self = this;
     var inst = instance;
+    var size = 30;
     this.graph = graph;
     this.m = {
         runtime: 3,
@@ -16,21 +17,19 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     
     this.init = function() {
         // one move
-        self.m.destinations.forEach(function(dest) {
-            dest.node.move = {
-                dx: (dest.x - dest.node.x)/step,
-                dy: (dest.y - dest.node.y)/step
-            }
-        });
+        self.m.d = size/step;
         return self;
     }
 
     this.atomicGo = function() {
         var graph = self.graph;
-        self.m.destinations.forEach(function(dest) {
-            dest.node.x += dest.node.move.dx;
-            dest.node.y += dest.node.move.dy;
-        });
+        var canvas = $(".sigma_mouse_canvas")[0], context = canvas.getContext('2d'), distance = self.m.d * step;
+        
+        context.fillStyle = "rgb(255,0,0)";
+        context.clearRect(0, 0, $(document).width(), $(document).height());
+        context.beginPath();
+        context.arc(self.m.x, self.m.y, distance, 0, 2*Math.PI, false);
+        context.fill();
         step--;
     }
     
@@ -39,23 +38,22 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     };
     
     this.cleanup = function() {
-        self.m.destinations.forEach(function(dest) {
-            delete dest.node.move;
-        });
+        var canvas = $(".sigma_mouse_canvas")[0], context = canvas.getContext('2d');
+        context.clearRect(0, 0, $(document).width(), $(document).height());
+        delete self.m.d;
     }
 };
 
-sigma.publicPrototype.locateSearchedNodes = function(properties, callback) {
-    if (!properties.hasOwnProperty("destinations") || properties["destinations"].length == 0) return;
+sigma.publicPrototype.locateSearchedNodes = function(properties) {
+    if (!properties.hasOwnProperty("x") && !properties.hasOwnProperty("y")) return;
     
     this.searchlocator = new sigma.searchlocator.SearchLocator(this._core.graph, this, properties);
     this.searchlocator.init();
     
     var sl = this.searchlocator;
     
-    this.addGenerator('move', this.searchlocator.atomicGo, function() {
+    this.addGenerator('locate', this.searchlocator.atomicGo, function() {
         if (sl.isDone()) {
-            callback();
             sl.cleanup();
             return false;
         }
