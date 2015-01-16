@@ -27,9 +27,12 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
         
         context.fillStyle = "rgb(255,0,0)";
         context.clearRect(0, 0, $(document).width(), $(document).height());
-        context.beginPath();
-        context.arc(self.m.x, self.m.y, distance, 0, 2*Math.PI, false);
-        context.fill();
+        
+        self.m.nodes.forEach(function(n) {
+            context.beginPath();
+            context.arc(n.displayX, n.displayY, distance, 0, 2*Math.PI, false);
+            context.fill();
+        })
         step--;
     }
     
@@ -45,7 +48,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
 };
 
 sigma.publicPrototype.locateSearchedNodes = function(properties) {
-    if (!properties.hasOwnProperty("x") && !properties.hasOwnProperty("y")) return;
+    if (!properties.hasOwnProperty("nodes")) return;
     
     this.searchlocator = new sigma.searchlocator.SearchLocator(this._core.graph, this, properties);
     this.searchlocator.init();

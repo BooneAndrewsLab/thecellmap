@@ -50,7 +50,7 @@ body {
 }
 
 .sigma-parent {
-    min-height: 450px;
+    min-height: 480px;
     height: 100%;
 }
 
@@ -105,6 +105,10 @@ body {
     right: 5px;
 }
 
+.top-right > * {
+    display: inline-block !important;
+}
+
 .bottom-left {
     bottom: 5px;
 }
@@ -112,6 +116,15 @@ body {
 .bottom-right {
     bottom: 5px;
     right: 5px;
+    padding: 6px 12px;
+}
+
+.icon-button {
+    color:#444;
+}
+
+.icon-button:hover {
+    color:#E8E8E8;
 }
 
 .middle-right {

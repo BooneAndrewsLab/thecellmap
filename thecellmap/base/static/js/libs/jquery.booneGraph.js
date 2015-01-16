@@ -29,6 +29,7 @@
                         max : 1000,
                         filter: 'edges',
                         updateLimits: true,
+                        preValue: 0.2,
                     },
                     graphProperties: {
                           type: 'network',
@@ -551,6 +552,7 @@
                     state.setProperty("dataset", 1);
                     sigInst.draw();
                     autoState = false;
+                    toggleLayout(false, 'gi');
                     changeNodesState();
                 });
             };
@@ -999,6 +1001,7 @@
                     e.selected = targets.content.indexOf(e.id) != -1;
                 });
                 
+                noPulse = true;
                 var clicked = sigInst._core.graph.edges.filter(function(e) {
                     return e.selected;
                 });
@@ -1008,11 +1011,11 @@
                     nodeClicked = nodeClicked.concat(clicked[i]);
                 }
                 $("input.gene-search-input").select2("val", nodeClicked, true);
+                noPulse = false;
             }
             
             function onNodesClick(targets) {
                 noPulse = true;
-                
                 switch(clicking.modifierKey) {
                 case 'ctrl':
                     break;
@@ -1320,6 +1323,9 @@
                 
                 applyCutoff(getCutoff());
                 applySettings(settings);
+                
+                $("#btn-group-layout").fadeTo(500, 0.5).fadeTo(500, 1);
+                toggleLayout(false, 'force');
             }
             
             function applySettings(s) {
@@ -1544,11 +1550,11 @@
                 
                 if (opts.annotations.length > 0) {
                     opts.annotations.forEach(function(annotation) {
-                        $('#btn-group-annotation .dropdown-menu').append('<li><a class="load-annotation" href="#">' + annotation.name + '</a></li>');
+                        $('#btn-group-annotation').append('<li><a class="load-annotation" href="#">' + annotation.name + '</a></li>');
                     });
                 }
                 
-                $('#btn-group-annotation .dropdown-menu').append('<li class="divider"></li><li><a id="btn-legend" href="#"> Annotation legend </a></li>');
+                $('#btn-group-annotation').append('<li class="divider"></li><li><a id="btn-legend" href="#"> Annotation legend </a></li>');
                 
                 $(".changed-network").hide().removeClass('hidden');
                 $("#modal-style").appendTo("body");
@@ -1816,12 +1822,13 @@
                     }
                 }).on('set', function() {
                     var nodes = sigInst._core.graph.nodes.filter(function(node) {
-                        return !node.hidden;
+                        return !(node.hidden && node._hidden);
                     }).map(function(node) {
                         return node.id;
                     });
                     
                     var val = $(this).val(), setR = sigInst._core.graph.nodes.length / 0.2, actualR = nodes.length / val;
+                    setR = 5000; //TODO: low for now just in case, test later !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     if (val < sliderProperties.value && actualR <= setR) {
                         $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
                             for (n in data["nodes"]) {
@@ -1842,23 +1849,27 @@
                                     sigInst.addEdge(edgeId, edge.s, edge.t, edge);
                                     
                                     var addedEdge = getEdge(edgeId), source = getNode(edge.s), target = getNode(edge.t);
-                                    addedEdge.weight = addedEdge.absweight = addedEdge.size = edge.w;
+                                    addedEdge.weight = addedEdge.size = edge.w;
                                     
                                     source.hidden = source._hidden = false;
                                     target.hidden = target._hidden = false;
                                 }
+                                updateEdges(0);
                             }
                             sigInst.draw();
+                            toggleLayout(false, 'force');
                         });
+                        
+                        sliderProperties.value = val;
                     } else if (actualR > setR) {
-                        $("#cutoff-bar-cor").val(sliderProperties.value)
+                        $("#cutoff-bar-cor").val(sliderProperties.preValue)
                         var nodeCount = Math.floor(val * setR);
-                        alertUser('Too many nodes', 'Too many nodes are visible, number of visible nodes should be lower than ' + nodeCount + 
-                                  ' for the selected cutoff.<br>Node count: ' + countVisibleNodes());
+                        alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than ' + nodeCount + 
+                                  ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + countVisibleNodes());
                         return;
                     }
                     
-                    sliderProperties.value = val;
+                    sliderProperties.preValue = val;
                     applyCutoff(val);
                     changeState();
                 });
@@ -1981,6 +1992,7 @@
                         $(this).removeAttr('data-hidden-ui');
                     })
                 });
+                
                 $('#btn-fullscreen').click(function() {
                     log($().isFullScreen());
                     if ($().isFullScreen()) {
@@ -3090,10 +3102,6 @@
                             }
                         });
                         
-                        var newSelected = getNode(selection[selection.length-1]);
-                        if (newSelected) {
-                            sigInst.locateSearchedNodes({x: newSelected.displayX, y: newSelected.displayY, runtime: 3});
-                        }
                         
                         $('[data-selection-constraint]').each(function() {
                             var enabled = true, size = selected.selected.length, cls = $(this).data('selection-class') || 'disabled';
@@ -3109,6 +3117,10 @@
                             }
                             
                             $(this).toggleClass(cls, !enabled);
+                            
+                            if ($(this).attr("id") != undefined && $(this).attr("id").indexOf("btn-group-neighbourhood") != -1 && !isInitializing) {
+                                $(this).fadeTo(500, 0.5).fadeTo(500, 1);
+                            }
                         });
                         
                         $('[data-hidden-ui]').each(function() {
@@ -3125,9 +3137,26 @@
                             sigInst.draw();
                             
                             if (!($(selected.selected).not(state.getProperty("selection")).length == 0 && $(state.getProperty("selection")).not(selected).length == 0)) {
-                                var diff = $(selected.selected).not(state.getProperty("selection")).get();
-                                
+                                var diff = $(selected.selected).not(state.getProperty("selection")).get(), nodes = [];
                                 state.setProperty("selection", getSelection());
+                                
+                                //takes difference, and only blinks new nodes
+//                                if (!noPulse) {
+//                                    diff.forEach(function(n) {
+//                                        var node = getNode(n);
+//                                        if (node) nodes.push(node);
+//                                    });
+//                                    sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
+//                                }
+                                
+                                //blinks all nodes
+                                if (!noPulse && diff.length > 0) {
+                                    selection.forEach(function(n) {
+                                        var node = getNode(n);
+                                        if (node) nodes.push(node);
+                                    });
+                                    sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
+                                }
                                 
 //                                if (!noPulse) {
 //                                    sigInst.pulseNodes({nodes: sigInst._core.graph.nodes.filter(function(node) {
