@@ -21,17 +21,17 @@ $('.vizualization-ui').ready(function() {
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="view-tabular" href="#"><span class="glyphicons table"></span> View data in table form</a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="view-tabular" href="#"> View data in table form</a></li>
       <li class="divider"></li>
-      <li><a id="download-visible" href="#"><span class="filetype-icon csv"></span> Download visible network</a></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="0" data-selection-lt="20"><a id="download-selected" href="#"><span class="filetype-icon xls"></span> Download data for selected genes</a></li>
-      <li class="disabled" data-toggle="tooltip" title="Unpublished data, will be available after publication" data-placement="right" data-delay="0"><a id="download-dataset" href="#"><span class="filetype-icon csv"></span> Download dataset</a></li>
+      <li><a id="download-visible" href="#"> Download visible network</a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0" data-selection-lt="20"><a id="download-selected" href="#"> Download data for selected genes</a></li>
+      <li class="disabled" data-toggle="tooltip" title="Unpublished data, will be available after publication" data-placement="right" data-delay="0"><a id="download-dataset" href="#"> Download dataset</a></li>
       <li class="divider"></li>
-      <li><a id="download-xgmml" href="#"><span class="filetype-icon xml"></span> Export visible network to xgmml</a></li>
-      <li><a id="download-snapshot" href="#"><span class="filetype-icon png"></span> Export visible network to png</a></li>
-      <li><a id="download-svg" href="#"><span class="filetype-icon svg"></span> Export visible network to svg</a></li>
+      <li><a id="download-xgmml" href="#"> Export visible network to xgmml</a></li>
+      <li><a id="download-snapshot" href="#"> Export visible network to png</a></li>
+      <li><a id="download-svg" href="#"> Export visible network to svg</a></li>
       <li class="divider"></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="list-selected" data-clipboard-target="copy-area" href="#"><span class="filetype-icon xls" style="visibility: hidden;"></span> Selected genes list</a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="list-selected" data-clipboard-target="copy-area" href="#"> Selected genes list</a></li>
     </ul>
   </div>
 </div>
@@ -82,17 +82,17 @@ $('.vizualization-ui').ready(function() {
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-      <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"><span class="glyphicons resize_full"></span> Force-directed layout </a></li>
-      <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"><span class="glyphicons resize_full"></span> Force-directed layout + (experimental)</a></li>
-      <li class="annotation-constraint disabled"><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"><span class="glyphicons share_alt"></span> Annotation-directed layout </a></li>
-      <li class="dataset-constraint disabled"><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"><span class="glyphicons share_alt"></span> GI-directed layout </a></li>
-      <li class="dropdown-submenu pull-left disabled"><a id="tool-layout-attr" href="#"><span class="glyphicons share_alt"></span> Layout by attribute </a>
+      <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"> Force-directed layout </a></li>
+      <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"> Force-directed layout + (experimental) </a></li>
+      <li class="annotation-constraint disabled"><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"> Annotation-directed layout </a></li>
+      <li class="dataset-constraint disabled"><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"> GI-directed layout </a></li>
+      <li class="dropdown-submenu pull-left disabled"><a id="tool-layout-attr" href="#"> Layout by attribute </a>
         <ul id="attribute-layout-list" class="dropdown-menu" role="menu">
         </ul>
       </li>
       <li class="divider"></li>
-      <li><a id="tool-rotate-arbitrary" href="#"><span class="glyphicons roundabout"></span> Rotate graph by arbitrary angle</a></li>
-      <li><a id="tool-stack" href="#"><span class="glyphicons show_thumbnails"></span> Stack unconnected networks </a></li>
+      <li><a id="tool-rotate-arbitrary" href="#"> Rotate graph by arbitrary angle</a></li>
+      <li><a id="tool-stack" href="#"> Stack unconnected networks </a></li>
       <li class="divider"></li>
       <li class="disabled" data-selection-constraint data-selection-gt="2"><a id="custom-arange" tabindex="-1" href="#"> Arrange selected in custom shape </a></li>
       
@@ -100,22 +100,11 @@ $('.vizualization-ui').ready(function() {
   </div>
   
   <div id="btn-group-style" class="btn-group" data-step="7" data-intro="The display style can be changed here." data-position="bottom-right-aligned">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Style <span class="caret"></span></button>
-    <ul class="dropdown-menu" role="menu">
-      <li><a id="btn-style-node" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-node" href="#"><span class="glyphicons adjust_alt"></span> Node style </a></li>
-      <li><a id="btn-style-edge" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-edge" href="#"><span class="glyphicons adjust_alt"></span> Edge style </a></li>
-      <li><a id="btn-style-general" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-general" href="#"><span class="glyphicons adjust_alt"></span> General style </a></li>
-      <li><a id="btn-style-annotation" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-annotation" href="#"><span class="glyphicons adjust_alt"></span> Annotation style </a></li>
-      
-      <li class="divider"></li>
-      
-      <li id="btn-group-annotation" class="dropdown-submenu pull-left"><a tabindex="-1" href="#"><span class="glyphicons adjust"></span><span> Annotations </span></a>
-        <ul class="dropdown-menu" role="menu">
-          <li class="active load-annotation"><a href="#">None</a></li>
-          <li class="divider"></li>
-        </ul>
-      </li>
-    </ul>
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Annotations <span class="caret"></span></button>
+      <ul id="btn-group-annotation" class="dropdown-menu" role="menu">
+        <li class="active load-annotation"><a href="#">None</a></li>
+        <li class="divider"></li>
+      </ul>
   </div>
 </div>
 
@@ -126,6 +115,18 @@ $('.vizualization-ui').ready(function() {
       <a href="#" data-id="0" class="list-group-item active">Correlations</a>
       <a href="#" data-id="1" class="list-group-item">Genetic interactions</a>
     </div>
+  </div>
+</div>
+
+<div class="bottom-right" >
+  <div id="btn-group-styles" class="btn-group dropup" data-toggle="tooltip" title="Network style" data-placement="top" data-delay="0">
+    <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button" data-toggle="dropdown"></span>
+    <ul class="dropdown-menu up" role="menu">
+      <li><a id="btn-style-node" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-node" href="#">Node style</a></li>
+      <li><a id="btn-style-edge" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-edge" href="#">Edge style</a></li>
+      <li><a id="btn-style-general" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-general" href="#">General style</a></li>
+      <li><a id="btn-style-annotation" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-annotation" href="#">Annotation style</a></li>
+    </ul>
   </div>
 </div>
 

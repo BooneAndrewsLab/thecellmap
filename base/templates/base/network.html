@@ -137,7 +137,7 @@
             datasets: datasets,
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
-            debug: false, // {% if debug %}true{% else %}false{% endif %},
+            debug: {% if debug %}true{% else %}false{% endif %},
             layoutButtonHide: false,
             slider: {
                 min : 0,

@@ -110,7 +110,11 @@ def collect_correlations(ds, nodes, cutoff):
                 )
             scores.extend(dat)
     
-    scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation']).groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
+    scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation'])
+    if 0 in scores.shape: # empty table
+        print nodes, cutoff
+    scores = scores.groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
+    
     piv = scores.pivot('source', 'target', 'correlation')
     
     a = set(piv.index)
