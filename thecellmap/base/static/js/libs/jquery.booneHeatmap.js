@@ -520,7 +520,7 @@
                             
                             autocomp.forEach(function(node) {
                                 node.tokens.forEach(function(token) {
-                                    if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+                                    if (!seen.hasOwnProperty(node.id) && ((wildcard && token.label.toLowerCase().startsWith(term)) || token.label.toLowerCase() === term)) {
                                         results.push({id: node.id, text: node.value });
                                         seen[node.id] = 0;
                                         return;
@@ -543,7 +543,7 @@
                                 data.results.push({id: node.id, text: node.value });
                             } else {
                                 for (var x in node.tokens) {
-                                    if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
+                                    if (node.tokens[x].label.toLowerCase().indexOf(term) !== -1) {
                                         data.results.push({id: node.id, text: node.value });
                                         break;
                                     }
