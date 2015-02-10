@@ -32,19 +32,15 @@
 
 {% block cdn_js %}
 {{ block.super }}
-  {% if debug %}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
-<!--   <script src="{% static "js/libs/select2.js" %}"></script> -->
-  {% else %}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <!--   <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.js"></script> -->
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
-  {% endif %}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.1.5/ZeroClipboard.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.2.0/ZeroClipboard.min.js"></script>
 {% endblock cdn_js %}
 
 {% block js %}
 {{ block.super }}
 <!--[if gt IE 8]><!-->
+  <!-- TEMPORARY! CHANGE BACK TO OFFICIAL VERSION WHEN THEY FIX IT -->
   <!-- TEMPORARY! CHANGE BACK TO OFFICIAL VERSION WHEN THEY FIX IT -->
   <script src="{% static 'js/libs/select2.js' %}"></script>
   
@@ -55,6 +51,7 @@
   <script src="{% static 'js/libs/sigma_plugins/sigma.parseJsonHeatmap.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.forcelayout.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.boonetools.js' %}"></script>
+  <script src="{% static 'js/libs/sigma_plugins/sigma.rotate.js' %}"></script>
   <script src="{% static 'js/libs/sigma_plugins/sigma.pulse.js' %}"></script>
   <script src="{% static 'js/libs/jquery.contextMenu.js' %}"></script>
   <script src="{% static 'js/libs/fullScreenApi.js' %}"></script>
@@ -80,6 +77,8 @@
   <script src="{% static 'js/libs/sigma_plugins/sigma.move.js' %}"></script>
   <script src="{% static 'js/libs/intro.js' %}"></script>
   <script src="{% static 'js/libs/packer.growing.js' %}"></script>
+  <script src="{% static 'js/libs/canvas2svg.js' %}"></script>
+  <script src="{% static 'js/libs/sigma_plugins/sigma.searchlocator.js' %}"></script>
   
   <script type="text/javascript">
   (function($) {
