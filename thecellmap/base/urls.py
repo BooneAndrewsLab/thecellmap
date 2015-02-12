@@ -1,6 +1,8 @@
 """urlconf for the base application"""
 
 from django.conf.urls import url, patterns, include
+from django.views.generic import TemplateView
+from rest_framework.urls import template_name
 
 
 urlpatterns = patterns('base.views',
@@ -36,7 +38,9 @@ urlpatterns = patterns('base.views',
     # DEBUG
     url(r'^testingdebug/$', 'foobar', name='foobar'),
     
-    url(r'^circlepack/$', 'circle_pack', name='circle_pack')
+    url(r'^circlepack/$', 'circle_pack', name='circle_pack'),
+    url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),
+    url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui')
 )
 
 urlpatterns += patterns('base.tools',
