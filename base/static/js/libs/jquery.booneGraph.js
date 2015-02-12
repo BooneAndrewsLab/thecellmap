@@ -1092,6 +1092,7 @@
                                 if (Object.keys(n).length - 1 > 1) {
                                     $("#tool-stack").click();
                                 }
+                                $('.btn-home').click();
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
@@ -1341,7 +1342,7 @@
                 for (key in s) {
                     switch(key) {
                     case 'zoom':
-                        if (s[key]) $('#btn-home').click();
+                        if (s[key]) $('.btn-home').click();
                         break;
                     case 'label':
                         var numVisible = 0, nodes = [];
@@ -2422,7 +2423,7 @@
                     
                     sigInst.moveNodes({destinations: newPositions, runtime: 3}, function() {
                         changeNodesState();
-                        $('#btn-home').click();
+                        $('.btn-home').click();
                     });
                 });
                 
