@@ -1353,6 +1353,7 @@
                         break;
                     case 'scroll':
                         sigInst.mouseProperties({blockScroll: s[key]});
+                        break;
                     }
                 }
             }
