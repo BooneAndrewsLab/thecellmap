@@ -484,7 +484,11 @@
             }
             
             function getSelection() {
-                return $("input.gene-search-input").select2('val');
+                var selector = $(".vizualization-ui:visible input.gene-search-input");
+                if (selector.length > 0) {
+                    return selector.select2('val');
+                }
+                return [];
             }
             
             function clearSelection() {
@@ -1930,13 +1934,15 @@
                 $("#cutoff-label").click(function() {});
                 
                 $("#btn-group-datasets a, .data-type-img").click(function(evt){
-                    switchDataset($(this).attr('data-id'));
+                    showCorrelationDriving(true);
+//                    switchDataset($(this).attr('data-id'));
                     
-                    if ($(this).attr('data-id') == 0) {
-                        toggleLayout(false, 'force');
-                    } else {
-                        toggleLayout(false, 'gi');
-                    }
+                    
+//                    if ($(this).attr('data-id') == 0) {
+//                        toggleLayout(false, 'force');
+//                    } else {
+//                        toggleLayout(false, 'gi');
+//                    }
                     
                     evt.preventDefault();
                 });
