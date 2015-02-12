@@ -1042,7 +1042,7 @@
             
             function _setRunningLayout(bool) {
                 var ladda, button = $('#btn-layout');
-                return
+                
                 opts.runningLayout = bool;
                 button.toggleClass('btn-primary', !bool);
                 button.toggleClass('btn-danger', bool);
@@ -1091,8 +1091,7 @@
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
-                            if (currentUi == "advance")
-                                setTimeout(function(){Ladda.getInstance(layoutButton.attr('id')).setProgress(p);}, 0);
+                            setTimeout(function(){Ladda.getInstance(layoutButton.attr('id')).setProgress(p);}, 0);
                         },
                         attraction_multiplier: $("#layout-slider-att").val() || 50,
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
@@ -1329,7 +1328,9 @@
                 applySettings(settings);
                 
                 $("#btn-group-layout").fadeTo(500, 0.5).fadeTo(500, 1);
-                toggleLayout(false, 'force');
+                
+                if (countVisibleNodes() > 1) 
+                    toggleLayout(false, 'force');
             }
             
             function applySettings(s) {
@@ -1930,6 +1931,13 @@
                 
                 $("#btn-group-datasets a, .data-type-img").click(function(evt){
                     switchDataset($(this).attr('data-id'));
+                    
+                    if ($(this).attr('data-id') == 0) {
+                        toggleLayout(false, 'force');
+                    } else {
+                        toggleLayout(false, 'gi');
+                    }
+                    
                     evt.preventDefault();
                 });
                 
