@@ -29,7 +29,8 @@
                         max : 1000,
                         filter: 'edges',
                         updateLimits: true,
-                        preValue: 0.2,
+                        preCorValue: 0.2,
+                        preIntValue: [-0.08, 0.08]
                     },
                     graphProperties: {
                           type: 'network',
@@ -74,7 +75,7 @@
             var isInitializing = true;
             var noPulse = false;
             
-            var showingDemo = false;
+            var currentUi = 'simple';
             
             function _updateNavigation() {
                 $(".undo-network").toggleClass('disabled', !undo.hasUndo());
@@ -548,7 +549,7 @@
                     $("#btn-group-datasets a").removeClass('active');
                     $("#btn-group-datasets a[data-id=1]").addClass('active');
                     $("#selected-dataset").html("Genetic interactions");
-                    
+                    $(".data-type-img").toggleClass("hidden");
                     state.setProperty("dataset", 1);
                     sigInst.draw();
                     autoState = false;
@@ -599,16 +600,16 @@
                         loadDataset(value, {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: newVisible});
                     }
                 }
-                
+                $(".data-type-img").toggleClass("hidden");
                 state.setProperty("dataset", value);
             };
             
             function updateEdges(ds) {
                 var minWeight = null;
                 var maxWeight = null;
-                var ele = $(".cutoff-bar[data-dataset=\"" + ds + "\"]");
-                var visibleCount = 0;
                 
+                var ele = $(".cutoff-bar-simple[data-dataset=\"" + ds + "\"], .cutoff-bar[data-dataset=\"" + ds + "\"]");
+                var visibleCount = 0;
                 sigInst._core.graph.edges.forEach(function(edge) {
                     if (!edge.hasOwnProperty('ds')) {
                         edge.ds = ds;
@@ -630,8 +631,8 @@
                     ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
                     ele.val([state.getProperty("cutoff_" + ds) || minWeight]);
                 } else {
-                    $("#cutoff-label-max").html(state.getProperty("cutoff_" + ds)[1]);
-                    $("#cutoff-label-min").html(state.getProperty("cutoff_" + ds)[0]);
+                    $(".cutoff-label-max").html(state.getProperty("cutoff_" + ds)[1]);
+                    $(".cutoff-label-min").html(state.getProperty("cutoff_" + ds)[0]);
                 }
                 
                 if (sliderProperties.updateLimits) {
@@ -645,13 +646,14 @@
                 }
                 
                 if (ds == 0) {
-                    $("#cutoff-label-max").css('visibility', 'hidden');
-                    $("#cutoff-label-min").removeClass('btn-danger').addClass('btn-default');
+                    $(".cutoff-label-max").css('visibility', 'hidden');
+                    $(".cutoff-label-min").removeClass('btn-danger').addClass('btn-default');
                 } else {
-                    $("#cutoff-label-max").css('visibility', 'visible');
-                    $("#cutoff-label-min").removeClass('btn-default').addClass('btn-danger');
+                    $(".cutoff-label-max").css('visibility', 'visible');
+                    $(".cutoff-label-min").removeClass('btn-default').addClass('btn-danger');
                 }
                 
+                $(".cutoff-bar-simple").css('display', 'none');
                 $(".cutoff-bar").css('display', 'none');
                 ele.css('display', 'block');
                 
@@ -686,6 +688,7 @@
                         var dsEle = $("#btn-group-datasets a[data-id=\"" + dataType + "\"]");
                         dsEle.addClass('active');
                         $("#selected-dataset").html("Genetic interactions");
+                        $(".data-type-img").toggleClass("hidden");
                         $(".dataset-constraint").removeClass("disabled");
                         state.setProperty("dataset", 1);
                     }
@@ -1039,7 +1042,7 @@
             
             function _setRunningLayout(bool) {
                 var ladda, button = $('#btn-layout');
-                
+                return
                 opts.runningLayout = bool;
                 button.toggleClass('btn-primary', !bool);
                 button.toggleClass('btn-danger', bool);
@@ -1088,7 +1091,8 @@
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
-                            setTimeout(function(){Ladda.getInstance(layoutButton.attr('id')).setProgress(p);}, 0);
+                            if (currentUi == "advance")
+                                setTimeout(function(){Ladda.getInstance(layoutButton.attr('id')).setProgress(p);}, 0);
                         },
                         attraction_multiplier: $("#layout-slider-att").val() || 50,
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
@@ -1347,21 +1351,8 @@
                         if (numVisible <= 100) for (n in nodes) nodes[n].forceLabel = true;
                         sigInst.draw();
                         break;
-                    case 'showDemo':
-                        if (s[key] && !showingDemo) initTour();
-                        break;
-                    case 'showUI':
-                        if (s[key]) {
-                            $('[data-hidden-ui]').each(function() { 
-                                $(this).toggleClass('hidden', false);
-                                $(this).removeAttr('data-hidden-ui'); }
-                            );
-                            $('[data-hidden-zoom]').each(function() { 
-                                $(this).toggleClass('hidden', false);
-                                $(this).removeAttr('data-hidden-zoom');
-                            });
-                        }
-                        break;
+                    case 'scroll':
+                        sigInst.mouseProperties({blockScroll: s[key]});
                     }
                 }
             }
@@ -1538,13 +1529,15 @@
             }
             
             function buildNewUI() {
-                $.ajax(opts.uiUrl, {
-                    async: false,
-                    processData: false,
-                    success: function(data) {
-                        $(rootElement).append($('<div class="vizualization-ui" style="display: none;">').html(data));
-                    }
-                  });
+                for (ui in opts.uiUrl) {
+                    $.ajax(opts.uiUrl[ui], {
+                        async: false,
+                        processData: false,
+                        success: function(data) {
+                            $(rootElement).append($('<div class="vizualization-ui" id="' + ui + '-ui" style="display: none;">').html(data));
+                        }
+                    });
+                }
                 
                 $('#btn-group-layout').toggleClass('hidden', opts.layoutButtonHide);
                 
@@ -1579,13 +1572,27 @@
                         break;
                     case 'correlation-gi':
                         var selection = getSelectedNodes(true);
-                        if (selection.length < 7)
+                        if (selection.length < 8)
                             showCorrelationDriving(true);
                         break;
                     }
                     
                     changeNodesState();
                     evt.preventDefault();
+                });
+                
+                $('#simple-view-network').click(function() {
+                    if (getSelectedNodes().length < 0) return;
+                    
+                    applyNeighbourhood(1);
+                    
+                    $('[data-hidden-network]').each(function() {
+                        $(this).removeClass('hidden');
+                    });
+                    
+                    $('[data-hidden-simple-btn]').each(function() {
+                        $(this).hide();
+                    });
                 });
                 
                 $(".dropdown-toggle").click(function(evt) {
@@ -1601,11 +1608,6 @@
                     var yPos = e.offsetY != undefined ? e.offsetY : e.pageX - this.offsetTop;
                     
                     sigInst.goTo(xPos, yPos, position.ratio * 2).draw();
-                    
-                    $('[data-hidden-zoom]').each(function() {
-                        $(this).fadeIn(750).toggleClass('hidden', false);
-                        $(this).removeAttr('data-hidden-zoom');
-                    })
                 });
                 
                 $(".dropdown-toggle a").click(function(evt) {
@@ -1620,7 +1622,7 @@
                 });
                 $('#btn-layout, .tool-layout').click(toggleLayout);
                 
-                $("#btn-group-download a, #btn-group-download #btn-view").click(function(evt) {
+                $("#btn-group-download a, #btn-group-download #btn-view, #download-selected").click(function(evt) {
                     switch ($(this).attr('id')) {
                     case "download-visible":
                         downloadShownData();
@@ -1633,7 +1635,7 @@
                         break;
                     case "download-selected":
                         var selected = getSelectedNodes().selected;
-                        if (selected.length > 0 && selected.length < 20) 
+                        if (selected.length > 0 && selected.length < 20)
                             window.location.href = 'dl/?' + $.param({'n': selected}, true);
                         break;
                     case "download-dataset":
@@ -1740,8 +1742,10 @@
                 }
                 
                 for (slider in styleSliders) {
-                    $('#style-slider-' + slider).noUiSlider(styleSliders[slider]).on('set', styleSliders[slider].set);
-                    $('#style-slider-' + slider).attr('data-slider-default', $('#style-slider-' + slider).val());
+                    if ($('#style-slider-' + slider).length) {
+                        $('#style-slider-' + slider).noUiSlider(styleSliders[slider]).on('set', styleSliders[slider].set);
+                        $('#style-slider-' + slider).attr('data-slider-default', $('#style-slider-' + slider).val());
+                    }
                 }
                 
                 $('#btn-style-default').click(function() {
@@ -1778,10 +1782,15 @@
                 
                 
                 var box = $(".content:first")[0].getBoundingClientRect();
-                Drag.init(document.getElementById("legend-handle"),document.getElementById("legend"), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
+                if ($('legend').length) {
+                    Drag.init(document.getElementById("legend-handle"), document.getElementById("legend"), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
+                }
                 
-                $('.btn-style').click(function() {
-                    $('#style-tabs a[href="' + $(this).data('tab') + '"]').tab('show');
+                $('#btn-group-styles').click(function() {
+                    $('#style-tabs').tab('show');
+                    
+                    var modal = $('#style-tabs').parent('.modal-body');
+                    $('#style-tabs a[href=#' + modal.find('.tab-content .active').attr('id') + ']').addClass('active');
                 });
                 
                 /*
@@ -1811,100 +1820,114 @@
 //                    $('#layout-slider-' + slider).noUiSlider(layoutSliders[slider]);
 //                }
                 
-                $("#cutoff-bar-cor").noUiSlider({
-                    range: {min: sliderProperties.min, max: sliderProperties.max},
-                    step: sliderProperties.step,
-                    start: sliderProperties.value,
-                    direction: "rtl",
-                    orientation: "vertical",
-                    serialization: {
-                        lower: [new Link({target: $("#cutoff-label-min")})]
-                    }
-                }).on('set', function() {
-                    var nodes = sigInst._core.graph.nodes.filter(function(node) {
-                        return !(node.hidden && node._hidden);
-                    }).map(function(node) {
-                        return node.id;
-                    });
+                $(".cutoff-cor").each(function() {
+                    var ori = $(this).data("ori");
                     
-                    var val = $(this).val(), setR = sigInst._core.graph.nodes.length / 0.2, actualR = nodes.length / val;
-                    setR = 5000; //TODO: low for now just in case, test later !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    if (val < sliderProperties.value && actualR <= setR) {
-                        $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
-                            for (n in data["nodes"]) {
-                                var node = data["nodes"][n];
-                                var strain = getStrain(node);
-                                if (!nodeExists(node)) {
-                                    sigInst.addNode(node, {
-                                        x: (Math.random() * 100),
-                                        y: (Math.random() * 100),
-                                    });
-                                }
-                            }
-                            
-                            for (e in data["edges"]) {
-                                var edge = data["edges"][e];
-                                var edgeId = edge.s + '+' + edge.t, edgeReverseId = edge.t + '+' + edge.s;
-                                if (nodeExists(edge.s) && nodeExists(edge.t) && !sigInst._core.graph.edgesIndex[edgeId] && !sigInst._core.graph.edgesIndex[edgeReverseId]) {
-                                    sigInst.addEdge(edgeId, edge.s, edge.t, edge);
-                                    
-                                    var addedEdge = getEdge(edgeId), source = getNode(edge.s), target = getNode(edge.t);
-                                    addedEdge.weight = addedEdge.size = edge.w;
-                                    
-                                    source.hidden = source._hidden = false;
-                                    target.hidden = target._hidden = false;
-                                }
-                                updateEdges(0);
-                            }
-                            sigInst.draw();
-                            toggleLayout(false, 'force');
+                    $(this).noUiSlider({
+                        range: {min: sliderProperties.min, max: sliderProperties.max},
+                        step: sliderProperties.step,
+                        start: sliderProperties.value,
+                        direction: "rtl",
+                        orientation: ori,
+                        serialization: {
+                            lower: [new Link({target: $(".cutoff-label-min")})]
+                        }
+                    }).on('set', function() {
+                        var nodes = sigInst._core.graph.nodes.filter(function(node) {
+                            return !(node.hidden && node._hidden);
+                        }).map(function(node) {
+                            return node.id;
                         });
                         
-                        sliderProperties.value = val;
-                    } else if (actualR > setR) {
-                        $("#cutoff-bar-cor").val(sliderProperties.preValue)
-                        var nodeCount = Math.floor(val * setR);
-                        alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than ' + nodeCount + 
-                                  ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + countVisibleNodes());
-                        return;
-                    }
-                    
-                    sliderProperties.preValue = val;
-                    applyCutoff(val);
-                    changeState();
-                });
-                
-                $("#cutoff-bar-int").noUiSlider({
-                    range: {
-                        min: -1,
-                        max: 1
-                    },
-                    step: sliderProperties.step,
-                    start: [-0.08, 0.08],
-                    orientation: "vertical",
-                    serialization: {
-                        lower: [new Link({target: function(val){$("#cutoff-label-max").html(-val);}})],
-                        upper: [new Link({target: function(val){$("#cutoff-label-min").html(-val);}})]
-                    }
-                }).on('set', function() {
-                    var val = $(this).val();
-                    if (val[0] < 0 && val[1] > 0) {
+                        var val = $(this).val(), setR = sigInst._core.graph.nodes.length / 0.2, actualR = sigInst._core.graph.nodes.length / val;
+                        console.log(actualR, val)
+                        setR = 5000; //TODO: low for now just in case, test later !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        if (val < sliderProperties.value && actualR <= setR) {
+                            $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
+                                for (n in data["nodes"]) {
+                                    var node = data["nodes"][n];
+                                    var strain = getStrain(node);
+                                    if (!nodeExists(node)) {
+                                        sigInst.addNode(node, {
+                                            x: (Math.random() * 100),
+                                            y: (Math.random() * 100),
+                                        });
+                                    }
+                                }
+                                
+                                for (e in data["edges"]) {
+                                    var edge = data["edges"][e];
+                                    var edgeId = edge.s + '+' + edge.t, edgeReverseId = edge.t + '+' + edge.s;
+                                    if (nodeExists(edge.s) && nodeExists(edge.t) && !sigInst._core.graph.edgesIndex[edgeId] && !sigInst._core.graph.edgesIndex[edgeReverseId]) {
+                                        sigInst.addEdge(edgeId, edge.s, edge.t, edge);
+                                        
+                                        var addedEdge = getEdge(edgeId), source = getNode(edge.s), target = getNode(edge.t);
+                                        addedEdge.weight = addedEdge.size = edge.w;
+                                        
+                                        source.hidden = source._hidden = false;
+                                        target.hidden = target._hidden = false;
+                                    }
+                                    updateEdges(0);
+                                }
+                                sigInst.draw();
+                                toggleLayout(false, 'force');
+                            });
+                            
+                            sliderProperties.value = val;
+                        } else if (actualR > setR && val < sliderProperties.value) {
+                            $("#cutoff-bar-cor").val(sliderProperties.preCorValue);
+                            var nodeCount = Math.floor(val * setR);
+                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than ' + nodeCount + 
+                                      ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + countVisibleNodes());
+                            return;
+                        }
+                        
+                        sliderProperties.preCorValue = val;
                         applyCutoff(val);
+                        $(".cutoff-cor:not(#" + $(this).attr("id") + ")").val(val);
                         changeState();
-                    }
-                }).on('slide', function() {
-                    var val = $(this).val();
-                    if (val[0] > 0) {
-                        $(this).val([0, null]);
-                    } else if (val[1] < 0) {
-                        $(this).val([null, 0]);
-                    };
+                    });
                 });
                 
-                $("#cutoff-label-min").html(sliderProperties.value);
+                $(".cutoff-int").each(function() {
+                    var ori = $(this).data("ori");
+                    
+                    $(this).noUiSlider({
+                        range: {
+                            min: -1,
+                            max: 1
+                        },
+                        step: sliderProperties.step,
+                        start: [-0.08, 0.08],
+                        orientation: ori,
+                        serialization: {
+                            lower: [new Link({target: function(val){$(".cutoff-label-max").html(-val);}})],
+                            upper: [new Link({target: function(val){$(".cutoff-label-min").html(-val);}})]
+                        }
+                    }).on('set', function() {
+                        var val = $(this).val();
+                        if (val[0] < 0 && val[1] > 0) {
+                            applyCutoff(val);
+                            sliderProperties.preIntValue = [val[0], val[1]]
+                            $(".cutoff-int:not(#" + $(this).attr("id") + ")").val(val);
+                            changeState();
+                        } else {
+                            $(this).val(sliderProperties.preIntValue);
+                        }
+                    }).on('slide', function() {
+                        var val = $(this).val();
+                        if (val[0] > 0) {
+                            $(this).val([0, null]);
+                        } else if (val[1] < 0) {
+                            $(this).val([null, 0]);
+                        };
+                    });
+                });
+                
+                $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
                 
-                $("#btn-group-datasets a").click(function(evt){
+                $("#btn-group-datasets a, .data-type-img").click(function(evt){
                     switchDataset($(this).attr('data-id'));
                     evt.preventDefault();
                 });
@@ -1912,7 +1935,7 @@
                 /*
                  * Buttons
                  */
-                $('#btn-home').click(function() {
+                $('.btn-home').click(function() {
                     var mmx = {};
                     sigInst.iterNodes(function(node) {
                         if (!node.hidden) {
@@ -1986,11 +2009,6 @@
                         }
                         
                     }, timeout);
-                    
-                    $('[data-hidden-zoom]').each(function() {
-                        $(this).fadeIn(750).toggleClass('hidden', false);
-                        $(this).removeAttr('data-hidden-ui');
-                    })
                 });
                 
                 $('#btn-fullscreen').click(function() {
@@ -2004,13 +2022,13 @@
                 $('#download-snapshot').click(downloadCanvasSnapshot);
                 $('#download-svg').click(downloadCanvasSvg);
                 
-                $('#btn-zoom-in').click(function() {
+                $('.btn-zoom-in').click(function() {
                     var position = sigInst.position();
                     var size = sigInst.size();
                     
                     sigInst.goTo(size.w / 2, size.h / 2, position.ratio * 2).draw();
                 });
-                $('#btn-zoom-out').click(function() {
+                $('.btn-zoom-out').click(function() {
                     var position = sigInst.position();
                     var size = sigInst.size();
                     
@@ -2172,7 +2190,7 @@
                 
                 $("#custom-arange").click(function() {
                     if (state.getProperty('selection').length < 3) return;
-                    $('.vizualization-ui').hide();
+                    $("#" + currentUi + "-ui").fadeIn(1000);
                     $('.draw-ui').fadeIn(1000);
                     $('#draw-canvas').fadeIn(1000);
                 });
@@ -2416,6 +2434,12 @@
                         $(".select2-container-multi .select2-choices").css("max-height", "34px");
                     }
                 });
+                
+                $(".switch-ui").click(function() {
+                    $("#" + currentUi + "-ui").fadeOut(1000);
+                    currentUi = currentUi == "simple" ? "advance" : "simple";
+                    $("#" + currentUi + "-ui").fadeIn(1000);
+                });
             }
             
             function traverseRec(node, netNum, len) {
@@ -2445,9 +2469,7 @@
             
             function showUI() {
                 setTimeout(function() {
-                    $(".vizualization-ui").fadeIn(1000, function() {
-                        if (localStorage.getItem("showDemo") != "false") initTour();
-                    });
+                    $("#" + currentUi + "-ui").fadeIn(1000);
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
 //                    if (!Modernizr.pointerevents && !window.attachEvent) {
 //                        var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
@@ -2740,50 +2762,7 @@
                 $("#draw-cancel").click(function() {
                     $("#draw-canvas").hide();
                     $(".draw-ui").hide();
-                    $(".vizualization-ui").fadeIn(1000);
-                });
-            }
-            
-            function initTour() {
-                var intro = introJs();
-                intro.setOption("keyboardNavigation", false);
-                intro.setOption("exitOnOverlayClick", false);
-                intro.setOption("showStepNumbers", false);
-                
-                intro.start();
-                $("#error-step-one").hide();
-                showingDemo = true;
-                
-                intro.onchange(function(e) {
-                    if ($(e).data("step") == 2) {
-                        $("input.gene-search-input").select2("close");
-                    }
-                });
-                
-                intro.onbeforechange(function(e) {
-                    var nodes = state.getProperty("selection");
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (getNode(nodes[i])) return true;
-                    }
-                    
-                    $("#error-step-one").show();
-                    return false;
-                });
-                
-                //on complete the demo
-                intro.oncomplete(function(e) {
-                    localStorage.setItem("showDemo", false);
-                    settings["showDemo"] = false;
-                    showingDemo = false;
-                    updateSettings(settings)
-                });
-                
-                //on skipping the demo
-                intro.onexit(function(e) {
-                    localStorage.setItem("showDemo", false);
-                    settings["showDemo"] = false;
-                    showingDemo = false;
-                    updateSettings(settings)
+                    $("#" + currentUi + "-ui").fadeIn(1000);
                 });
             }
             
@@ -2799,7 +2778,8 @@
                     defaultEdgeArrow: opts.arrows ? 'target' : 'none',
                 }).graphProperties(graphProperties).mouseProperties({
                     drawHoverEdges: false,
-                    maxRatio : 64
+                    maxRatio : 64,
+                    blockScroll: settings['scroll'] || false,
                 }).bind('rightclicknodes', onNodesContext
                  ).bind('ctrlclicknodes', function (e) {
                     clicking.modifierKey = 'ctrl';
@@ -3086,14 +3066,17 @@
                         var toPaste = getUnique(getSelectedNodes().selected.map(function(s) {return getStrain(s).label;}).sort());
                         $("#copy-area").html(toPaste.toString())
                         
+                        var moveOn = true;
                         sigInst.iterNodes(function(node) {
                             strain = getStrain(node.id);
                             if ($.inArray(strain.id + "", selected.selected) >= 0) {
                                 node.selected = true;
                                 
                                 if (node.hidden && !autoState ) {
-                                    if (!selected.byAnnot.hasOwnProperty(node.id))
-                                        messageUser('Gene you\'re looking for is below current threshold.')
+                                    if (!selected.byAnnot.hasOwnProperty(node.id)) {
+                                        messageUser('Gene you\'re looking for is below current threshold.');
+                                        moveOn = false;
+                                    }
                                 } else {
                                     numVisibleSelected++;
                                 }
@@ -3102,6 +3085,15 @@
                             }
                         });
                         
+                        if (moveOn && !isInitializing) {
+                            $('[data-hidden-search]').each(function() {
+                                $(this).hide();
+                            });
+                            
+                            $('[data-hidden-simple-btn]').each(function() {
+                                $(this).removeClass("hidden");
+                            });
+                        }
                         
                         $('[data-selection-constraint]').each(function() {
                             var enabled = true, size = selected.selected.length, cls = $(this).data('selection-class') || 'disabled';
@@ -3122,15 +3114,6 @@
                                 $(this).fadeTo(500, 0.5).fadeTo(500, 1);
                             }
                         });
-                        
-                        $('[data-hidden-ui]').each(function() {
-                            var size = selected.selected.length;
-                            
-                            if (size > 0) {
-                                $(this).fadeIn(750).toggleClass('hidden', false);
-                                $(this).removeAttr('data-hidden-ui');
-                            }
-                        })
                         
                         if (!tokenizing) {
                             updateMissingMessage();

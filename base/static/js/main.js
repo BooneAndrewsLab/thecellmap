@@ -5,11 +5,10 @@
             isPrivate: localStorage.getItem("isPrivate") || false,
             remove: localStorage.getItem("remove") || false,
             fileType: localStorage.getItem("fileType") || "xls",
-            showDemo: localStorage.getItem("showDemo") || true,
             openSearchbar: localStorage.getItem("openSearchbar") || false,
             showBgSvg: localStorage.getItem("showBgSve") || true,
             showLegendSvg: localStorage.getItem("showLegendSvg") || true,
-            showUI: localStorage.getItem("showUI") || false,
+            scroll: localStorage.getItem("scroll") || true,
     };
     
     var bool = {
@@ -17,12 +16,11 @@
             label: true,
             isPrivate: true,
             remove: true,
-            showDemo: true,
             fileType: false,
             openSearchbar: true,
             showBgSvg: true,
             showLegendSvg: true,
-            showUI: true,
+            scroll: true,
     }
     
     updateSettings(settings)

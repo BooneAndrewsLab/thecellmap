@@ -3553,7 +3553,7 @@ function MouseCaptor(dom) {
    * @param  {event} event A 'wheel' mouse event.
    */
   function wheelHandler(event) {
-    if (self.p.mouseEnabled) {
+    if (self.p.mouseEnabled && !self.p['blockScroll']) {
       startInterpolate(
         self.mouseX,
         self.mouseY,

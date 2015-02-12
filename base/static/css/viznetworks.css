@@ -267,3 +267,33 @@ body {
     position: fixed;
     z-index: 2000;
 }
+
+/** SIMPLE UI **/
+.top-right-simple {
+    right: 5px;
+    text-align: center;
+    display: flex;
+}
+
+.cutoff-bar-simple {
+    width: 300px;
+    margin: 5px 7px;
+}
+
+.cutoff-label-simple {
+    display: block;
+    width: 40px;
+    height: 36px;
+    padding: 6px 2px;
+    text-align: center;
+}
+
+.cutoff-bar-group {
+    display: inherit;
+}
+
+.data-type-img {
+    border: #fff 2px solid;
+    width: 45px;
+    height: 45px;
+}

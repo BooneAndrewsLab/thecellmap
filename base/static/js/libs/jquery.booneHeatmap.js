@@ -73,8 +73,6 @@
             var noPulse = false;
             var annotation, network; 
             
-            var showingDemo = false;
-            
             function _updateNavigation() {
                 $(".undo-network").toggleClass('disabled', !undo.hasUndo());
                 $(".redo-network").toggleClass('disabled', !undo.hasRedo());

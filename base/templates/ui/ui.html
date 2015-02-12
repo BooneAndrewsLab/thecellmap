@@ -1,3 +1,5 @@
+{% load staticfiles base_extras %}
+
 <script type="text/javascript">
 $('.vizualization-ui').ready(function() {
   $( window ).resize(function() {
@@ -9,9 +11,9 @@ $('.vizualization-ui').ready(function() {
 </script>
 
 <div class="top-left hidden-sm hidden-xs">
-  <div data-step="1" data-intro="<p>Welcome to TheCellMap! <br> This is the search bar. Try search for a gene.</p><p id='error-step-one'>Please select at least one gene to move onto the next step.</p>" data-position="right" style="position: relative; display: inline-block; vertical-align: middle;">
-    <div id="search-bar" class="input-group" data-step="5" data-intro="You can also load annotations from the search bar by typing 'load'." data-position="right">
-      <span class="input-group-addon glyphicon glyphicon-search"></span>
+  <div style="position: relative; display: inline-block; vertical-align: middle;">
+    <div id="search-bar" class="input-group">
+      <span class="input-group-addon glyphicon glyphicon-search switch-ui"></span>
       <input class="gene-search-input form-control" type="hidden">
     </div>
   </div>
@@ -39,43 +41,42 @@ $('.vizualization-ui').ready(function() {
 <div class="hidden" id="copy-area">Selected Genes</div>
 
 <div class="middle-right">
-  <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label" style="visibility: hidden;">&nbsp;</button>
+  <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label cutoff-label-max" style="visibility: hidden;">&nbsp;</button>
   
-  <div id="cutoff-bar-cor" class="cutoff-bar" data-dataset="0"></div>
-  <div id="cutoff-bar-int" class="cutoff-bar" data-dataset="1" style="display: none;"></div>
+  <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-ori="vertical"></div>
+  <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-ori="vertical" style="display: none;"></div>
   
-  <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label"></button>
+  <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"></button>
   
-  <div class="btn-group-vertical" data-hidden-zoom>
-    <button id="btn-zoom-in" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
+  <div class="btn-group-vertical">
+    <button type="button" class="btn btn-default btn-zoom-in" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
       <span class="glyphicon glyphicon-zoom-in"></span>
     </button>
-    <button id="btn-home" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui"
-        data-step="4" data-intro="The zoom and centre button will automatically adjust the screen to fit the network" data-position="left">
+    <button type="button" class="btn btn-default btn-home" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui">
       <span class="glyphicon glyphicon-record"></span>
     </button>
-    <button id="btn-zoom-out" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom out" data-container=".vizualization-ui">
+    <button type="button" class="btn btn-default btn-zoom-out" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Zoom out" data-container=".vizualization-ui">
       <span class="glyphicon glyphicon-zoom-out"></span>
     </button>
   </div>
 </div>
 
-<div class="top-right hidden-sm hidden-xs hidden" data-hidden-ui>
+<div class="top-right hidden-sm hidden-xs">
   <!-- <button type="button" class="btn btn-primary" id="btn-save-state">Save State</button> -->
-  <div id="btn-group-neighbourhood" class="hidden btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown" data-step="2" data-intro="This button extracts the selected nodes and their neighbours from the network.<br>Try extracting a neighbourhood." data-position="bottom-left-aligned"> Extract <span class="caret"></span></button>
+  <div id="btn-group-neighbourhood" class="btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="1">&nbsp; + 1st neighbours</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
       <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
       <li class="divider"></li>
-      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Show Genetic interactions</a></li>
+      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Show genetic interactions</a></li>
     </ul>
   </div>
   
-  <div id="btn-group-layout" class="btn-group" data-step="6" data-intro="You can also arrange the nodes by annotation layout" data-position="bottom-right-aligned">
-    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-layout-type="force" data-style="zoom-out" data-size="s" data-step="3" data-intro="The layout button maps the network by the correlation between the nodes" data-position="bottom-right-aligned">
+  <div id="btn-group-layout" class="btn-group">
+    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-layout-type="force" data-style="zoom-out" data-size="s">
         <span class="ladda-label">Layout</span>
     </button>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
@@ -99,7 +100,7 @@ $('.vizualization-ui').ready(function() {
     </ul>
   </div>
   
-  <div id="btn-group-style" class="btn-group" data-step="7" data-intro="The display style can be changed here." data-position="bottom-right-aligned">
+  <div id="btn-group-style" class="btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Annotations <span class="caret"></span></button>
       <ul id="btn-group-annotation" class="dropdown-menu" role="menu">
         <li class="active load-annotation"><a href="#">None</a></li>
@@ -108,7 +109,7 @@ $('.vizualization-ui').ready(function() {
   </div>
 </div>
 
-<div class="bottom-left hidden" data-hidden-ui>
+<div class="bottom-left">
   <div id="btn-group-datasets" class="btn-group dropup">
     <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> <span id="selected-dataset">Correlations</span> <span class="caret"></span></button>
     <div class="list-group dropdown-menu menu-right" role="menu">
@@ -119,15 +120,7 @@ $('.vizualization-ui').ready(function() {
 </div>
 
 <div class="bottom-right" >
-  <div id="btn-group-styles" class="btn-group dropup" data-toggle="tooltip" title="Network style" data-placement="top" data-delay="0">
-    <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button" data-toggle="dropdown"></span>
-    <ul class="dropdown-menu up" role="menu">
-      <li><a id="btn-style-node" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-node" href="#">Node style</a></li>
-      <li><a id="btn-style-edge" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-edge" href="#">Edge style</a></li>
-      <li><a id="btn-style-general" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-general" href="#">General style</a></li>
-      <li><a id="btn-style-annotation" class="btn-style" data-toggle="modal" data-target="#modal-style" data-tab="#style-annotation" href="#">Annotation style</a></li>
-    </ul>
-  </div>
+  <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button style-icon-button" data-toggle="modal" data-target="#modal-style"></span>
 </div>
 
 <div id="alerts-panel"></div>
