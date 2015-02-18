@@ -9,19 +9,8 @@
             showBgSvg: localStorage.getItem("showBgSve") || true,
             showLegendSvg: localStorage.getItem("showLegendSvg") || true,
             scroll: localStorage.getItem("scroll") || true,
+            advanceUi: localStorage.getItem("advanceUi") || false,
     };
-    
-    var bool = {
-            zoom: true,
-            label: true,
-            isPrivate: true,
-            remove: true,
-            fileType: false,
-            openSearchbar: true,
-            showBgSvg: true,
-            showLegendSvg: true,
-            scroll: true,
-    }
     
     updateSettings(settings)
     
@@ -52,11 +41,11 @@
     
     function updateSettings(settings) {
         for (key in settings) {
-            if (bool[key]) {
+            if (key == "fileType") {
+                $("#fileType").val(settings["fileType"]).change();
+            } else {
                 settings[key] = settings[key].toString() == "true";
                 $("#" + key).prop("checked", settings[key]);
-            } else if (key == "fileType") {
-                $("#fileType").val(settings["fileType"]).change();
             }
         }
     }

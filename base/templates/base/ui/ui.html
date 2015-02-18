@@ -1,0 +1,338 @@
+{% load staticfiles base_extras %}
+
+<script type="text/javascript">
+$('.vizualization-ui').ready(function() {
+  $( window ).resize(function() {
+      var parent = $('.vizualization-ui').parent();
+      $('.vizualization-ui').css('height', parent.innerHeight());
+      $('.vizualization-ui').css('width', parent.innerWidth());
+  }).resize();
+});
+</script>
+
+<div class="top-left hidden-sm hidden-xs">
+  <div style="position: relative; display: inline-block; vertical-align: middle;">
+    <div id="search-bar" class="input-group">
+      <span class="input-group-addon glyphicon glyphicon-search switch-ui"></span>
+      <input class="gene-search-input form-control" type="hidden">
+    </div>
+  </div>
+  <div id="btn-group-download" class="btn-group">
+    <button id="btn-view" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="view-tabular" href="#"> View data in table form</a></li>
+      <li class="divider"></li>
+      <li><a id="download-visible" href="#"> Download visible network</a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0" data-selection-lt="20"><a id="download-selected" href="#"> Download data for selected genes</a></li>
+      <li class="disabled" data-toggle="tooltip" title="Unpublished data, will be available after publication" data-placement="right" data-delay="0"><a id="download-dataset" href="#"> Download dataset</a></li>
+      <li class="divider"></li>
+      <li><a id="download-xgmml" href="#"> Export visible network to xgmml</a></li>
+      <li><a id="download-snapshot" href="#"> Export visible network to png</a></li>
+      <li><a id="download-svg" href="#"> Export visible network to svg</a></li>
+      <li class="divider"></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="0"><a id="list-selected" data-clipboard-target="copy-area" href="#"> Selected genes list</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="hidden" id="copy-area">Selected Genes</div>
+
+<div class="middle-right">
+  <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label cutoff-label-max" style="visibility: hidden;">&nbsp;</button>
+  
+  <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-ori="vertical"></div>
+  <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-ori="vertical" style="display: none;"></div>
+  
+  <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"></button>
+  
+  <div class="btn-group-vertical">
+    <button id="btn-zoom-in" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
+      <span class="glyphicon glyphicon-zoom-in"></span>
+    </button>
+    <button id="btn-home" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui">
+      <span class="glyphicon glyphicon-record"></span>
+    </button>
+    <button id="btn-zoom-out" type="button" class="btn btn-default" data-toggle="tooltip" data-placement="left" data-delay="200" title="Zoom out" data-container=".vizualization-ui">
+      <span class="glyphicon glyphicon-zoom-out"></span>
+    </button>
+  </div>
+</div>
+
+<div class="top-right hidden-sm hidden-xs">
+  <!-- <button type="button" class="btn btn-primary" id="btn-save-state">Save State</button> -->
+  <div id="btn-group-neighbourhood" class="btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="1">&nbsp; + 1st neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
+      <li class="divider"></li>
+      <li data-selection-constraint="true" data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Show Genetic interactions</a></li>
+    </ul>
+  </div>
+  
+  <div id="btn-group-layout" class="btn-group">
+    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-layout-type="force" data-style="zoom-out" data-size="s">
+        <span class="ladda-label">Layout</span>
+    </button>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"> Force-directed layout </a></li>
+      <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"> Force-directed layout + (experimental) </a></li>
+      <li class="annotation-constraint disabled"><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"> Annotation-directed layout </a></li>
+      <li class="dataset-constraint disabled"><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"> GI-directed layout </a></li>
+      <li class="dropdown-submenu pull-left disabled"><a id="tool-layout-attr" href="#"> Layout by attribute </a>
+        <ul id="attribute-layout-list" class="dropdown-menu" role="menu">
+        </ul>
+      </li>
+      <li class="divider"></li>
+      <li><a id="tool-rotate-arbitrary" href="#"> Rotate graph by arbitrary angle</a></li>
+      <li><a id="tool-stack" href="#"> Stack unconnected networks </a></li>
+      <li class="divider"></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="2"><a id="custom-arange" tabindex="-1" href="#"> Arrange selected in custom shape </a></li>
+      
+    </ul>
+  </div>
+  
+  <div id="btn-group-style" class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Annotations <span class="caret"></span></button>
+      <ul id="btn-group-annotation" class="dropdown-menu" role="menu">
+        <li class="active load-annotation"><a href="#">None</a></li>
+        <li class="divider"></li>
+      </ul>
+  </div>
+</div>
+
+<div class="bottom-left">
+  <div id="btn-group-datasets" class="btn-group dropup">
+    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> <span id="selected-dataset">Correlations</span> <span class="caret"></span></button>
+    <div class="list-group dropdown-menu menu-right" role="menu">
+      <a href="#" data-id="0" class="list-group-item active">Correlations</a>
+      <a href="#" data-id="1" class="list-group-item">Genetic interactions</a>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-right" >
+    <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button style-icon-button" data-toggle="modal" data-target="#modal-style"></span>
+</div>
+
+<div id="alerts-panel"></div>
+
+<div class="modal fade" id="modal-style" tabindex="-1" role="dialog" aria-labelledby="modal-style-label"
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="modal-style-label">Network style</h4>
+      </div>
+      <div class="modal-body">
+        <ul id="style-tabs" class="nav nav-pills nav-justified">
+          <li class="active"><a href="#style-node" data-toggle="tab">Node</a></li>
+          <li><a href="#style-edge" data-toggle="tab">Edge</a></li>
+          <li><a href="#style-general" data-toggle="tab">General</a></li>
+          <li><a href="#style-annotation" data-toggle="tab">Annotations</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade in active" id="style-node">
+            <ul class="list-group">
+              <li class="list-group-item">Node size:
+                <div id="style-slider-nsize"></div>
+              </li>
+              <li class="list-group-item">Label size:
+                <div id="style-slider-lsize"></div>
+              </li>
+              <li class="list-group-item">Label threshold:
+                <div id="style-slider-lthresh"></div>
+              </li>
+              <li class="list-group-item">Label color: <input id="style-label-color" value="fff" name="label-color"
+                class="pick-a-color"></li>
+            </ul>
+          </div>
+          <div class="tab-pane fade" id="style-edge">
+            <ul class="list-group">
+              <li class="list-group-item">Edge width:
+                <div id="style-slider-esize"></div>
+              </li>
+            </ul>
+          </div>
+          <div class="tab-pane fade" id="style-general">
+            <ul class="list-group">
+              <li class="list-group-item">Background color: <input id="canvas-background-color" value="222222"
+                name="background-color" class="pick-a-color"></li>
+            </ul>
+          </div>
+          <div class="tab-pane fade" id="style-annotation">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="btn-style-default" type="button" class="btn btn-primary">Revert to defaults</button>
+      </div>
+    </div> <!-- /.modal-content -->
+  </div> <!-- /.modal-dialog -->
+</div> <!-- /.modal -->
+
+<div id="contextmenu-container" class="dropdown clearfix contextmenu" style="display: none;">
+  <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
+    <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Node details...</a></li>
+    <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li>
+    <li class="divider"></li>
+    <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
+    <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li>
+    <li class="divider"></li>
+    <li><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li>
+    <li data-selection-constraint data-selection-ls="6" data-selection-gt="1"><a id="context-nodes-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions </a></li>
+  </ul>
+</div>
+
+<div id="contextmenu-edge-container" class="dropdown clearfix contextmenu" style="display: none;">
+  <ul id="contextmenu-edge" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
+    <li class="disabled"><a id="contextmenu-edge-count"></a></li>
+    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this correlation </a></li>
+  </ul>
+</div>
+
+<div class="modal fade" id="edit-node-modal" tabindex="-1" role="dialog" aria-labelledby="edit-node-modal-label"
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="edit-node-modal-label"></h4>
+      </div>
+      <div class="modal-body">
+        
+        <form class="form-horizontal" role="form">
+          <input type="hidden" id="edit-node-id">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">ORF</label>
+            <div class="col-sm-10">
+              <span id="node-orf" class="form-info"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-10">
+              <span id="node-name" class="form-info"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Allele</label>
+            <div class="col-sm-10">
+              <span id="node-allele" class="form-info"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">SGD url</label>
+            <div class="col-sm-10">
+              <span id="node-sgd" class="form-info"></span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-node-label" class="col-sm-2 control-label">Label</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-node-label" placeholder="Label">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-node-color" class="col-sm-2 control-label">Color</label>
+            <div class="col-sm-10">
+              <input class="form-control pick-a-color" id="edit-node-color">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-node-label-visible" class="col-sm-2 control-label">Label always visible?</label>
+            <div class="col-sm-10">
+              <input class="form-control" id="edit-node-label-force" type="checkbox">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-node-size-multiplier" class="col-sm-2 control-label">Node size multiplier</label>
+            <div class="col-sm-10">
+              <div id="style-slider-snsize"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                          <th style="width: 1%;"></th>
+                          <th>Annotation</th>
+                          <th style="width: 1%;">Dominant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="node-annotation-table">
+                    </tbody>
+                </table>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12">
+                <table class="table" id="attribute-table">
+                    <thead id="attribute-head">
+                    </thead>
+                    <tbody id="attribute-body">
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary modal-confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="rotation-modal" tabindex="-1" role="dialog" aria-labelledby="rotation-modal-label" 
+  aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" id="rotation-modal-label">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Rotate graph by an arbitrary angle</h4>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <input type="text" class="form-control rotation-input" placeholder="Degrees">
+          <span class="input-group-addon">degrees</span>
+        </div>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" class="rotation-select">
+            Rotate selected nodes only
+          </label>
+        </div>
+        <div id="alerts-panel-rotate"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary modal-confirm">Rotate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default" id="legend">
+  <div class="panel-heading" id="legend-handle">
+    <button type="button" class="close" id="btn-legend-close">&times;</button>
+    <h4 class="modal-title">Legend</h4>
+  </div>
+  <div class="panel-body">
+    <ul id="legend-list">
+    </ul>
+  </div>
+</div>
