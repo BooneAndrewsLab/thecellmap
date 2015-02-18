@@ -293,7 +293,19 @@ body {
 }
 
 .data-type-img {
-    border: #fff 2px solid;
-    width: 45px;
-    height: 45px;
+    width: 52px;
 }
+
+.img-icon {
+    border: #E8E8E8 2px solid;
+    width: 52px;
+    height: 52px;
+}
+
+.img-label {
+    text-align: center;
+    display: block;
+    color: #E8E8E8;
+    font-size: 8px;
+}
+

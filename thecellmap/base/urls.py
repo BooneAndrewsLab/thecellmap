@@ -40,7 +40,8 @@ urlpatterns = patterns('base.views',
     
     url(r'^circlepack/$', 'circle_pack', name='circle_pack'),
     url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),
-    url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui')
+    url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui'),
+    url(r'^ui/base/$', TemplateView.as_view(template_name='ui/base_ui.html'), name='base_ui')
 )
 
 urlpatterns += patterns('base.tools',

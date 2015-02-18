@@ -23,7 +23,7 @@
                     highlight: false,
                     colorScheme: 'black',
                     slider: {
-                        min : 0,
+                        min : 0.05,
                         step : 1,
                         value : 200,
                         max : 1000,
@@ -558,6 +558,7 @@
                     sigInst.draw();
                     autoState = false;
                     toggleLayout(false, 'gi');
+                    applySettings({label: settings['label']});
                     changeNodesState();
                 });
             };
@@ -605,6 +606,7 @@
                     }
                 }
                 $(".data-type-img").toggleClass("hidden");
+                applySettings({label: settings['label']});
                 state.setProperty("dataset", value);
             };
             
@@ -710,7 +712,7 @@
                     }
                     
                     if (isInitializing) {
-                        applySettings(settings);
+                        applySettings({scroll: settings['scroll']});
                     }
                     
                     isInitializing = false;
@@ -1102,7 +1104,6 @@
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
                         edgeFilter: function(edge) { return edge.weight > 0; },
                     };
-                    
                     switch(layoutType || $(this).attr('data-layout-type') || 'force') {
                     case 'annotation':
                         annotations = {};
@@ -1345,17 +1346,8 @@
                         if (s[key]) $('.btn-home').click();
                         break;
                     case 'label':
-                        var numVisible = 0, nodes = [];
-                        sigInst.iterNodes(function(node) {
-                            if (!node.hidden && s[key]) {
-                                numVisible++;
-                                nodes.push(node);
-                            } else if (!s[key]) {
-                                node.forceLabel = false;
-                            }
-                        });
-                        if (numVisible <= 100) for (n in nodes) nodes[n].forceLabel = true;
-                        sigInst.draw();
+                        var val = s[key] && countVisibleNodes() <= 100 ? 0 : 6;
+                        $('#style-slider-lthresh').val(val, true);
                         break;
                     case 'scroll':
                         sigInst.mouseProperties({blockScroll: s[key]});
@@ -1563,8 +1555,8 @@
                 $("#edit-node-modal").appendTo("body");
                 $("#rotation-modal").appendTo("body");
                 $("#legend").appendTo("body");
-                $("#legend").css("top", ($('canvas:first').height() - $("#legend").show().height())/2);
-                $("#legend").css("left", ($('canvas:first').width() - $("#legend").width())/2);
+                $("#legend").css("top", "105px");
+                $("#legend").css("left", "20px");
                 $("#legend").hide();
             }
             
@@ -1624,7 +1616,8 @@
                 $('#btn-group-annotation .load-annotation').click(function(evt) {
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
-                    loadAnnotation(evt.target.text); 
+                    loadAnnotation(evt.target.text);
+                    $('#btn-legend').click();
                     evt.preventDefault();
                 });
                 $('#btn-layout, .tool-layout').click(toggleLayout);
@@ -1693,11 +1686,10 @@
                 /*
                  * Style modal stuff
                  */
-                
                 var styleSliders = {
                     nsize: {
-                        range: {min: .1, max: 10},
-                        step: .2,
+                        range: {min: .1, max: 8},
+                        step: 2,
                         start: 2,
                         connect: "lower",
                         set: function() {
@@ -1707,8 +1699,8 @@
                         }
                     },
                     lsize: {
-                        range: {min: 1, max: 30},
-                        step: 1,
+                        range: {min: 1, max: 28},
+                        step: 7,
                         start: sigInst._core.plotter.p.defaultLabelSize,
                         connect: "lower",
                         set: function() {
@@ -1718,19 +1710,19 @@
                         }
                     },
                     lthresh: {
-                        range: {min: 0, max: 20},
-                        step: 1,
+                        range: {min: 0, max: 24},
+                        step: 6,
                         start: sigInst._core.plotter.p.labelThreshold,
                         connect: "lower",
                         set: function() {
                             sigInst.drawingProperties({labelThreshold: $(this).val()}).draw(-1, -1, 1);
-                            state.setProperty("lableThreshold", $(this).val());
+                            state.setProperty("labelThreshold", $(this).val());
                             changeState();
                         }
                     },
                     esize: {
-                        range: {min: 1, max: 30},
-                        step: 1,
+                        range: {min: 1, max: 20},
+                        step: 5,
                         start: 1,
                         connect: "lower",
                         set: function() {
@@ -1743,7 +1735,7 @@
                         range: {min: 1, max: 10},
                         step: 1,
                         start: 1,
-                        connect: "lower",
+                        connect: "lower", 
                         set: function() {},
                     },
                 }
@@ -1787,9 +1779,8 @@
                     e.preventDefault();
                 });
                 
-                
                 var box = $(".content:first")[0].getBoundingClientRect();
-                if ($('legend').length) {
+                if ($('#legend').length) {
                     Drag.init(document.getElementById("legend-handle"), document.getElementById("legend"), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
                 }
                 
@@ -1828,13 +1819,13 @@
 //                }
                 
                 $(".cutoff-cor").each(function() {
-                    var ori = $(this).data("ori");
+                    var ori = $(this).data("ori"), dir = $(this).data("dir");
                     
                     $(this).noUiSlider({
                         range: {min: sliderProperties.min, max: sliderProperties.max},
                         step: sliderProperties.step,
                         start: sliderProperties.value,
-                        direction: "rtl",
+                        direction: dir,
                         orientation: ori,
                         serialization: {
                             lower: [new Link({target: $(".cutoff-label-min")})]
@@ -1846,10 +1837,10 @@
                             return node.id;
                         });
                         
-                        var val = $(this).val(), setR = sigInst._core.graph.nodes.length / 0.2, actualR = sigInst._core.graph.nodes.length / val;
-                        console.log(actualR, val)
-                        setR = 5000; //TODO: low for now just in case, test later !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        if (val < sliderProperties.value && actualR <= setR) {
+                        var val = $(this).val(), nodeMulti = 75, nodeLimit = Math.floor(nodeMulti * (Math.log(val*100)/Math.log(20)));;
+                        
+                        //TODO: fix the lower ranges of the cutoff
+                        if (val < sliderProperties.value && nodes.length <= nodeLimit) {
                             $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
                                 for (n in data["nodes"]) {
                                     var node = data["nodes"][n];
@@ -1878,13 +1869,13 @@
                                 }
                                 sigInst.draw();
                                 toggleLayout(false, 'force');
+                                applySettings({label: settings['label']});
                             });
                             
                             sliderProperties.value = val;
-                        } else if (actualR > setR && val < sliderProperties.value) {
+                        } else if (nodes.length > nodeLimit && val < sliderProperties.value) {
                             $("#cutoff-bar-cor").val(sliderProperties.preCorValue);
-                            var nodeCount = Math.floor(val * setR);
-                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than ' + nodeCount + 
+                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than ' + nodeLimit + 
                                       ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + countVisibleNodes());
                             return;
                         }
@@ -1934,16 +1925,31 @@
                 $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
                 
-                $("#btn-group-datasets a, .data-type-img").click(function(evt){
-                    showCorrelationDriving(true);
-//                    switchDataset($(this).attr('data-id'));
+                var visNetwork = {before: [], current: []};
+                $("#btn-group-datasets a, .img-icon").click(function(evt){
+                    visNetwork['before'] = visNetwork['current'];
+                    visNetwork['current'] = sigInst._core.graph.nodes.filter(function(node) {
+                        return !node.hidden;
+                    }).map(function(node) {
+                        return node.id;
+                    });
                     
+                    if (visNetwork['before'].length) {
+                        sigInst.iterNodes(function(node) {
+                            if (visNetwork['before'].indexOf(node.id) > -1) {
+                                node.hidden = false;
+                            } else {
+                                node.hidden = true;
+                            }
+                        });
+                    }
                     
-//                    if ($(this).attr('data-id') == 0) {
-//                        toggleLayout(false, 'force');
-//                    } else {
-//                        toggleLayout(false, 'gi');
-//                    }
+                    if ($(this).attr('data-id') == 0) {
+                        switchDataset($(this).attr('data-id'));
+                        toggleLayout(false, 'force');
+                    } else {
+                        showCorrelationDriving(true);
+                    }
                     
                     evt.preventDefault();
                 });
@@ -2044,6 +2050,7 @@
                     
                     sigInst.goTo(size.w / 2, size.h / 2, position.ratio * 2).draw();
                 });
+                
                 $('.btn-zoom-out').click(function() {
                     var position = sigInst.position();
                     var size = sigInst.size();
@@ -2485,7 +2492,9 @@
             
             function showUI() {
                 setTimeout(function() {
+                    if (settings['advanceUi']) currentUi = 'advance';
                     $("#" + currentUi + "-ui").fadeIn(1000);
+                    $("#common-ui").show();
                     /* Some older browsers don't support this (Opera), add a workaround, disable damn windblows */
 //                    if (!Modernizr.pointerevents && !window.attachEvent) {
 //                        var evt, ele = $(".vizualization-ui")[0], target = $(".sigma_mouse_canvas")[0], eventFwd = function(e) {
@@ -3126,8 +3135,9 @@
                             
                             $(this).toggleClass(cls, !enabled);
                             
-                            if ($(this).attr("id") != undefined && $(this).attr("id").indexOf("btn-group-neighbourhood") != -1 && !isInitializing) {
+                            if ($(this).attr("id") != undefined && $(this).attr("id").indexOf("btn-group-neighbourhood") != -1 && !isInitializing && !$(this).data("blinked")) {
                                 $(this).fadeTo(500, 0.5).fadeTo(500, 1);
+                                $(this).data("blinked", true);
                             }
                         });
                         
