@@ -1837,7 +1837,7 @@
                             return node.id;
                         });
                         
-                        var val = $(this).val(), nodeMulti = 75, nodeLimit = Math.floor(nodeMulti * (Math.log(val*100)/Math.log(20)));;
+                        var val = $(this).val(), nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
                         
                         //TODO: fix the lower ranges of the cutoff
                         if (val < sliderProperties.value && nodes.length <= nodeLimit) {
@@ -1871,11 +1871,10 @@
                                 toggleLayout(false, 'force');
                                 applySettings({label: settings['label']});
                             });
-                            
                             sliderProperties.value = val;
                         } else if (nodes.length > nodeLimit && val < sliderProperties.value) {
                             $("#cutoff-bar-cor").val(sliderProperties.preCorValue);
-                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than ' + nodeLimit + 
+                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than or equal to' + nodeLimit + 
                                       ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + countVisibleNodes());
                             return;
                         }
