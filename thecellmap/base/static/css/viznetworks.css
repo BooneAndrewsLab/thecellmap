@@ -234,6 +234,10 @@ body {
     margin-left: -40px;
 }
 
+.cutoff-label-input {
+    width: 75px;
+}
+
 /** Draw UI **/
 .draw-ui {
     padding: 5px 5px; /* make a nice 5px gap between ui and network border */

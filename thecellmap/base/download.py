@@ -74,6 +74,7 @@ def collect_scores(ds, nodes):
             scores.extend(dat)
     
     scores = map(lambda x: tuple(sorted(x[:2])) + x[2:3], scores)
+    print scores
     scores = DataFrame.from_records(scores, columns=['source', 'target', 'score']).groupby(['source', 'target']).agg({'score': np.mean}).reset_index()
     
     return scores[scores.score.abs() > 0.08]
