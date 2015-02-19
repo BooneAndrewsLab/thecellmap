@@ -72,7 +72,6 @@
             var autoState = false;
             var isInitializing = true;
             var noPulse = false;
-            var cutoffCount = 0;
             
             var currentUi = 'simple';
             
@@ -1860,7 +1859,6 @@
                         
                         if (val[0] < 0 && val[1] > 0) {
                             applyCutoff(val);
-                            if (++cutoffCount == 3) return;
                             sliderProperties.preIntValue = [val[0], val[1]]
                             $(".cutoff-int:not(#" + $(this).attr("id") + ")").val(val);
                             changeState();
