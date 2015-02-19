@@ -100,11 +100,14 @@
 </div>
 
 <div class="bottom-left">
-  <div id="btn-group-datasets" class="btn-group dropup">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> <span id="selected-dataset">Correlations</span> <span class="caret"></span></button>
-    <div class="list-group dropdown-menu menu-right" role="menu">
-      <a href="#" data-id="0" class="list-group-item active">Correlations</a>
-      <a href="#" data-id="1" class="list-group-item">Genetic interactions</a>
+  <div class="btn-group">
+    <div class="data-type-img">
+      <label class="img-label">Genetic Interactions</label>
+      <img src="{% static 'images/interactions.png' %}" class="img-icon" id="cor-img" data-id="1">
+    </div>
+    <div class="data-type-img hidden">
+      <label class="img-label">Correlations</label>
+      <img src="{% static 'images/correlations.png' %}" class="img-icon" id="int-img" data-id="0">
     </div>
   </div>
 </div>

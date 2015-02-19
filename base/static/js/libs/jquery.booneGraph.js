@@ -1924,7 +1924,8 @@
                 $("#cutoff-label").click(function() {});
                 
                 var visNetwork = {before: [], current: []};
-                $("#btn-group-datasets a, .img-icon").click(function(evt){
+                $(".img-icon").click(function(evt){
+                    if (getSelection().length < 1) return;
                     visNetwork['before'] = visNetwork['current'];
                     visNetwork['current'] = sigInst._core.graph.nodes.filter(function(node) {
                         return !node.hidden;
@@ -1944,7 +1945,7 @@
                     
                     if ($(this).attr('data-id') == 0) {
                         switchDataset($(this).attr('data-id'));
-                        toggleLayout(false, 'force');
+                        if (countVisibleEdges() < 1000) toggleLayout(false, 'force');
                     } else {
                         showCorrelationDriving(true);
                     }
