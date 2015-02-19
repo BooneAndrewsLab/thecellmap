@@ -1105,45 +1105,6 @@
                         edgeFilter: function(edge) { return edge.weight > 0; },
                     };
                     switch(layoutType || $(this).attr('data-layout-type') || 'force') {
-                    case 'annotation':
-                        annotations = {};
-                        data = vizdata[state.getProperty("annotation")];
-                        
-                        iterVisibleNodes(function(n) {
-                            strain = getStrain(n.id);
-                            annot = data.map[strain.orf] || [-1];
-                            
-                            annot.forEach(function(a) {
-                                if (!annotations.hasOwnProperty(a)) {
-                                    annotations[a] = [];
-                                }
-                                annotations[a].push(n);
-                            })
-                        });
-                        
-                        lopts.edges = [];
-                        k_combinations(sigInst._core.graph.nodes.filter(function(node) {
-                            return !node.hidden;
-                        }), 2).forEach(function(x) {
-                            lopts.edges.push({
-                                weight: .01,
-                                absweight: .01,
-                                source: x[0],
-                                target: x[1]
-                            })
-                        });
-                        
-                        for (key in annotations) {
-                            k_combinations(annotations[key], 2).forEach(function(x) {
-                                lopts.edges.push({
-                                    weight: 1,
-                                    absweight: 1,
-                                    source: x[0],
-                                    target: x[1]
-                                })
-                            });
-                        }
-                        break;
                     case 'gi':
                         lopts.edges = [];
                         groups = {};
@@ -1192,7 +1153,45 @@
                                 })
                             });
                         }
+                        break;
+                    case 'annotation':
+                        annotations = {};
+                        data = vizdata[state.getProperty("annotation")];
                         
+                        iterVisibleNodes(function(n) {
+                            strain = getStrain(n.id);
+                            annot = data.map[strain.orf] || [-1];
+                            
+                            annot.forEach(function(a) {
+                                if (!annotations.hasOwnProperty(a)) {
+                                    annotations[a] = [];
+                                }
+                                annotations[a].push(n);
+                            })
+                        });
+                        
+                        lopts.edges = [];
+                        k_combinations(sigInst._core.graph.nodes.filter(function(node) {
+                            return !node.hidden;
+                        }), 2).forEach(function(x) {
+                            lopts.edges.push({
+                                weight: .01,
+                                absweight: .01,
+                                source: x[0],
+                                target: x[1]
+                            })
+                        });
+                        
+                        for (key in annotations) {
+                            k_combinations(annotations[key], 2).forEach(function(x) {
+                                lopts.edges.push({
+                                    weight: 1,
+                                    absweight: 1,
+                                    source: x[0],
+                                    target: x[1]
+                                })
+                            });
+                        }
                         break;
                     case 'attribute':
                         var attribute = $(this).data('layout-attribute');
@@ -1592,6 +1591,8 @@
                     $('[data-hidden-simple-btn]').each(function() {
                         $(this).hide();
                     });
+                    
+                    loadAnnotation('Group19');
                 });
                 
                 $(".dropdown-toggle").click(function(evt) {
