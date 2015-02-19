@@ -68,7 +68,8 @@
   <script src="{% static 'js/libs/pick-a-color.js' %}"></script> <!-- THIS IS VERSION 1.2.3 -->
   <script src="{% static 'js/libs/spin.js' %}"></script>
   <script src="{% static 'js/libs/ladda.js' %}"></script>
-  <script src="{% static 'js/libs/jquery.nouislider.js' %}"></script>
+  <!-- <script src="{% static 'js/libs/jquery.nouislider.min.7.0.10.js' %}"></script> -->
+  <script src="{% static 'js/libs/jquery.nouislider.all.min.js' %}"></script>
   
   <script src="{% static 'js/libs/modernizr-pointerevents.min.js' %}"></script>
   <script src="{% static 'js/libs/dom-drag.js' %}"></script>
@@ -133,7 +134,6 @@
                 step : 0.01,
                 value : 0.20,
                 max : 1,
-                updateLimits: false
             },
             uiUrl: {
                 advance: "{% url 'advance_ui' %}",

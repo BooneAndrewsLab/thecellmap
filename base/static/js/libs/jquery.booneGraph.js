@@ -28,7 +28,6 @@
                         value : 200,
                         max : 1000,
                         filter: 'edges',
-                        updateLimits: true,
                         preCorValue: 0.2,
                         preIntValue: [-0.08, 0.08]
                     },
@@ -56,7 +55,6 @@
             var rootElement = $(this)[0];
             
             /* Common vars */
-            var Link = $.noUiSlider.Link;
             var sigInst = null;
             var vizdata = {};
             var mouseX, mouseY;
@@ -74,6 +72,7 @@
             var autoState = false;
             var isInitializing = true;
             var noPulse = false;
+            var cutoffCount = 0;
             
             var currentUi = 'simple';
             
@@ -125,11 +124,7 @@
                 if (reapplyCutoff) {
                     log("reapplying", state.getProperty("dataset"), state.getProperty("cutoff"), state.getProperty("cutoff_" + state.getProperty("dataset")));
                     applyCutoff(state.getProperty("cutoff_" + state.getProperty("dataset")));
-                    
-                    if (state.getProperty("dataset") == 0) { // TEMPORARY HACK
-                        $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                    }
-                    $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(state.getProperty("cutoff_" + state.getProperty("dataset")), {update: true});
+                    $(".cutoff-bar[data-dataset=\"" + state.getProperty("dataset") + "\"]").val(state.getProperty("cutoff_" + state.getProperty("dataset")));
                 }
                 
                 for (key in difference) {
@@ -634,21 +629,10 @@
                 opts.datasets[ds].max = maxWeight;
                 
                 if (ds == 0) {
-                    ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
                     ele.val([state.getProperty("cutoff_" + ds) || minWeight]);
                 } else {
                     $(".cutoff-label-max").html(state.getProperty("cutoff_" + ds)[1]);
                     $(".cutoff-label-min").html(state.getProperty("cutoff_" + ds)[0]);
-                }
-                
-                if (sliderProperties.updateLimits) {
-                    if (ds == 0) {
-                        ele.noUiSlider({range: {min: minWeight, max: maxWeight}, start: minWeight}, true);
-                        ele.val(minWeight + (maxWeight-minWeight) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                        ele.val([state.getProperty("cutoff_" + ds) || minWeight]);
-                    } else {
-                        ele.val([-0.08, 0.08]);
-                    }
                 }
                 
                 if (ds == 0) {
@@ -699,7 +683,7 @@
                         state.setProperty("dataset", 1);
                     }
                     
-                    updateEdges(dataType);
+                    if (edges.length > 0) updateEdges(dataType);
                     
                     if (callback != undefined) {
                         callback(edges);
@@ -1293,7 +1277,6 @@
                                 });
                             }
                         }
-                        
                         break;
                     }
                     
@@ -1792,33 +1775,6 @@
                     $('#style-tabs a[href=#' + modal.find('.tab-content .active').attr('id') + ']').addClass('active');
                 });
                 
-                /*
-                 * Other sliders
-                 */
-                
-//                var layoutSliders = {
-//                    att: {
-//                        range: {min: 1, max: 100},
-//                        step: 1,
-//                        start: 50,
-//                        handles: 1,
-//                        connect: "lower",
-//                        set: changeState
-//                    },
-//                    rep: {
-//                        range: {min: 1, max: 100},
-//                        step: 1,
-//                        start: 1,
-//                        handles: 1,
-//                        connect: "lower",
-//                        set: changeState
-//                    }
-//                }
-//                
-//                for (slider in layoutSliders) {
-//                    $('#layout-slider-' + slider).noUiSlider(layoutSliders[slider]);
-//                }
-                
                 $(".cutoff-cor").each(function() {
                     var ori = $(this).data("ori"), dir = $(this).data("dir");
                     
@@ -1828,17 +1784,17 @@
                         start: sliderProperties.value,
                         direction: dir,
                         orientation: ori,
-                        serialization: {
-                            lower: [new Link({target: $(".cutoff-label-min")})]
-                        }
-                    }).on('set', function() {
+                    }).on('set', function(e) {
+                        var val = $(this).val();
+                        if (isInitializing || parseFloat(val) == sliderProperties.preCorValue) return;
+                        
                         var nodes = sigInst._core.graph.nodes.filter(function(node) {
                             return !(node.hidden && node._hidden);
                         }).map(function(node) {
                             return node.id;
                         });
                         
-                        var val = $(this).val(), nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
+                        var nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
                         
                         if (val < sliderProperties.value && nodes.length <= nodeLimit) {
                             $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
@@ -1865,16 +1821,17 @@
                                         source.hidden = source._hidden = false;
                                         target.hidden = target._hidden = false;
                                     }
-                                    updateEdges(0);
                                 }
+                                
+                                updateEdges(0);
                                 sigInst.draw();
                                 toggleLayout(false, 'force');
                                 applySettings({label: settings['label']});
                             });
                             sliderProperties.value = val;
                         } else if (nodes.length > nodeLimit && val < sliderProperties.value) {
-                            $("#cutoff-bar-cor").val(sliderProperties.preCorValue);
-                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than or equal to' + nodeLimit + 
+                            $(this).val(sliderProperties.preCorValue);
+                            alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than or equal to ' + nodeLimit + 
                                       ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + countVisibleNodes());
                             return;
                         }
@@ -1883,7 +1840,7 @@
                         applyCutoff(val);
                         $(".cutoff-cor:not(#" + $(this).attr("id") + ")").val(val);
                         changeState();
-                    });
+                    }).Link('lower').to($(".cutoff-label-min"));
                 });
                 
                 $(".cutoff-int").each(function() {
@@ -1897,19 +1854,18 @@
                         step: sliderProperties.step,
                         start: [-0.08, 0.08],
                         orientation: ori,
-                        serialization: {
-                            lower: [new Link({target: function(val){$(".cutoff-label-max").html(-val);}})],
-                            upper: [new Link({target: function(val){$(".cutoff-label-min").html(-val);}})]
-                        }
                     }).on('set', function() {
-                        var val = $(this).val();
+                        var val = $(this).val(), preVal = sliderProperties.preIntValue;
+                        if (isInitializing || (parseFloat(val[0]) == preVal[0] && parseFloat(val[1]) == preVal[1])) return;
+                        
                         if (val[0] < 0 && val[1] > 0) {
                             applyCutoff(val);
+                            if (++cutoffCount == 3) return;
                             sliderProperties.preIntValue = [val[0], val[1]]
                             $(".cutoff-int:not(#" + $(this).attr("id") + ")").val(val);
                             changeState();
                         } else {
-                            $(this).val(sliderProperties.preIntValue);
+                            $(this).val(preVal);
                         }
                     }).on('slide', function() {
                         var val = $(this).val();
@@ -1917,9 +1873,9 @@
                             $(this).val([0, null]);
                         } else if (val[1] < 0) {
                             $(this).val([null, 0]);
-                        };
+                        }
                     });
-                });
+                }).Link('upper').to(function(val){$(".cutoff-label-min").html(-val);}).Link('lower').to(function(val){$(".cutoff-label-max").html(-val);});
                 
                 $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
@@ -2264,11 +2220,11 @@
                     e.preventDefault();
                 });
                 
-                $(".cutoff-label").each(function() {
-                    var label = $(this);
+                $(".cutoff-label, .cutoff-label-simple").each(function() {
+                    var label = $(this), placement = label.data('placement') || 'left';
                     label.popover({
                         container: "body",
-                        placement: "left",
+                        placement: placement,
                         html: true,
                         content: '<div><input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '"></div>'
                     }).on('hide.bs.popover', function () {
@@ -2280,7 +2236,7 @@
                         
                         if (isNumber(value)) {
                             value = parseFloat(value).toFixed(2);
-                            if (label.attr('id') == 'cutoff-label-min') {
+                            if (label.attr('id') == 'cutoff-label-min' || label.attr('id') == 'cutoff-label-min-simple') {
                                 if (data == 0) {
                                     cutoff = value;
                                 } else {
@@ -2291,10 +2247,7 @@
                             }
                             
                             if (state.getProperty("cutoff_" + data) != cutoff) {
-                                if (data == 0) { // TEMPORARY HACK
-                                    $(".cutoff-bar[data-dataset=\"" + data + "\"]").val(opts.datasets[0].min + (opts.datasets[0].max-opts.datasets[0].min) / 2); // HAAAAAAAAAAAAACK BUGZ IN nouislider...
-                                }
-                                $(".cutoff-bar[data-dataset=\"" + data + "\"]").val(cutoff, {update: true, set: true});
+                                $(".cutoff-bar[data-dataset=\"" + data + "\"]").val(cutoff);
                             }
                         }
                     }).on('shown.bs.popover', function () {
@@ -2830,19 +2783,20 @@
                     noPulse = true;
                     if (selection.content.nodeSelect) {
                         $("input.gene-search-input").select2("val", getSelection().concat(selection.content.selected), true);
-                    } else {
-                        onEdgesClick({content: state.getProperty("edgeSelection").concat(selection.content.selected)});
-                    }
+                    } 
+//                    else {
+//                        onEdgesClick({content: state.getProperty("edgeSelection").concat(selection.content.selected)});
+//                    }
                     noPulse = false;
                 }).bind('selectionStart', function() {
                 }).bind('rightclickedges', onEdgesContext
-                 ).bind('ctrlclickedges', onEdgesContext
-                 ).bind('upedges', function(targeted) {
-                     if (!clicking.wasDragging) {
-                         onEdgesClick(targeted);
-                         changeState();
-                     }
-                 });
+                 ).bind('ctrlclickedges', onEdgesContext);
+//                 .bind('upedges', function(targeted) {
+//                     if (!clicking.wasDragging) {
+//                         onEdgesClick(targeted);
+//                         changeState();
+//                     }
+//                 }
                 
                 buildNewUI();
                 initUI();
@@ -2882,7 +2836,7 @@
                 }
                 
                 state.setProperty("cutoff_1", [-0.08, 0.08]);
-                $('.cutoff-bar[data-dataset="1"]').val(state.getProperty("cutoff_1"), {update: true});
+                //$('.cutoff-bar[data-dataset="1"]').val(state.getProperty("cutoff_1"), {update: true});
                 
                 /* Fetch all node info */
                 $.getJSON(opts.nodesUrl, function(data) {
