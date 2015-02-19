@@ -23,7 +23,7 @@
                     highlight: false,
                     colorScheme: 'black',
                     slider: {
-                        min : 0.05,
+                        min : 0,
                         step : 1,
                         value : 200,
                         max : 1000,
@@ -1839,7 +1839,6 @@
                         
                         var val = $(this).val(), nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
                         
-                        //TODO: fix the lower ranges of the cutoff
                         if (val < sliderProperties.value && nodes.length <= nodeLimit) {
                             $.post("correlations/", {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
                                 for (n in data["nodes"]) {
