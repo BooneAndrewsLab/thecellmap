@@ -856,6 +856,7 @@
                 var selection = getSelection().filter(function(s) {return (!s.startsWith('annot'))});
                 $("input.gene-search-input").select2("val", selection, true);
                 
+                $('#btn-legend').click();
                 autoState = oldState;
                 applyAnnotationColors();
                 rebuildLegend();
@@ -1277,6 +1278,84 @@
                             }
                         }
                         break;
+                    case 'gi+':
+                        //if (state.getProperty("annotation") == 'None') break;
+                        
+                        lopts.edges = [];
+                        groups = {};
+                        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
+                        var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;});
+                        var other, weight;
+                        
+                        etmp.forEach(function(e) {
+                            lopts.edges.push(e);
+                        });
+                        
+                        ntmp.forEach(function(n) {
+                            var tmp = [], tmpkey;
+                            etmp.forEach(function(e) {
+                                if (e.source.id == n.id || e.target.id == n.id) {
+                                    // try excluding nodes driving this correlation
+                                    other = e.source.id == n.id ? e.target : e.source;
+                                    tmp.push(e.weight < 0 ? "-" + other.id : other.id);
+                                }
+                            });
+                            
+                            if (tmp.length > 100) {
+                                return;
+                            }
+                            
+                            tmp = tmp.sort();
+                            tmpkey = tmp.join();
+                            if (!groups.hasOwnProperty(tmpkey)) {
+                                groups[tmpkey] = {nodes: [], keylen: tmp.length};
+                            }
+                            
+                            groups[tmpkey].nodes.push(n);
+                        });
+                        
+                        data = vizdata[state.getProperty("annotation")];
+                        
+                        for (key in groups) {
+                            if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
+                            
+                            annotations = {};
+                            weight = Math.log(groups[key].keylen) + 0.01;
+                            
+                            groups[key].nodes.forEach(function(n) {
+                                strain = getStrain(n.id);
+                                annot = data.map[strain.orf] || [-1];
+                                
+                                annot.forEach(function(a) {
+                                    if (!annotations.hasOwnProperty(a)) {
+                                        annotations[a] = [];
+                                    }
+                                    annotations[a].push(n);
+                                })
+                            });
+                            
+                            
+                            k_combinations(groups[key].nodes, 2).forEach(function(x) {
+                                lopts.edges.push({
+                                    weight: weight,
+                                    absweight: weight,
+                                    source: x[0],
+                                    target: x[1]
+                                })
+                            });
+                            
+                            for (key in annotations) {
+                                k_combinations(annotations[key], 2).forEach(function(x) {
+                                    lopts.edges.push({
+                                        weight: .1,
+                                        absweight: .1,
+                                        source: x[0],
+                                        target: x[1]
+                                    })
+                                });
+                            }
+                        }
+                        break;
                     }
                     
                     sigInst.startForceLayout(lopts);
@@ -1600,7 +1679,6 @@
                     $('#btn-group-annotation li').removeClass('active');
                     $(this).parent().addClass('active');
                     loadAnnotation(evt.target.text);
-                    $('#btn-legend').click();
                     evt.preventDefault();
                 });
                 $('#btn-layout, .tool-layout').click(toggleLayout);
@@ -1753,6 +1831,7 @@
                 });
                 
                 $('#btn-legend').click(function(e) {
+                    if (state.getProperty('annotation') == 'None') return;
                     $('#legend').show();
                     e.preventDefault();
                 });
@@ -1987,14 +2066,7 @@
                     }, timeout);
                 });
                 
-                $('#btn-fullscreen').click(function() {
-                    log($().isFullScreen());
-                    if ($().isFullScreen()) {
-                        $("#network-container").cancelFullScreen();
-                    } else {
-                        $("#network-container").requestFullScreen();
-                    }
-                });
+                
                 $('#download-snapshot').click(downloadCanvasSnapshot);
                 $('#download-svg').click(downloadCanvasSvg);
                 
@@ -2124,7 +2196,7 @@
                     evt.preventDefault();
                 });
                 
-                $('[data-toggle="tooltip"]').tooltip();
+//                $('[data-toggle="tooltip"]').tooltip();
                 
                 /* EDIT NODE MODAL DIALOG STUFF */
                 
