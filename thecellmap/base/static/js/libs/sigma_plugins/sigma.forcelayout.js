@@ -216,7 +216,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         // calculate if expanding or contracting
         new_box = self.calc_bound_box();
         
-        temperature *= (1 - (layout_iterations / p.max_iterations));
+        if (layout_iterations >= 42) temperature *= (1 - ((layout_iterations - 42) / (3 * p.max_iterations))) ;
         layout_iterations++;
 
         var end = new Date().getTime();
