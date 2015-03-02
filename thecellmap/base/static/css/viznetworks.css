@@ -297,19 +297,19 @@ body {
 }
 
 .data-type-img {
-    width: 52px;
+    width: 72px;
 }
 
 .img-icon {
     border: #E8E8E8 2px solid;
-    width: 52px;
-    height: 52px;
+    width: 72px;
+    height: 72px;
 }
 
 .img-label {
     text-align: center;
     display: block;
     color: #E8E8E8;
-    font-size: 8px;
+    font-size: 12px;
 }
 
