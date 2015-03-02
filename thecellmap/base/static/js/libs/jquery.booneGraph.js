@@ -74,6 +74,7 @@
             var noPulse = false;
             
             var currentUi = 'simple';
+            var circularLayout = false;
             
             function _updateNavigation() {
                 $(".undo-network").toggleClass('disabled', !undo.hasUndo());
@@ -226,6 +227,7 @@
             };
 
             function getStrain(id) {
+                if (typeof id === 'string' && id.indexOf('tmp') != -1) id = id.replace('tmp_', '');
                 return vizdata.strains[vizdata.index[id]];
             }
 
@@ -239,6 +241,10 @@
             
             function nodeExists(id) {
                 return !!sigInst._core.graph.nodesIndex[id];
+            }
+            
+            function edgeExists(id) {
+                return !!sigInst._core.graph.edgesIndex[id];
             }
             
             function clearEdges() {
@@ -515,7 +521,7 @@
                 return sigInst.parseBooneGexf;
             };
             
-            function showCorrelationDriving(fromNodes, single) {
+            function showCorrelationDriving(fromNodes, single, callback) {
                 var nodes = [];
                 autoState = true; // Prevent automatic state change on loadDataset
                 
@@ -552,9 +558,15 @@
                     sigInst.draw();
                     autoState = false;
                     
-                    var layoutType = state.getProperty('annotation') != 'None' ? 'gi+' : 'gi';
-                    toggleLayout(false, layoutType);
-                    applySettings({label: settings['label']});
+                    if (callback) {
+                        callback();
+                    } else {
+                        var layoutType = state.getProperty('annotation') != 'None' ? 'gi+' : 'gi';
+                        toggleLayout(false, layoutType);
+                        applySettings({label: settings['label']});
+                    }
+                    
+                    rebuildLegend();
                     changeNodesState();
                 });
             };
@@ -601,6 +613,8 @@
                         loadDataset(value, {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: newVisible});
                     }
                 }
+                
+                rebuildLegend();
                 $(".data-type-img").toggleClass("hidden");
                 applySettings({label: settings['label']});
                 state.setProperty("dataset", value);
@@ -1069,6 +1083,21 @@
                     return;
                 }
                 
+                circularLayout = false;
+                sigInst.iterEdges(function(edge) {
+                    if (edge.id.indexOf('tmp') != -1) {
+                        edge.hidden = true;
+                    } else if (edge._cl_hidden) {
+                        edge.hidden = false;
+                    }
+                });
+                
+                sigInst.iterNodes(function(node) {
+                    if (node.id.indexOf('tmp') != -1) {
+                        node.hidden = node._hidden = true;
+                    }
+                });
+                
                 if (opts.runningLayout) {
                     sigInst.stopForceLayout();
                     _setRunningLayout(false);
@@ -1079,7 +1108,6 @@
                         callback: function(n) {
                                 if (Object.keys(n).length - 1 > 1) $("#tool-stack").click();
                                 $('.btn-home').click();
-                                rebuildLegend();
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
@@ -1121,12 +1149,16 @@
                                 groups[tmpkey] = {nodes: [], keylen: tmp.length};
                             }
                             
-                            groups[tmpkey].nodes.push(n);
+                            if (tmpkey != '') {
+                                groups[tmpkey].nodes.push(n);
+                            } else {
+                                n.hidden = true;
+                            }
                         });
                         
                         for (key in groups) {
                             if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
-                            weight = Math.log(groups[key].keylen) + 0.01;
+                            weight = Math.log(groups[key].keylen)/Math.log(7) + 0.01;
                             
                             k_combinations(groups[key].nodes, 2).forEach(function(x) {
                                 lopts.edges.push({
@@ -1279,7 +1311,7 @@
                         }
                         break;
                     case 'gi+':
-                        //if (state.getProperty("annotation") == 'None') break;
+                        if (state.getProperty("annotation") == 'None') break;
                         
                         lopts.edges = [];
                         groups = {};
@@ -1425,7 +1457,15 @@
                     node.visibleDegree = node.degree;
                 }).iterEdges(function(edge) {
                     if (isArray) {
-                        edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]) || edge.ds != state.getProperty("dataset");
+                        if (edge.id.indexOf('tmp') != -1 && !circularLayout) {
+                            edge.hidden = true;
+                        } else if (edge.id.indexOf('tmp') == -1 && circularLayout && edge._cl_hidden) {
+                            edge.hidden = edge._cl_hidden;
+                        } else if (edge.id.indexOf('tmp') != -1 && circularLayout) {
+                            edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]);
+                        } else {
+                            edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]) || edge.ds != state.getProperty("dataset");
+                        }
                     } else {
                         edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.getProperty("dataset");
                     }
@@ -1820,8 +1860,7 @@
                     sigInst.iterNodes(function(n) {
                         strain = getStrain(n.id);
                         annot = data.map[strain.orf];
-                        if (annot != undefined)
-                            $.removeCookie(data.terms[annot[0]].name);
+                        if (annot != undefined) $.removeCookie(data.terms[annot[0]].name);
                     });
                     vizdata[stateAnnot].colorPalette[data.terms["-1"].idx] = 'e3e3e3';
                     vizdata[stateAnnot].colorPalette[data.terms["-2"].idx] = 'e3e3e3';
@@ -1957,20 +1996,28 @@
                 $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
                 
-                var visNetwork = {before: [], current: []};
+                var visNetwork = {before: {}, current: {}};
                 $(".img-icon").click(function(evt){
-                    if (getSelection().length < 1) return;
-                    visNetwork['before'] = visNetwork['current'];
-                    visNetwork['current'] = sigInst._core.graph.nodes.filter(function(node) {
+                    var selection = getSelection();
+                    if (selection.length < 1 && selection.length > 7) return;
+                    
+                    visNetwork['before'] = $.extend({}, visNetwork['current']);
+                    var ntmp = sigInst._core.graph.nodes.filter(function(node) {
                         return !node.hidden;
-                    }).map(function(node) {
-                        return node.id;
                     });
                     
-                    if (visNetwork['before'].length) {
+                    visNetwork['current'] = {};
+                    for (n in ntmp) {
+                        var node = ntmp[n];
+                        visNetwork['current'][node.id] = {x: node.x, y: node.y};
+                    }
+                    
+                    if (!$.isEmptyObject(visNetwork['before'])) {
                         sigInst.iterNodes(function(node) {
-                            if (visNetwork['before'].indexOf(node.id) > -1) {
+                            if (visNetwork['before'][node.id]) {
                                 node.hidden = false;
+                                node.x = visNetwork['before'][node.id].x;
+                                node.y = visNetwork['before'][node.id].y;
                             } else {
                                 node.hidden = true;
                             }
@@ -1981,7 +2028,78 @@
                         switchDataset($(this).attr('data-id'));
                         if (countVisibleEdges() < 1000) toggleLayout(false, 'force');
                     } else {
-                        showCorrelationDriving(true);
+                        if (selection.length == 1 || state.getProperty("dataset") == 0) {
+                            if (state.getProperty("annotation") == "None") loadAnnotation("Group19");
+                            
+                            var circularFunc = function() {
+                                circularLayout = true;
+                                var selected = getSelectedNodes(true), n = getNode(selected[0]), groups = {}, draw = [];
+                                var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden && n.id != parseInt(selected[0]);});
+                                var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
+                                
+                                if (!nodeExists("tmp_" + n.id)) {
+                                    sigInst.addNode("tmp_" + n.id, n);
+                                }
+                                var tempN = getNode("tmp_" + n.id), nMap = {"+": n, "-": tempN};
+                                tempN.hidden = tempN._hidden = false;
+                                tempN.x = n.x + 3600;
+                                tempN.y = n.y;
+                                
+                                ntmp.forEach(function(n) {
+                                    var tmp = [], tmpkey;
+                                    etmp.forEach(function(e) {
+                                        if (e.source.id == n.id || e.target.id == n.id) {
+                                            tmp.push(e.weight < 0 ? "-": "+");
+                                            if (e.weight < 0) {
+                                                if (!edgeExists(tempN.id + "-" + n.id)) {
+                                                    sigInst.addEdge(tempN.id + "-" + n.id, tempN.id, n.id, e);
+                                                } else { //edges to the added temp node
+                                                    var edge = getEdge(tempN.id + "-" + n.id);
+                                                    edge._cl_hidden = edge.hidden = false;
+                                                }
+                                                e._cl_hidden = e.hidden = true; //hide the edges to the original node
+                                            }
+                                            
+                                        }
+                                    });
+                                    
+                                    tmp = tmp.sort();
+                                    tmpkey = tmp.join();
+                                    
+                                    if (tmpkey != "") {
+                                        if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
+                                        groups[tmpkey].push(n);
+                                    } else {
+                                        n.hidden = true;
+                                    }
+                                });
+                                
+                                for (i in groups) {
+                                    groups[i].sort(function(n1, n2) {
+                                        if (n1.color < n2.color) return -1;
+                                        if (n1.color > n2.color) return 1;
+                                        return 0;
+                                    });
+                                    
+                                    var theta = Math.PI * 2 / groups[i].length;
+                                    for (j in groups[i]) {
+                                        var node = groups[i][j];
+                                        draw.push({x: nMap[i].x + 1400*Math.cos(theta * j), y: nMap[i].y + 1400*Math.sin(theta * j), node: node});
+                                    }
+                                }
+                                
+                                
+                                sigInst.moveNodes({destinations: draw, runtime: 3}, function() {
+                                    changeNodesState();
+                                    $('#style-slider-lthresh').val(0, true);
+                                    $('.btn-home').click();
+                                });
+                            }
+                            
+                            showCorrelationDriving(true, false, circularFunc);
+                        } else {
+                            showCorrelationDriving(true);
+                        }
                     }
                     
                     evt.preventDefault();

@@ -29,10 +29,12 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
         context.clearRect(0, 0, $(document).width(), $(document).height());
         
         self.m.nodes.forEach(function(n) {
-            context.beginPath();
-            context.arc(n.displayX, n.displayY, distance, 0, 2*Math.PI, false);
-            context.fill();
-        })
+            if (!n.hidden && !n._hidden) {
+                context.beginPath();
+                context.arc(n.displayX, n.displayY, distance, 0, 2*Math.PI, false);
+                context.fill();
+            }
+        });
         step--;
     }
     
