@@ -478,7 +478,7 @@
             }
             
             function getSelection() {
-                var selector = $(".vizualization-ui:visible input.gene-search-input");
+                var selector = $("#" + currentUi + "-ui input.gene-search-input");
                 if (selector.length > 0) {
                     return selector.select2('val');
                 }
@@ -551,7 +551,9 @@
                     state.setProperty("dataset", 1);
                     sigInst.draw();
                     autoState = false;
-                    toggleLayout(false, 'gi');
+                    
+                    var layoutType = state.getProperty('annotation') != 'None' ? 'gi+' : 'gi';
+                    toggleLayout(false, layoutType);
                     applySettings({label: settings['label']});
                     changeNodesState();
                 });
@@ -2239,7 +2241,7 @@
                 
                 $("#custom-arange").click(function() {
                     if (state.getProperty('selection').length < 3) return;
-                    $("#" + currentUi + "-ui").fadeIn(1000);
+                    $(".vizualization-ui").hide();
                     $('.draw-ui').fadeIn(1000);
                     $('#draw-canvas').fadeIn(1000);
                 });
@@ -2658,11 +2660,11 @@
                 });
                 
                 $("#draw-confirm").click(function() {
-                    if (x.length == 0) return;
+                    var selected = getSelectedNodes(true);
+                    if (x.length == 0 || selected == null || selected.length < 1 || selected == undefined) return;
                     
                     context.clearRect(0, 0, canvas.width(), canvas.height());
-                    var draw = [], cursor = {x: x[0], y: y[0]}, selected = getSelectedNodes(true);
-                    var delta = 0, length = 0, i = 1, dS = selected.length - 1;
+                    var draw = [], cursor = {x: x[0], y: y[0]}, delta = 0, length = 0, i = 1, dS = selected.length - 1;
                     
                     if (drawShape == "free" || drawShape == "line" || !fillOn) {
                         switch (drawShape) {
@@ -3128,9 +3130,15 @@
                                     }
                                 } else {
                                     numVisibleSelected++;
+//                                    node.forceLabel = true;
+//                                    node.size_mult = 2;
+//                                    node.size = node.size_init * node.size_mult;
                                 }
                             } else {
                                 node.selected = false;
+//                                node.forceLabel = false;
+//                                node.size_mult = 1;
+//                                node.size = node.size_init;
                             }
                         });
                         
