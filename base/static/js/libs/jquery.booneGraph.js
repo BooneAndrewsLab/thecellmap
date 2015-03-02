@@ -1077,10 +1077,9 @@
                     
                     lopts = {
                         callback: function(n) {
-                                if (Object.keys(n).length - 1 > 1) {
-                                    $("#tool-stack").click();
-                                }
+                                if (Object.keys(n).length - 1 > 1) $("#tool-stack").click();
                                 $('.btn-home').click();
+                                rebuildLegend();
                                 _setRunningLayout(false);
                             },
                         progress_callback: function(p) {
@@ -1127,7 +1126,6 @@
                         
                         for (key in groups) {
                             if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
-                            
                             weight = Math.log(groups[key].keylen) + 0.01;
                             
                             k_combinations(groups[key].nodes, 2).forEach(function(x) {
@@ -1349,8 +1347,8 @@
                             for (key in annotations) {
                                 k_combinations(annotations[key], 2).forEach(function(x) {
                                     lopts.edges.push({
-                                        weight: .1,
-                                        absweight: .1,
+                                        weight: .02,
+                                        absweight: .02,
                                         source: x[0],
                                         target: x[1]
                                     })
