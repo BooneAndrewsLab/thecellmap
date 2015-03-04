@@ -1693,7 +1693,7 @@
                         $(this).hide();
                     });
                     
-                    loadAnnotation('Group19');
+                    loadAnnotation('SAFE');
                 });
                 
                 $(".dropdown-toggle").click(function(evt) {
@@ -2029,7 +2029,7 @@
                         if (countVisibleEdges() < 1000) toggleLayout(false, 'force');
                     } else {
                         if (selection.length == 1 || state.getProperty("dataset") == 0) {
-                            if (state.getProperty("annotation") == "None") loadAnnotation("Group19");
+                            if (state.getProperty("annotation") == "None") loadAnnotation("SAFE");
                             
                             var circularFunc = function() {
                                 circularLayout = true;
