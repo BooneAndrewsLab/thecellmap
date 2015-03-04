@@ -271,10 +271,10 @@ def _tabular_more_correlations(request, correlations):
 def annotation(request, annotation_id):
     response = {'terms': {}, 'map': {}}
     
-    for orf, term_id, term, color in Term.genes.through.objects.filter(term__annotation=annotation_id).values_list('gene__orf', 'term_id', 'term__name', 'term__color'):  # @UndefinedVariable
+    for orf, term_id, term, color, alias in Term.genes.through.objects.filter(term__annotation=annotation_id).values_list('gene__orf', 'term_id', 'term__name', 'term__color', 'term__alias'):  # @UndefinedVariable
         response['map'].setdefault(orf, []).append(term_id)
         if term_id not in response['terms']:
-            response['terms'][term_id] = {'name': term, 'color': color}
+            response['terms'][term_id] = {'name': term, 'color': color, 'alias': alias}
     
     return JsonResponse(response)
 

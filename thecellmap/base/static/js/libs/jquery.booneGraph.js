@@ -820,7 +820,7 @@
                         vizdata[id] = {
                                 map : {},
                                 defaultColor : opts.defaultNodeColor,
-                                terms: {"-1": {id: -1, idx: 0, name: 'Unannotated', orig_name: 'Unannotated'}},
+                                terms: {"-1": {id: -1, idx: 0, name: 'Unannotated', orig_name: 'Unannotated', alias: 'Unannotated'}},
                                 colorPalette: [opts.defaultNodeColor]
                         }
                     } else {
@@ -843,18 +843,19 @@
                                             if(colors[i].indexOf("#" == -1)) {
                                                 colors[i] = "#" + colors[i];
                                             }
-                                            
+                                            console.log(vizdata[id].terms[n])
                                             vizdata[id].terms[n] = {
                                                     idx : i++,
                                                     id : n,
                                                     name : vizdata[id].terms[n].name,
                                                     orig_name : vizdata[id].terms[n].name,
+                                                    alias: vizdata[id].terms[n].alias,
                                             }
                                         }
                                         
                                         $.extend(vizdata[id].terms, {
-                                              "-1": {id: -1, idx: i, name: 'Unannotated', orig_name: 'Unannotated'},
-                                              "-2": {id: -2, idx: i+1, name: 'Multi-function', orig_name: 'Multi-function'}
+                                              "-1": {id: -1, idx: i, name: 'Unannotated', orig_name: 'Unannotated', alias: 'Unannotated'},
+                                              "-2": {id: -2, idx: i+1, name: 'Multi-function', orig_name: 'Multi-function', alias: "Multi-function"}
                                             }
                                           );
                                         
@@ -922,10 +923,11 @@
                         color = $.cookie(term.name);
                     }
                     
-                    var name = term.name;
-                    if (name.length > 20) {
-                        name = name.substring(0, 20) + "...";
-                    }
+                    var name = term.alias;
+//                    restrict name length, keep all annotation in one line within legend
+//                    if (name.length > 30) {
+//                        name = name.substring(0, 30) + "...";
+//                    }
                     $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
                             <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
                             <td>' + term.name + '</td></td></tr>');
@@ -1874,8 +1876,8 @@
                     e.preventDefault();
                 });
                 
-                $('#btn-legend-close').click(function(e) {
-                    $('#legend').hide();
+                $('#legend .panel-heading').click(function(e) {
+                    $('#legend .panel-body').toggle();
                     e.preventDefault();
                 });
                 
