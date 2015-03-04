@@ -1427,8 +1427,7 @@
                 
                 $("#btn-group-layout").fadeTo(500, 0.5).fadeTo(500, 1);
                 
-                if (countVisibleNodes() > 1) 
-                    toggleLayout(false, 'force');
+                if (countVisibleNodes() > 1 && currentUi == 'simple') toggleLayout(false, 'force');
             }
             
             function applySettings(s) {
@@ -2028,7 +2027,7 @@
                         switchDataset($(this).attr('data-id'));
                         if (countVisibleEdges() < 1000) toggleLayout(false, 'force');
                     } else {
-                        if (selection.length == 1 || state.getProperty("dataset") == 0) {
+                        if (selection.length == 1 && state.getProperty("dataset") == 0) {
                             if (state.getProperty("annotation") == "None") loadAnnotation("SAFE");
                             
                             var circularFunc = function() {
@@ -3247,13 +3246,13 @@
                                 } else {
                                     numVisibleSelected++;
                                     if (state.getProperty('annotation') == 'None') loadAnnotation('SAFE');
-//                                    node.forceLabel = true;
+                                    node.forceLabel = true;
 //                                    node.size_mult = 2;
 //                                    node.size = node.size_init * node.size_mult;
                                 }
                             } else {
                                 node.selected = false;
-//                                node.forceLabel = false;
+                                node.forceLabel = false;
 //                                node.size_mult = 1;
 //                                node.size = node.size_init;
                             }
