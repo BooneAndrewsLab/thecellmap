@@ -293,7 +293,13 @@ body {
 }
 
 .cutoff-bar-group {
-    display: inherit;
+    /* display: inherit; */
+    display: flex;
+    display: -webkit-box;
+    display: moz-box-flex;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    flex-wrap: wrap; 
 }
 
 .data-type-img {

@@ -3246,6 +3246,7 @@
                                     }
                                 } else {
                                     numVisibleSelected++;
+                                    if (state.getProperty('annotation') == 'None') loadAnnotation('SAFE');
 //                                    node.forceLabel = true;
 //                                    node.size_mult = 2;
 //                                    node.size = node.size_init * node.size_mult;
