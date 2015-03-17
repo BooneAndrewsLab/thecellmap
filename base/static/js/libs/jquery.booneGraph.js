@@ -582,6 +582,11 @@
                     dsEle.addClass('active');
                     $("#selected-dataset").html("Correlations");
                     $(".dataset-constraint").addClass("disabled");
+                    
+                    sigInst._core.graph.nodes.filter(function(node) {
+                        if (!node.hidden && node._hidden) node._hidden = false;
+                    });
+                    
                     updateEdges(value);
                 } else { // Interactions
                     var newVisible = [];
@@ -843,7 +848,6 @@
                                             if(colors[i].indexOf("#" == -1)) {
                                                 colors[i] = "#" + colors[i];
                                             }
-                                            console.log(vizdata[id].terms[n])
                                             vizdata[id].terms[n] = {
                                                     idx : i++,
                                                     id : n,
@@ -1408,7 +1412,8 @@
                     tmpSelected = {};
                     sigInst.iterEdges(function(edge) {
                         if ((!edge.source._hidden && !edge.target._hidden) && 
-                            (localSelected.hasOwnProperty(edge.source.id) || localSelected.hasOwnProperty(edge.target.id))) {
+                            (localSelected.hasOwnProperty(edge.source.id) || localSelected.hasOwnProperty(edge.target.id)) &&
+                            edge.ds == state.getProperty('dataset')) {
                             tmpSelected[edge.source.id] = null;
                             tmpSelected[edge.target.id] = null;
                         }
@@ -1418,7 +1423,6 @@
                 
                 sigInst.iterNodes(function(node) {
                     strain = getStrain(node.id);
-                    
                     if (!localSelected.hasOwnProperty(strain.id)) {
                         node._hidden = node.hidden = true;
                     }
@@ -1477,7 +1481,7 @@
                     }
                 }).iterNodes(function(node) {
                     strain = getStrain(node.id);
-                    node.hidden = (node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.id + "") == -1; // either we manually hid the node or it's not connected to anything
+                    node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.id + "") == -1) || (node.id.indexOf('tmp') != -1); // either we manually hid the node or it's not connected to anything
                 });
                 
                 rebuildLegend();
@@ -1934,7 +1938,7 @@
                                         sigInst.addEdge(edgeId, edge.s, edge.t, edge);
                                         
                                         var addedEdge = getEdge(edgeId), source = getNode(edge.s), target = getNode(edge.t);
-                                        addedEdge.weight = addedEdge.size = edge.w;
+                                        addedEdge.weight = addedEdge.size = Math.abs(edge.w);
                                         
                                         source.hidden = source._hidden = false;
                                         target.hidden = target._hidden = false;
@@ -1997,33 +2001,41 @@
                 $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
                 
-                var visNetwork = {before: {}, current: {}};
+                var tmpNetworks = {before: {}, current: {}};
                 $(".img-icon").click(function(evt){
                     var selection = getSelection();
                     if (selection.length < 1 && selection.length > 7) return;
                     
-                    visNetwork['before'] = $.extend({}, visNetwork['current']);
+                    tmpNetworks['before'] = $.extend({}, tmpNetworks['current']);
                     var ntmp = sigInst._core.graph.nodes.filter(function(node) {
                         return !node.hidden;
                     });
                     
-                    visNetwork['current'] = {};
+                    tmpNetworks['current'] = {};
                     for (n in ntmp) {
                         var node = ntmp[n];
-                        visNetwork['current'][node.id] = {x: node.x, y: node.y};
+                        tmpNetworks['current'][node.id] = {x: node.x, y: node.y};
                     }
                     
-                    if (!$.isEmptyObject(visNetwork['before'])) {
+                    if (!$.isEmptyObject(tmpNetworks['before'])) {
                         sigInst.iterNodes(function(node) {
-                            if (visNetwork['before'][node.id]) {
+                            if (tmpNetworks['before'][node.id]) {
                                 node.hidden = false;
-                                node.x = visNetwork['before'][node.id].x;
-                                node.y = visNetwork['before'][node.id].y;
+                                node.x = tmpNetworks['before'][node.id].x;
+                                node.y = tmpNetworks['before'][node.id].y;
                             } else {
                                 node.hidden = true;
                             }
                         });
                     }
+                    
+                    sigInst.iterNodes(function(node) {
+                        if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
+                    });
+                    
+                    sigInst.iterEdges(function(edge) {
+                        if (edge.id.indexOf('tmp_') != -1) sigInst.dropEdge(edge.id);
+                    });
                     
                     if ($(this).attr('data-id') == 0) {
                         switchDataset($(this).attr('data-id'));
@@ -2038,9 +2050,7 @@
                                 var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden && n.id != parseInt(selected[0]);});
                                 var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
                                 
-                                if (!nodeExists("tmp_" + n.id)) {
-                                    sigInst.addNode("tmp_" + n.id, n);
-                                }
+                                if (!nodeExists("tmp_" + n.id)) sigInst.addNode("tmp_" + n.id, n);
                                 var tempN = getNode("tmp_" + n.id), nMap = {"+": n, "-": tempN};
                                 tempN.hidden = tempN._hidden = false;
                                 tempN.x = n.x + 3600;
@@ -2056,7 +2066,7 @@
                                                     sigInst.addEdge(tempN.id + "-" + n.id, tempN.id, n.id, e);
                                                 } else { //edges to the added temp node
                                                     var edge = getEdge(tempN.id + "-" + n.id);
-                                                    edge._cl_hidden = edge.hidden = false;
+                                                    edge._cl_hidden = edge.hidden = false
                                                 }
                                                 e._cl_hidden = e.hidden = true; //hide the edges to the original node
                                             }
@@ -2082,13 +2092,28 @@
                                         return 0;
                                     });
                                     
-                                    var theta = Math.PI * 2 / groups[i].length;
-                                    for (j in groups[i]) {
-                                        var node = groups[i][j];
-                                        draw.push({x: nMap[i].x + 1400*Math.cos(theta * j), y: nMap[i].y + 1400*Math.sin(theta * j), node: node});
+                                    var layout = {g:[], a:[], s:[300, 480]}
+                                    
+                                    layout['g'][0] = layout['g'][1] = groups[i].length/2;
+                                    if (groups[i].length % 2 != 0) {
+                                        layout['g'][0] = Math.floor(layout['g'][0]);
+                                        layout['g'][1] = Math.ceil(layout['g'][1]);
+                                    }
+                                    
+                                    var j = 0, k = 0;
+                                    for (n in layout['g']) {
+                                        layout['a'][n] = 2 * Math.PI / 3 / layout['g'][n];
+                                        while (k < layout['g'][n]) {
+                                            var node = groups[i][j];
+                                            draw.push({x: nMap[i].x + 1400*Math.cos(k*layout['a'][n] + layout['s'][n]*Math.PI/180), 
+                                                       y: nMap[i].y + 1400*Math.sin(k*layout['a'][n] + layout['s'][n]*Math.PI/180), 
+                                                       node: node});
+                                            j++;
+                                            k++;
+                                        }
+                                        k = 0;
                                     }
                                 }
-                                
                                 
                                 sigInst.moveNodes({destinations: draw, runtime: 3}, function() {
                                     changeNodesState();
@@ -3231,7 +3256,7 @@
                         var selected = getSelectedNodes(), numVisibleSelected = 0, strain;
                         var selectionLength, selection = getSelection();
                         
-                        var toPaste = getUnique(getSelectedNodes().selected.map(function(s) {return getStrain(s).label;}).sort());
+                        var toPaste = getUnique(getSelectedNodes().selected.map(function(s) {return getStrain(s).label;})).sort();
                         $("#copy-area").html(toPaste.toString())
                         
                         var moveOn = true;
