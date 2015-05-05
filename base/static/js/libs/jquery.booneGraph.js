@@ -529,7 +529,7 @@
                 $(".dataset-constraint").removeClass("disabled");
                 
                 if (fromNodes && !single) {
-                    nodes = getSelectedNodes(true);
+                    nodes = getSelection();
                 } else if (fromNodes && single) {
                     nodes.push(getNode(hoveredTargets[0]).id);
                 } else {
@@ -688,7 +688,26 @@
                 var loadDatasetCallback = function (nodes, edges, extraContext) {
                     var edgesAdded = 0;
                     edges = edges || [];
+                    
                     edges.forEach(function(edge){
+                        if (!nodeExists(edge.source) && !isInitializing) {
+                            sigInst.addNode(edge.source);
+                            var node = getNode(edge.source), strain = getStrain(edge.source);
+                            
+                            node.label = strain.verboseName;
+                            node.size = 2;
+                            node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
+                            node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
+                        }
+                        if (!nodeExists(edge.target) && !isInitializing) {
+                            sigInst.addNode(edge.target);
+                            var node = getNode(edge.target), strain = getStrain(edge.target);
+                            
+                            node.label = strain.verboseName;
+                            node.size = 2;
+                            node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
+                            node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
+                        }
                         if (nodeExists(edge.source) && nodeExists(edge.target) && !sigInst._core.graph.edgesIndex[edge.id]) {
                             sigInst.addEdge(edge.id, edge.source, edge.target, edge);
                             edgesAdded++;
@@ -2127,39 +2146,39 @@
                             
                             var circularFunc = function() {
                                 circularLayout = true;
-                                var selected = getSelectedNodes(true), n = getNode(selected[0]), groups = {}, draw = [];
-                                var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden && n.id != parseInt(selected[0]);});
+                                var selected = getSelectedNodes(true), node = getNode(selected[0]), groups = {}, draw = [];
                                 var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
                                 
-                                if (!nodeExists("tmp_" + n.id)) sigInst.addNode("tmp_" + n.id, n);
-                                var tempN = getNode("tmp_" + n.id), nMap = {"+": n, "-": tempN};
+                                if (!nodeExists("tmp_" + node.id)) sigInst.addNode("tmp_" + node.id, node);
+                                var tempN = getNode("tmp_" + node.id), nMap = {"+": node, "-": tempN};
                                 tempN.hidden = tempN._hidden = false;
-                                tempN.x = n.x + 3600;
-                                tempN.y = n.y;
+                                tempN.x = node.x + 3600;
+                                tempN.y = node.y;
                                 
-                                ntmp.forEach(function(n) {
-                                    var tmp = [], tmpkey;
-                                    etmp.forEach(function(e) {
-                                        if (e.source.id == n.id || e.target.id == n.id) {
-                                            tmp.push(e.weight < 0 ? "-": "+");
-                                            if (e.weight < 0) {
-                                                sigInst.addEdge(tempN.id + "-" + n.id, tempN.id, n.id, e);
-                                                e._cl_hidden = e.hidden = true; //hide the edges to the original node
-                                            }
-                                            
-                                        }
-                                    });
-                                    
-                                    tmp = tmp.sort();
-                                    tmpkey = tmp.join();
-                                    
-                                    if (tmpkey != "") {
-                                        if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
-                                        groups[tmpkey].push(n);
+                                etmp.forEach(function(e) {
+                                    var tmpkey = "+", centerNode, outNode;
+                                    if (e.source.id == node.id) {
+                                        centerNode = e.source;
+                                        outNode = e.target;
+                                    } else if (e.target.id == node.id) {
+                                        centerNode = e.target;
+                                        outNode = e.source;
                                     } else {
-                                        n.hidden = true;
+                                        e.hidden = true;
+                                    }
+                                    
+                                    if (centerNode) {
+                                        if (e.weight < 0) {
+                                            tmpkey = "-";
+                                            sigInst.addEdge(tempN.id + "-" + outNode.id, tempN.id, outNode.id, e);
+                                            e._cl_hidden = e.hidden = true; //hide the edges to the original node
+                                        }
+                                        
+                                        if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
+                                        groups[tmpkey].push(outNode);
                                     }
                                 });
+                                
                                 
                                 for (i in groups) {
                                     groups[i].sort(function(n1, n2) {
@@ -2168,21 +2187,21 @@
                                         return 0;
                                     });
                                     
-                                    var layout = {g:[], a:[], s:[300, 480]}
+                                    var sides = [], s = [300, 480], angle;
                                     
-                                    layout['g'][0] = layout['g'][1] = groups[i].length/2;
+                                    sides[0] = sides[1] = groups[i].length/2;
                                     if (groups[i].length % 2 != 0) {
-                                        layout['g'][0] = Math.floor(layout['g'][0]);
-                                        layout['g'][1] = Math.ceil(layout['g'][1]);
+                                        sides[0] = Math.floor(sides[0]);
+                                        sides[1] = Math.ceil(sides[1]);
                                     }
                                     
                                     var j = 0, k = 0;
-                                    for (n in layout['g']) {
-                                        layout['a'][n] = 2 * Math.PI / 3 / layout['g'][n];
-                                        while (k < layout['g'][n]) {
+                                    for (n in sides) {
+                                        angle = 2 * Math.PI / 3 / sides[n];
+                                        while (k < sides[n]) {
                                             var node = groups[i][j];
-                                            draw.push({x: nMap[i].x + 1400*Math.cos(k*layout['a'][n] + layout['s'][n]*Math.PI/180), 
-                                                       y: nMap[i].y + 1400*Math.sin(k*layout['a'][n] + layout['s'][n]*Math.PI/180), 
+                                            draw.push({x: nMap[i].x + 1400*Math.cos(k*angle + s[n]*Math.PI/180), 
+                                                       y: nMap[i].y + 1400*Math.sin(k*angle + s[n]*Math.PI/180), 
                                                        node: node});
                                             j++;
                                             k++;
