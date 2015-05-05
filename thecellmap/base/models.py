@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from thecellmap import settings
 from django.http.response import Http404
+from math import degrees
 
 
 class Gene(models.Model):
@@ -196,6 +197,33 @@ class Custom(models.Model):
     
     class Meta:
         unique_together = (('name', 'user'), )
+
+class RegionGroup(models.Model):
+    name = models.CharField(max_length=64)
+    alias = models.CharField(max_length=64, null=True, blank=True)
+    date = models.DateField()
+    description = models.TextField(blank=True)
+    dataset = models.ForeignKey(Dataset)
+    
+    def __unicode__(self):
+        return self.name
+
+class Region(models.Model):
+    name = models.CharField(max_length=64)
+    alias = models.CharField(max_length=64, null=True)
+    region_group = models.ForeignKey(RegionGroup, related_name='regions')
+    color = models.CharField(max_length=6)
+    
+    vertices = models.ManyToManyField(Strain, through='Vertex')
+
+class Vertex(models.Model):
+    region = models.ForeignKey(Region)
+    strain = models.ForeignKey(Strain)
+    degree = models.SmallIntegerField()
+    
+    class Meta:
+        unique_together = (('region', 'degree'), ('region', 'strain'), )
+        ordering = ('region', 'degree', )
 
 Dataset.correlation_axis.through._meta.verbose_name = 'Correlations axis'
 Dataset.correlation_axis.through._meta.verbose_name_plural = 'Correlations axes'

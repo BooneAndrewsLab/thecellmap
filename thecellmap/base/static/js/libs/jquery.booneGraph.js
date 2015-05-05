@@ -72,6 +72,7 @@
             var autoState = false;
             var isInitializing = true;
             var noPulse = false;
+            var showRegions = true;
             
             var currentUi = 'simple';
             var circularLayout = false;
@@ -735,6 +736,10 @@
             function loadLayout(e) {
                 var layout = opts.layout;
                 var dataset = opts.datasets;
+                if (!isInitializing) {
+                    showRegions = false;
+                    clearDrawnRegions();
+                }
                 
                 opts.loadedDataset = null;
                 opts.loadedLayout = null;
@@ -883,6 +888,73 @@
                 rebuildLegend();
                 changeNodesState();
                 if (callback) callback();
+                setTimeout(loadRegion(id), '0');
+            }
+            
+            function loadRegion(id) {
+                clearDrawnRegions();
+                opts.regionGroup.forEach(function(regionGroup) {
+                    if (regionGroup.name === id) {
+                        $.ajax({
+                            url : regionGroup.url,
+                            dataType : 'json',
+                            async : true,
+                            success : function(data) {
+                                vizdata[id + 'Region'] = {colorPalette: [], nodes: []};
+                                
+                                for (r in data) {
+                                    var nodes = [], color, n;
+                                    for (n in data[r]) {
+                                        if (getNode(data[r][n])) {
+                                            nodes.push(getNode(data[r][n]));
+                                        } else {
+                                            color = data[r][n];
+                                        }
+                                    }
+                                    vizdata[id + 'Region']['colorPalette'].push(color);
+                                    vizdata[id + 'Region']['nodes'].push(nodes);
+                                }
+                                drawRegions();
+                            },
+                            error: function() {},
+                        });
+                    }
+                });
+            }
+            
+            function drawRegions() {
+                clearDrawnRegions();
+                if (!showRegions || state.getProperty("annotation") == 'None') return;
+                
+                var region = state.getProperty("annotation") + 'Region'
+                
+                if (!$('#region_canvas').length) {
+                    var canvas = $('canvas:first').clone();
+                    canvas.attr('id', 'region_canvas');
+                    $('#network-container').prepend(canvas);
+                }
+                var canvas = $('#region_canvas'), ctx = canvas[0].getContext("2d");
+                var regionGroup = vizdata[region];
+                
+                for (r in regionGroup['nodes']) {
+                    var color = regionGroup['colorPalette'][r], nodes = regionGroup['nodes'][r];
+                    
+                    ctx.fillStyle = '#' + color;
+                    ctx.globalAlpha = 0.4;
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
+                    for (n in nodes) { ctx.lineTo(nodes[n]['displayX'], nodes[n]['displayY']); }
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+            
+            function clearDrawnRegions() {
+                var canvas = $('#region_canvas');
+                if (canvas.length) {
+                    ctx = canvas[0].getContext("2d");
+                    ctx.clearRect(0, 0, canvas.width(), canvas.height());
+                }
             }
             
             function rebuildLegend() {
@@ -1402,6 +1474,11 @@
             }
             
             function applyNeighbourhood(level) {
+                if (!isInitializing) {
+                    showRegions = false;
+                    clearDrawnRegions();
+                }
+                
                 /* Resets big red nodes */
                 var selected = getSelectedNodes(true), localSelected = {}, tmpSelected, strain;
                 selected.forEach(function (id){
@@ -1880,15 +1957,15 @@
                     e.preventDefault();
                 });
                 
-                $('#legend .panel-heading').click(function(e) {
-                    $('#legend .panel-body').toggle();
-                    e.preventDefault();
-                });
-                
-                var box = $(".content:first")[0].getBoundingClientRect();
+                var box = $(".content:first")[0].getBoundingClientRect(), toClose = true;
                 if ($('#legend').length) {
                     Drag.init(document.getElementById("legend-handle"), document.getElementById("legend"), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
                 }
+                
+                $('#legend .panel-heading').dblclick(function(e) {
+                    $('#legend .panel-body').toggle();
+                    e.preventDefault();
+                });
                 
                 $('#btn-group-styles').click(function() {
                     $('#style-tabs').tab('show');
@@ -2004,8 +2081,12 @@
                 var tmpNetworks = {before: {}, current: {}};
                 $(".img-icon").click(function(evt){
                     var selection = getSelection();
-                    if (selection.length < 1 && selection.length > 7) return;
-                    
+                    if (selection.length < 1 || selection.length > 7) return;
+
+                    sigInst.iterNodes(function(node) {
+                        if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
+                    });
+
                     tmpNetworks['before'] = $.extend({}, tmpNetworks['current']);
                     var ntmp = sigInst._core.graph.nodes.filter(function(node) {
                         return !node.hidden;
@@ -2017,30 +2098,30 @@
                         tmpNetworks['current'][node.id] = {x: node.x, y: node.y};
                     }
                     
-                    if (!$.isEmptyObject(tmpNetworks['before'])) {
-                        sigInst.iterNodes(function(node) {
-                            if (tmpNetworks['before'][node.id]) {
-                                node.hidden = false;
-                                node.x = tmpNetworks['before'][node.id].x;
-                                node.y = tmpNetworks['before'][node.id].y;
-                            } else {
-                                node.hidden = true;
-                            }
-                        });
-                    }
-                    
-                    sigInst.iterNodes(function(node) {
-                        if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
-                    });
-                    
-                    sigInst.iterEdges(function(edge) {
-                        if (edge.id.indexOf('tmp_') != -1) sigInst.dropEdge(edge.id);
-                    });
-                    
                     if ($(this).attr('data-id') == 0) {
+                        if (!$.isEmptyObject(tmpNetworks['before'])) {
+                            sigInst.iterNodes(function(node) {
+                                if (tmpNetworks['before'][node.id]) {
+                                    node.hidden = false;
+                                    node.x = tmpNetworks['before'][node.id].x;
+                                    node.y = tmpNetworks['before'][node.id].y;
+                                } else {
+                                    node.hidden = true;
+                                }
+                            });
+                        }
+                        
                         switchDataset($(this).attr('data-id'));
-                        if (countVisibleEdges() < 1000) toggleLayout(false, 'force');
+                        if (countVisibleEdges() < 1000) {
+                            toggleLayout(false, 'force');
+                        } else {
+                            showRegions = true;
+                            drawRegions();
+                        }
                     } else {
+                        showRegions = false;
+                        clearDrawnRegions(); 
+                        
                         if (selection.length == 1 && state.getProperty("dataset") == 0) {
                             if (state.getProperty("annotation") == "None") loadAnnotation("SAFE");
                             
@@ -2062,12 +2143,7 @@
                                         if (e.source.id == n.id || e.target.id == n.id) {
                                             tmp.push(e.weight < 0 ? "-": "+");
                                             if (e.weight < 0) {
-                                                if (!edgeExists(tempN.id + "-" + n.id)) {
-                                                    sigInst.addEdge(tempN.id + "-" + n.id, tempN.id, n.id, e);
-                                                } else { //edges to the added temp node
-                                                    var edge = getEdge(tempN.id + "-" + n.id);
-                                                    edge._cl_hidden = edge.hidden = false
-                                                }
+                                                sigInst.addEdge(tempN.id + "-" + n.id, tempN.id, n.id, e);
                                                 e._cl_hidden = e.hidden = true; //hide the edges to the original node
                                             }
                                             
@@ -2415,7 +2491,8 @@
                         
                         if (angle < 361 && angle > -361) {
                             angle = parseInt(angle);
-                            sigInst.rotateNodes({callback: function() {changeNodesState();}, degrees: angle, nodes: selected});
+                            clearDrawnRegions();
+                            sigInst.rotateNodes({callback: function() {drawRegions(); changeNodesState();}, degrees: angle, nodes: selected});
                             $("#rotation-modal").modal("hide");
                         } else {
                             messageUser("Please enter an angle between -360 and 360 degrees.", "alerts-panel-rotate");
@@ -2617,7 +2694,7 @@
 //                    messageUser("Saved State")
 //                });
                 
-                $("#search-bar").mouseenter(function(e) {
+                $(".search-bar").mouseenter(function(e) {
                     $(".select2-container-multi .select2-choices").css("max-height", "300px");
                 }).mouseleave(function(e) {
                     if (!$("input.gene-search-input").data("open")) {
@@ -2990,6 +3067,10 @@
                         clearSelection();
                         state.setProperty("edgeSelection", []);
                     }
+                }).bind('startmovingnodes', function(evt) {
+                    clearDrawnRegions();
+                }).bind('stopmovingnodes', function(evt) {
+                    if (vizdata[state.getProperty("annotation") + 'Region']) drawRegions();
                 }).bind('draggedNode', function() {
                     clicking.wasDragging = true;
                     changeNodesState();
@@ -3004,13 +3085,14 @@
                     noPulse = false;
                 }).bind('selectionStart', function() {
                 }).bind('rightclickedges', onEdgesContext
-                 ).bind('ctrlclickedges', onEdgesContext);
-//                 .bind('upedges', function(targeted) {
+                 ).bind('ctrlclickedges', onEdgesContext
+                 );
+//                 ).bind('upedges', function(targeted) {
 //                     if (!clicking.wasDragging) {
 //                         onEdgesClick(targeted);
 //                         changeState();
 //                     }
-//                 }
+//                 });
                 
                 buildNewUI();
                 initUI();

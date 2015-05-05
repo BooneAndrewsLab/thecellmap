@@ -30,6 +30,9 @@ urlpatterns = patterns('base.views',
     # annotation urls
     url(r'^annotation/(?P<annotation_id>\d+)/$', 'annotation', name='annotation'),
     
+    # region urls
+    url(r'^region_group/(?P<dataset_id>\d+)/(?P<region_group_id>\d+)/$', 'region_group', name='region_group'),
+    
     url(r'^genes/$', 'genes', name='genes'),
     
     # contact

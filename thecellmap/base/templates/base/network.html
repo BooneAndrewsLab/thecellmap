@@ -124,6 +124,11 @@
                     name: "{{ annot.name }}",
                     url: "{% url 'annotation' annot.id %}"
                 },{% endfor %}],
+            regionGroup: [{% for r in regionGroups %}{
+                id: {{ r.id }},
+                name: "{{ r.name }}",
+                url: "{% url 'region_group' dataset.id r.id %}"
+            },{% endfor %}],
             datasets: datasets,
             layoutAlgo: ['fl'],
             nodesUrl: "{{ dataset.static_url }}/nodes.json",
