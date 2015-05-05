@@ -3,6 +3,7 @@
 import datetime
 import math
 import os
+import pickle
 
 from django.conf import settings
 from django.contrib.auth import login as django_login, logout as django_logout
@@ -11,12 +12,12 @@ from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
+from django.utils import simplejson
 from django.views.decorators.http import require_POST, require_GET
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
-from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap
+from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
-from django.utils import simplejson
 
 
 def _serve_dataset(request, dataset=None):
@@ -26,6 +27,7 @@ def _serve_dataset(request, dataset=None):
         return render(request, 'base/network.html', {
                 'dataset': dataset,
                 'annotations': Annotation.objects.all(),
+                'regionGroups': RegionGroup.objects.all(),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt'))
           })
     else:
@@ -294,6 +296,30 @@ def circle_pack(request):
         return HttpResponseRedirect(os.path.join(settings.STATIC_URL, range))
     else:
         return JsonResponse([])
+
+@print_queries
+def region_group(request, dataset_id, region_group_id):
+    response = {}
+    regionGroup = RegionGroup.objects.select_related('dataset').get(id=region_group_id)
+    
+    if regionGroup.dataset.id != int(dataset_id):
+        return HttpResponseBadRequest('Incorrect dataset')
+    
+    with open(regionGroup.dataset.static_path('nodes_inv.pickle')) as fp:
+        nodes_inv = pickle.load(fp)
+    
+    nodes_inv_inv = {}
+    for nid, sids in nodes_inv.iteritems():
+        for sid in sids:
+            nodes_inv_inv[sid] = nid
+    
+    for strain, degree, region, color in Region.vertices.through.objects.filter(region__region_group=region_group_id).values_list('strain', 'degree', 'region', 'region__color'):
+        response.setdefault(region, {})
+        response[region][degree] = nodes_inv_inv[strain]
+        if color not in response[region]:
+            response[region]['color'] = color
+    
+    return JsonResponse(response)
 
 def foobar(request):
     return render(request, 'base/matrix.html')

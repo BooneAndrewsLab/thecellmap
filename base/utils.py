@@ -29,6 +29,7 @@ import numpy as np
 from thecellmap import settings
 from xlrd.biffh import XLRDError
 import xlrd
+from django.db import transaction
 
 
 RE_ORF = re.compile("^Y[A-P][LR]\d{3}[CW](\-[A-Z])?$")
@@ -590,3 +591,13 @@ def profile(log_file):
 def dump_clean_json(obj, f):
     with open(f, 'wb') as out:
         out.write(json.dumps(obj).replace(' ', ''))
+
+def rollback_on_fail(fun):
+   def wrap(init_self,*args,**kwargs):
+       try:
+           return fun(init_self,*args,**kwargs)
+       except Exception:
+           transaction.rollback()
+           raise
+   
+   return wrap

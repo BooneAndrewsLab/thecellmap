@@ -7,7 +7,8 @@ Created on Dec 16, 2013
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term, Custom, Heatmap
+from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term, Custom, Heatmap, RegionGroup, Region
+from _csv import list_dialects
 
 
 class GeneAdmin(admin.ModelAdmin):
@@ -84,6 +85,15 @@ class CustomAdmin(admin.ModelAdmin):
 class HeatmapAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'date')
 
+class RegionGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'alias', 'description', 'date')
+
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'alias', 'region_group', 'region_color')
+    
+    def region_color(self, region):
+        return mark_safe('<span style="color: #%s; font-weight: bold;">%s</span>' % (region.color, region.color))
+
 admin.site.register(Gene, GeneAdmin)
 admin.site.register(Strain, StrainAdmin)
 admin.site.register(StrainData, StrainDataAdmin)
@@ -92,6 +102,8 @@ admin.site.register(Annotation, AnnotationAdmin)
 admin.site.register(Term, TermAdmin)
 admin.site.register(Custom, CustomAdmin)
 admin.site.register(Heatmap, HeatmapAdmin)
+admin.site.register(RegionGroup, RegionGroupAdmin)
+admin.site.register(Region, RegionAdmin)
 
 admin.site.register(Dataset.queries.through, QueriesAdmin)  # @UndefinedVariable
 admin.site.register(Dataset.arrays.through, ArraysAdmin)  # @UndefinedVariable

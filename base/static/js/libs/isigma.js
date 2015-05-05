@@ -654,6 +654,7 @@ function Graph() {
     a.forEach(function(id) {
       if (self.nodesIndex[id]) {
         nodesIdsToRemove[id] = true;
+        delete self.nodesIndex[id];
       } else {
         sigma.log('Node "' + id + '" does not exist.');
       }
@@ -2681,6 +2682,7 @@ function Sigma(root, id) {
       self.p.auto ? 0 : self.p.drawEdgeLabels,
       true
     );
+    self.dispatch('startmovingnodes')
   }).bind('stopdrag stopinterpolate', function(e) {
     self.draw(
       self.p.auto ? 2 : self.p.drawNodes,
@@ -2695,6 +2697,8 @@ function Sigma(root, id) {
     } else {
         self.dispatch('nodesonscreen');
     }
+    
+    self.dispatch('stopmovingnodes')
   }).bind('mousedown mouseup ctrlclick shiftclick shiftup', function(e) {
 //    eventType = (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') ? 'downgraph' : 'upgraph';
     if (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') {
@@ -3986,7 +3990,7 @@ function SigmaPublic(sigmaInstance) {
   };
 
   // Events
-  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop', function(e) {
+  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop startmovingnodes stopmovingnodes', function(e) {
     // console.log(e.type, e.content);
     self.dispatch(e.type, e.content);
   });
