@@ -2148,6 +2148,7 @@
                                 circularLayout = true;
                                 var selected = getSelectedNodes(true), node = getNode(selected[0]), groups = {}, draw = [];
                                 var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
+                                var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden && n.id != parseInt(selected[0]);});
                                 
                                 if (!nodeExists("tmp_" + node.id)) sigInst.addNode("tmp_" + node.id, node);
                                 var tempN = getNode("tmp_" + node.id), nMap = {"+": node, "-": tempN};
@@ -2179,6 +2180,15 @@
                                     }
                                 });
                                 
+                                ntmp.forEach(function(n) {
+                                    var connected = false;
+                                    etmp.forEach(function (e) {
+                                        if (e.source.id == n.id || e.target.id == n.id) {
+                                            connected = true;
+                                        }
+                                    })
+                                    n.hidden = !connected;
+                                })
                                 
                                 for (i in groups) {
                                     groups[i].sort(function(n1, n2) {
