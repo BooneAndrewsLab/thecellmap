@@ -3128,6 +3128,7 @@
                     if (!clicking.wasDragging) {
                         onNodesClick(e);
                     }
+                    
                     clicking.wasDragging = false;
                     clicking.modifierKey = null;
                 }).bind('upgraph', function(evt) {
@@ -3136,6 +3137,7 @@
                         clearSelection();
                         state.setProperty("edgeSelection", []);
                     }
+                    if (vizdata[state.getProperty("annotation") + 'Region']) drawRegions();
                 }).bind('startmovingnodes', function(evt) {
                     clearDrawnRegions();
                 }).bind('stopmovingnodes', function(evt) {
@@ -3155,7 +3157,9 @@
                 }).bind('selectionStart', function() {
                 }).bind('rightclickedges', onEdgesContext
                  ).bind('ctrlclickedges', onEdgesContext
-                 );
+                 ).bind('downnodes', function() {
+                     clearDrawnRegions();
+                 });;
 //                 ).bind('upedges', function(targeted) {
 //                     if (!clicking.wasDragging) {
 //                         onEdgesClick(targeted);
