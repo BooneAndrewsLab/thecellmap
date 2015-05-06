@@ -2104,7 +2104,6 @@
                             val[0] = -val[1], val[1] = -tmpVal;
                         }
                         
-                        
                         if (val[0] < 0 && val[1] > 0) {
                             applyCutoff(val);
                             sliderProperties.preIntValue = [val[0], val[1]]
@@ -2121,7 +2120,19 @@
                             $(this).val([null, 0]);
                         }
                     });
-                }).Link('lower').to(function(val){$(".cutoff-label-max").html(-val);}).Link('upper').to(function(val){$(".cutoff-label-min").html(-val);});
+                }).Link('lower').to(function(val){
+                    if ($(this).data("ori") == 'horizontal') {
+                        $(".cutoff-label-min").html(val);
+                    } else {
+                        $(".cutoff-label-max").html(-val);
+                    }
+                }).Link('upper').to(function(val){
+                    if ($(this).data("ori") == 'horizontal') {
+                        $(".cutoff-label-max").html(val);
+                    } else {
+                        $(".cutoff-label-min").html(-val);
+                    }
+                });
                 
                 $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
@@ -2182,7 +2193,7 @@
                                 if (!nodeExists("tmp_" + node.id)) sigInst.addNode("tmp_" + node.id, node);
                                 var tempN = getNode("tmp_" + node.id), nMap = {"+": node, "-": tempN};
                                 tempN.hidden = tempN._hidden = false;
-                                tempN.x = node.x + 3600;
+                                tempN.x = node.x - 3600;
                                 tempN.y = node.y;
                                 
                                 etmp.forEach(function(e) {
