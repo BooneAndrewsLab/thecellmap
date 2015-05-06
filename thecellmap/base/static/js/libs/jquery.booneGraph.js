@@ -1600,7 +1600,7 @@
                     }
                 }).iterNodes(function(node) {
                     strain = getStrain(node.id);
-                    node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.id + "") == -1) || (node.id.indexOf('tmp') != -1); // either we manually hid the node or it's not connected to anything
+                    node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.id + "") == -1); // either we manually hid the node or it's not connected to anything
                 });
                 
                 rebuildLegend();
@@ -2099,6 +2099,12 @@
                         var val = $(this).val(), preVal = sliderProperties.preIntValue;
                         if (isInitializing || (parseFloat(val[0]) == preVal[0] && parseFloat(val[1]) == preVal[1])) return;
                         
+                        if (ori == 'horizontal') {
+                            var tmpVal = val[0]; 
+                            val[0] = -val[1], val[1] = -tmpVal;
+                        }
+                        
+                        
                         if (val[0] < 0 && val[1] > 0) {
                             applyCutoff(val);
                             sliderProperties.preIntValue = [val[0], val[1]]
@@ -2115,7 +2121,7 @@
                             $(this).val([null, 0]);
                         }
                     });
-                }).Link('upper').to(function(val){$(".cutoff-label-min").html(-val);}).Link('lower').to(function(val){$(".cutoff-label-max").html(-val);});
+                }).Link('lower').to(function(val){$(".cutoff-label-max").html(-val);}).Link('upper').to(function(val){$(".cutoff-label-min").html(-val);});
                 
                 $(".cutoff-label-min").html(sliderProperties.value);
                 $("#cutoff-label").click(function() {});
