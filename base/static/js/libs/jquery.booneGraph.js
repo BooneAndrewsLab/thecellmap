@@ -951,7 +951,13 @@
                     var canvas = $('canvas:first').clone();
                     canvas.attr('id', 'region_canvas');
                     $('#network-container').prepend(canvas);
+                    
+                    window.addEventListener('resize', function() {
+                        $('#region_canvas').attr('width', $(".sigma_edges_canvas").width());
+                        $('#region_canvas').attr('height', $(".sigma_edges_canvas").height());
+                    });
                 }
+                
                 var canvas = $('#region_canvas'), ctx = canvas[0].getContext("2d");
                 var regionGroup = vizdata[region];
                 
@@ -959,10 +965,27 @@
                     var color = regionGroup['colorPalette'][r], nodes = regionGroup['nodes'][r];
                     
                     ctx.fillStyle = '#' + color;
-                    ctx.globalAlpha = 0.4;
+//                    ctx.globalAlpha = 0.4;
                     ctx.beginPath();
                     ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
-                    for (n in nodes) { ctx.lineTo(nodes[n]['displayX'], nodes[n]['displayY']); }
+                    
+                    var n1, n2, dx, dy, angle, dr;
+                    
+                    nodes.push(nodes[0])
+                    for (var i = 0; i < nodes.length - 1; i++) {
+                        n1 = nodes[i], n2 = nodes[i + 1];
+                        dx = (n2.displayX - n1.displayX)/2, dy = (n2.displayY - n1.displayY)/2, angle = Math.atan(dx/dy);
+                        dr = Math.sqrt(dx*dx + dy*dy) / 2;
+                        
+                        if (dx > 0) {
+                            ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.cos(Math.PI/2 - angle), n1.displayY + dy - dr*Math.sin(Math.PI/2 - angle), n2.displayX, n2.displayY);
+                        } else if (dy > 0){
+                            ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy - dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
+                        } else {
+                            ctx.quadraticCurveTo(n1.displayX + dx - dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy + dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
+                        }
+                    }
+                    
                     ctx.closePath();
                     ctx.fill();
                 }
