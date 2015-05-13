@@ -92,7 +92,7 @@
             <div class="form-group">
               <label for="overlay-selection" class="col-sm-4 control-label">Overlay</label>
               <div class="col-sm-8">
-                <select class="form-control" id="overlay-selection" disabled>
+                <select class="form-control" id="overlay-selection">
                   <option> None </option>
                   {% for data in datasets %}
                     <option value="{{ data.id }}"> {{ data.name }} </option>

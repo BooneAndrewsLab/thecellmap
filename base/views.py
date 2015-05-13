@@ -22,7 +22,6 @@ from base.utils import print_queries, is_integer, JsonResponse
 
 def _serve_dataset(request, dataset=None):
     dataset = Dataset.pk_or_default(dataset, request.user)
-    print dataset 
     if request.user.is_authenticated() or dataset.is_published:
         return render(request, 'base/network.html', {
                 'dataset': dataset,

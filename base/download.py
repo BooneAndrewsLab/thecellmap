@@ -4,6 +4,8 @@ Created on Jan 13, 2014
 @author: matej
 '''
 import cPickle
+import os
+from scipy.stats import pearsonr
 
 from django.core.paginator import Paginator
 from django.utils.datastructures import SortedDict
@@ -13,6 +15,9 @@ from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
 import numpy as np
+import math
+from pandas.core.series import Series
+import json
 
 
 ONLY = (
@@ -128,6 +133,53 @@ def collect_correlations(ds, nodes, cutoff):
     new_nodes = set([s for s in axis if s not in nodes_idx])
     
     return piv, new_nodes
+
+
+def collect_score_matrix(ds, nodes, data):
+    data = json.loads(data)['edges']
+    
+    nmap = {}
+    for n in json.loads(nodes)['nodes']:
+        nmap[n['id']] = n
+    
+    smap = {}
+    for s in Strain.objects.all().select_related('gene'):
+        smap[s.label()] = s
+    
+    with open(ds.static_path('nodes_inv.pickle')) as fp:
+        nodes_inv = cPickle.load(fp)
+    
+    nodes_inv_inv = {}
+    for nid, sids in nodes_inv.iteritems():
+        for sid in sids:
+            nodes_inv_inv[sid] = nid
+    
+    source = data[0]['s']
+    targets = []
+    weights = []
+    
+    for e in data:
+        if nmap[e['t']]['label'] in smap:
+            targets.append(smap[nmap[e['t']]['label']].id)
+            weights.append(e['w'])
+    
+    print weights, targets
+    
+    df = DataFrame.from_csv(os.path.join(ds.static_path(), 'scores_matrix.csv'))
+    new_row = Series(weights, targets)
+    df.columns = df.columns.astype(new_row.index.dtype)
+    
+    print new_row
+    
+    def foo(x):
+        return x.corr(new_row)
+    
+    
+    scores = df.apply(foo, axis=1)
+    
+    result = [{'s': source, 't': nodes_inv_inv[t], 'w': w } for t, w in scores.iteritems()]
+    
+    return result
 
 def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:

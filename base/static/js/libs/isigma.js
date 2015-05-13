@@ -1734,22 +1734,39 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    * @return {Plotter} Returns itself.
    */
   function drawNode(node) {
-    var size = Math.round(node['displaySize'] * 10) / 10;
     var ctx = nodesCtx;
+    var size = Math.round(node['displaySize'] * 10) / 10;
 
-    ctx.fillStyle = node['selected'] ? 'red' : (node['color'] || self.p.defaultNodeColor);
-    ctx.beginPath();
-    ctx.arc(node['displayX'],
-            node['displayY'],
-            size,
-            0,
-            Math.PI * 2,
-            true);
+    if (!node['pin']) {
+        ctx.fillStyle = node['selected'] ? 'red' : (node['color'] || self.p.defaultNodeColor);
+        ctx.beginPath();
+        ctx.arc(node['displayX'],
+                node['displayY'],
+                size,
+                0,
+                Math.PI * 2,
+                true);
 
-    ctx.closePath();
-    ctx.fill();
+        ctx.closePath();
+        ctx.fill();
 
-    node['hover'] && drawHoverNode(node);
+        node['hover'] && drawHoverNode(node);
+    } else {
+        var w = 7 * size, h = 12 * size;
+        ctx.beginPath();
+        ctx.fillStyle = "#FF0000"
+        ctx.moveTo(node['displayX'], node['displayY']);
+        ctx.bezierCurveTo(node['displayX'] - w*2/3, node['displayY'] - (h * 2/3), node['displayX'] - w*2/3, node['displayY'] - h, node['displayX'], node['displayY'] - h);
+        ctx.bezierCurveTo(node['displayX'] + w*2/3, node['displayY'] - h, node['displayX'] + w*2/3, node['displayY'] - (h * 2/3), node['displayX'], node['displayY']);
+        ctx.fill();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.fillStyle = "#e6e6e6";
+        ctx.arc(node['displayX'], node['displayY'] - (h * 2/3), w/4, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.closePath();
+    }
+    
     return self;
   };
 
@@ -1886,7 +1903,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
   function drawLabel(node) {
     var ctx = labelsCtx;
 
-    if (node['displaySize'] >= self.p.labelThreshold || node['forceLabel']) {
+    if ((node['displaySize'] >= self.p.labelThreshold || node['forceLabel']) && !node['pin']) {
       var fontSize = self.p.labelSize == 'fixed' ?
                      self.p.defaultLabelSize :
                      self.p.labelSizeRatio * node['displaySize'];
@@ -2054,6 +2071,8 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    * @return {Plotter} Returns itself.
    */
   function drawHoverNode(node) {
+    if (node['pin']) return;
+    
     var ctx = hoverCtx;
 
     var fontSize = self.p.labelSize == 'fixed' ?
@@ -2277,6 +2296,8 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    * @return {Plotter} Returns itself.
    */
   function drawActiveNode(node) {
+    if (node['pin']) return;
+    
     var ctx = hoverCtx;
 
     if (!isOnScreen(node)) {

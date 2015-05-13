@@ -1,6 +1,7 @@
 from datetime import datetime
 import hashlib
 import os
+import pickle
 from time import time
 
 from django.contrib.auth.decorators import login_required
@@ -17,7 +18,8 @@ from django.shortcuts import render
 from base.filter import CustomFilter
 from base.models import Annotation, Term, Custom, Strain, Gene, Dataset
 from base.utils import gene_map, write_excel_file, JsonResponse
-
+from base.download import collect_score_matrix
+import json
 
 ### FORMS ###
 class AnnotationsForm(Form):
@@ -100,6 +102,14 @@ def custom(request):
         if 'nodes' not in request.POST or 'layout' not in request.POST or 'dataset' not in request.POST:
             return HttpResponseBadRequest('missing values')
         
+        nodes = request.POST['nodes']
+        dataset = request.POST['dataset']
+        layout = request.POST['layout']
+        private = request.POST['private'].lower() == 'true'
+        type = request.POST['type']
+        network_type = request.POST['network-type']
+        scores = []
+        
         if request.POST['overlay']:
             try:
                 overlay = Dataset.objects.get(pk=request.POST['overlay'])
@@ -108,15 +118,10 @@ def custom(request):
             
             if not request.user.is_authenticated() or overlay.is_published:
                 return HttpResponseForbidden('Permission Required')
+            
+            scores = collect_score_matrix(overlay, nodes, dataset)
         else:
             overlay = None
-            
-        nodes = request.POST['nodes']
-        layout = request.POST['layout']
-        dataset = request.POST['dataset']
-        private = request.POST['private'].lower() == 'true'
-        type = request.POST['type']
-        network_type = request.POST['network-type']
         
         hash = hashlib.sha1()
         hash.update(str(time()) + nodes + layout + dataset)
@@ -146,6 +151,10 @@ def custom(request):
         
         with open(custom.path('correlations.json'), 'w') as fp:
             fp.write(dataset)
+        
+        if scores:
+            with open(custom.path('scores.json'), 'w') as fp:
+                fp.write(json.dumps(scores).replace(' ', ''))
         
         return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
     
