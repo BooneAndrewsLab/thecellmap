@@ -9,7 +9,7 @@ from django.core.management.base import CommandError, BaseCommand
 from django.db.transaction import commit_on_success, commit_manually
 from pandas.core.frame import DataFrame
 
-from base.models import Strain, Gene, Region, RegionGroup, Vertex, Dataset
+from base.models import Strain, Gene, Region, RegionGroup, Vertex, Dataset, Term
 from base.utils import CellMapCommand, gene_map, open_excel_file, rollback_on_fail
 from django.db import transaction
 from datetime import datetime
@@ -76,3 +76,8 @@ class Command(CellMapCommand):
                     strain = strain,
                     region = r)
                 i += 1
+        
+        for t in Term.objects.filter(annotation__name=args[2]):
+            r = Region.objects.get(name=t.name)
+            r.color = t.color
+            r.save()

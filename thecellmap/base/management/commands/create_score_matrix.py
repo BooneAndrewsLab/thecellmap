@@ -19,19 +19,16 @@ class Command(CellMapCommand):
         if not os.path.exists(outpath):
             os.makedirs(outpath)
         
-        queries_axis = [id for id, in dataset.queries.through.objects.filter(dataset=dataset).order_by('id').values_list('strain_id')]
+        arrays_axis = [id for id, in dataset.arrays.through.objects.filter(dataset=dataset).order_by('id').values_list('strain_id')]
         data = dataset.data.filter(type=StrainData.TYPE_QUERY).values_list('strain', 'scores')
-        
-        arrays_axis = []
         scores = []
         
         for q, s in data:
-            arrays_axis.append(q)
             scores.append(s)
         
         with open(os.path.join(outpath, 'scores_matrix.csv'), 'wb') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
             spamwriter.writerow([''] + arrays_axis)
-            for q, s in zip(queries_axis, scores):
+            for q, s in zip(arrays_axis, scores):
                 spamwriter.writerow([q] + s)

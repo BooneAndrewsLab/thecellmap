@@ -758,6 +758,7 @@
                 if (!isInitializing) {
                     showRegions = false;
                     clearDrawnRegions();
+                    applyAnnotationColors();
                 }
                 
                 opts.loadedDataset = null;
@@ -812,6 +813,8 @@
                         }
                         var annotCallback = function() {
                             sigInst.iterNodes(function(node) {
+                                if (node.pin) return;
+                                
                                 var strain = getStrain(node.id), hidden = true, nodeTerm;
                                 
                                 for (term in data.terms) {
@@ -830,7 +833,38 @@
                     }
                     
                     rebuildLegend();
+                    
+                    if (opts.datasets[2]) {
+                        $.ajax({
+                            url : opts.datasets[2].url,
+                            dataType : 'json',
+                            async : false,
+                            success : function(data) {
+                                data.sort(function(e1, e2) {
+                                    if (e1.w < e2.w) return 1;
+                                    if (e1.w > e2.w) return -1;
+                                    return 0;
+                                });
+                                
+                                for (e in data) {
+                                    var edge = data[e];
+                                    if (!nodeExists(edge.s) && getNode(edge.t)) {
+                                        sigInst.addNode(edge.s);
+                                        var addedNode = getNode(edge.s), mostCorr = getNode(edge['t']);
+                                        addedNode.label = 'PIN'
+                                        addedNode.size = 2;
+                                        addedNode.x = mostCorr.x;
+                                        addedNode.y = mostCorr.y;
+                                        addedNode.pin = true;
+                                        break;
+                                    }
+                                }
+                            },
+                            error: function() {},
+                        });
+                    }
                 }
+                
                 getParser(layout.parser)({
                     jq: $, sigInst: sigInst, url: layout.url, vizdata: vizdata, cb: layoutCallback, state: state
                 });
@@ -955,6 +989,7 @@
                     window.addEventListener('resize', function() {
                         $('#region_canvas').attr('width', $(".sigma_edges_canvas").width());
                         $('#region_canvas').attr('height', $(".sigma_edges_canvas").height());
+                        drawRegions();
                     });
                 }
                 
@@ -964,7 +999,9 @@
                 for (r in regionGroup['nodes']) {
                     var color = regionGroup['colorPalette'][r], nodes = regionGroup['nodes'][r];
                     
+                    ctx.strokeStyle = '#' + color;
                     ctx.fillStyle = '#' + color;
+                    ctx.lineWidth = 2;
 //                    ctx.globalAlpha = 0.4;
                     ctx.beginPath();
                     ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
@@ -973,9 +1010,10 @@
                     
                     nodes.push(nodes[0])
                     for (var i = 0; i < nodes.length - 1; i++) {
+                        ctx.stroke();
                         n1 = nodes[i], n2 = nodes[i + 1];
                         dx = (n2.displayX - n1.displayX)/2, dy = (n2.displayY - n1.displayY)/2, angle = Math.atan(dx/dy);
-                        dr = Math.sqrt(dx*dx + dy*dy) / 2;
+                        dr = Math.sqrt(dx*dx + dy*dy) * 2/3;
                         
                         if (dx > 0) {
                             ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.cos(Math.PI/2 - angle), n1.displayY + dy - dr*Math.sin(Math.PI/2 - angle), n2.displayX, n2.displayY);
@@ -985,9 +1023,9 @@
                             ctx.quadraticCurveTo(n1.displayX + dx - dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy + dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
                         }
                     }
-                    
+                    ctx.stroke();
                     ctx.closePath();
-                    ctx.fill();
+//                    ctx.fill();
                 }
             }
             
@@ -1003,7 +1041,7 @@
                 var id = state.getProperty("annotation"), terms = {}, strain = [], mapStrain = {};
                 //select only visible strains
                 sigInst.iterNodes(function(node) {
-                    if (!node.hidden) {
+                    if (!node.hidden && !node.pin) {
                         strain.push(getStrain(node.id));
                     }
                 });
@@ -1083,9 +1121,11 @@
             function applyAnnotationColors() {
                 var data = vizdata[state.getProperty("annotation")], strain, annot;
                 sigInst.iterNodes(function(n) {
+                    if (n.pin) return;
+                    
                     strain = getStrain(n.id);
                     annot = data.map[strain.orf];
-                    if (annot != undefined) {
+                    if (annot != undefined && !showRegions) {
                         if (annot.length == 1)
                             n.color = $.cookie(data.terms[annot[0]].name) == undefined ? data.colorPalette[data.terms[annot[0]].idx] : $.cookie(data.terms[annot[0]].name);
                         else
@@ -1198,7 +1238,7 @@
                 
                 var layoutButton = $("#btn-layout");
                 
-                if (countVisibleEdges() > 7000) {
+                if (countVisibleEdges() > 7000 && !isInitializing) {
                     alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + countVisibleEdges());
                     return;
                 }
@@ -1213,7 +1253,7 @@
                 });
                 
                 sigInst.iterNodes(function(node) {
-                    if (node.id.indexOf('tmp') != -1) {
+                    if (node.id.indexOf('tmp') != -1 || node.pin) {
                         node.hidden = node._hidden = true;
                     }
                 });
@@ -1235,8 +1275,10 @@
                         },
                         attraction_multiplier: $("#layout-slider-att").val() || 50,
                         repulsion_multiplier: $("#layout-slider-rep").val() || 1,
-                        edgeFilter: function(edge) { return edge.weight > 0; },
+                        edgeFilter: function(edge) { return edge.weight > 0.2; },
                     };
+                    
+                    
                     switch(layoutType || $(this).attr('data-layout-type') || 'force') {
                     case 'gi':
                         lopts.edges = [];
@@ -1519,6 +1561,7 @@
                 if (!isInitializing) {
                     showRegions = false;
                     clearDrawnRegions();
+                    applyAnnotationColors();
                 }
                 
                 /* Resets big red nodes */
@@ -1541,6 +1584,11 @@
                 }
                 
                 sigInst.iterNodes(function(node) {
+                    if (node.pin) {
+                        node.hidden = node._hidden = true;
+                        return
+                    }
+                    
                     strain = getStrain(node.id);
                     if (!localSelected.hasOwnProperty(strain.id)) {
                         node._hidden = node.hidden = true;
@@ -1599,6 +1647,8 @@
                         edge.target.visibleDegree--;
                     }
                 }).iterNodes(function(node) {
+                    if (node.pin) return;
+                    
                     strain = getStrain(node.id);
                     node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.id + "") == -1); // either we manually hid the node or it's not connected to anything
                 });
@@ -1982,6 +2032,8 @@
                     var stateAnnot = state.getProperty("annotation");
                     var data = vizdata[stateAnnot], strain, annot;
                     sigInst.iterNodes(function(n) {
+                        if (n.pin) return;
+                        
                         strain = getStrain(n.id);
                         annot = data.map[strain.orf];
                         if (annot != undefined) $.removeCookie(data.terms[annot[0]].name);
@@ -2179,7 +2231,8 @@
                         }
                     } else {
                         showRegions = false;
-                        clearDrawnRegions(); 
+                        clearDrawnRegions();
+                        applyAnnotationColors();
                         
                         if (selection.length == 1 && state.getProperty("dataset") == 0) {
                             if (state.getProperty("annotation") == "None") loadAnnotation("SAFE");
@@ -3159,7 +3212,7 @@
                  ).bind('ctrlclickedges', onEdgesContext
                  ).bind('downnodes', function() {
                      clearDrawnRegions();
-                 });;
+                 });
 //                 ).bind('upedges', function(targeted) {
 //                     if (!clicking.wasDragging) {
 //                         onEdgesClick(targeted);
@@ -3416,6 +3469,8 @@
                         
                         var moveOn = true;
                         sigInst.iterNodes(function(node) {
+                            if (node.pin) return;
+                            
                             strain = getStrain(node.id);
                             if ($.inArray(strain.id + "", selected.selected) >= 0) {
                                 node.selected = true;
