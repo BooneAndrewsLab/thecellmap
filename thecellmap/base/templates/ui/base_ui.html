@@ -10,9 +10,37 @@ $('.vizualization-ui').ready(function() {
 });
 </script>
 
+<div class="bottom-right" >
+  <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button style-icon-button" data-toggle="modal" data-target="#modal-style"></span>
+</div>
+
+<div class="bottom-left">
+  <div class="btn-group btn-group-datasets hidden" data-simple-step="2">
+    <div class="image-datasets" data-toggle="tooltip" title="Switch to genetic interaction data" data-placement="top" data-delay="0">
+      <label class="image-label">Genetic Interactions</label>
+      <img data-selection-constraint data-selection-ls="6" data-selection-gt="0" src="{% static 'images/interactions.png' %}" class="image-dataset-icon" id="image-correlation" data-dataset="1">
+    </div>
+    <div class="image-datasets hidden" data-toggle="tooltip" title="Switch to correlation data" data-placement="top" data-delay="0">
+      <label class="image-label">Correlations</label>
+      <img data-selection-constraint data-selection-ls="6" data-selection-gt="0" src="{% static 'images/correlations.png' %}" class="image-dataset-icon" id="image-interaction" data-dataset="0">
+    </div>
+  </div>
+</div>
+
 <div class="hidden" id="copy-area">Selected Genes</div>
 
-<div id="alerts-panel"></div>
+<div class="panel panel-default hidden" id="panel-alerts"></div>
+
+<div class="panel panel-default" id="panel-legend">
+  <div class="panel-heading" id="legend-handle">
+    <!-- <button type="button" class="close" id="btn-legend-close">&times;</button> -->
+    <h4 class="modal-title">Legend</h4>
+  </div>
+  <div class="panel-body" id="legend-body">
+    <ul id="list-annotation-legend">
+    </ul>
+  </div>
+</div>
 
 <div class="modal fade" id="modal-style" tabindex="-1" role="dialog" aria-labelledby="modal-style-label"
   aria-hidden="true">
@@ -78,19 +106,11 @@ $('.vizualization-ui').ready(function() {
     <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
     <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li>
     <li class="divider"></li>
-    <li><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li>
-    <li data-selection-constraint data-selection-ls="6" data-selection-gt="1"><a id="context-nodes-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions </a></li>
+    <li data-selection-constraint data-selection-ls="6"><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li>
   </ul>
 </div>
 
-<div id="contextmenu-edge-container" class="dropdown clearfix contextmenu" style="display: none;">
-  <ul id="contextmenu-edge" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
-    <li class="disabled"><a id="contextmenu-edge-count"></a></li>
-    <li><a id="context-edge-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions driving this correlation </a></li>
-  </ul>
-</div>
-
-<div class="modal fade" id="edit-node-modal" tabindex="-1" role="dialog" aria-labelledby="edit-node-modal-label"
+<div class="modal fade" id="modal-edit-node" tabindex="-1" role="dialog" aria-labelledby="edit-node-modal-label"
   aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -180,18 +200,17 @@ $('.vizualization-ui').ready(function() {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary modal-confirm">Confirm</button>
+        <button type="button" class="btn btn-primary modal-confirm" id="edit-node-confrim">Confirm</button>
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="rotation-modal" tabindex="-1" role="dialog" aria-labelledby="rotation-modal-label" 
-  aria-hidden="true">
+<div class="modal fade" id="modal-rotation" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header" id="rotation-modal-label">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
         <h4 class="modal-title">Rotate graph by an arbitrary angle</h4>
       </div>
       <div class="modal-body">
@@ -209,19 +228,8 @@ $('.vizualization-ui').ready(function() {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary modal-confirm">Rotate</button>
+        <button type="button" class="btn btn-primary modal-confirm" id="rotate-confirm">Rotate</button>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="panel panel-default" id="legend">
-  <div class="panel-heading" id="legend-handle">
-    <!-- <button type="button" class="close" id="btn-legend-close">&times;</button> -->
-    <h4 class="modal-title">Legend</h4>
-  </div>
-  <div class="panel-body">
-    <ul id="legend-list">
-    </ul>
   </div>
 </div>

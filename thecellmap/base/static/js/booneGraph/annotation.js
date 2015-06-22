@@ -1,0 +1,269 @@
+define([
+    'jquery',
+    'underscore',
+    'backbone',
+    
+    'tinyColor',
+    'utils',
+    
+    'annotationModel',
+    'regionGroupModel',
+    
+    'pickAColor',
+    'jquery.cookie',
+], function($, _, Backbone, TinyColor,
+    Utils,
+    AnnotationModel, RegionGroupModel) {
+    window.tinycolor = TinyColor;
+    var applyAnnotationColors = function() {
+        var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;;
+        if (vizdata['regionGroups'].get(state.get('annotation')) && state.get('showRegions')) return;
+        sigInst.iterNodes(function(n) {
+            if (n.pin) return;
+            strain = Utils.getStrain(n.id);
+            annot = data.get('map')[strain.get('orf')];
+            if (annot != undefined) {
+                if (annot.length == 1) {
+                    n.color = $.cookie(data.get('terms')[annot[0]].name) == undefined ? 
+                            data.get('colorPalette')[data.get('terms')[annot[0]].idx] : $.cookie(data.get('terms')[annot[0]].name);
+                } else {
+                    n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
+                }
+            } else {
+                n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
+            }
+        }).draw();
+    }
+    
+    var applyLegendColor = function(id, color) {
+        $(".legend-box").each(function(){
+            if (id == $(this).data("idx")) $(this).css("background-color", color);
+        });
+    }
+    
+    var rebuildLegend = function() {
+        $('#style-annotation').empty();
+        $('#list-annotation-legend').empty();
+        $('#style-annotation').append('<table class="annotation-table"><thead><tr>\
+              <th style="width: 1%;"></th>\
+              <th>Annotation</th></tr></thead>\
+          <tbody id="style-annotation-table"></tbody></table>');
+        var id = state.get('annotation'), terms = {}, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
+        sigInst.iterNodes(function(node) {
+            if (!node.hidden && !node.pin) strains.push(Utils.getStrain(node.id));
+        });
+        if (strains.length) {
+            _.each(strains, function(s) {
+                mapStrain = annotation.get('map')[(s.get('orf'))];
+                if (mapStrain) {
+                    if (mapStrain.length == 1) {
+                        terms[mapStrain[0]] = annotation.get('terms')[mapStrain[0]];
+                    } else {
+                        terms[-2] = annotation.get('terms')[-2];
+                    }
+                } else {
+                    terms[-1] = annotation.get('terms')[-1];
+                }
+            });
+        } else {
+            terms[-1] = annotation.get('terms')[-1];
+        }
+        _.each(terms, function(term) {
+            if ($.cookie(term.name) == undefined) {
+                var color = annotation.get('colorPalette')[term.idx];
+            } else {
+                var color = $.cookie(term.name);
+            }
+//            restrict name length, keep all annotation in one line within legend
+//            if (name.length > 30) {
+//                name = name.substring(0, 30) + "...";
+//            }
+            $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
+                    <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
+                    <td>' + term.name + '</td></td></tr>');
+            $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + term.alias + '</span></li>');
+            $('#list-annotation-legend .box-annotation-color').last().css("background-color", color);
+        });
+        
+        $('#style-annotation-table .pick-a-color').pickAColor({showHexInput: false, showSavedColors: false});
+        $("#style-annotation-table .pick-a-color").on('change', function() {
+            var term, color = '#' + $(this).val(), a = $(this).closest("tr").data("term");
+            for (n in terms) {
+                term = annotation.get('terms')[n];
+                if (terms[n].idx == a) break;
+            }
+            if (n != -1 && n != -2) {
+                $.cookie(term.name, color);
+            } else {
+                annotation.get('colorPalette')[term.idx] = color;
+            }
+            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
+            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
+            applyAnnotationColors();
+            applyLegendColor(term.idx, color);
+        });
+    }
+    
+    var loadAnnotation = function(id) {
+        var annotations = vizdata['annotations'];
+        state.set('annotation', id);
+        if (!annotations.get(id)) {
+            if (id == 'None') {
+                annotations.add(new AnnotationModel());
+            } else {
+                opts['annotations'].forEach(function(annotation) {
+                    if (annotation['name'] === id) {
+                        $.ajax({
+                            url : annotation['url'],
+                            dataType : 'json',
+                            async : false,
+                            success : function(data) {
+                                var addedAnnot = data;
+                                addedAnnot.id = id;
+                                
+                                var i = 0, n, colors = [];
+                                for (n in addedAnnot.terms) {
+                                    colors.push(addedAnnot.terms[n].color);
+                                    if (colors[i].indexOf('#' == -1)) colors[i] = '#' + colors[i];
+                                    
+                                    addedAnnot.terms[n] = {
+                                        idx: i++,
+                                        id: n,
+                                        name: addedAnnot.terms[n].name,
+                                        orig_name: addedAnnot.terms[n].name,
+                                        alias: addedAnnot.terms[n].alias,
+                                    };
+                                }
+                                
+                                $.extend(addedAnnot.terms, {
+                                    '-1': {id: -1, idx: i, name: 'Unannotated', orig_name: 'Unannotated', alias: 'Unannotated'},
+                                    '-2': {id: -2, idx: i+1, name: 'Multi-function', orig_name: 'Multi-function', alias: 'Multi-function'}
+                                });
+                                
+                                addedAnnot['defaultColor'] = data['defaultColor'] || opts['defaultNodeColor'];
+                                addedAnnot['multifunctionNodeColor'] = data['multifunctionNodeColor'] || opts['multifunctionNodeColor'];
+                                addedAnnot['colorPalette'] = colors.concat([opts['defaultNodeColor'], opts['multifunctionNodeColor']]);
+                                
+                                annotations.add(new AnnotationModel(addedAnnot));
+                            },
+                        });
+                    }
+                });
+            }
+        }
+        $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
+        $('#btn-group-annotation li').removeClass('active');
+        $('#btn-group-annotation li a').each(function() {
+            if ($(this).html() == id) $(this).parent().addClass('active');
+        })
+        loadRegion(id);
+        rebuildLegend();
+        $('#btn-legend').click();
+    }
+    
+    var clearRegions = function() {
+        var canvas = $('#canvas-regions');
+        if (canvas.length) {
+            ctx = canvas[0].getContext('2d');
+            ctx.clearRect(0, 0, canvas.width(), canvas.height());
+        }
+    }
+    var drawRegions = function() {
+        clearRegions();
+        if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
+        if (!$('#canvas-regions').length) {
+            var canvas = $('canvas:first').clone();
+            canvas.attr('id', 'canvas-regions');
+            $('#network-container').prepend(canvas);
+            
+            window.addEventListener('resize', function() {
+                $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
+                $('#canvas-regions').attr('height', $('.sigma_edges_canvas').height());
+                drawRegions();
+            });
+        }
+        var canvas = $('#canvas-regions'), ctx = canvas[0].getContext('2d');
+        var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
+        for (r in regionGroup.get('regions')) {
+            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r];
+            ctx.strokeStyle = '#' + color;
+            ctx.fillStyle = '#' + color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.4;
+            ctx.beginPath();
+            ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
+            var n1, n2, dx, dy, angle, dr;
+            nodes.push(nodes[0])
+            for (var i = 0; i < nodes.length - 1; i++) {
+                ctx.stroke();
+                n1 = nodes[i], n2 = nodes[i + 1];
+                dx = (n2.displayX - n1.displayX)/2, dy = (n2.displayY - n1.displayY)/2, angle = Math.atan(dx/dy);
+                dr = Math.sqrt(dx*dx + dy*dy) * 2/3;
+                
+                if (dx > 0) {
+                    ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.cos(Math.PI/2 - angle), n1.displayY + dy - dr*Math.sin(Math.PI/2 - angle), n2.displayX, n2.displayY);
+                } else if (dy > 0){
+                    ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy - dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
+                } else {
+                    ctx.quadraticCurveTo(n1.displayX + dx - dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy + dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
+                }
+            }
+            ctx.stroke();
+            ctx.closePath();
+//            ctx.fill();
+        }
+    }
+    var loadRegion = function(id) {
+        var regionGroups = vizdata['regionGroups'], toApply = true;
+        clearRegions();
+        opts['regionGroups'].forEach(function(regionGroup) {
+            if (regionGroup.name === id) {
+                $.ajax({
+                    url : regionGroup.url,
+                    async : true,
+                    success : function(data) {
+                        if ($.isEmptyObject(data)) return;
+                        
+                        var addedGroup = {
+                            id: id,
+                            colorPalette: [], 
+                            regions: []
+                        };
+                        
+                        for (r in data) {
+                            var nodes = [], color, n;
+                            for (n in data[r]) {
+                                var node = Utils.getNode(data[r][n]);
+                                if (node) {
+                                    nodes.push(node);
+                                } else {
+                                    color = data[r][n];
+                                }
+                            }
+                            addedGroup['colorPalette'].push(color);
+                            addedGroup['regions'].push(nodes);
+                        }
+                        
+                        regionGroups.add(new RegionGroupModel(addedGroup));
+                        drawRegions();
+                    },
+                }).always(function() {
+                    applyAnnotationColors();
+                });
+                toApply = false;
+            }
+        });
+        if (toApply) applyAnnotationColors();
+    }
+    
+    return {
+        loadAnnotation: loadAnnotation,
+        applyAnnotationColors: applyAnnotationColors,
+        rebuildLegend: rebuildLegend,
+        loadRegion: loadRegion,
+        clearRegions: clearRegions,
+        drawRegions: drawRegions,
+    };
+});

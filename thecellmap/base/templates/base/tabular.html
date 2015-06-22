@@ -6,9 +6,8 @@
 
 {% block css %}
 {{ block.super }}
-  <link href="{% static 'css/progress.css' %}" rel="stylesheet">
+  <!-- <link href="{% static 'css/progress.css' %}" rel="stylesheet"> -->
   <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
-  <link href="{% static 'css/filetypes.css' %}" rel="stylesheet">
   <link href="{% static 'css/bootstrap-sortable.css' %}" rel="stylesheet">
   <link href="{% static 'css/tabdrop.css' %}" rel="stylesheet">
   <style>
@@ -36,6 +35,14 @@
     table tbody tr td:first-child:hover {
         color: #444;
     }
+    
+    #search-bar {
+        padding: 20px;
+    }
+    
+    #search-bar span {
+        top: 0px;
+    }
   </style>
 {% endblock css %}
 
@@ -49,348 +56,336 @@
 
 {% block js %}
 {{ block.super }}
-  <script src="{% static 'js/libs/utils.js' %}"></script>
-  <script src="{% static 'js/libs/moment.min.js' %}"></script>
-  <script src="{% static 'js/libs/bootstrap-sortable.js' %}"></script>
-  <script src="{% static 'js/libs/bootstrap-tabdrop.js' %}"></script>
   <script type="text/javascript">
-  (function($) {
-    function add_to_table(tbody, data, val_idx) {
-      if (data.length == 0) return;
-      var row, ele = tbody.find('.row-more');
-      var ctf =  data[0][val_idx] < 0 ? -1 : 1;
-      var func = data[0][val_idx] < 0 ? Math.max : Math.min;
-      
-      data.forEach(function (line) {
-          row = '';
-          line.forEach(function(val) {
-              row += '<td data-value="' + val + '">' + val + '</td>';
-          });
-          ctf = func(line[val_idx], ctf);
-          ele.before('<tr>' + row + '</tr>');
-      });
-      
-      ele.find('.load-more').data('cutoff', ctf);
-    }
+    require.config({
+        paths: {
+            'bootstrap-sortable': "{% static 'js/libs/bootstrap-sortable' %}",
+            'bootstrap-tabdrop': "{% static 'js/libs/bootstrap-tabdrop' %}",
+            'select2': "{% static 'js/libs/select2' %}",
+        },
+        shim: {
+            'bootstrap': ['jquery'],
+            'select2': ['jquery'],
+            'bootstrap-sortable': ['bootstrap'],
+            'bootstrap-tabdrop': ['bootstrap'],
+        }
+    });
     
-    function load_strain(target) {
-        if (isEmpty(target) && !target.hasClass('data-loading')) {
-            var node_id = parseInt(target.data('node'));
-            target.addClass('data-loading');
-            target.append($('#spinner>div').clone());
-            
-            $.get(node_id + "/", function(d) {
-                target.append('<div class="row"> \
-                        <div class="col-md-2"> \
-                          <ul class="nav nav-pills nav-stacked data-type-menu"> \
-                            <li class="active"><a href="#c' + node_id + '" data-toggle="tab" title="">Correlations</a></li> \
-                            <li><a href="#s' + node_id + '" data-toggle="tab" title="">Genetic interactions</a></li> \
-                            <li class="dropdown"> \
-                              <a class="dropdown-toggle" data-toggle="dropdown" href="#"> \
-                                Download <span class="caret"></span> \
-                              </a> \
-                              <ul class="dropdown-menu download-data"> \
-                                <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Current gene</a></li> \
-                                {% if strains|length > 1 %}<li{% if strains|length > 30 %} data-toggle="tooltip" title="Download limited to less than 30 nodes" data-placement="right"{% endif %}><a href="#" data-downloadtype="all"{% if strains|length > 30 %} class="disabled"{% endif %}>All genes</a></li>{% endif %} \
+    require([
+        'jquery',
+        'module',
+        'bootstrap-sortable',
+        'bootstrap-tabdrop',
+        'select2',
+    ], function($, Settings, module) {
+        var add_to_table = function(tbody, data, val_idx) {
+          if (data.length == 0) return;
+          var row, ele = tbody.find('.row-more');
+          var ctf =  data[0][val_idx] < 0 ? -1 : 1;
+          var func = data[0][val_idx] < 0 ? Math.max : Math.min;
+          data.forEach(function (line) {
+              row = '';
+              line.forEach(function(val) {
+                  row += '<td data-value="' + val + '">' + val + '</td>';
+              });
+              ctf = func(line[val_idx], ctf);
+              ele.before('<tr>' + row + '</tr>');
+          });
+          
+          ele.find('.load-more').data('cutoff', ctf);
+        }
+        
+        var load_strain = function(target) {
+            if (!$.trim(target.html()) && !target.hasClass('data-loading')) {
+                var node_id = parseInt(target.data('node'));
+                target.addClass('data-loading');
+                target.append($('#spinner>div').clone());
+                
+                $.get(node_id + "/", function(d) {
+                    target.append('<div class="row"> \
+                            <div class="col-md-2"> \
+                              <ul class="nav nav-pills nav-stacked data-type-menu"> \
+                                <li class="active"><a href="#c' + node_id + '" data-toggle="tab" title="">Correlations</a></li> \
+                                <li><a href="#s' + node_id + '" data-toggle="tab" title="">Genetic interactions</a></li> \
+                                <li class="dropdown"> \
+                                  <a class="dropdown-toggle" data-toggle="dropdown" href="#"> \
+                                    Download <span class="caret"></span> \
+                                  </a> \
+                                  <ul class="dropdown-menu download-data"> \
+                                    <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Current gene</a></li> \
+                                    {% if strains|length > 1 %}<li{% if strains|length > 30 %} data-toggle="tooltip" title="Download limited to less than 30 nodes" data-placement="right"{% endif %}><a href="#" data-downloadtype="all"{% if strains|length > 30 %} class="disabled"{% endif %}>All genes</a></li>{% endif %} \
+                                  </ul> \
+                                </li> \
                               </ul> \
-                            </li> \
-                          </ul> \
-                        </div> \
-                        <div class="col-md-10"> \
-                          <div class="tab-content"> \
-                            <div class="tab-pane active" id="c' + node_id + '"> \
-                              <div class="row"> \
-                                <div class="col-md-6 col-md-offset-3"> \
-                                  <div class="panel panel-default"> \
-                                    <div class="panel-heading"><h3 class="panel-title">Correlations</h3></div> \
-                                    <div class="panel-body"> \
-                                      <table class="table table-condensed table-striped sortable"> \
-                                        <thead> \
-                                          <tr> \
-                                            <th>ORF</th> \
-                                            <th>Allele</th> \
-                                            <th data-mainsort="true">Correlation</th> \
-                                          </tr> \
-                                        </thead> \
-                                        <tbody></tbody> \
-                                      </table> \
+                            </div> \
+                            <div class="col-md-10"> \
+                              <div class="tab-content"> \
+                                <div class="tab-pane active" id="c' + node_id + '"> \
+                                  <div class="row"> \
+                                    <div class="col-md-6 col-md-offset-3"> \
+                                      <div class="panel panel-default"> \
+                                        <div class="panel-heading"><h3 class="panel-title">Correlations</h3></div> \
+                                        <div class="panel-body"> \
+                                          <table class="table table-condensed table-striped sortable"> \
+                                            <thead> \
+                                              <tr> \
+                                                <th>ORF</th> \
+                                                <th>Allele</th> \
+                                                <th data-mainsort="true">Correlation</th> \
+                                              </tr> \
+                                            </thead> \
+                                            <tbody></tbody> \
+                                          </table> \
+                                        </div> \
+                                      </div> \
                                     </div> \
                                   </div> \
-                                </div> \
-                              </div> \
-                            </div> <!-- End of correlation tab pane --> \
-                            <div class="tab-pane" id="s' + node_id + '"> \
-                              <div class="row"> \
-                                <div class="col-md-6"> \
-                                  <div class="panel panel-danger"> \
-                                    <div class="panel-heading"><h3 class="panel-title">Significant negative genetic interactions</h3></div> \
-                                    <div class="panel-body"> \
-                                      <table class="table table-condensed table-striped score-neg sortable"> \
-                                        <thead> \
-                                          <tr> \
-                                            <th>ORF</th> \
-                                            <th>Allele</th> \
-                                            <th>Score</th> \
-                                            <th data-defaultsort="disabled">p-value</th> \
-                                          </tr> \
-                                        </thead> \
-                                        <tbody></tbody> \
-                                      </table> \
+                                </div> <!-- End of correlation tab pane --> \
+                                <div class="tab-pane" id="s' + node_id + '"> \
+                                  <div class="row"> \
+                                    <div class="col-md-6"> \
+                                      <div class="panel panel-danger"> \
+                                        <div class="panel-heading"><h3 class="panel-title">Significant negative genetic interactions</h3></div> \
+                                        <div class="panel-body"> \
+                                          <table class="table table-condensed table-striped score-neg sortable"> \
+                                            <thead> \
+                                              <tr> \
+                                                <th>ORF</th> \
+                                                <th>Allele</th> \
+                                                <th>Score</th> \
+                                                <th data-defaultsort="disabled">p-value</th> \
+                                              </tr> \
+                                            </thead> \
+                                            <tbody></tbody> \
+                                          </table> \
+                                        </div> \
+                                      </div> \
                                     </div> \
-                                  </div> \
-                                </div> \
-                                <div class="col-md-6"> \
-                                  <div class="panel panel-success"> \
-                                    <div class="panel-heading"><h3 class="panel-title">Significant positive genetic interactions</h3></div> \
-                                    <div class="panel-body"> \
-                                      <table class="table table-condensed table-striped score-pos sortable"> \
-                                        <thead> \
-                                          <tr> \
-                                            <th>ORF</th> \
-                                            <th>Allele</th> \
-                                            <th>Score</th> \
-                                            <th data-defaultsort="disabled">p-value</th> \
-                                          </tr> \
-                                        </thead> \
-                                        <tbody></tbody> \
-                                      </table> \
+                                    <div class="col-md-6"> \
+                                      <div class="panel panel-success"> \
+                                        <div class="panel-heading"><h3 class="panel-title">Significant positive genetic interactions</h3></div> \
+                                        <div class="panel-body"> \
+                                          <table class="table table-condensed table-striped score-pos sortable"> \
+                                            <thead> \
+                                              <tr> \
+                                                <th>ORF</th> \
+                                                <th>Allele</th> \
+                                                <th>Score</th> \
+                                                <th data-defaultsort="disabled">p-value</th> \
+                                              </tr> \
+                                            </thead> \
+                                            <tbody></tbody> \
+                                          </table> \
+                                        </div> \
+                                      </div> \
                                     </div> \
                                   </div> \
                                 </div> \
                               </div> \
                             </div> \
-                          </div> \
-                        </div> \
-                      </div>');
-                
-                target.find('li[data-toggle="tooltip"]').tooltip();
-                
-                $('#c' + node_id + ' tbody').append(
-                        '<tr class="row-more"><td colspan="3" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="c" data-cutoff="1">\
-                        Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
-                add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
-                
-                $('#s' + node_id + ' tbody').append(
-                        '<tr class="row-more"><td colspan="4" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="s" data-cutoff="1">\
-                        Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
-                $('#s' + node_id + ' .score-neg .load-more').data('cutoff', -1);
-                add_to_table($('#s' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
-                add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2);
-                
-                target.removeClass('data-loading');
-                target.find('.bubblingG').remove();
-                $.bootstrapSortable(true);
-                $(".download-data a").click(function(evt) {
-                    switch ($(this).attr('data-downloadtype')) {
-                        case "all":
-                            window.location.href = '../dl/' + location.search;
-                            break;
-                        case "node":
-                            window.location.href = '../dl/?n=' + $(this).attr('data-node');
-                            break
-                    }
+                          </div>');
                     
-                    evt.preventDefault();
-                });
-                
-                target.find('.load-more').click(function() {
-                    var clicked = $(this);
-                    var data = {};
-                    data[clicked.data('ds')] = clicked.data('cutoff');
-                    var id = parseInt(clicked.closest('.tab-pane[data-node]').data('node'))
-                    $.get(id + "/", data, function(d) {
-                        add_to_table(clicked.closest('tbody'), d, 2);
-                        clicked.closest('tr').remove();
-                        update_links();
+                    target.find('li[data-toggle="tooltip"]').tooltip();
+                    
+                    $('#c' + node_id + ' tbody').append(
+                            '<tr class="row-more"><td colspan="3" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="c" data-cutoff="1">\
+                            Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                    add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
+                    
+                    $('#s' + node_id + ' tbody').append(
+                            '<tr class="row-more"><td colspan="4" class="text-center"><button class="btn btn-primary ladda-button load-more" data-ds="s" data-cutoff="1">\
+                            Load all<span class="glyphicon glyphicon-download"></span> </button></td></tr>');
+                    $('#s' + node_id + ' .score-neg .load-more').data('cutoff', -1);
+                    add_to_table($('#s' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
+                    add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2);
+                    
+                    target.removeClass('data-loading');
+                    target.find('.bubblingG').remove();
+                    $.bootstrapSortable(true);
+                    $(".download-data a").click(function(evt) {
+                        switch ($(this).attr('data-downloadtype')) {
+                            case "all":
+                                window.location.href = '../dl/' + location.search;
+                                break;
+                            case "node":
+                                window.location.href = '../dl/?n=' + $(this).attr('data-node');
+                                break
+                        }
+                        evt.preventDefault();
                     });
-                });
-                
-                update_links();
-            });
-        }
-    };
-    
-    function update_links() {
-        $("table tbody tr td:first-child:not([colspan=3]):not([colspan=4])").click(function() {
-            window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).data('value'), '_blank');
-        });
-    }
-    
-    function search() {
-        $.getJSON('{{ nodes_url }}', function(data) {
-            strainMap = {};
-            autocomp = [];
-            
-            var strain;
-            var tokens;
-            for (i in data.nodes) {
-                strain = data.nodes[i];
-                strain.o = strain.orf.toLowerCase();
-                tokens = [strain.o];
-                strain.n = strain.name && strain.name.toLowerCase();
-                if (!!strain.n) tokens.push(strain.n);
-                strain.a = strain.alel && strain.alel.toLowerCase();
-                if (!!strain.a) tokens.push(strain.a);
-                
-                strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
-                strain.terms = strain.terms || tokens;
-                
-                strainMap[strain.id] = strain;
-                
-                autocomp.push({
-                    value: strain.verboseName,
-                    tokens: strain.terms,
-                    id: strain.id
+                    target.find('.load-more').click(function() {
+                        var clicked = $(this);
+                        var data = {};
+                        data[clicked.data('ds')] = clicked.data('cutoff');
+                        var id = parseInt(clicked.closest('.tab-pane[data-node]').data('node'))
+                        $.get(id + "/", data, function(d) {
+                            add_to_table(clicked.closest('tbody'), d, 2);
+                            clicked.closest('tr').remove();
+                            update_links();
+                        });
+                    });
+                    update_links();
                 });
             }
-            
-            var tokenizing = false;
-            $("input.gene-search-input").select2({
-                multiple: true,
-                minimumInputLength: 2,
-                containerCssClass: 'form-control', 
-                placeholder: 'Start typing genes or annotations...',
-                allowClear: true,
-                width: '350px',
-                tokenSeparators: [",", " ", "\t", "\n"],
-                initSelection: function (element, callback) {
-                    var id = $(element).val(), strain, result = [];
-                    id.split(",").forEach(function(x) {
-                        if (x !== "") {
-	                        strain = strainMap[x];
-	                        result.push({
-	                            text: strain.verboseName,
-	                            id: strain.id
-	                        });
-                        }
+        };
+        
+        var update_links = function() {
+            $("table tbody tr td:first-child:not([colspan=3]):not([colspan=4])").click(function() {
+                window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).data('value'), '_blank');
+            });
+        }
+        
+        var initSelect2 = function() {
+            $.getJSON("{{ nodes_url }}", function(data) {
+                var strainMap = {}, autocomp = [], strain, tokens;
+                for (i in data.nodes) {
+                    strain = data.nodes[i];
+                    strain.o = strain.orf.toLowerCase();
+                    tokens = [strain.o];
+                    strain.n = strain.name && strain.name.toLowerCase();
+                    if (!!strain.n) tokens.push(strain.n);
+                    strain.a = strain.alel && strain.alel.toLowerCase();
+                    if (!!strain.a) tokens.push(strain.a);
+                    strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
+                    strain.terms = strain.terms || tokens;
+                    strainMap[strain.id] = strain;
+                    autocomp.push({
+                        value: strain.verboseName,
+                        tokens: strain.terms,
+                        id: strain.id
                     });
-                    callback(result);
-                },
-                tokenizer: function (input, selection, selectCallback, opts) {
-                    var original = input, // store the original so we can compare and know if we need to tell the search to update its text
-                    dupe = false, // check for whether a token we extracted represents a duplicate selected choice
-                    token, // token
-                    index, // position at which the separator was found
-                    i, l, // looping variables
-                    separator; // the matched separator
-                    
-                    if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-                    
-                    tokenizing = true;
-                    var addedNew = false;
-                    while (true) {
-                        index = -1;
-                        
-                        for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
-                            separator = opts.tokenSeparators[i];
-                            index = input.indexOf(separator);
-                            if (index >= 0) break;
-                        }
-                        
-                        if (index < 0) break; // did not find any token separator in the input string, bail
-                        
-                        token = input.substring(0, index);
-                        input = input.substring(index + separator.length);
-                        
-                        if (token.length > 0) {
-                            var tokens = opts.createSearchChoice.call(this, token, selection);
-                            if (tokens !== undefined && tokens !== null) {
-                                if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) {
-                                    tokens = [tokens];
-                                }
-                                
-                                tokens.forEach(function(token) {
-                                    if (opts.id(token) !== undefined && opts.id(token) !== null) {
-                                        dupe = false;
-                                        for (i = 0, l = selection.length; i < l; i++) {
-                                            if (opts.id(token) == opts.id(selection[i])) {
-                                                dupe = true; break;
-                                            }
-                                        }
-                                        
-                                        if (!dupe) {
-                                            selectCallback(token);
-                                            addedNew = true;
-                                        }
-                                    }
+                }
+                
+                var tokenizing = false;
+                $("input.gene-search-input").select2({
+                    multiple: true,
+                    minimumInputLength: 2,
+                    containerCssClass: 'form-control', 
+                    placeholder: 'Start typing genes or annotations...',
+                    allowClear: true,
+                    width: '350px',
+                    tokenSeparators: [",", " ", "\t", "\n"],
+                    initSelection: function (element, callback) {
+                        var id = $(element).val(), strain, result = [];
+                        id.split(",").forEach(function(x) {
+                            if (x !== "") {
+                                strain = strainMap[x];
+                                result.push({
+                                    text: strain.verboseName,
+                                    id: strain.id
                                 });
                             }
-                        }
-                    }
-                    
-                    tokenizing = false;
-                    if (addedNew) {
-                        this.triggerChange({foo: "bar"});
-                    }
-                    if (original!==input) return input;
-                },
-                createSearchChoice: function(term) {
-                    var wildcard = term.indexOf('*') != -1;
-                    term = term.replace('*', '').toLowerCase();
-                    
-                    if (term.length > 0) {
-                        var results = [], seen = {};
-                        
-                        autocomp.forEach(function(node) {
-                            node.tokens.forEach(function(token) {
-                                if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
-                                    results.push({id: node.id, text: node.value });
-                                    seen[node.id] = 0;
-                                    return;
-                                }
-                            });
                         });
+                        callback(result);
+                    },
+                    tokenizer: function (input, selection, selectCallback, opts) {
+                        var original = input, // store the original so we can compare and know if we need to tell the search to update its text
+                        dupe = false, // check for whether a token we extracted represents a duplicate selected choice
+                        token, // token
+                        index, // position at which the separator was found
+                        i, l, // looping variables
+                        separator; // the matched separator
                         
-                        if (results.length !== 0) return results;
-                    }
-                },
-                query: function(query) {
-                    if (query.term === undefined) {
-                        query.callback({results: []});
-                        return;
-                    }
-                    var data = {results: []};
-                    var term = query.term.replace('*', '').toLowerCase();
-                    
-                    autocomp.forEach(function(node) {
-                        if (query.term.length == 0){
-                            data.results.push({id: node.id, text: node.value });
-                        } else {
-                            for (var x in node.tokens) {
-                                if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
-                                    data.results.push({id: node.id, text: node.value });
-                                    break;
+                        if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
+                        
+                        tokenizing = true;
+                        var addedNew = false;
+                        while (true) {
+                            index = -1;
+                            for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
+                                separator = opts.tokenSeparators[i];
+                                index = input.indexOf(separator);
+                                if (index >= 0) break;
+                            }
+                            if (index < 0) break; // did not find any token separator in the input string, bail
+                            token = input.substring(0, index);
+                            input = input.substring(index + separator.length);
+                            if (token.length > 0) {
+                                var tokens = opts.createSearchChoice.call(this, token, selection);
+                                if (tokens !== undefined && tokens !== null) {
+                                    if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) tokens = [tokens];
+                                    tokens.forEach(function(token) {
+                                        if (opts.id(token) !== undefined && opts.id(token) !== null) {
+                                            dupe = false;
+                                            for (i = 0, l = selection.length; i < l; i++) {
+                                                if (opts.id(token) == opts.id(selection[i])) {
+                                                    dupe = true; break;
+                                                }
+                                            }
+                                            if (!dupe) {
+                                                selectCallback(token);
+                                                addedNew = true;
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         }
-                    });
-                    
-                    data.results = data.results.slice(0, 6);
-                    query.callback(data);
-                },
-                data: autocomp,
-            }).on('select2-selecting', function(e) {
-                var selected = e.val;
-                strain = strainMap[selected];
-                $('#strain-tabs').prepend('<li><a href="#tab'+strain.id+'" data-toggle="tab">'+strain.orf+' ('+strain.verboseName+')'+'</a></li>');
-                $('#strain-tabs-content').prepend('<div class="tab-pane" id="tab'+strain.id+'" data-node='+strain.id+'</div>');
-                $(".gene-search-input").select2("close");
-                e.preventDefault();
+                        tokenizing = false;
+                        if (addedNew) {
+                            this.triggerChange({foo: "bar"});
+                        }
+                        if (original!==input) return input;
+                    },
+                    createSearchChoice: function(term) {
+                        var wildcard = term.indexOf('*') != -1;
+                        term = term.replace('*', '').toLowerCase();
+                        if (term.length > 0) {
+                            var results = [], seen = {};
+                            autocomp.forEach(function(node) {
+                                node.tokens.forEach(function(token) {
+                                    if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+                                        results.push({id: node.id, text: node.value });
+                                        seen[node.id] = 0;
+                                        return;
+                                    }
+                                });
+                            });
+                            if (results.length !== 0) return results;
+                        }
+                    },
+                    query: function(query) {
+                        if (query.term === undefined) {
+                            query.callback({results: []});
+                            return;
+                        }
+                        var data = {results: []}, term = query.term.replace('*', '').toLowerCase();
+                        autocomp.forEach(function(node) {
+                            if (query.term.length == 0){
+                                data.results.push({id: node.id, text: node.value });
+                            } else {
+                                for (var x in node.tokens) {
+                                    if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
+                                        data.results.push({id: node.id, text: node.value });
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        data.results = data.results.slice(0, 6);
+                        query.callback(data);
+                    },
+                    data: autocomp,
+                }).on('select2-selecting', function(e) {
+                    var selected = e.val;
+                    strain = strainMap[selected];
+                    $('#strain-tabs').prepend('<li><a href="#tab' + strain.id + '" data-toggle="tab">' + strain.orf + ' (' + strain.verboseName + ')'+'</a></li>');
+                    $('#strain-tabs-content').prepend('<div class="tab-pane" id="tab' + strain.id + '" data-node=' + strain.id + '</div>');
+                    $('.gene-search-input').select2('close');
+                    e.preventDefault();
+                });
             });
-        });
-    }
-    
-    $(document).ready(function() {
-        search();
+        }
+        
+        initSelect2();
         $('.nav-pills').on('click', 'a', function(e) {
-            e.preventDefault();
             load_strain($($(this).attr('href')));
+            e.preventDefault();
         });
         
         load_strain($(".container .tab-pane.active"));
         $("#strain-tabs").tabdrop({text: "More Strains"});
     });
-  })(jQuery);
   </script>
 {% endblock js %}
 

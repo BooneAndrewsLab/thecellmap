@@ -8,7 +8,7 @@
     </div>
   </div>
   <div id="btn-group-download" class="btn-group">
-    <button id="btn-view" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button>
+    <button id="btn-view-tabular" type="button" class="btn btn-primary ladda-button" data-style="zoom-in">Get the data</button>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
@@ -28,13 +28,11 @@
   </div>
 </div>
 
-<div class="hidden" id="copy-area">Selected Genes</div>
-
 <div class="middle-right">
   <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label cutoff-label-max" style="visibility: hidden;">&nbsp;</button>
   
-  <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-ori="vertical" data-dir="rtl"></div>
-  <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-ori="vertical" style="display: none;"></div>
+  <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-orientation="vertical" data-direction="rtl"></div>
+  <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-orientation="vertical" style="display: none;"></div>
   
   <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"></button>
   
@@ -53,31 +51,29 @@
 
 <div class="top-right hidden-sm hidden-xs">
   <!-- <button type="button" class="btn btn-primary" id="btn-save-state">Save State</button> -->
-  <div id="btn-group-neighbourhood" class="btn-group" data-selection-constraint data-selection-gt="0" data-selection-type="visible" data-selection-class="hidden">
-    <button type="button" class="btn btn-primary dropdown-toggle ladda-button" data-toggle="dropdown"> Extract <span class="caret"></span></button>
+  <div id="btn-group-neighbourhood" class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle hidden" data-circular-constraint data-selection-constraint data-selection-gt="0" data-selection-class="hidden" data-toggle="dropdown"> Extract <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu">
-      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="0">Selected genes</a></li>
-      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="1">&nbsp; + 1st neighbours</a></li>
-      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="2">&nbsp; + 2nd neighbours</a></li>
-      <li><a href="#" data-toggle="download" data-type="neighbourhood" data-level="3">&nbsp; + 3rd neighbours</a></li>
-      <li class="divider"></li>
-      <li data-selection-constraint data-selection-gt="1" data-selection-lt="7"><a href="#" data-toggle="download" data-type="correlation-gi">Show genetic interactions</a></li>
+      <li><a href="#" data-toggle="download" data-level="0">Selected genes</a></li>
+      <li><a href="#" data-toggle="download" data-level="1">&nbsp; + 1st neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-level="2">&nbsp; + 2nd neighbours</a></li>
+      <li><a href="#" data-toggle="download" data-level="3">&nbsp; + 3rd neighbours</a></li>
     </ul>
   </div>
   
   <div id="btn-group-layout" class="btn-group">
-    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-layout-type="force" data-style="zoom-out" data-size="s">
+    <button id="btn-layout" type="button" class="btn btn-primary ladda-button" data-circular-constraint data-layout-type="force" data-style="zoom-out" data-size="s">
         <span class="ladda-label">Layout</span>
     </button>
-    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-circular-constraint data-toggle="dropdown">
       <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
       <li><a id="tool-layout-force" class="tool-layout" data-layout-type="force" href="#"> Force-directed layout </a></li>
-      <li><a id="tool-layout-force-plus" class="tool-layout" data-layout-type="force+" href="#"> Force-directed layout + (experimental) </a></li>
-      <li class="annotation-constraint disabled"><a id="tool-layout-annot" class="tool-layout" data-layout-type="annotation" href="#"> Annotation-directed layout </a></li>
-      <li class="dataset-constraint disabled"><a id="tool-layout-gi" class="tool-layout" data-layout-type="gi" href="#"> GI-directed layout </a></li>
-      <li class="dataset-constraint disabled"><a id="tool-layout-gi-plus" class="tool-layout" data-layout-type="gi+" href="#"> GI-directed layout + (experimental)</a></li>
+      <li><a id="tool-layout-force-plus" class="tool-layout disabled" data-annotation-constraint data-layout-type="force+" href="#"> Force-directed layout + (experimental) </a></li>
+      <li><a id="tool-layout-annot" class="tool-layout disabled" data-annotation-constraint data-layout-type="annotation" href="#"> Annotation-directed layout </a></li>
+      <li><a id="tool-layout-gi" class="tool-layout disabled" data-dataset-constraint data-layout-type="gi" href="#"> GI-directed layout </a></li>
+      <li><a id="tool-layout-gi-plus" class="tool-layout disabled" data-dataset-constraint data-annotation-constraint data-layout-type="gi+" href="#"> GI-directed layout + (experimental)</a></li>
       <li class="dropdown-submenu pull-left disabled"><a id="tool-layout-attr" href="#"> Layout by attribute </a>
         <ul id="attribute-layout-list" class="dropdown-menu" role="menu">
         </ul>
@@ -86,7 +82,7 @@
       <li><a id="tool-rotate-arbitrary" href="#"> Rotate graph by arbitrary angle</a></li>
       <li><a id="tool-stack" href="#"> Stack unconnected networks </a></li>
       <li class="divider"></li>
-      <li class="disabled" data-selection-constraint data-selection-gt="2"><a id="custom-arange" tabindex="-1" href="#"> Arrange selected in custom shape </a></li>
+      <li class="disabled" data-selection-constraint data-selection-gt="2"><a id="tool-custom-arrange" tabindex="-1" href="#"> Arrange selected in custom shape </a></li>
       
     </ul>
   </div>
@@ -101,18 +97,14 @@
 </div>
 
 <div class="bottom-left">
-  <div class="btn-group">
-    <div class="data-type-img" data-toggle="tooltip" title="Switch to genetic interaction data" data-placement="top" data-delay="0">
-      <label class="img-label">Genetic Interactions</label>
-      <img src="{% static 'images/interactions.png' %}" class="img-icon" id="cor-img" data-id="1">
+  <div class="btn-group btn-group-datasets">
+    <div class="image-datasets" data-toggle="tooltip" title="Switch to genetic interaction data" data-placement="top" data-delay="0">
+      <label class="image-label">Genetic Interactions</label>
+      <img data-selection-constraint data-selection-ls="6" data-selection-gt="0" src="{% static 'images/interactions.png' %}" class="image-dataset-icon" id="image-correlation" data-dataset="1">
     </div>
-    <div class="data-type-img hidden" data-toggle="tooltip" title="Switch to correlation data" data-placement="top" data-delay="0">
-      <label class="img-label">Correlations</label>
-      <img src="{% static 'images/correlations.png' %}" class="img-icon" id="int-img" data-id="0">
+    <div class="image-datasets hidden" data-toggle="tooltip" title="Switch to correlation data" data-placement="top" data-delay="0">
+      <label class="image-label">Correlations</label>
+      <img data-selection-constraint data-selection-ls="6" data-selection-gt="0" src="{% static 'images/correlations.png' %}" class="image-dataset-icon" id="image-interaction" data-dataset="0">
     </div>
   </div>
-</div>
-
-<div class="bottom-right" >
-  <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button style-icon-button" data-toggle="modal" data-target="#modal-style"></span>
 </div>

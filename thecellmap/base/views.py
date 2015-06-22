@@ -20,6 +20,13 @@ from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap
 from base.utils import print_queries, is_integer, JsonResponse
 
 
+def three_demension(request, dataset):
+    dataset = Dataset.pk_or_default(dataset, request.user)
+    if request.user.is_authenticated() or dataset.is_published:
+        return render(request, 'base/3D.html', {
+                'dataset': dataset,
+        })
+
 def _serve_dataset(request, dataset=None):
     dataset = Dataset.pk_or_default(dataset, request.user)
     if request.user.is_authenticated() or dataset.is_published:
@@ -69,12 +76,6 @@ def home(request):
 
 def dataset(request, dataset_id):
     return _serve_dataset(request, dataset_id)
-
-def heatmap(request, heatmap_id):
-    heatmap = Heatmap.objects.get(pk=heatmap_id)
-    return render(request, 'base/heatmap.html', {
-            'heatmap': heatmap,
-            })
 
 def genes(request):
     genes = [g.as_object() for g in Gene.objects.all()]
@@ -302,7 +303,7 @@ def region_group(request, dataset_id, region_group_id):
     regionGroup = RegionGroup.objects.select_related('dataset').get(id=region_group_id)
     
     if regionGroup.dataset.id != int(dataset_id):
-        return HttpResponseBadRequest('Incorrect dataset')
+        return JsonResponse(response)
     
     with open(regionGroup.dataset.static_path('nodes_inv.pickle')) as fp:
         nodes_inv = pickle.load(fp)

@@ -25,8 +25,8 @@ import json
 class AnnotationsForm(Form):
     annotation = ModelChoiceField(Annotation.objects)
     genes = CharField(widget=Textarea)
-    fileType = CharField(widget=HiddenInput, initial="xls")
-    remove = BooleanField(widget=HiddenInput, initial=False, required=False)
+    downloadType = CharField(widget=HiddenInput, initial="xls")
+    autoRemove = BooleanField(widget=HiddenInput, initial=False, required=False)
 
 class CustomForm(ModelForm):
     def clean(self):
@@ -61,10 +61,10 @@ def annotations(request):
         form = AnnotationsForm(request.POST)
         
         if form.is_valid():
-            print form.cleaned_data['remove']
+            print form.cleaned_data['autoRemove']
             genes = form.cleaned_data['genes'].splitlines()
             annotation = form.cleaned_data['annotation']
-            response = write_excel_file('annotated_genes_%s.%s' % ((datetime.now().strftime('%Y%m%d-%H%M%S')), form.cleaned_data['fileType']), override_ext=True)
+            response = write_excel_file('annotated_genes_%s.%s' % ((datetime.now().strftime('%Y%m%d-%H%M%S')), form.cleaned_data['downloadType']), override_ext=True)
             response.add_sheet("Annotated", ['Input label', 'Label', 'ORF', 'Name', 'Annotations'])
             
             gmap = gene_map(keyfun=lambda x: x.upper())
@@ -87,10 +87,11 @@ def annotations(request):
                     gene = gene.gene
                     row += [strain.allele, gene.orf, gene.name, ';'.join([(hasattr(t, 'name') and t.name or t) for t in tmap.get(gene.id, ['NOT ANNOTATED'])])]
                 
-                if gene is not None or not form.cleaned_data['remove']:
+                if gene is not None or not form.cleaned_data['autoRemove']:
                     response.write_row(row)
             
             return response.as_response()
+    print form
     
     return render(request, 'base/annotations.html', {
             'form': form,

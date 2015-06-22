@@ -2,10 +2,6 @@
 {% load staticfiles %}
 
 <!doctype html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
   <meta charset="utf-8">
 
@@ -25,30 +21,21 @@
 
   {# use the CDN to get bootstrap css. can not be inside compress css block #}
   {% block cdn_css %}
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css">
   {% endblock cdn_css %}
 
   {% compress css %}
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
-  <style type="text/css">
-    /* Move down content because we have a fixed navbar that is 50px tall */
-    body {
-      padding-top: 50px;
-      padding-bottom: 20px;
-    }
-  </style>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <style type="text/css">
+      body {
+        padding-top: 50px;
+        padding-bottom: 20px;
+      }
+    </style>
   {% block css %}{% endblock %}
   {% endcompress %}
-  <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
-
-  <!-- All JavaScript at the bottom, except this Modernizr build.
-       Modernizr enables HTML5 elements & feature detects for optimal performance.
-       Create your own custom Modernizr build: www.modernizr.com/download/ -->
-  {% compress js %}
-  <script src="{% static 'js/libs/modernizr-2.6.2-respond-1.1.0.min.js' %}"></script>
-  {% endcompress %}
 </head>
-<body class="{% block body_class %}{% endblock %}" {% block body_attributes %}{% endblock %}>
+<body class="{% block body_class %}{% endblock %}"{% block body_attributes %}{% endblock %}>
 {% block body %}
   <header>
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -90,7 +77,7 @@
                 <li><a href="{% url 'tools_edit' %}">Edit Custom Uploads</a></li>
               {% endif %}
               <li class="divider"></li>
-              <li><a href="#" id="tools-settings">Settings</a></li>
+              <li class='disabled'><a href="#" id="tools-settings">Settings</a></li>
               {% if user.is_authenticated %}
                 {% if user.is_superuser %}
                   <li><a href="{% url 'admin:index' %}">Admin</a></li>
@@ -110,12 +97,10 @@
     </div>
     {% block header %}{% endblock %}
   </header>
-
+  
   <div class="content" role="main">
     {% block content %}{% endblock %}
   </div>
-  
-  
   
   <footer>
     {% block footer %}
@@ -125,26 +110,39 @@
     </div>
     {% endblock footer %}
   </footer>
-
-
-  <!-- JavaScript at the bottom for fast page loading -->
-
-  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  
   {% block cdn_js %}
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="{{ STATIC_URL }}js/libs/jquery-2.1.3.min.js"><\/script>')</script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.18/require.min.js"></script>
   {% endblock cdn_js %}
-
-  {% include "includes/settings.html" %}
-  <!-- scripts concatenated and minified via django-compressor -->
+  
   {% compress js %}
   {% block js %}
+  <script type="text/javascript">
+      require.config({
+         paths: {
+             'jquery': "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min",
+             'backbone': "//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.1/backbone-min",
+             'underscore': "//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min",
+             'bootstrap': "//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min",
+             'text': "//cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text",
+             
+             'jquery.cookie': "//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min",
+             'underscore.strings': "//cdnjs.cloudflare.com/ajax/libs/underscore.string/3.1.1/underscore.string.min",
+         },
+         shim: {
+             'backbone': ['jquery', 'underscore'],
+             'jquery.cookie': ['jquery'],
+             'underscore.strings': ['underscore']
+         }
+      });
+  </script>
   <script src="{% static 'js/main.js' %}"></script>
   {% endblock js %}
   {% endcompress %}
   <!-- end scripts -->
-
+  
+  {% include "includes/settings.html" %}
+  
   {% if not debug %}
   <!-- Asynchronous Google Analytics snippet. -->
   <script type="text/javascript">

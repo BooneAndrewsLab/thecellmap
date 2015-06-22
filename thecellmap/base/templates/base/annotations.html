@@ -1,16 +1,29 @@
 {% extends "_layouts/base.html" %}
-
+{% load staticfiles base_extras %}
 {% load crispy_forms_tags %}
 
 {% block js %}
 {{ block.super }}
-    <script type="text/javascript">
-      $("#id_fileType").val(settings["fileType"]);
-      $("#id_remove").val(settings["remove"]);
-    </script>
+  <script type="text/javascript">
+    require.config({
+        paths: {
+            'settingsModel': "{% static 'js/models/settingsModel' %}",
+            'select2': "{% static 'js/libs/select2' %}",
+            'settings': "{% static 'js/app/settings' %}",
+        },
+        shim: {
+            'select2': ['jquery'],
+        }
+    });
+    require(['jquery', 'settings', 'bootstrap'], function($, Settings) {
+        Settings.initialize();
+        $('#id_downloadType').val(localStorage.getItem('downloadType') || 'xls');
+        $('#id_autoRemove').val(localStorage.getItem('autoRemove') || true);
+    });
+  </script>
 {% endblock js %}
 
-{% block page_title_suffix %} - Gene annotations{% endblock %}
+{% block page_title_suffix %} - Gene annotations  {% endblock %}
 {% block content %}
   <div class="container">
     <div class="row">

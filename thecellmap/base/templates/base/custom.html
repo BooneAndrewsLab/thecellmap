@@ -10,31 +10,52 @@
 {% block css %}
 {{ block.super }}
     <link href="{% static 'css/bootstrap-wizard.css' %}" rel="stylesheet">
-    <link href="{% static 'css/custom-upload.css' %}" rel="stylesheet">
     <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> <!-- The cdnjs version of this is still not ready... firefox problems with height -->
+    <link href="{% static 'css/custom-upload.css' %}" rel="stylesheet">
 {% endblock css %}
-
-{% block cdn_js %}
-{{ block.super }}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.0/jquery.cookie.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/xls/0.7.5/xls.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jszip/2.2.2/jszip.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
-{% endblock cdn_js %}
 
 {% block js %}
 {{ block.super }}
     <script type="text/javascript">
-        window.genes_url = "{% url 'genes' %}";
-        $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
+      require.config({
+          config: {
+              customGraph: {
+                  genesUrl: "{% url 'genes' %}",
+              }
+          },
+          paths: {
+              'jszip': '//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min',
+              'xls': '//cdnjs.cloudflare.com/ajax/libs/xls/0.7.5/xls.min',
+              'xlsx': '//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx',
+              
+              'settingsModel': "{% static 'js/models/settingsModel' %}",
+              
+              'customGraph': "{% static 'js/app/customGraph' %}",
+              'fileReader': "{% static 'js/libs/bootstrap.file-input' %}",
+              'jquery.parser': "{% static 'js/libs/jquery.parse' %}",
+              'load': "{% static 'js/app/load' %}",
+              'select2': "{% static 'js/libs/select2' %}",
+              'settings': "{% static 'js/app/settings' %}",
+              'wizard': "{% static 'js/libs/bootstrap-wizard' %}",
+          },
+          shim: {
+              'backbone': ['underscore', 'jquery'],
+              'underscore.strings': ['underscore'],
+              'bootstrap': ['jquery'],
+              'fileReader': ['bootstrap'],
+              'jquery.cookie': ['jquery'],
+              'jquery.parser': ['jquery'],
+              'load': ['jszip'],
+              'select2': ['jquery'],
+              'wizard': ['bootstrap'],
+              'xlsx': ['jszip', 'load'],
+          }
+      });
+      require(['customGraph'], function(customGraph) {
+          $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
+          customGraph.init();
+      });
     </script>
-    <script src="{% static 'js/libs/FileSaver.js' %}"></script>
-    <script src="{% static 'js/libs/Blob.js' %}"></script>
-    <script src="{% static 'js/libs/bootstrap.file-input.js' %}"></script>
-    <script src="{% static 'js/libs/jquery.parse.js' %}"></script>
-    <script src="{% static 'js/libs/custom_upload.js' %}"></script>
-    <script src="{% static 'js/libs/bootstrap-wizard.js' %}"></script>
-    <script src="{% static 'js/libs/select2.js' %}"></script>
 {% endblock js %}
 
 {% block page_title_suffix %} - Custom network{% endblock %}
@@ -75,8 +96,8 @@
               <label for="dataset-type" class="col-sm-4 control-label">Data type</label>
               <div class="col-sm-8">
                 <select class="form-control" id="dataset-type">
-                  <option value="C">Correlations</option>
-                  <option value="I">Interactions</option>
+                  <option value="correlations">Correlations</option>
+                  <option value="interactions">Interactions</option>
                 </select>
               </div>
             </div>
@@ -84,8 +105,8 @@
               <label for="network-type" class="col-sm-4 control-label">Network type</label>
               <div class="col-sm-8">
                 <select class="form-control" id="network-type">
-                  <option value="U">Undirected</option>
-                  <option value="D">Directed</option>
+                  <option value="false">Undirected</option>
+                  <option value="true">Directed</option>
                 </select>
               </div>
             </div>
