@@ -1,8 +1,6 @@
 {% extends "_layouts/base.html" %}
-
 {% load staticfiles base_extras %}
-
-{% block page_title_suffix %} - {{ dataset.verbose_name }} network{% endblock %}
+{% block page_title_suffix %} - {{ dataset.verbose_name }} network {% endblock %}
 
 {% block meta %}
 {{ block.super }}
@@ -13,155 +11,138 @@
 {% block cdn_css %}
 {{ block.super }}
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.css">
-<!--   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2-bootstrap.css"> -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/Ladda/0.9.8/ladda-themeless.min.css">
 {% endblock cdn_css %}
 
 {% block css %}
 {{ block.super }}
   <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
-  <link href="{% static 'css/filetypes.css' %}" rel="stylesheet">
-  <link href="{% static 'css/spectrum.css' %}" rel="stylesheet">
   <link href="{% static 'css/viznetworks.css' %}" rel="stylesheet">
   <link href="{% static 'css/pick-a-color-1.2.3.min.css' %}" rel="stylesheet">
-  <link href="{% static 'css/ladda-themeless-noeffect.css' %}" rel="stylesheet">
   <link href="{% static 'css/jquery.nouislider.css' %}" rel="stylesheet">
   <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> <!-- The cdnjs version of this is still not ready... firefox problems with height -->
-  <link href="{% static 'css/bootstrap-submenu.css' %}" rel="stylesheet">
 {% endblock css %}
-
-{% block cdn_js %}
-{{ block.super }}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<!--   <script src="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.js"></script> -->
-  <script src="//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.2.0/ZeroClipboard.min.js"></script>
-{% endblock cdn_js %}
 
 {% block js %}
 {{ block.super }}
-<!--[if gt IE 8]><!-->
-  <!-- TEMPORARY! CHANGE BACK TO OFFICIAL VERSION WHEN THEY FIX IT -->
-  <script src="{% static 'js/libs/select2.js' %}"></script>
-  
-  <script src="{% static 'js/libs/chroma.js' %}"></script>
-  <script src="{% static 'js/libs/chroma.palette-gen.js' %}"></script>
-  
-  <script src="{% static 'js/libs/isigma.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.parseJson.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.forcelayout.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.boonetools.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.rotate.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.pulse.js' %}"></script>
-  <script src="{% static 'js/libs/jquery.contextMenu.js' %}"></script>
-  <script src="{% static 'js/libs/fullScreenApi.js' %}"></script>
-  <script src="{% static 'js/libs/colors.js' %}"></script>
-  <script src="{% static 'js/libs/utils.js' %}"></script>
-  <script src="{% static 'js/libs/combinations.js' %}"></script>
-  <script src="{% static 'js/libs/graph/Undo.js' %}"></script>
-  <script src="{% static 'js/libs/graph/State.js' %}"></script>
-  
-  <script src="{% static 'js/libs/jquery.booneGraph.js' %}"></script>
-  <script src="{% static 'js/libs/FileSaver.js' %}"></script>
-  <script src="{% static 'js/libs/Blob.js' %}"></script>
-  <script src="{% static 'js/libs/canvas-toBlob.js' %}"></script>
-  <script src="{% static 'js/libs/XMLWriter-1.0.0-min.js' %}"></script>
-  <script src="{% static 'js/libs/tinycolor-0.9.15.min.js' %}"></script>
-  <script src="{% static 'js/libs/pick-a-color.js' %}"></script> <!-- THIS IS VERSION 1.2.3 -->
-  <script src="{% static 'js/libs/spin.js' %}"></script>
-  <script src="{% static 'js/libs/ladda.js' %}"></script>
-  <!-- <script src="{% static 'js/libs/jquery.nouislider.min.7.0.10.js' %}"></script> -->
-  <script src="{% static 'js/libs/jquery.nouislider.all.min.js' %}"></script>
-  
-  <script src="{% static 'js/libs/modernizr-pointerevents.min.js' %}"></script>
-  <script src="{% static 'js/libs/dom-drag.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.move.js' %}"></script>
-  <script src="{% static 'js/libs/packer.growing.js' %}"></script>
-  <script src="{% static 'js/libs/canvas2svg.js' %}"></script>
-  <script src="{% static 'js/libs/sigma_plugins/sigma.searchlocator.js' %}"></script>
-  
   <script type="text/javascript">
-  (function($) {
-    $(document).ready(function() {
-        $( window ).resize(function() {
-            $('.sigma-parent').css('height', $(window).height() - $(".navbar").height() - 30);
-        }).resize();
-        
-        $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
-        var dataType = null;
-        {% if dataset.type %}dataType = '{{ dataset.type }}';{% endif %}
-        
-        var directed = false;
-        {% if dataset.directed %}directed = true;{% endif %}
-        
-        var datasets = [{
-            id: "{{ dataset.id }}",
-            url: "{{ dataset.static_url }}/correlations.json",
-            name: "Correlations",
-            parser: "json",
-            type: dataType,
-        }];
-        
-        
-        {% if extra %}
-            datasets[2] = ({
-                id: "{{ extra.id }}",
-                url: "{{ extra.static_url }}/scores.json",
-                name: "{{ extra.name }}",
-                parser: "json",
-                type: "{{ extra.type }}",
-            });
-        {% endif %}
-        
-        $("#network-container").booneGraph({
-            layout: {
-                    id: "{{ dataset.id }}",
-                    url: "{{ dataset.static_url }}/layout.json",
-                    name: "{{ dataset.name }}",
-                    parser: "json",
-                    dataset: 1
-                },
-            annotations: [{% for annot in annotations %}{
-                    id: {{ annot.id }},
-                    name: "{{ annot.name }}",
-                    url: "{% url 'annotation' annot.id %}"
-                },{% endfor %}],
-            regionGroup: [{% for r in regionGroups %}{
-                id: {{ r.id }},
-                name: "{{ r.name }}",
-                url: "{% url 'region_group' dataset.id r.id %}"
-            },{% endfor %}],
-            datasets: datasets,
-            layoutAlgo: ['fl'],
-            nodesUrl: "{{ dataset.static_url }}/nodes.json",
-            debug: {% if debug %}true{% else %}false{% endif %},
-            layoutButtonHide: false,
-            slider: {
-                min : 0.05,
-                step : 0.01,
-                value : 0.20,
-                max : 1,
-            },
-            uiUrl: {
-                advance: "{% url 'advance_ui' %}",
-                simple: "{% url 'simple_ui' %}",
-                common: "{% url 'base_ui' %}",
-            },
-            drawUIUrl: "{% static 'draw_ui.html' %}",
-            canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
-            circleUrl: "{% url 'circle_pack' %}",
-            arrows: directed,
-            //preloadedState: JSON.parse(localStorage.getItem("savedState"))
-        });
-    });
-  })(jQuery);
+      require.config({
+         config: {
+             booneGraph: {
+                 dataset: {
+                     id: "{{ dataset.id }}",
+                     name: "{{ dataset.name }}",
+                     fetched: [],
+                 },
+                 urls: {
+                     nodes: "{{ dataset.static_url }}/nodes.json",
+                     layout: "{{ dataset.static_url }}/layout.json",
+                     correlations: "{{ dataset.static_url }}/correlations.json",
+                     interactions: "interactions/",
+                     circle: "{% url 'circle_pack' %}",
+                 },
+                 annotations: [{% for annot in annotations %}{
+                     id: "{{ annot.id }}",
+                     name: "{{ annot.name }}",
+                     url: "{% url 'annotation' annot.id %}"
+                 },{% endfor %}],
+                 regionGroups: [{% for r in regionGroups %}{
+                     id: {{ r.id }},
+                     name: "{{ r.name }}",
+                     url: "{% url 'region_group' dataset.id r.id %}"
+                 },{% endfor %}],
+                 canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
+             },
+         },
+         paths: {
+             /* library */
+             'fileSaver': '//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min',
+             'ladda': '//cdnjs.cloudflare.com/ajax/libs/Ladda/0.9.8/ladda.min',
+             'spin': '//cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min',
+             'zeroClipboard': '//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.2.0/ZeroClipboard.min',
+             
+             'blob': "{% static 'js/libs/blob' %}",
+             'canvas2Blob': "{% static 'js/libs/canvas-toBlob' %}",
+             'canvas2Svg': "{% static 'js/libs/canvas2svg' %}",
+             'combinations': "{% static 'js/libs/combinations' %}",
+             'drag': "{% static 'js/libs/dom-drag' %}",
+             'noUISlider': "{% static 'js/libs/jquery.nouislider.all.min' %}",
+             'packer': "{% static 'js/libs/packer.growing' %}",
+             'pickAColor': "{% static 'js/libs/pick-a-color' %}",
+             'select2': "{% static 'js/libs/select2' %}",
+             'sigma': "{% static 'js/libs/isigma' %}",
+             'tinyColor': "{% static 'js/libs/tinycolor-min' %}",
+             'xmlWriter': "{% static 'js/libs/XMLWriter-1.0.0-min' %}",
+             
+             'sigma.forcelayout': "{% static 'js/libs/plugins/sigma.forcelayout' %}",
+             'sigma.move': "{% static 'js/libs/plugins/sigma.move' %}",
+             'sigma.rotate': "{% static 'js/libs/plugins/sigma.rotate' %}",
+             'sigma.searchlocator': "{% static 'js/libs/plugins/sigma.searchlocator' %}",
+             
+             'booneGraph': "{% static 'js/booneGraph/booneGraph' %}",
+             
+             'annotationModel': "{% static 'js/models/annotationModel' %}",
+             'annotationCollection': "{% static 'js/models/annotationCollection' %}",
+             'regionGroupModel': "{% static 'js/models/regionGroupModel' %}",
+             'regionGroupCollection': "{% static 'js/models/regionGroupCollection' %}",
+             'settingsModel': "{% static 'js/models/settingsModel' %}",
+             'stateModel': "{% static 'js/models/stateModel' %}",
+             'strainModel': "{% static 'js/models/strainModel' %}",
+             'strainCollection': "{% static 'js/models/strainCollection' %}",
+             
+             'annotation': "{% static 'js/booneGraph/annotation' %}",
+             'dataset': "{% static 'js/booneGraph/dataset' %}",
+             'download': "{% static 'js/booneGraph/download' %}",
+             'layout': "{% static 'js/booneGraph/layout' %}",
+             'node': "{% static 'js/booneGraph/node' %}",
+             'settings': "{% static 'js/booneGraph/settings' %}",
+             'utils': "{% static 'js/booneGraph/utils' %}",
+             
+             /* UI */
+             'events': "{% static 'js/booneGraph/events' %}",
+             'ui': "{% static 'js/booneGraph/ui' %}",
+             'advanceUI': "{% url 'advance_ui' %}",
+             'baseUI': "{% url 'base_ui' %}",
+             'drawUI': "{% url 'draw_ui' %}",
+             'simpleUI': "{% url 'simple_ui' %}", 
+         },
+         shim: {
+             'backbone': ['underscore', 'jquery'],
+             'bootstrap': ['jquery'],
+             
+             'jquery.cookie': ['jquery'],
+             'ladda': ['jquery'],
+             'noUISlider': ['jquery'],
+             'select2': ['jquery'],
+             
+             'pickAColor': ['jquery', 'tinyColor'],
+             
+             'underscore.strings': ['underscore'],
+             
+             'sigma.forcelayout': ['sigma'],
+             'sigma.move': ['sigma'],
+             'sigma.rotate': ['sigma'],
+             'sigma.searchlocator': ['sigma'],
+         }
+      });
+      
+      require(['booneGraph'], function(booneGraph) {
+          $(window).resize(function() {
+              $('.sigma-parent').css('height', $(window).height() - $('.navbar').height() - 30);
+          }).resize();
+          $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
+          booneGraph.init();
+      });
   </script>
-<!--<![endif]-->
 {% endblock js %}
 
 {% block content %}
+
 <!--[if lt IE 9]>
 <p>Sorry, we are not supporting your version of Internet Explorer. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience. 
 TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Google Chrome</a> for best performance.</p>
 <!--<![endif]-->
+
 <div class="container-fluid"
      style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;' 
      unselectable='on'
@@ -179,19 +160,12 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
 {% block navbar_items %}
 {{ block.super }}
 <ul class="nav navbar-nav changed-network hidden">
-  <li class="undo-network"><a href="#" title="Undo change" data-toggle="tooltip" data-placement="bottom" data-delay="500">
-    <span class="glyphicon glyphicon-chevron-left hidden-xs"></span>
-    <span class="visible-xs">Undo</span>
-  </a></li>
   <li class="refresh-network"><a href="#" title="Reload this network" data-toggle="tooltip" data-placement="bottom" data-delay="500">
     <span class="glyphicon glyphicon-refresh hidden-xs"></span>
     <span class="visible-xs">Reload network</span>
   </a></li>
-  <li class="redo-network"><a href="#" title="Redo change"  data-toggle="tooltip" data-placement="bottom" data-delay="500">
-    <span class="glyphicon glyphicon-chevron-right hidden-xs"></span>
-    <span class="visible-xs">Redo</span>
-  </a></li>
 </ul>
 {% endblock %}
 
-{% block footer %}{% endblock footer %}
+{% block footer %}
+{% endblock footer %}

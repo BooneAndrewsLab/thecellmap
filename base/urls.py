@@ -18,7 +18,6 @@ urlpatterns = patterns('base.views',
     url(r'^network/(?P<dataset_id>\d+)/tabular/$', 'tabular', name='tabular'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/(?P<node_id>\d+)/$', 'tabular_data', name='tabular_fetch'),
     url(r'^network/(?P<hash>.{40})/$', 'custom_dataset', name='custom_dataset'),
-    url(r'^heatmap/(?P<heatmap_id>\d+)/$', 'heatmap', name='heatmap'),
     
     # default dataset urls
     url(r'^interactions/$', 'interactions', name='interactions_default'),
@@ -44,7 +43,10 @@ urlpatterns = patterns('base.views',
     url(r'^circlepack/$', 'circle_pack', name='circle_pack'),
     url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),
     url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui'),
-    url(r'^ui/base/$', TemplateView.as_view(template_name='ui/base_ui.html'), name='base_ui')
+    url(r'^ui/draw/$', TemplateView.as_view(template_name='ui/draw_ui.html'), name='draw_ui'),
+    url(r'^ui/base/$', TemplateView.as_view(template_name='ui/base_ui.html'), name='base_ui'),
+    
+    url(r'^3D/(?P<dataset_id>\d+)/$', 'three_demension', name='three_demension'),
 )
 
 urlpatterns += patterns('base.tools',

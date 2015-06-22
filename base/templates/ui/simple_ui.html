@@ -1,7 +1,7 @@
 {% load staticfiles base_extras %}
 
 <div class="top-left hidden-sm hidden-xs">
-  <div class="btn-group hidden" data-hidden-network>
+  <div class="btn-group hidden" data-simple-step="2">
     <button type="button" class="btn btn-default btn-zoom-in" data-toggle="tooltip" data-placement="top" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
       <span class="glyphicon glyphicon-zoom-in"></span>
     </button>
@@ -13,41 +13,24 @@
     </button>
   </div>
   
-  <div style="position: relative; display: inline-block; vertical-align: middle;" data-hidden-simple-btn>
+  <div style="position: relative; display: inline-block; vertical-align: middle;" data-simple-step="0">
     <div class="input-group search-bar">
-      <span class="input-group-addon glyphicon glyphicon-search switch-ui"></span>
+      <span class="input-group-addon glyphicon glyphicon-search"></span>
       <input class="gene-search-input form-control" type="hidden">
     </div>
   </div>
 </div>
 
 <div class="top-right-simple hidden-sm hidden-xs">
-  <div class="btn-group-simple hidden" data-hidden-simple-btn>
-    <button id="download-selected" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download table</button>
-    <button id="simple-view-network" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0"> View Network </button>
+  <div class="btn-group-simple hidden" data-simple-step="1">
+    <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download table</button>
+    <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0"> View Network </button>
   </div>
   
-  <div class="cutoff-bar-group hidden" data-hidden-network>
-    <div id="cutoff-bar-cor-simple" class="cutoff-bar-simple cutoff-cor" data-dataset="0" data-ori="horizontal" data-dir="ltr"></div>
+  <div class="cutoff-bar-group hidden" data-simple-step="2">
+    <div id="cutoff-bar-cor-simple" class="cutoff-bar-simple cutoff-cor" data-dataset="0" data-orientation="horizontal" data-dir="ltr"></div>
     <button id="cutoff-label-min-simple" type="button" class="btn btn-default cutoff-label-simple cutoff-label-min" data-placement="bottom"></button>
-    <div id="cutoff-bar-int-simple" class="cutoff-bar-simple cutoff-int" data-dataset="1" data-ori="horizontal" style="display: none;"></div>
+    <div id="cutoff-bar-int-simple" class="cutoff-bar-simple cutoff-int" data-dataset="1" data-orientation="horizontal" style="display: none;"></div>
     <button id="cutoff-label-max-simple" type="button" class="btn btn-success cutoff-label-simple cutoff-label-max" data-placement="bottom" style="visibility: hidden;">&nbsp;</button>
   </div>
-</div>
-
-<div class="bottom-left">
-  <div class="btn-group hidden" data-hidden-network>
-    <div class="data-type-img" data-toggle="tooltip" title="Switch to genetic interaction data" data-placement="top" data-delay="0">
-      <label class="img-label">Genetic Interactions</label>
-      <img src="{% static 'images/interactions.png' %}" class="img-icon" id="cor-img" data-id="1">
-    </div>
-    <div class="data-type-img hidden" data-toggle="tooltip" title="Switch to correlation data" data-placement="top" data-delay="0">
-      <label class="img-label">Correlations</label>
-      <img src="{% static 'images/correlations.png' %}" class="img-icon" id="int-img" data-id="0">
-    </div>
-  </div>
-</div>
-
-<div class="bottom-right" >
-  <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button style-icon-button" data-toggle="modal" data-target="#modal-style"></span>
 </div>

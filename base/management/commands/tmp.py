@@ -1,57 +1,43 @@
-from base.utils import CellMapCommand, RE_ORF, open_excel_file, orf_sorting_value
-from base.models import Gene
+from lxml import etree as ET
+import json
+from base.utils import CellMapCommand
 
 
 class Command(CellMapCommand):
+    def _get_elements(self, fp, tags):
+       '''
+           Convenience and memory management function
+           that iterates required tags
+       '''
+       context = iter(ET.iterparse(fp, events=('start', 'end')))
+       _, root = next(context)  # get root element
+       for event, elem in context:
+           if event == 'end' and elem.tag in tags:
+               yield elem
+               root.clear()  # preserve memory
+    
     def handle(self, *args, **options):
-        genes = {}
+        nodes = [];
+        edges = [];
+        for ele in self._get_elements('/home/yizhao/Downloads/science_3d.gexf', ['{http://www.gexf.net/1.1draft}node', 'node']):
+            rcva = ele.find('{http://www.gexf.net/1.1draft/viz}position')
+            nodes.append({
+                'id' : int(ele.get('id')), 
+                'x' : float(rcva.get('x')), 
+                'y' : float(rcva.get('y')),
+                'z' : float(rcva.get('z')),
+            })
         
-        for g in Gene.objects.all():
-            genes[g.orf] = g
-#             for a in filter(RE_ORF.match, g.aliases):
-#                 if a not in genes:
-#                     genes[a] = g
+        for ele in self._get_elements('/home/yizhao/Downloads/science_3d.gexf', ['{http://www.gexf.net/1.1draft}edge', 'edge']):
+            edges.append({
+                'id' : int(ele.get('id')),
+                's' : int(ele.get('source')),
+                't' : int(ele.get('target')),
+                'w' : float(ele.get('weight'))
+            })
         
-#         with open('/home/matej/deleted_merged_features.tab') as f:
-#             for l in f:
-#                 orf, qualifier, ch, start, stop, wc, sgdid, secid, _, _, desc, note, d = l.strip().split('\t')
-#                 
-#                 if not RE_ORF.match(orf):
-#                     continue
-#                 
-#                 if orf not in genes:
-#                     print orf
-#                     Gene.objects.create(
-#                             primary_sgdid=sgdid,
-#                             feature_qualifier=qualifier,
-#                             orf=orf,
-#                             secondary_sgdid=secid,
-#                             chromosome=ch,
-#                             start=start,
-#                             stop=stop,
-#                             sorting_value=orf_sorting_value(orf),
-#                             description=desc
-#                         )
-        
-        
-        xls = open_excel_file('/home/matej/todo/collections/SN_collection_clean.xls')
-        for l in xls[1:]:
-            orf = l[0].strip()
-            if orf not in genes:
-                print 'MISSING', orf
-                continue
-            g = genes[orf]
-            if g.orf != orf:
-                print 'ALIAS', orf
-                
-        
-        xls = open_excel_file('/home/matej/todo/collections/DMA_collection_clean.xls')
-        for l in xls[1:]:
-            orf = l[0].strip().upper()
-            if orf not in genes:
-                print 'MISSING', orf
-                continue
-            g = genes[orf]
-            if g.orf != orf:
-                print 'ALIAS', orf
-        
+        self._dump_clean_json({'nodes': nodes, 'edges': edges}, '/home/yizhao/Downloads/science_3d.json')
+    
+    def _dump_clean_json(self, obj, f):
+        with open(f, 'wb') as out:
+            out.write(json.dumps(obj).replace(' ', ''))
