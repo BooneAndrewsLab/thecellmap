@@ -1,6 +1,7 @@
 """ Views for the base application """
 
 import datetime
+import json
 import math
 import os
 import pickle
@@ -12,7 +13,6 @@ from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
-from django.utils import simplejson
 from django.views.decorators.http import require_POST, require_GET
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
@@ -182,7 +182,7 @@ def nodes_download(request, dataset_id=None):
     nodes_idx = set(map(int, nodes))
     
     labels = []
-    for n in simplejson.load(open(dataset.static_path('nodes.json')))['nodes']:
+    for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
         if n['id'] in nodes_idx:
             labels.append(n['label'])
     

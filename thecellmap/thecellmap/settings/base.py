@@ -49,9 +49,6 @@ INSTALLED_APPS = (
 #     'debug_toolbar',
     'compressor',
 
-    # Database migrations
-    'south',
-
     # Application base, containing global templates.
     'base',
 
@@ -60,7 +57,6 @@ INSTALLED_APPS = (
     'contact_form',
     'rest_framework',
     'rest_framework_swagger',
-    'django_extensions',
 )
 
 # Place bcrypt first in the list, so it will be the default password hashing

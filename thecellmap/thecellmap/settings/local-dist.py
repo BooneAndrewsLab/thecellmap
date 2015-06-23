@@ -9,7 +9,11 @@ from . import base
 # To extend any settings from settings/base.py here's an example.
 # If you don't need to extend any settings from base.py, you do not need
 # to import base above
-INSTALLED_APPS = base.INSTALLED_APPS + ('django_nose',)
+INSTALLED_APPS = base.INSTALLED_APPS + (
+            'django_nose',
+            'django_extensions',
+            
+        )
 
 DATABASES = {
     'default': {

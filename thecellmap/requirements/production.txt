@@ -28,9 +28,6 @@ python-memcached
 # Admin
 django-debug-toolbar
 
-# Migrations
-South
-
 # Feature testing
 #django-waffle
 
@@ -53,3 +50,4 @@ oauth2
 django-oauth2-provider
 django-guardian
 django-rest-swagger
+scipy
