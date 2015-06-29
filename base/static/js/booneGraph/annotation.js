@@ -176,7 +176,7 @@ define([
         if (!$('#canvas-regions').length) {
             var canvas = $('canvas:first').clone();
             canvas.attr('id', 'canvas-regions');
-            $('#network-container').prepend(canvas);
+            $('#sigma_mouse_1').before(canvas);
             
             window.addEventListener('resize', function() {
                 $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
@@ -191,13 +191,12 @@ define([
             ctx.strokeStyle = '#' + color;
             ctx.fillStyle = '#' + color;
             ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.4;
+            ctx.globalAlpha = 0.9;
             ctx.beginPath();
             ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
             var n1, n2, dx, dy, angle, dr;
             nodes.push(nodes[0])
             for (var i = 0; i < nodes.length - 1; i++) {
-                ctx.stroke();
                 n1 = nodes[i], n2 = nodes[i + 1];
                 dx = (n2.displayX - n1.displayX)/2, dy = (n2.displayY - n1.displayY)/2, angle = Math.atan(dx/dy);
                 dr = Math.sqrt(dx*dx + dy*dy) * 2/3;

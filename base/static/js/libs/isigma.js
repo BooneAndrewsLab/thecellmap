@@ -2587,6 +2587,11 @@ function Sigma(root, id) {
   var draggedMouse = false;
   
   /**
+   * Flag that helps us determine if we are in dragging mode
+   */
+  var dragging = false;
+  
+  /**
    * Last drawHoverEdges value.
    * @private
    */
@@ -2703,7 +2708,11 @@ function Sigma(root, id) {
       self.p.auto ? 0 : self.p.drawEdgeLabels,
       true
     );
-    self.dispatch('startmovingnodes')
+    self.dispatch('movingnodes');
+    if (!dragging) {
+        self.dispatch('startmovingnodes');
+        dragging = true;
+    }
   }).bind('stopdrag stopinterpolate', function(e) {
     self.draw(
       self.p.auto ? 2 : self.p.drawNodes,
@@ -2719,7 +2728,8 @@ function Sigma(root, id) {
         self.dispatch('nodesonscreen');
     }
     
-    self.dispatch('stopmovingnodes')
+    self.dispatch('stopmovingnodes');
+    dragging = false;
   }).bind('mousedown mouseup ctrlclick shiftclick shiftup', function(e) {
 //    eventType = (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') ? 'downgraph' : 'upgraph';
     if (e['type'] == 'mousedown' || e['type'] == 'ctrlclick' || e['type'] == 'shiftclick') {
@@ -4011,7 +4021,7 @@ function SigmaPublic(sigmaInstance) {
   };
 
   // Events
-  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop startmovingnodes stopmovingnodes', function(e) {
+  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop startmovingnodes stopmovingnodes movingnodes', function(e) {
     // console.log(e.type, e.content);
     self.dispatch(e.type, e.content);
   });
