@@ -16,7 +16,7 @@ define([
     
     'noUISlider',
 ], function($, _, Backbone, Annotation, Dataset, Layout, Utils, Node,
-    baseTemplate, simpleTemplate, advanceTemplate, drawTemplate
+    baseTemplate, simpleTemplate, advanceTemplate, drawTemplate, nouislider
     ) {
     
     var layouts = {
@@ -318,57 +318,58 @@ define([
         $('.cutoff-int').each(function() {
             var orientation = $(this).data('orientation');
             
-            $(this).noUiSlider({
+            var slider = this;
+            nouislider.create(slider, {
                 range: {min: -1, max: 1},
                 step: sliderProperties.step,
                 start: [-0.08, 0.08],
                 orientation: orientation,
-            }).on('set', function() {
-                var val = $(this).val(), preVal = state.get('cutoffInteraction');
+                direction: orientation == 'horizontal' ? 'ltr' : 'rtl', // Important, vertical sliders should be going bot->top
+            });
+            
+            slider.noUiSlider.on('set', function() {
+                var val = slider.noUiSlider.get(), preVal = state.get('cutoffInteraction');
                 if (parseFloat(val[0]) == parseFloat(preVal[0]) && parseFloat(val[1]) == parseFloat(preVal[1])) return;
                 
-                if (orientation == 'horizontal') {
-                    var tmpVal = val[0]; 
-                    val[0] = -val[1], val[1] = -tmpVal;
-                }
                 if (val[0] < 0 && val[1] > 0) {
                     Node.applyCutoff(val);
                     state.set('cutoffInteraction', [val[0], val[1]]);
                 } else {
-                    $(this).val(preVal);
-                }
-            }).on('slide', function() {
-                var val = $(this).val();
-                if (val[0] > 0) {
-                    $(this).val([0, null]);
-                } else if (val[1] < 0) {
-                    $(this).val([null, 0]);
+                    slider.noUiSlider.set(preVal);
                 }
             });
-        }).Link('lower').to(function(val){
-            if ($(this).data('orientation') == 'horizontal') {
-                $('.cutoff-label-min').html(val);
-            } else {
-                $('.cutoff-label-max').html(-val);
-            }
-        }).Link('upper').to(function(val){
-            if ($(this).data('orientation') == 'horizontal') {
-                $('.cutoff-label-max').html(val);
-            } else {
-                $('.cutoff-label-min').html(-val);
-            }
+            
+            slider.noUiSlider.on('slide', function() {
+//                var val = slider.noUiSlider.get();
+//                console.log('SLIDERRRR', val);
+//                if (val[0] > 0) {
+//                    slider.noUiSlider.set([null, 0]);
+//                } else if (val[1] < 0) {
+//                    slider.noUiSlider.set([0, null]);
+//                }
+            });
+            
+            slider.noUiSlider.on('update', function( values, handle ) {
+                $('.cutoff-label-min').html(values[0]);
+                $('.cutoff-label-max').html(values[1]);
+            });
+            
         });
+        
         $('.cutoff-cor').each(function() {
             var orientation = $(this).data('orientation'), direction = $(this).data('direction');
             
-            $(this).noUiSlider({
+            var slider = this;
+            nouislider.create(slider, {
                 range: {min: sliderProperties.min, max: sliderProperties.max},
                 step: sliderProperties.step,
                 start: sliderProperties.value,
                 direction: direction,
                 orientation: orientation,
-            }).on('set', function(e) {
-                var val = parseFloat($(this).val()), preVal = parseFloat(state.get('cutoffCorrelation')), lowVal = parseFloat(state.get('cutoffLow'));
+            });
+            
+            slider.noUiSlider.on('set', function(e) {
+                var val = parseFloat(slider.noUiSlider.get()), preVal = parseFloat(state.get('cutoffCorrelation')), lowVal = parseFloat(state.get('cutoffLow'));
                 if (val == preVal) return;
                 
                 var nodes = sigInst._core.graph.nodes.filter(function(node) {
@@ -413,7 +414,7 @@ define([
                         state.set('cutoffLow', val);
                     });
                 } else if (val < lowVal && nodes.length > nodeLimit) {
-                    $(this).val(preVal);
+                    slider.noUiSlider.set(preVal);
                     Utils.alertUser('Too many nodes', 'Too many nodes on the working network, number of nodes should be lower than or equal to ' + nodeLimit + 
                               ' for the selected cutoff.<br>Node count: ' + nodes.length + '<br>Visible node count: ' + Utils.countVisibleNodes());
                     return;
@@ -421,7 +422,11 @@ define([
                     state.set('cutoffCorrelation', val);
                     Node.applyCutoff(val);
                 }
-            }).Link('lower').to($('.cutoff-label-min'));
+            });
+            
+            slider.noUiSlider.on('update', function( values, handle ) {
+                $('.cutoff-label-min').html(values);
+            });
         });
         
         $(".cutoff-label, .cutoff-label-simple").each(function() {
@@ -525,7 +530,10 @@ define([
         
         for (slider in styleSliders) {
             if ($('#style-slider-' + slider).length) {
-                $('#style-slider-' + slider).noUiSlider(styleSliders[slider]).on('set', styleSliders[slider].set);
+                var sl = document.getElementById('style-slider-' + slider);
+                nouislider.create(sl, styleSliders[slider]);
+                sl.noUiSlider.on('set', styleSliders[slider].set);
+                
                 $('#style-slider-' + slider).attr('data-slider-default', $('#style-slider-' + slider).val());
             }
         }

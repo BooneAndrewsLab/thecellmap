@@ -300,11 +300,11 @@ define([
                 state.set('cutoffInteraction', cutoff);
                 var showCircular = state.get('showCircular');
                 if (edge.id.indexOf('tmp') != -1 && showCircular) {
-                    edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]);
+                    edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]);
                 } else if (edge.id.indexOf('tmp') == -1 && showCircular && edge._hidden) {
                     edge.hidden = edge._hidden;
                 } else {
-                    edge.hidden = (-cutoff[1] < edge.weight && edge.weight < -cutoff[0]) || edge.ds != state.get("dataset");
+                    edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]) || edge.ds != state.get("dataset");
                 }
             } else {
                 state.set('cutoffCorrelation', cutoff);
