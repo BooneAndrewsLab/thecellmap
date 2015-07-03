@@ -7,7 +7,7 @@ Created on Dec 16, 2013
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term, Custom, Heatmap, RegionGroup, Region
+from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term, Custom, RegionGroup, Region
 from _csv import list_dialects
 
 
@@ -82,9 +82,6 @@ class CorrelationsAdmin(admin.ModelAdmin):
 class CustomAdmin(admin.ModelAdmin):
     list_display = ('user', 'hash', 'private', 'name', 'date', 'permanent')
 
-class HeatmapAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'date')
-
 class RegionGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'alias', 'description', 'date')
 
@@ -101,7 +98,6 @@ admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(Annotation, AnnotationAdmin)
 admin.site.register(Term, TermAdmin)
 admin.site.register(Custom, CustomAdmin)
-admin.site.register(Heatmap, HeatmapAdmin)
 admin.site.register(RegionGroup, RegionGroupAdmin)
 admin.site.register(Region, RegionAdmin)
 

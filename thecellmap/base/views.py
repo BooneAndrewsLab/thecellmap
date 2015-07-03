@@ -16,15 +16,16 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
-from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, Heatmap, RegionGroup, Region
+from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
 
 
-def three_demension(request, dataset):
-    dataset = Dataset.pk_or_default(dataset, request.user)
+def three_demension(request, dataset_id):
+    dataset = Dataset.pk_or_default(dataset_id, request.user)
     if request.user.is_authenticated() or dataset.is_published:
         return render(request, 'base/3D.html', {
                 'dataset': dataset,
+                'annotation': Annotation.objects.get(name='SAFE'),
         })
 
 def _serve_dataset(request, dataset=None):
@@ -313,11 +314,13 @@ def region_group(request, dataset_id, region_group_id):
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
-    for strain, degree, region, color in Region.vertices.through.objects.filter(region__region_group=region_group_id).values_list('strain', 'degree', 'region', 'region__color'):
+    for strain, degree, region, alias, color in Region.vertices.through.objects.filter(region__region_group=region_group_id).values_list('strain', 'degree', 'region', 'region__alias', 'region__color'):
         response.setdefault(region, {})
         response[region][degree] = nodes_inv_inv[strain]
         if color not in response[region]:
             response[region]['color'] = color
+        if alias not in response[region]:
+            response[region]['name'] = alias
     
     return JsonResponse(response)
 

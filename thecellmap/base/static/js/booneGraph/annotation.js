@@ -187,7 +187,8 @@ define([
         var canvas = $('#canvas-regions'), ctx = canvas[0].getContext('2d');
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
         for (r in regionGroup.get('regions')) {
-            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r];
+            console.log(regionGroup.get('names'))
+            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
             ctx.strokeStyle = '#' + color;
             ctx.fillStyle = '#' + color;
             ctx.lineWidth = 2;
@@ -215,12 +216,10 @@ define([
                 }
             }
             
-            console.log()
-            console.log(regionGroup);
             ctx.font = "16px Arial";
             ctx.fillStyle = '#' + color;
             ctx.textAlign = "center";
-            ctx.fillText("Hello World", xmm[0] + ((xmm[1] - xmm[0]) / 2), ymm[0] + ((ymm[1] - ymm[0]) / 2));
+            ctx.fillText(name, xmm[0] + ((xmm[1] - xmm[0]) / 2), ymm[0] + ((ymm[1] - ymm[0]) / 2));
             
             ctx.stroke();
             ctx.closePath();
@@ -240,20 +239,19 @@ define([
                         var addedGroup = {
                             id: id,
                             colorPalette: [], 
-                            regions: []
+                            regions: [],
+                            names: [],
                         };
                         
                         for (r in data) {
-                            var nodes = [], color, n;
+                            var nodes = [], color, name, n;
                             for (n in data[r]) {
                                 var node = Utils.getNode(data[r][n]);
-                                if (node) {
-                                    nodes.push(node);
-                                } else {
-                                    color = data[r][n];
-                                }
+                                if (node) nodes.push(node);
                             }
-                            addedGroup['colorPalette'].push(color);
+                            
+                            addedGroup['colorPalette'].push(data[r]['color']);
+                            addedGroup['names'].push(data[r]['name'])
                             addedGroup['regions'].push(nodes);
                         }
                         
