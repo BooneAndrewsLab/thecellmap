@@ -194,12 +194,17 @@ define([
             ctx.globalAlpha = 0.9;
             ctx.beginPath();
             ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
-            var n1, n2, dx, dy, angle, dr;
-            nodes.push(nodes[0])
+            var n1, n2, dx, dy, angle, dr,
+                        xmm = [nodes[0].displayX, nodes[0].displayX],
+                        ymm = [nodes[0].displayY, nodes[0].displayY];
+            nodes.push(nodes[0]);
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
                 dx = (n2.displayX - n1.displayX)/2, dy = (n2.displayY - n1.displayY)/2, angle = Math.atan(dx/dy);
                 dr = Math.sqrt(dx*dx + dy*dy) * 2/3;
+                
+                xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
+                ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
                 
                 if (dx > 0) {
                     ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.cos(Math.PI/2 - angle), n1.displayY + dy - dr*Math.sin(Math.PI/2 - angle), n2.displayX, n2.displayY);
@@ -209,9 +214,16 @@ define([
                     ctx.quadraticCurveTo(n1.displayX + dx - dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy + dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
                 }
             }
+            
+            console.log()
+            console.log(regionGroup);
+            ctx.font = "16px Arial";
+            ctx.fillStyle = '#' + color;
+            ctx.textAlign = "center";
+            ctx.fillText("Hello World", xmm[0] + ((xmm[1] - xmm[0]) / 2), ymm[0] + ((ymm[1] - ymm[0]) / 2));
+            
             ctx.stroke();
             ctx.closePath();
-//            ctx.fill();
         }
     }
     var loadRegion = function(id) {
