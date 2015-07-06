@@ -1,0 +1,104 @@
+{% extends "_layouts/base.html" %}
+
+{% load staticfiles base_extras %}
+
+{% block page_title_suffix %} - {{ dataset.verbose_name }} network{% endblock %}
+
+{% block meta %}
+{{ block.super }}
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+{% endblock meta%}
+
+{% block cdn_css %}
+{{ block.super }}
+  <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/Ladda/0.9.8/ladda-themeless.min.css"> -->
+{% endblock cdn_css %}
+
+{% block css %}
+{{ block.super }}
+  <!-- <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
+  
+  <link href="{% static 'css/spectrum.css' %}" rel="stylesheet">
+  <link href="{% static 'css/viznetworks.css' %}" rel="stylesheet">
+  <link href="{% static 'css/pick-a-color-1.2.3.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/jquery.nouislider.css' %}" rel="stylesheet">
+  <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> The cdnjs version of this is still not ready... firefox problems with height
+  
+  <link href="{% static 'css/bootstrap-submenu.css' %}" rel="stylesheet"> -->
+  <link href="{% static 'css/boone3D.css' %}" rel="stylesheet">
+  <link href="{% static 'css/leap-manager.min.css' %}" rel="stylesheet">
+{% endblock css %}
+
+{% block js %}
+{{ block.super }}
+  <script type="text/javascript">
+      require.config({
+          config: {
+              boone3D: {
+                  urls: {
+                      'layout' : '{{ dataset.static_url }}/3d.json',
+                      'annotation' : '{% url 'annotation' annotation.id %}',
+                      'sprite' : '{% static "images/sphere.png" %}',
+                  },
+                  /* annotations: [{% for annot in annotations %}{
+                      id: "{{ annot.id }}",
+                      name: "{{ annot.name }}",
+                      url: "{% url 'annotation' annot.id %}"
+                  },{% endfor %}], */
+              },
+          },
+          paths: {
+              'leap': '//cdnjs.cloudflare.com/ajax/libs/leapjs/0.6.1/leap.min',
+              'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min',
+              'gui': '//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min',
+              
+              'controls': '{% static "js/boone3D/LeapCameraControls" %}',
+              
+              'boone3D': '{% static "js/boone3D/boone3D" %}',
+              'stats': '{% static "js/boone3D/stats.min" %}',
+          },
+          shim: {
+              'projector': ['three'],
+              'stats' : ['three'],
+              'controls': ['three', 'leap'],
+          }
+      });
+      
+      require(['boone3D'], function(boone3D) {
+          boone3D.start();
+      });
+  </script>
+{% endblock js %}
+
+{% block content %}
+
+<!--[if lt IE 9]>
+<p>Sorry, we are not supporting your version of Internet Explorer. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience. 
+TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Google Chrome</a> for best performance.</p>
+<!--<![endif]-->
+
+<div class="container-fluid"
+     style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;' 
+     unselectable='on'
+     onselectstart='return false;' 
+     onmousedown='return false;'>
+    <div id="inner-container">
+      <div id="network-container"></div>
+      <div id="cursor"></div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block navbar_items %}
+{{ block.super }}
+<ul class="nav navbar-nav changed-network hidden">
+  <li class="refresh-network"><a href="#" title="Reload this network" data-toggle="tooltip" data-placement="bottom" data-delay="500">
+    <span class="glyphicon glyphicon-refresh hidden-xs"></span>
+    <span class="visible-xs">Reload network</span>
+  </a></li>
+</ul>
+{% endblock %}
+
+{% block footer %}{% endblock footer %}
