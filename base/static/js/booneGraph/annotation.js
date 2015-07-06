@@ -237,7 +237,7 @@ define([
             return a.y - b.y;
         });
         
-        var yaxis = [], last = 0, newPos, spacing = 20;
+        var last = 0, newPos, spacing = 20;
         texts.forEach(function(t) {
             if (t.y - last < spacing) {
                 t.y += spacing - (t.y - last);
