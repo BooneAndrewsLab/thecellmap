@@ -119,14 +119,6 @@ body {
     padding: 6px 12px;
 }
 
-.icon-button {
-    color:#444;
-}
-
-.icon-button:hover {
-    color:#E8E8E8;
-}
-
 .middle-right {
     right: 5px;
     top: 0px;
@@ -317,6 +309,10 @@ body {
     border: #E8E8E8 2px solid;
     width: 72px;
     height: 72px;
+}
+
+.image-datasets:hover {
+    cursor: pointer;
 }
 
 .image-label {

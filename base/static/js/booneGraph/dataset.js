@@ -6,34 +6,32 @@ define([
     'annotation',
     'dataset',
     'layout',
+    'node',
     'settings',
     'utils',
     
     'strainModel',
-], function($, _, Backbone, Annotation, Dataset, Layout, Settings, Utils, StrainModel) {
+], function($, _, Backbone, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
     var updateEdges = function(ds) {
-        var minWeight = null;
-        var maxWeight = null;
-        
         var ele = $(".cutoff-bar-simple[data-dataset=\"" + ds + "\"], .cutoff-bar[data-dataset=\"" + ds + "\"]");
-        var visibleCount = 0;
         sigInst._core.graph.edges.forEach(function(edge) {
             if (!edge.hasOwnProperty('ds')) {
                 edge.ds = ds;
                 edge.absweight = Math.abs(edge.weight);
             }
             
-            if (edge.ds == ds) {
-                minWeight = Math.min(minWeight || edge.absweight, edge.absweight);
-                maxWeight = Math.max(maxWeight || edge.absweight, edge.absweight);
-            }
-            
             edge.hidden = edge.ds != ds;
-            if (!edge.hidden) visibleCount++;
         });
         
+        sigInst.draw();
+    }
+    
+    var updateLabels = function(ds) {
+        var ele = $(".cutoff-bar-simple[data-dataset=\"" + ds + "\"], .cutoff-bar[data-dataset=\"" + ds + "\"]");
+        var cutoffs = ds == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction');
+        
         if (ds == 0) {
-            ele.val([state.get('cutoffCorrelation')]);
+            $('.cutoff-label-min').html(state.get('cutoffCorrelation'));
         } else {
             $('.cutoff-label-max').html(state.get('cutoffInteraction')[1]);
             $('.cutoff-label-min').html(state.get('cutoffInteraction')[0]);
@@ -51,6 +49,7 @@ define([
         $('.cutoff-bar').css('display', 'none');
         ele.css('display', 'block');
         
+        Node.applyCutoff(cutoffs);
         sigInst.draw();
     }
     
@@ -204,11 +203,13 @@ define([
                 } else {
                     var layoutType = state.get('annotation') != 'None' ? 'gi+' : 'gi';
                     Layout.toggleLayout(layoutType);
-                    Annotation.rebuildLegend();
                 }
+                
             });
         }
         
+        updateLabels(dsid);
+        Annotation.rebuildLegend();
         Settings.updateLabels();
     }
     
