@@ -24,11 +24,6 @@ define([
     var state = new State();
     
     function init() {
-        stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.top = '100px';
-        $('#network-container').append( stats.domElement );
-        
         scene = new THREE.Scene();
 //        scene.fog = new THREE.Fog(0x222222, 2000, 5000);
         
@@ -52,6 +47,11 @@ define([
         renderer.setSize($('#network-container').width(), $('#network-container').height());
         renderer.setClearColor(0x222222, 1);
         $('#network-container').append(renderer.domElement);
+        
+//        $('#network-container').append('<div id="ui3d">');
+        
+        stats = new Stats();
+        $('#network-container').append( stats.domElement );
         
         camera = new THREE.PerspectiveCamera(25, $('#network-container').width()/$('#network-container').height(), 0.1, 100000);
         camera.position.z = 5000;

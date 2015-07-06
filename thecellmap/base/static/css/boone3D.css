@@ -2,14 +2,10 @@ body {
     cursor: none;
 }
 
-h3 {font-weight: normal;}
-
-a {color: #ff0000;}
-
-canvas {
-    display: block;
-    margin: auto;
-    width: 100%;
+#stats {
+    position: absolute;
+    top: 0px;
+    margin: 5px;
 }
 
 #cursor {
@@ -20,15 +16,20 @@ canvas {
     width: 12px;
     height: 12px;
     background-color: #E3E3E3;
-    border-radius: 6px; 
-    -moz-border-radius: 6px; 
+    border-radius: 6px;
+    -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
-    border: 1px solid #ff0000; 
+    border: 1px solid #ff0000;
 }
 
 #gui {
     position: absolute;
-    top: 60px;
-    right: 20px;
-    height: 200px
+    right: 0px;
+    margin: 5px;
+    top: 0px;
+    height: 100%;
+}
+
+#network-container {
+    position: absolute;
 }
