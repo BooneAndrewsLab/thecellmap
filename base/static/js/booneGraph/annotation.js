@@ -230,14 +230,25 @@ define([
             ctx.stroke();
             ctx.closePath();
             
-            texts.push({c: color, n: name, x: xmm, y: ymm});
+            texts.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2)});
         }
         
+        texts.sort(function(a, b){
+            return a.y - b.y;
+        });
+        
+        var yaxis = [], last = 0, newPos, spacing = 20;
         texts.forEach(function(t) {
+            if (t.y - last < spacing) {
+                t.y += spacing - (t.y - last);
+            }
+            
             ctx.font = "bold 16px Arial";
             ctx.fillStyle = '#' + t.c;
             ctx.textAlign = "center";
-            ctx.fillText(t.n, t.x[0] + ((t.x[1] - t.x[0]) / 2), t.y[0] + ((t.y[1] - t.y[0]) / 2));
+            ctx.fillText(t.n, t.x, t.y);
+            
+            last = t.y;
         });
     }
     var loadRegion = function(id) {

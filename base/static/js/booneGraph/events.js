@@ -62,7 +62,7 @@ define([
                 if (state.get('showCircular') == false) {
                     Utils.cleanUpNodes();
                 }
-                $('[data-circular-constraint').each(function() {
+                $('[data-circular-constraint]').each(function() {
                     $(this).toggleClass('disabled', state.get('showCircular'));
                 });
             });
