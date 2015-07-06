@@ -225,7 +225,7 @@ define([
                 }
             }
             
-            ctx.font = "16px Arial";
+            ctx.font = "bold 16px Arial";
             ctx.fillStyle = '#' + color;
             ctx.textAlign = "center";
             ctx.fillText(name, xmm[0] + ((xmm[1] - xmm[0]) / 2), ymm[0] + ((ymm[1] - ymm[0]) / 2));
