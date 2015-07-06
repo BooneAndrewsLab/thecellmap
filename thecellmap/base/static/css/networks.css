@@ -1,0 +1,15 @@
+body {
+    overflow: hidden;
+}
+
+/* Stupid stupid stupid hack */
+.glyphicons.table {
+    width: auto;
+    margin-bottom: auto;
+    font-size: 19px;
+    padding-right: 8px;
+}
+
+#inner-container {
+    padding-top: 10px;
+}

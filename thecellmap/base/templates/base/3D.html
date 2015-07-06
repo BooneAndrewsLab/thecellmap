@@ -27,6 +27,7 @@
   <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> The cdnjs version of this is still not ready... firefox problems with height
   
   <link href="{% static 'css/bootstrap-submenu.css' %}" rel="stylesheet"> -->
+  <link href="{% static 'css/networks.css' %}" rel="stylesheet">
   <link href="{% static 'css/boone3D.css' %}" rel="stylesheet">
 {% endblock css %}
 
@@ -65,6 +66,10 @@
       });
       
       require(['boone3D'], function(boone3D) {
+          $(window).resize(function() {
+              $('#network-container').css('height', $(window).height() - $('.navbar').height() - 30);
+          }).resize();
+//           $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
           boone3D.start();
       });
   </script>

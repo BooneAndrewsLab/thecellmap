@@ -186,7 +186,7 @@ define([
         if (!$('#canvas-regions').length) {
             var canvas = $('canvas:first').clone();
             canvas.attr('id', 'canvas-regions');
-            $('#sigma_mouse_1').before(canvas);
+            $('#sigma_labels_1').before(canvas);
             
             window.addEventListener('resize', function() {
                 $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
