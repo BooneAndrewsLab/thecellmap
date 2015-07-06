@@ -28,7 +28,6 @@
   
   <link href="{% static 'css/bootstrap-submenu.css' %}" rel="stylesheet"> -->
   <link href="{% static 'css/boone3D.css' %}" rel="stylesheet">
-  <link href="{% static 'css/leap-manager.min.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block js %}
@@ -60,7 +59,6 @@
               'stats': '{% static "js/boone3D/stats.min" %}',
           },
           shim: {
-              'projector': ['three'],
               'stats' : ['three'],
               'controls': ['three', 'leap'],
           }
