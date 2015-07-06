@@ -11,11 +11,17 @@ define([
     'controls',
 ], function($, _, Backbone, module) {
     var opts = module.config();
-    var camera, scene, renderer, projector, cloud, control, light;
-    var gui;
+    var camera, scene, renderer, projector, cloud, control, light, gui;
     var vizdata = { nodes: {}, edges: {}, annotation: null };
     
     var stats;
+    
+    var State = function() {
+        this.display = 'Network';
+        this.selection = '';
+        this.opacity = 0.35;
+    };
+    var state = new State();
     
     function init() {
         stats = new Stats();
@@ -43,11 +49,11 @@ define([
         cloud = cloud.boundingSphere;
         
         renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setSize($(window).width(), $(window).height());
+        renderer.setSize($('#network-container').width(), $('#network-container').height());
         renderer.setClearColor(0x222222, 1);
         $('#network-container').append(renderer.domElement);
         
-        camera = new THREE.PerspectiveCamera(25, $(window).width()/$(window).height(), 0.1, 100000);
+        camera = new THREE.PerspectiveCamera(25, $('#network-container').width()/$('#network-container').height(), 0.1, 100000);
         camera.position.z = 5000;
         
         initNodes();
@@ -61,12 +67,13 @@ define([
         gui = new dat.GUI();
         
         $('#network-container').append(gui.domElement);
+        gui.domElement.id = 'gui';
         
-        var state = {
-            nodes: _.size(vizdata['nodes']),
-        }
+        var folder = gui.addFolder('Network')
+        folder.add(state, 'display');
+        folder.add(state, 'opacity', 0.0, 1.0, 0.001);
         
-        gui.add(state, 'nodes');
+        folder.open();
         
         window.addEventListener('resize', onWindowResize, false);
         render();
@@ -316,9 +323,9 @@ define([
     };
 
     function onWindowResize() {
-        camera.aspect = $(window).width()/$(window).height();
+        camera.aspect = $('#network-container').width()/$('#network-container').height();
         camera.updateProjectionMatrix();
-        renderer.setSize($(window).width(), $(window).height());
+        renderer.setSize($('#network-container').width(), $('#network-container').height());
         render();
     };
 
