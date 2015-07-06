@@ -25,3 +25,10 @@ canvas {
     -webkit-border-radius: 6px;
     border: 1px solid #ff0000; 
 }
+
+#gui {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    height: 200px
+}
