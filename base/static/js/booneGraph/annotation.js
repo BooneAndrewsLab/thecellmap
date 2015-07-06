@@ -196,6 +196,8 @@ define([
         }
         var canvas = $('#canvas-regions'), ctx = canvas[0].getContext('2d');
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
+        var texts = [];
+        
         for (r in regionGroup.get('regions')) {
             var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
             ctx.strokeStyle = '#' + color;
@@ -225,14 +227,18 @@ define([
                 }
             }
             
-            ctx.font = "bold 16px Arial";
-            ctx.fillStyle = '#' + color;
-            ctx.textAlign = "center";
-            ctx.fillText(name, xmm[0] + ((xmm[1] - xmm[0]) / 2), ymm[0] + ((ymm[1] - ymm[0]) / 2));
-            
             ctx.stroke();
             ctx.closePath();
+            
+            texts.push({c: color, n: name, x: xmm, y: ymm});
         }
+        
+        texts.forEach(function(t) {
+            ctx.font = "bold 16px Arial";
+            ctx.fillStyle = '#' + t.c;
+            ctx.textAlign = "center";
+            ctx.fillText(t.n, t.x[0] + ((t.x[1] - t.x[0]) / 2), t.y[0] + ((t.y[1] - t.y[0]) / 2));
+        });
     }
     var loadRegion = function(id) {
         var regionGroups = vizdata['regionGroups'], toApply = true;
