@@ -410,6 +410,7 @@ define([
                     }).always(function() {
                         Dataset.updateEdges(0);
                         Node.applyCutoff(val);
+                        Layout.toggleLayout();
                         state.set('cutoffCorrelation', val);
                         state.set('cutoffLow', val);
                     });
@@ -429,10 +430,10 @@ define([
             });
         });
         
-        $(".cutoff-label, .cutoff-label-simple").each(function() {
+        $('.cutoff-label, .cutoff-label-simple').each(function() {
             var label = $(this), placement = label.data('placement') || 'left';
             label.popover({
-                container: "body",
+                container: 'body',
                 placement: placement,
                 html: true,
                 content: '<div><input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '"></div>'
@@ -452,7 +453,7 @@ define([
                         cutoff[0] = -value;
                     }
                     
-                    $(".cutoff-bar[data-dataset=\"" + data + "\"]").val(cutoff);
+                    $('.cutoff-bar[data-dataset=\"' + data + '\"]').val(cutoff);
                 }
             }).on('shown.bs.popover', function () {
                 $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keyup(function (e) {

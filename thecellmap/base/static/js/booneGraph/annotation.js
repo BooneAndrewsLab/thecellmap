@@ -17,26 +17,37 @@ define([
     window.tinycolor = TinyColor;
     var applyAnnotationColors = function() {
         var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;;
-        if (vizdata['regionGroups'].get(state.get('annotation')) && state.get('showRegions')) return;
-        sigInst.iterNodes(function(n) {
-            if (n.pin) return;
-            strain = Utils.getStrain(n.id);
-            annot = data.get('map')[strain.get('orf')];
-            if (annot != undefined) {
-                if (annot.length == 1) {
-                    n.color = $.cookie(data.get('terms')[annot[0]].name) == undefined ? 
-                            data.get('colorPalette')[data.get('terms')[annot[0]].idx] : $.cookie(data.get('terms')[annot[0]].name);
+        if (!(vizdata['regionGroups'].get(state.get('annotation')) && state.get('showRegions'))) {
+            sigInst.iterNodes(function(n) {
+                if (n.pin) return;
+                strain = Utils.getStrain(n.id);
+                annot = data.get('map')[strain.get('orf')];
+                if (annot != undefined) {
+                    if (annot.length == 1) {
+                        n.color = $.cookie(data.get('terms')[annot[0]].name) == undefined ? 
+                                data.get('colorPalette')[data.get('terms')[annot[0]].idx] : $.cookie(data.get('terms')[annot[0]].name);
+                    } else {
+                        n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
+                    }
                 } else {
-                    n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
+                    n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
                 }
-            } else {
-                n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
-            }
-        }).draw();
+            }).draw();
+            
+            if ($('#panel-legend .panel-body').css('display') == 'none') $('#legend-handle').dblclick();
+            $('#btn-legend').click();
+        } else {
+            sigInst.iterNodes(function(n) {
+                n.color = opts['defaultNodeColor'];
+            }).draw();
+            
+            $('#panel-legend .panel-body').toggle();
+            if ($('#panel-legend .panel-body').css('display') != 'none') $('#legend-handle').dblclick();
+        }
     }
     
     var applyLegendColor = function(id, color) {
-        $(".legend-box").each(function(){
+        $('.legend-box').each(function(){
             if (id == $(this).data("idx")) $(this).css("background-color", color);
         });
     }
@@ -157,10 +168,9 @@ define([
         $('#btn-group-annotation li').removeClass('active');
         $('#btn-group-annotation li a').each(function() {
             if ($(this).html() == id) $(this).parent().addClass('active');
-        })
+        });
         loadRegion(id);
         rebuildLegend();
-        $('#btn-legend').click();
     }
     
     var clearRegions = function() {
@@ -187,7 +197,6 @@ define([
         var canvas = $('#canvas-regions'), ctx = canvas[0].getContext('2d');
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
         for (r in regionGroup.get('regions')) {
-            console.log(regionGroup.get('names'))
             var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
             ctx.strokeStyle = '#' + color;
             ctx.fillStyle = '#' + color;

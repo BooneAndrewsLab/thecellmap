@@ -321,6 +321,8 @@ define([
             strain = Utils.getStrain(node.id);
             node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + "") == -1); // either we manually hid the node or it's not connected to anything
         });
+        
+        state.set('showRegions', false);
         Settings.updateLabels();
         sigInst.draw();
         Annotation.rebuildLegend();
