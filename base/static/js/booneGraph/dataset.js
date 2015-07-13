@@ -310,7 +310,7 @@ define([
         for (var s in groups) {
             var layers = [[]], l = 0;
             for (var n in groups[s]) {
-                var count = (l + 2) * 20;
+                var count = (l + 2) * 10;
                 layers[l].push(groups[s][n]);
                 if (layers[l].length >= count) {
                     layers[++l] = [];
@@ -321,9 +321,9 @@ define([
         }
         
         var radius = 300;
-        tmpN.x -= (size + 1) * radius;
+        tmpN.x -= (size + 3) * radius;
         for (var s in groups) {
-            var r = radius;
+            var r = radius*2;
             var center = s == '+' ? node : tmpN;
             for (var l in groups[s]) {
                 var sides = [], theta;

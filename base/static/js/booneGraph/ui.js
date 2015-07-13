@@ -485,9 +485,9 @@ define([
                 step: 2,
                 start: 2,
                 connect: 'lower',
-                set: function() {
-                    sigInst.graphProperties({maxNodeSize: $(this).val()}).draw();
-                    state.set('nodeSize', $(this).val());
+                set: function(v) {
+                    sigInst.graphProperties({maxNodeSize: v[0]}).draw();
+                    state.set('nodeSize', v[0]);
                 }
             },
             lsize: {
@@ -495,9 +495,9 @@ define([
                 step: 7,
                 start: sigInst._core.plotter.p.defaultLabelSize,
                 connect: 'lower',
-                set: function() {
-                    sigInst.drawingProperties({defaultLabelSize: $(this).val()}).draw(-1, -1, 1);
-                    state.set('labelSize', $(this).val());
+                set: function(v) {
+                    sigInst.drawingProperties({defaultLabelSize: v[0]}).draw(-1, -1, 1);
+                    state.set('labelSize', v[0]);
                 }
             },
             lthresh: {
@@ -505,9 +505,9 @@ define([
                 step: 6,
                 start: sigInst._core.plotter.p.labelThreshold,
                 connect: 'lower',
-                set: function() {
-                    sigInst.drawingProperties({labelThreshold: $(this).val()}).draw(-1, -1, 1);
-                    state.set('labelThreshold', $(this).val());
+                set: function(v) {
+                    sigInst.drawingProperties({labelThreshold: v[0]}).draw(-1, -1, 1);
+                    state.set('labelThreshold', v[0]);
                 }
             },
             esize: {
@@ -515,9 +515,9 @@ define([
                 step: 5,
                 start: 1,
                 connect: 'lower',
-                set: function() {
-                    sigInst.graphProperties({maxEdgeSize: $(this).val()}).draw();
-                    state.set('edgeWidth', $(this).val());
+                set: function(v) {
+                    sigInst.graphProperties({maxEdgeSize: v[0]}).draw();
+                    state.set('edgeWidth', v[0]);
                 }
             },
             snsize: {
