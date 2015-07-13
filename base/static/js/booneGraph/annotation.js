@@ -243,9 +243,9 @@ define([
                 t.y += spacing - (t.y - last);
             }
             
-            ctx.font = "bold 16px Arial";
+            ctx.font = 'bold 16px Arial';
             ctx.fillStyle = '#' + t.c;
-            ctx.textAlign = "center";
+            ctx.textAlign = 'center';
             ctx.fillText(t.n, t.x, t.y);
             
             last = t.y;

@@ -84,7 +84,7 @@ define([
             labelThreshold: state.get('labelThreshold'),
             font: 'Arial',
             edgeColor : 'white',
-            defaultLabelColor : "#" + state.get('labelColor'),
+            defaultLabelColor : '#' + state.get('labelColor'),
             nodeColor : opts.defaultNodeColor,
             defaultEdgeArrow: opts.arrows ? 'target' : 'none',
         }).graphProperties(graphProperties).mouseProperties({

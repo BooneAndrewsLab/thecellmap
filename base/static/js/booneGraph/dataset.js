@@ -261,14 +261,20 @@ define([
         var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
         var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden && n.id != parseInt(nid);});
         
-        if (!Utils.nodeExists("tmp_" + node.id)) sigInst.addNode("tmp_" + node.id, node);
-        var tempN = Utils.getNode("tmp_" + node.id), nMap = {"+": node, "-": tempN};
-        tempN.hidden = tempN._hidden = false;
-        tempN.x = node.x - 3600;
-        tempN.y = node.y;
+        if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
+        var tmpN = Utils.getNode('tmp_' + node.id);
+        tmpN.hidden = tmpN._hidden = false;
+        tmpN.x = node.x;
+        tmpN.y = node.y;
+        
+        etmp.sort(function(e1, e2) {
+            if (e1.weight < e2.weight) return -1;
+            if (e1.weight > e2.weight) return 1;
+            return 0;
+        });
         
         etmp.forEach(function(e) {
-            var tmpkey = "+", centerNode, outNode;
+            var tmpkey = '+', centerNode, outNode;
             if (e.source.id == node.id) {
                 centerNode = e.source;
                 outNode = e.target;
@@ -277,18 +283,17 @@ define([
                 outNode = e.source;
             } else {
                 e.hidden = true;
+                return;
             }
             
-            if (centerNode) {
-                if (e.weight < 0) {
-                    tmpkey = "-";
-                    sigInst.addEdge(tempN.id + "-" + outNode.id, tempN.id, outNode.id, e);
-                    e._hidden = e.hidden = true; //hide the edges to the original node
-                }
-                
-                if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
-                groups[tmpkey].push(outNode);
+            if (e.weight < 0) {
+                tmpkey = "-";
+                sigInst.addEdge(tmpN.id + '-' + outNode.id, tmpN.id, outNode.id, e);
+                e._hidden = e.hidden = true; //hide the edges to the original node
             }
+            
+            if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
+            groups[tmpkey].push(outNode);
         });
         
         ntmp.forEach(function(n) {
@@ -297,37 +302,53 @@ define([
                 if (e.source.id == n.id || e.target.id == n.id) {
                     connected = true;
                 }
-            })
-            n.hidden = !connected;
-        })
-        
-        for (i in groups) {
-            groups[i].sort(function(n1, n2) {
-                if (n1.color < n2.color) return -1;
-                if (n1.color > n2.color) return 1;
-                return 0;
             });
-            
-            var sides = [], s = [300, 480], angle;
-            
-            sides[0] = sides[1] = groups[i].length/2;
-            if (groups[i].length % 2 != 0) {
-                sides[0] = Math.floor(sides[0]);
-                sides[1] = Math.ceil(sides[1]);
-            }
-            
-            var j = 0, k = 0;
-            for (n in sides) {
-                angle = 2 * Math.PI / 3 / sides[n];
-                while (k < sides[n]) {
-                    var node = groups[i][j];
-                    draw.push({x: nMap[i].x + 1400*Math.cos(k*angle + s[n]*Math.PI/180), 
-                               y: nMap[i].y + 1400*Math.sin(k*angle + s[n]*Math.PI/180), 
-                               node: node});
-                    j++;
-                    k++;
+            n.hidden = !connected;
+        });
+        
+        var size = 2;
+        for (var s in groups) {
+            var layers = [[]], l = 0;
+            for (var n in groups[s]) {
+                var count = (l + 2) * 20;
+                layers[l].push(groups[s][n]);
+                if (layers[l].length >= count) {
+                    layers[++l] = [];
+                    size++;
                 }
-                k = 0;
+            }
+            groups[s] = layers;
+        }
+        
+        var radius = 300;
+        tmpN.x -= (size + 1) * radius;
+        for (var s in groups) {
+            var r = radius;
+            var center = s == '+' ? node : tmpN;
+            for (var l in groups[s]) {
+                var sides = [], theta;
+                sides[0] = sides[1] = groups[s][l].length/2;
+                if (groups[s][l].length % 2 != 0) {
+                    sides[0] = Math.floor(sides[0]);
+                    sides[1] = Math.ceil(sides[1]);
+                }
+                var i = j = 0;
+                for (var k in sides) {
+                    theta = 2/3 * Math.PI / sides[k];
+                    while (i < sides[k]) {
+                        var n = groups[s][l][j];
+                        var initTheta = k == 0 ? 5/3 : 2/3
+                        draw.push({
+                            x: center.x + r * Math.cos(i*theta + initTheta * Math.PI), 
+                            y: center.y + r * Math.sin(i*theta + initTheta * Math.PI), 
+                            node: n,
+                        });
+                        i++;
+                        j++;
+                    }
+                    i = 0;
+                }
+                r += radius;
             }
         }
         
