@@ -5,15 +5,17 @@
  * 
  */
 
-THREE.LeapCameraControls = function(camera, scene) {
+THREE.LeapCameraControls = function(camera, scene, ui) {
   var _this = this;
 
   this.camera             = camera;
   this.scene              = scene;
+  this.ui                 = ui;
   this.raycaster          = new THREE.Raycaster();
   
-  this.modeThreshhold     = 50000;
-  this.selectThreshhold   = 50000;
+  this.modeThreshhold     = 500000;
+  this.selectThreshhold   = 500000;
+  this.guiThreshhold      = 3000000;
   
   this.updateTerm         = null;
   this.state              = 'network';
@@ -256,8 +258,8 @@ THREE.LeapCameraControls = function(camera, scene) {
       _rotateXLast = null;
     };
     
-    $('#cursor').css('left', '-1px');
-    $('#cursor').css('top', '-1px');
+    $('#cursor').css('left', '-54px');
+    $('#cursor').css('top', '-54px');
   };
 
   this.zoomCamera = function(frame) {
@@ -286,40 +288,46 @@ THREE.LeapCameraControls = function(camera, scene) {
 
   this.selectCamera = function(frame) {
       if (_this.selectEnabled && _this.applyGesture(frame, 'select')) {
+          var windowWidth = state['rootElement'].width(), windowHeight = state['rootElement'].height();
+          
           var position = _this.position(frame, 'select');
           var width = 117.5, height = 317.5, minHeight = 82.5; //Leap bounding box in mm relative to the controller
           var ftx = (position[0] > width ? width - 1 : (position[0] < -width ? -width + 1 : position[0]));
           var fty = (position[1] > height ? height - 1 : (position[1] < minHeight ? minHeight + 1 : position[1]));
-          var x = THREE.Math.mapLinear(ftx, -width, width, 0, $(window).width());
-          var y = THREE.Math.mapLinear(fty, height, minHeight, 0, $(window).height());
+          var x = THREE.Math.mapLinear(ftx, -width, width, 0, windowWidth);
+          var y = THREE.Math.mapLinear(fty, height, minHeight, 0, windowHeight);
           
-          $('#cursor').css('left', x - (($('#cursor').width() - 1)/2 + 1));
-          $('#cursor').css('top', y - (($('#cursor').height() - 1)/2 + 1) - $('.changed-network').height());
+          var vector = new THREE.Vector3();
+          vector.set((x / windowWidth) * 2 - 1, -(y / windowHeight) * 2 + 1, 0.5);
+          vector.unproject(camera);
+          var dir = vector.sub( camera.position ).normalize();
+          var distance = - camera.position.z / dir.z;
+          var pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
           
-          _this.raycaster.setFromCamera( new THREE.Vector2(( x / $(window).width() ) * 2 - 1, - ( y / $(window).height() ) * 2 + 1), _this.camera );
+          var cursor = _this.ui.getObjectByName('cursor');
+          cursor.material.opacity = 1;
+          cursor.position.set(pos['x'], pos['y'], pos['z']);
+          
+          _this.raycaster.setFromCamera( new THREE.Vector2(( x / windowWidth ) * 2 - 1, - ( y / windowHeight ) * 2 + 1), _this.camera );
           
           var intersects = _this.raycaster.intersectObjects(clouds);
           if (_this.state == 'network') {
               if (intersects.length > 0) {
-                  //TODO: TIMEOUT ON SELECT
-                  //if (controller.frame(1).valid) _selectElapse += frame.timestamp - controller.frame(1).timestamp;
+                  if (controller.frame(1).valid) _selectElapse += frame.timestamp - controller.frame(1).timestamp;
                   
-                  if (intersects[0].object != _selectLast) {
+                  if (intersects[0].object != _selectLast && _selectElapse > _this.selectThreshhold) {
                       if (_selectLast) {
                           lines[_selectLast.name].material.opacity = 0.3;
                           lines[_selectLast.name].material.lineWidth = 0.25;
-                          $('#cursor').css('background', '#E3E3E3');
+//                          $('#cursor').css('background', '#E3E3E3');
                       }
                       _selectLast = intersects[0].object;
-                  } else {
-                      if (lines[_selectLast.name].material.opacity < 1) {
+                  } else if (_selectLast) {
+                      if (_selectElapse < _this.guiThreshhold) {
                           lines[_selectLast.name].material.opacity += 0.005;
                           lines[_selectLast.name].material.lineWidth += 0.0025;
-                          $('#cursor').css('background', '#' + lines[_selectLast.name].material.color.getHexString())
+//                          $('#cursor').css('background', '#' + lines[_selectLast.name].material.color.getHexString())
                           
-//                          var screenPos = toScreenPosition(meshes[_selectLast.name].geometry.boundingSphere.center);
-//                          $('#cursor').css('left', screenPos.x - (($('#cursor').width() - 1)/2 + 1));
-//                          $('#cursor').css('top', screenPos.y - (($('#cursor').height() - 1)/2 + 1) - $('.changed-network').height());
                       } else {
                           _this.updateTerm = _selectLast.name;
                       }
@@ -328,7 +336,7 @@ THREE.LeapCameraControls = function(camera, scene) {
                   if (_selectLast) {
                       lines[_selectLast.name].material.opacity = 0.3;
                       lines[_selectLast.name].material.lineWidth = 0.25;
-                      $('#cursor').css('background', '#E3E3E3');
+//                      $('#cursor').css('background', '#E3E3E3');
                   }
               }
           }
@@ -341,8 +349,8 @@ THREE.LeapCameraControls = function(camera, scene) {
   function toScreenPosition(obj) {
       var vector = new THREE.Vector3(obj.x, obj.y, obj.z);
       vector.project(_this.camera);
-      vector.x = (vector.x + 1) / 2 * $(window).width();
-      vector.y = -(vector.y + 1) / 2 * $(window).height();
+      vector.x = (vector.x + 1) / 2 * state['rootElement'].width();
+      vector.y = -(vector.y + 1) / 2 * state['rootElement'].height();
       return { x: vector.x, y: vector.y };
   };
 

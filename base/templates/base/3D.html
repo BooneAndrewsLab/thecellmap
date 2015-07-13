@@ -42,17 +42,17 @@
                       'annotation' : '{% url 'annotation' annotation.id %}',
                       'sprite' : '{% static "images/sphere.png" %}',
                   },
-                  /* annotations: [{% for annot in annotations %}{
-                      id: "{{ annot.id }}",
-                      name: "{{ annot.name }}",
-                      url: "{% url 'annotation' annot.id %}"
-                  },{% endfor %}], */
+                  ui: {
+                      'root' : '{{ dataset.static_url }}/root.png',
+                      'extract' : '{{ dataset.static_url }}/extract.svg'
+                  },
               },
           },
           paths: {
-              'leap': '//cdnjs.cloudflare.com/ajax/libs/leapjs/0.6.1/leap.min',
+              'leap': '{% static "js/boone3D/leap-0.6.4.min" %}',
               'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min',
               'gui': '//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min',
+              'svgloader': '{% static "js/boone3D/SVGLoader" %}',
               
               'controls': '{% static "js/boone3D/LeapCameraControls" %}',
               
@@ -62,6 +62,7 @@
           shim: {
               'stats' : ['three'],
               'controls': ['three', 'leap'],
+              'svgloader' : ['three']
           }
       });
       
@@ -90,7 +91,6 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
      onmousedown='return false;'>
     <div id="inner-container">
       <div id="network-container"></div>
-      <div id="cursor"></div>
     </div>
 </div>
 {% endblock content %}
