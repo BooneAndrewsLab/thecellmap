@@ -6,26 +6,25 @@ define([
     
     'leap',
     'three',
+    'svgloader',
     'gui',
     'stats',
     'controls',
 ], function($, _, Backbone, module) {
-    var opts = module.config();
-    var camera, scene, renderer, projector, cloud, control, light, gui;
-    var vizdata = { nodes: {}, edges: {}, annotation: null };
+    var DEFAULTS = {
+        rootElement: $('#network-container'),
+    }
     
-    var stats;
+    window.vizdata = { nodes: {}, edges: {}, annotation: null };
+    window.opts = $.extend({}, DEFAULTS, module.config());
     
-    var State = function() {
-        this.display = 'Network';
-        this.selection = '';
-        this.opacity = 0.35;
-    };
-    var state = new State();
+    var scene, ui, camera, renderer, light, control, stats;
+    var cloud, cursor;
     
     function init() {
+        var windowWidth = opts.rootElement.width(), windowHeight = opts.rootElement.height();
         scene = new THREE.Scene();
-//        scene.fog = new THREE.Fog(0x222222, 2000, 5000);
+        ui = new THREE.Scene();
         
         cloud = new THREE.Geometry();
         $.ajax({
@@ -44,40 +43,45 @@ define([
         cloud = cloud.boundingSphere;
         
         renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setSize($('#network-container').width(), $('#network-container').height());
+        renderer.setSize(windowWidth, windowHeight);
         renderer.setClearColor(0x222222, 1);
-        $('#network-container').append(renderer.domElement);
+        opts.rootElement.append(renderer.domElement);
         
-//        $('#network-container').append('<div id="ui3d">');
+        uiRender = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        uiRender.setSize(windowWidth, windowHeight);
+        uiRender.setClearColor(0x222222, 0);
+        opts.rootElement.append(uiRender.domElement);
+        uiRender.domElement.id = 'scene-gui';
         
         stats = new Stats();
-        $('#network-container').append( stats.domElement );
+        opts.rootElement.append( stats.domElement );
         
-        camera = new THREE.PerspectiveCamera(25, $('#network-container').width()/$('#network-container').height(), 0.1, 100000);
-        camera.position.z = 5000;
+        camera = new THREE.PerspectiveCamera(25, windowWidth/windowHeight, 0.1, 10000);
+        camera.position.setZ(Math.PI * cloud.radius);
+        uiCamera = new THREE.PerspectiveCamera(25, windowWidth/windowHeight, 0.1, 10000);
         
+        initUI();
         initNodes();
-        initEdges();
+//        initEdges();
+        initTerm();
         
-        control = new THREE.LeapCameraControls(camera, scene);
+        control = new THREE.LeapCameraControls(camera, scene, ui);
 //      control.zoomMin = cloud.radius;
         control.rotateSpeed = 1;
         control.zoomSpeed = 3;
         
-        gui = new dat.GUI();
-        
-        $('#network-container').append(gui.domElement);
-        gui.domElement.id = 'gui';
-        
-        var folder = gui.addFolder('Network')
-        folder.add(state, 'display');
-        folder.add(state, 'opacity', 0.0, 1.0, 0.001);
-        
-        folder.open();
-        
         window.addEventListener('resize', onWindowResize, false);
         render();
     };
+    
+    function initUI() {
+        var cursorGeometry = new THREE.SphereGeometry( 20, 32, 32 );
+        var cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0, });
+        cursor = new THREE.Mesh(cursorGeometry, cursorMaterial);
+        cursor.position.set(0, 0, 0);
+        cursor.name = 'cursor';
+        ui.add(cursor)
+    }
     
     function initNodes() {
         var sprite = THREE.ImageUtils.loadTexture(opts['urls']['sprite']);
@@ -197,50 +201,72 @@ define([
         }
     }
     
-    function initAnnotation(term) {
-        for (var i = scene.children.length - 1; i >= 0; i--) {
-            scene.remove(scene.children[i]);
-        }
-        
+    function initTerm(term) {
+        term = 1470;
         var nodes = vizdata['nodes'], annot = vizdata['annotation'], network = [];
-        var tmCloud = new THREE.Geometry();
-        var sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
-        var sphereMaterial = new THREE.MeshLambertMaterial({ color: parseInt('0x' + annot['terms'][term]['color']) });
-        for (var i in nodes) {
-            var n = nodes[i], terms = annot['map'][n.orf];
-            if ($.inArray(n.id, terms) != -1) {
-                tmCloud.vertices.push(new THREE.Vector3(n.x, n.y, n.z));
-            }
-        }
-        tmCloud.computeBoundingSphere();
-        tmCloud = tmCloud.boundingSphere;
+//        for (var i = scene.children.length - 1; i >= 0; i--) {
+//            scene.remove(scene.children[i]);
+//        }
+        var loader = new THREE.ImageLoader();
+        loader.load(opts['ui']['root'], function(image) {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var w = canvas.width = image.width;
+            var h = canvas.height = image.height;
+            var name = annot['terms'][term]['name'].toUpperCase();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle'; 
+            ctx.font = 'bold 30px Palatino Linotype';
+            ctx.drawImage(image, 0, 0);
+            ctx.fillText(name, w/2, h/2);
+            
+            var texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            var spriteMaterial = new THREE.SpriteMaterial({ color: parseInt('0x' + annot['terms'][term]['color']), transparent: true, opacity: 0.75, map: texture, useScreenCoordinates: false });
+            var sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.set(cursor.position.x, cursor.position.y, -2880);
+            sprite.scale.set(w, h, 1)
+            ui.add(sprite);
+        });
         
-        for (var i in nodes) {
-            var n = nodes[i], terms = vizdata['annotation']['map'][n.orf];
-            if (terms && terms.indexOf(parseInt(term)) != -1) {
-                var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-                n.x = n.x - tmCloud.center.x;
-                n.y = n.y - tmCloud.center.y;
-                n.z = n.z - tmCloud.center.z;
-                sphere.position.set(n.x, n.y, n.z);
-                scene.add(sphere);
-                network.push(n.id);
-            }
-        }
-        
-        var lineMaterial = new THREE.LineBasicMaterial({ color: parseInt('0x' + annot['terms'][term]['color']), linewidth : 0.25, opacity: 0.3, transparent: true, });
-        for (var i in vizdata['edges']) {
-            var e = vizdata['edges'][i], s = nodes[e['s']], t = nodes[e['t']];
-            if (s && t) {
-                if ($.inArray(s.id, network) != -1 && $.inArray(t.id, network) != -1) {
-                    var lineGeometry = new THREE.Geometry();
-                    lineGeometry.vertices.push(new THREE.Vector3(s.x, s.y, s.z));
-                    lineGeometry.vertices.push(new THREE.Vector3(t.x, t.y, t.z));
-                    var line = new THREE.Line(lineGeometry, lineMaterial);
-                    scene.add(line);
-                }
-            }
-        }
+//        var tmCloud = new THREE.Geometry();
+//        var sphereGeometry = new THREE.SphereGeometry( 5, 32, 32 );
+//        var sphereMaterial = new THREE.MeshLambertMaterial({ color: parseInt('0x' + annot['terms'][term]['color']) });
+//        for (var i in nodes) {
+//            var n = nodes[i], terms = annot['map'][n.orf];
+//            if ($.inArray(n.id, terms) != -1) {
+//                tmCloud.vertices.push(new THREE.Vector3(n.x, n.y, n.z));
+//            }
+//        }
+//        tmCloud.computeBoundingSphere();
+//        tmCloud = tmCloud.boundingSphere;
+//        
+//        for (var i in nodes) {
+//            var n = nodes[i], terms = vizdata['annotation']['map'][n.orf];
+//            if (terms && terms.indexOf(parseInt(term)) != -1) {
+//                var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+//                n.x = n.x - tmCloud.center.x;
+//                n.y = n.y - tmCloud.center.y;
+//                n.z = n.z - tmCloud.center.z;
+//                sphere.position.set(n.x, n.y, n.z);
+//                scene.add(sphere);
+//                network.push(n.id);
+//            }
+//        }
+//        
+//        var lineMaterial = new THREE.LineBasicMaterial({ color: parseInt('0x' + annot['terms'][term]['color']), linewidth : 0.25, opacity: 0.3, transparent: true, });
+//        for (var i in vizdata['edges']) {
+//            var e = vizdata['edges'][i], s = nodes[e['s']], t = nodes[e['t']];
+//            if (s && t) {
+//                if ($.inArray(s.id, network) != -1 && $.inArray(t.id, network) != -1) {
+//                    var lineGeometry = new THREE.Geometry();
+//                    lineGeometry.vertices.push(new THREE.Vector3(s.x, s.y, s.z));
+//                    lineGeometry.vertices.push(new THREE.Vector3(t.x, t.y, t.z));
+//                    var line = new THREE.Line(lineGeometry, lineMaterial);
+//                    scene.add(line);
+//                }
+//            }
+//        }
         
         light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(camera.position.x, camera.position.y, camera.position.z);
@@ -320,12 +346,16 @@ define([
     
     function render() {
         renderer.render(scene, camera);
+        uiRender.render(ui, uiCamera);
     };
 
     function onWindowResize() {
-        camera.aspect = $('#network-container').width()/$('#network-container').height();
+        var windowWidth = opts.rootElement.width(), windowHeight = opts.rootElement.height();
+        
+        camera.aspect = windowWidth/windowHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize($('#network-container').width(), $('#network-container').height());
+        renderer.setSize(windowWidth, windowHeight);
+        uiRender.setSize(windowWidth, windowHeight)
         render();
     };
 
@@ -333,7 +363,7 @@ define([
         init();
         window.controller = Leap.loop({enableGestures: true}, function(frame) {
             if (!!control.updateTerm) {
-                initAnnotation(control.updateTerm);
+//                initTerm(control.updateTerm);
                 control.state = 'annotation';
                 control.updateTerm = null;
             } else {
