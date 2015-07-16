@@ -40,29 +40,25 @@
                   urls: {
                       'layout' : '{{ dataset.static_url }}/3d.json',
                       'annotation' : '{% url 'annotation' annotation.id %}',
-                      'sprite' : '{% static "images/sphere.png" %}',
+                      'node' : '{% static "images/sphere.png" %}',
                   },
                   ui: {
                       'root' : '{{ dataset.static_url }}/root.png',
-                      'extract' : '{{ dataset.static_url }}/extract.svg'
+                      'extract' : '{{ dataset.static_url }}/extract.png'
                   },
               },
           },
           paths: {
-              'leap': '{% static "js/boone3D/leap-0.6.4.min" %}',
-              'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min',
-              'gui': '//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min',
-              'svgloader': '{% static "js/boone3D/SVGLoader" %}',
-              
-              'controls': '{% static "js/boone3D/LeapCameraControls" %}',
-              
+              'leap': '{% static "js/libs/leap-0.6.4.min" %}',
+              'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three',
+              'stats': '{% static "js/libs/stats.min" %}',
               'boone3D': '{% static "js/boone3D/boone3D" %}',
-              'stats': '{% static "js/boone3D/stats.min" %}',
+              'leapControls': '{% static "js/boone3D/leapControls" %}',
+              'build': '{% static "js/boone3D/buildGraph" %}',
+              'utils': '{% static "js/boone3D/utils" %}',
           },
           shim: {
               'stats' : ['three'],
-              'controls': ['three', 'leap'],
-              'svgloader' : ['three']
           }
       });
       
@@ -72,7 +68,7 @@
               $('#network-container').css('width', $(window).width() - 30);
           }).resize();
 //           $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
-          boone3D.start();
+          boone3D.runFrame();
       });
   </script>
 {% endblock js %}
