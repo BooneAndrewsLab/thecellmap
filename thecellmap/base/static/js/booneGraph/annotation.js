@@ -123,13 +123,14 @@ define([
         if (!annotations.get(id)) {
             if (id == 'None') {
                 annotations.add(new AnnotationModel());
+                loadRegion(id);
+                rebuildLegend();
             } else {
                 opts['annotations'].forEach(function(annotation) {
                     if (annotation['name'] === id) {
                         $.ajax({
                             url : annotation['url'],
                             dataType : 'json',
-                            async : false,
                             success : function(data) {
                                 var addedAnnot = data;
                                 addedAnnot.id = id;
@@ -158,6 +159,9 @@ define([
                                 addedAnnot['colorPalette'] = colors.concat([opts['defaultNodeColor'], opts['multifunctionNodeColor']]);
                                 
                                 annotations.add(new AnnotationModel(addedAnnot));
+                                
+                                loadRegion(id);
+                                rebuildLegend();
                             },
                         });
                     }
@@ -169,8 +173,6 @@ define([
         $('#btn-group-annotation li a').each(function() {
             if ($(this).html() == id) $(this).parent().addClass('active');
         });
-        loadRegion(id);
-        rebuildLegend();
     }
     
     var clearRegions = function() {
@@ -258,7 +260,6 @@ define([
             if (regionGroup.name === id) {
                 $.ajax({
                     url : regionGroup.url,
-                    async : true,
                     success : function(data) {
                         if ($.isEmptyObject(data)) return;
                         

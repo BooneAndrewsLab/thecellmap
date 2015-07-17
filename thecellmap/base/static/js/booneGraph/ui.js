@@ -168,6 +168,7 @@ define([
             
             context.clearRect(0, 0, canvas.width(), canvas.height());
             var draw = [], cursor = {x: x[0], y: y[0]}, delta = 0, length = 0, i = 1, dS = selected.length - 1;
+            var drawReady = true;
             
             if (drawShape == 'free' || drawShape == 'line' || !fillOn) {
                 switch (drawShape) {
@@ -227,47 +228,50 @@ define([
                 switch (drawShape) {
                 case 'circle':
                     var num = selected.length, path = opts.urls['circle'];
-                                    
-                    $.ajax({dataType: 'json', type: 'get', data: {num: num}, url: path, async: false, success: function(data) {
-                        draw = data
-                    }});
+                    drawReady = false;
                     
-                    if (draw.length == selected.length) {
-                        r = Math.sqrt(mX*mX + mY*mY)
-                        for (i = 0; i < draw.length; i++) {
-                            draw[i]['x'] = draw[i]['x'] * r + x[0] + mX;
-                            draw[i]['y'] = draw[i]['y'] * r + y[0] + mY;
-                        }
-                    } else {
-                        var i = level = 1, coor = [];
-                        while (i < selected.length) {
-                            i += level * 6;
-                            level += 1;
-                        }
-                       
-                        level -= 1;
-                         
-                        for (i = -level; i <= level - 1; i++) {
-                            for (var j = -level; j <= level - 1; j++) {
-                                if (Math.abs(i + j) <= level) {
-                                    coor.push({x: 0.5 * i * 3/2, y: Math.sqrt(3) * 0.5 *(j + i/2)});
-                                    coor.push({x: Math.sqrt(3) * 0.5 *(j + i/2), y: 0.5 * i * 3/2});
+                    $.ajax({dataType: 'json', type: 'get', data: {num: num}, url: path, success: function(data) {
+                        draw = data
+                        if (draw.length == selected.length) {
+                            r = Math.sqrt(mX*mX + mY*mY)
+                            for (i = 0; i < draw.length; i++) {
+                                draw[i]['x'] = draw[i]['x'] * r + x[0] + mX;
+                                draw[i]['y'] = draw[i]['y'] * r + y[0] + mY;
+                            }
+                        } else {
+                            var i = level = 1, coor = [];
+                            while (i < selected.length) {
+                                i += level * 6;
+                                level += 1;
+                            }
+                           
+                            level -= 1;
+                             
+                            for (i = -level; i <= level - 1; i++) {
+                                for (var j = -level; j <= level - 1; j++) {
+                                    if (Math.abs(i + j) <= level) {
+                                        coor.push({x: 0.5 * i * 3/2, y: Math.sqrt(3) * 0.5 *(j + i/2)});
+                                        coor.push({x: Math.sqrt(3) * 0.5 *(j + i/2), y: 0.5 * i * 3/2});
+                                    }
                                 }
                             }
+                            
+                            var r = Math.sqrt(mX*mX + mY*mY) / level;
+                            for (i = 0; i < coor.length; i++) {
+                                coor[i]['x'] = coor[i]['x'] * r + x[0] + mX;
+                                coor[i]['y'] = coor[i]['y'] * r + y[0] + mY;
+                            }
+                            
+                            for (i = 0; i < selected.length; i++) {
+                                var n = Math.floor(Math.random() * coor.length);
+                                draw.push(coor[n]);
+                                coor.splice(n, 1);
+                            }
                         }
-                        
-                        var r = Math.sqrt(mX*mX + mY*mY) / level;
-                        for (i = 0; i < coor.length; i++) {
-                            coor[i]['x'] = coor[i]['x'] * r + x[0] + mX;
-                            coor[i]['y'] = coor[i]['y'] * r + y[0] + mY;
-                        }
-                        
-                        for (i = 0; i < selected.length; i++) {
-                            var n = Math.floor(Math.random() * coor.length);
-                            draw.push(coor[n]);
-                            coor.splice(n, 1);
-                        }
-                    }
+                    }}).always(function() {
+                        drawReady = true;
+                    });
+                    
                     break;
                 default:
                     var r = Math.max(mX / mY) / Math.min (mX / mY);
@@ -290,6 +294,8 @@ define([
                     }
                 }
             }
+            
+            while(!drawReady);
             
             var position = sigInst.position(), size = sigInst.size();
             var n1 = Utils.getNode(selected[0]), n2 = Utils.getNode(selected[1]);

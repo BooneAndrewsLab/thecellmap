@@ -60,7 +60,6 @@ define([
         $.ajax({
             url: opts.urls['layout'], 
             dataType : 'json',
-            async : false,
             success: function(data) {
                 var strain, annot, color;
                 nodes = data.nodes || [];
@@ -93,16 +92,14 @@ define([
                     node.size_init = node.size;
                     node._hidden = node.hidden; // Our internal way to know if user hid the node manually or not
                 });
+                
+                loadDataset(0, {}, function () {
+                    state.set('isInitializing', false);
+                });
             },
-        }).always(function() {
-//                opts.cb(nodes, edges, extraData); 
         }).fail(function(e) { 
-            console.log('failed', e);
+            // TODO: Some meaningful message to user here
         });
-        
-        loadDataset(0);
-        updateEdges(0);
-        state.set('isInitializing', false);
     }
     
     var loadDataset = function(dsid, data, callback) {
@@ -114,7 +111,6 @@ define([
             dataType : 'json',
             method: method,
             data: data,
-            async : false,
             success: function(data) {
                 edges = data.edges;
                 
@@ -170,8 +166,10 @@ define([
             });
             
             updateEdges(dsid);
+            updateLabels(dsid);
             Utils.graphCenter();
             Annotation.rebuildLegend();
+            Settings.updateLabels();
         } else if (dsid == 1) { //Interactions
             var selected = [];
             
@@ -205,12 +203,11 @@ define([
                     Layout.toggleLayout(layoutType);
                 }
                 
+                updateLabels(dsid);
+                Annotation.rebuildLegend();
+                Settings.updateLabels();
             });
         }
-        
-        updateLabels(dsid);
-        Annotation.rebuildLegend();
-        Settings.updateLabels();
     }
     
     var tmpNetworks = {before: {}, current: {}};

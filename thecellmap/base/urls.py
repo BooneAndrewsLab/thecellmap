@@ -2,10 +2,15 @@
 
 from django.conf.urls import url, patterns, include
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
 from rest_framework.urls import template_name
 
 
-urlpatterns = patterns('base.views',
+urlpatterns = patterns('',
+    url(r'^favicon[.]ico$', RedirectView.as_view(url='/static/favicon.ico'))
+)
+
+urlpatterns += patterns('base.views',
     url(r'^$', 'home', name='home'),
     url(r'^about/$', 'about', name='about'),
     url(r'^login/$', 'login', name='login'),
