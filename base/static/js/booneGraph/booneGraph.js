@@ -126,11 +126,12 @@ define([
         }).bind('downnodes', function() {
          });
         UI.initUI();
-        Node.initSelect2();
+        Node.initSelect2(function() {
+            Dataset.loadLayout();
+        });
         var eventsView = new EventsView({el: $(opts['rootElement'])});
         UI.showUI();
         Annotation.loadAnnotation(state.get('annotation'));
-        Dataset.loadLayout();
         $(document).mousemove(function(e) { mouseX = e.pageX, mouseY = e.pageY; });
     };
     

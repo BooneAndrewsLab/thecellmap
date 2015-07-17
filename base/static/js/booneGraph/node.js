@@ -14,11 +14,10 @@ define([
     'sigma.searchlocator',
 ], function($, _, _str, Backbone, StrainModel, 
     Annotation, Layout, Settings, Utils) {
-    var initSelect2 = function () {
+    var initSelect2 = function (callback) {
         $.ajax({
             url : opts.urls['nodes'],
             dataType : 'json',
-            async : false,
             success : function(data) {
                 var strains = vizdata['strains'], nodes = data['nodes'], annotations = vizdata['annotations'];
                 _.each(nodes, function(node) {
@@ -286,6 +285,8 @@ define([
 ////                            updateTooltips();
                     }
                 });
+                
+                if (callback) callback();
             }
         });
     }
