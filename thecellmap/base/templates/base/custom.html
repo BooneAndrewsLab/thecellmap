@@ -17,44 +17,9 @@
 {% block js %}
 {{ block.super }}
     <script type="text/javascript">
-      require.config({
-          config: {
-              customGraph: {
-                  genesUrl: "{% url 'genes' %}",
-              }
-          },
-          paths: {
-              'jszip': '//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min',
-              'xls': '//cdnjs.cloudflare.com/ajax/libs/xls/0.7.5/xls.min',
-              'xlsx': '//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx',
-              
-              'settingsModel': "{% static 'js/models/settingsModel' %}",
-              
-              'customGraph': "{% static 'js/app/customGraph' %}",
-              'fileReader': "{% static 'js/libs/bootstrap.file-input' %}",
-              'jquery.parser': "{% static 'js/libs/jquery.parse' %}",
-              'load': "{% static 'js/app/load' %}",
-              'select2': "{% static 'js/libs/select2' %}",
-              'settings': "{% static 'js/app/settings' %}",
-              'wizard': "{% static 'js/libs/bootstrap-wizard' %}",
-          },
-          shim: {
-              'backbone': ['underscore', 'jquery'],
-              'underscore.strings': ['underscore'],
-              'bootstrap': ['jquery'],
-              'fileReader': ['bootstrap'],
-              'jquery.cookie': ['jquery'],
-              'jquery.parser': ['jquery'],
-              'load': ['jszip'],
-              'select2': ['jquery'],
-              'wizard': ['bootstrap'],
-              'xlsx': ['jszip', 'load'],
-          }
-      });
-      require(['customGraph'], function(customGraph) {
-          $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
-          customGraph.init();
-      });
+      window.opts = {
+          genesUrl: "{% url 'genes' %}",
+      }
     </script>
 {% endblock js %}
 

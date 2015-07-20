@@ -1,5 +1,5 @@
 {% extends "_layouts/base.html" %}
-{% load staticfiles base_extras %}
+{% load staticfiles base_extras require %}
 {% block page_title_suffix %} - {{ dataset.verbose_name }} network {% endblock %}
 
 {% block meta %}
@@ -25,116 +25,53 @@
 {% endblock css %}
 
 {% block js %}
+
 {{ block.super }}
-  <script type="text/javascript">
-      require.config({
-         config: {
-             booneGraph: {
-                 dataset: {
-                     id: "{{ dataset.id }}",
-                     name: "{{ dataset.name }}",
-                     fetched: [],
-                 },
-                 urls: {
-                     nodes: "{{ dataset.static_url }}/nodes.json",
-                     layout: "{{ dataset.static_url }}/layout.json",
-                     correlations: "{{ dataset.static_url }}/correlations.json",
-                     interactions: "interactions/",
-                     circle: "{% url 'circle_pack' %}",
-                 },
-                 annotations: [{% for annot in annotations %}{
-                     id: "{{ annot.id }}",
-                     name: "{{ annot.name }}",
-                     url: "{% url 'annotation' annot.id %}"
-                 },{% endfor %}],
-                 regionGroups: [{% for r in regionGroups %}{
-                     id: {{ r.id }},
-                     name: "{{ r.name }}",
-                     url: "{% url 'region_group' dataset.id r.id %}"
-                 },{% endfor %}],
-                 canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
-             },
-         },
-         paths: {
-             /* library */
-             'fileSaver': '//cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2014-11-29/FileSaver.min',
-             'ladda': '//cdnjs.cloudflare.com/ajax/libs/Ladda/0.9.8/ladda.min',
-             'spin': '//cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min',
-             'zeroClipboard': '//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/2.2.0/ZeroClipboard.min',
-             
-             'blob': "{% static 'js/libs/blob' %}",
-             'canvas2Blob': "{% static 'js/libs/canvas-toBlob' %}",
-             'canvas2Svg': "{% static 'js/libs/canvas2svg' %}",
-             'combinations': "{% static 'js/libs/combinations' %}",
-             'drag': "{% static 'js/libs/dom-drag' %}",
-             'noUISlider': "{% static 'js/libs/nouislider-8.0.1.min' %}",
-             'packer': "{% static 'js/libs/packer.growing' %}",
-             'pickAColor': "{% static 'js/libs/pick-a-color' %}",
-             'select2': "{% static 'js/libs/select2' %}",
-             'sigma': "{% static 'js/libs/isigma' %}",
-             'tinyColor': "{% static 'js/libs/tinycolor-min' %}",
-             'xmlWriter': "{% static 'js/libs/XMLWriter-1.0.0-min' %}",
-             
-             'sigma.forcelayout': "{% static 'js/libs/plugins/sigma.forcelayout' %}",
-             'sigma.move': "{% static 'js/libs/plugins/sigma.move' %}",
-             'sigma.rotate': "{% static 'js/libs/plugins/sigma.rotate' %}",
-             'sigma.searchlocator': "{% static 'js/libs/plugins/sigma.searchlocator' %}",
-             
-             'booneGraph': "{% static 'js/booneGraph/booneGraph' %}",
-             
-             'annotationModel': "{% static 'js/models/annotationModel' %}",
-             'annotationCollection': "{% static 'js/models/annotationCollection' %}",
-             'regionGroupModel': "{% static 'js/models/regionGroupModel' %}",
-             'regionGroupCollection': "{% static 'js/models/regionGroupCollection' %}",
-             'settingsModel': "{% static 'js/models/settingsModel' %}",
-             'stateModel': "{% static 'js/models/stateModel' %}",
-             'strainModel': "{% static 'js/models/strainModel' %}",
-             'strainCollection': "{% static 'js/models/strainCollection' %}",
-             
-             'annotation': "{% static 'js/booneGraph/annotation' %}",
-             'dataset': "{% static 'js/booneGraph/dataset' %}",
-             'download': "{% static 'js/booneGraph/download' %}",
-             'layout': "{% static 'js/booneGraph/layout' %}",
-             'node': "{% static 'js/booneGraph/node' %}",
-             'settings': "{% static 'js/booneGraph/settings' %}",
-             'utils': "{% static 'js/booneGraph/utils' %}",
-             
-             /* UI */
-             'events': "{% static 'js/booneGraph/events' %}",
-             'ui': "{% static 'js/booneGraph/ui' %}",
-             'advanceUI': "{% url 'advance_ui' %}",
-             'baseUI': "{% url 'base_ui' %}",
-             'drawUI': "{% url 'draw_ui' %}",
-             'simpleUI': "{% url 'simple_ui' %}", 
-         },
-         shim: {
-             'backbone': ['underscore', 'jquery'],
-             'bootstrap': ['jquery'],
-             
-             'jquery.cookie': ['jquery'],
-             'ladda': ['jquery'],
-             'noUISlider': ['jquery'],
-             'select2': ['jquery'],
-             
-             'pickAColor': ['jquery', 'tinyColor'],
-             
-             'underscore.strings': ['underscore'],
-             
-             'sigma.forcelayout': ['sigma'],
-             'sigma.move': ['sigma'],
-             'sigma.rotate': ['sigma'],
-             'sigma.searchlocator': ['sigma'],
-         }
-      });
-      
-      require(['booneGraph'], function(booneGraph) {
-          $(window).resize(function() {
-              $('.sigma-parent').css('height', $(window).height() - $('.navbar').height() - 30);
-          }).resize();
-          $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
-          booneGraph.init();
-      });
+  <script type='text/javascript'>
+  function getCookie(cname) {
+      var name = cname + '=';
+      var ca = document.cookie.split(';');
+      for(var i=0; i<ca.length; i++) {
+          var c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1);
+          if (c.indexOf(name) == 0) {
+              return c.substring(name.length,c.length).replace(/^\"|\"$/g, '');
+          }
+      }
+      return '';
+  }
+      window.opts = {
+          dataset: {
+              id: "{{ dataset.id }}",
+              name: "{{ dataset.name }}",
+              fetched: [],
+          },
+          urls: {
+              nodes: "{{ dataset.static_url }}/nodes.json",
+              layout: "{{ dataset.static_url }}/layout.json",
+              correlations: "{{ dataset.static_url }}/correlations.json",
+              interactions: "interactions/",
+              circle: "{% url 'circle_pack' %}",
+              ui: {
+                  'advanced': "{% url 'advance_ui' %}",
+                  'draw': "{% url 'draw_ui' %}",
+                  'simple': "{% url 'simple_ui' %}",
+              }
+          },
+          annotations: [{% for annot in annotations %} {
+              id: "{{ annot.id }}",
+              name: "{{ annot.name }}",
+              url: "{% url 'annotation' annot.id %}",
+          }, {% endfor %}],
+          regionGroups: [{% for r in regionGroups %} {
+              id: {{ r.id }},
+              name: "{{ r.name }}",
+              url: "{% url 'region_group' dataset.id r.id %}",
+          }, {% endfor %}],
+          canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
+      }
   </script>
+  {% require_module 'network' %}
 {% endblock js %}
 
 {% block content %}
