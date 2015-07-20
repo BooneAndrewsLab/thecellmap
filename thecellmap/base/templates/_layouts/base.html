@@ -111,34 +111,13 @@
     {% endblock footer %}
   </footer>
   
-  {% block cdn_js %}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.18/require.min.js"></script>
-  {% endblock cdn_js %}
-  
-  {% compress js %}
   {% block js %}
-  <script type="text/javascript">
-      require.config({
-         paths: {
-             'jquery': "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min",
-             'backbone': "//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.1/backbone-min",
-             'underscore': "//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min",
-             'bootstrap': "//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min",
-             'text': "//cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text",
-             
-             'jquery.cookie': "//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min",
-             'underscore.strings': "//cdnjs.cloudflare.com/ajax/libs/underscore.string/3.1.1/underscore.string.min",
-         },
-         shim: {
-             'backbone': ['jquery', 'underscore'],
-             'jquery.cookie': ['jquery'],
-             'underscore.strings': ['underscore']
-         }
-      });
-  </script>
-  <script src="{% static 'js/main.js' %}"></script>
   {% endblock js %}
-  {% endcompress %}
+  
+  <!-- {% block cdn_js %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.18/require.min.js"></script>
+  {% endblock cdn_js %} -->
+  
   <!-- end scripts -->
   
   {% include "includes/settings.html" %}

@@ -303,21 +303,6 @@ define([
         ).toUpperCase();
     }
     
-    var hasFlash = function() {
-        try {
-            var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
-            if (fo) {
-                return true;
-            }
-        } catch (e) {
-            if (navigator.mimeTypes
-                && navigator.mimeTypes['application/x-shockwave-flash'] != undefined
-                && navigator.mimeTypes['application/x-shockwave-flash'].enabledPlugin) {
-                return true;
-            }
-        }
-    }
-    
     var cleanUpNodes = function() {
         sigInst.iterNodes(function(node) {
             if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
@@ -392,7 +377,6 @@ define([
         
         getUnique: getUnique,
         rgbToHex: rgbToHex,
-        hasFlash: hasFlash,
         
         cleanUpNodes: cleanUpNodes,
         messageUser: messageUser,

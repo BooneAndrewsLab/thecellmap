@@ -2,7 +2,6 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'zeroClipboard',
     
     'node',
     'annotation',
@@ -15,7 +14,7 @@ define([
     'sigma.rotate',
     'bootstrap',
     'drag',
-], function($, _, Backbone, ZeroClipboard,
+], function($, _, Backbone, 
     Node, Annotation, Layout, Download, Dataset, Utils) {
     
     var eventsView = Backbone.View.extend({
@@ -66,13 +65,6 @@ define([
                     $(this).toggleClass('disabled', state.get('showCircular'));
                 });
             });
-            
-            if (Utils.hasFlash()) {
-                ZeroClipboard.config({
-                    forceEnhancedClipboard: true
-                });
-                var client = new ZeroClipboard($('#list-selected'));
-            }
             
             var box = $(".content:first")[0].getBoundingClientRect();
             if ($('#panel-legend').length) {

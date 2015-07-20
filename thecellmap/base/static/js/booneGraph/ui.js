@@ -3,19 +3,21 @@ define([
     'underscore',
     'backbone',
     
+    'jquery.cookie',
+    
     'annotation',
     'dataset',
     'layout',
     'utils',
     'node',
     
-    'text!baseUI',
-    'text!simpleUI',
-    'text!advanceUI',
-    'text!drawUI',
+    'text!' + getCookie('base_ui'),
+    'text!' + getCookie('simple_ui'),
+    'text!' + getCookie('advance_ui'),
+    'text!' + getCookie('draw_ui'),
     
     'noUISlider',
-], function($, _, Backbone, Annotation, Dataset, Layout, Utils, Node,
+], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node,
     baseTemplate, simpleTemplate, advanceTemplate, drawTemplate, nouislider
     ) {
     
@@ -386,7 +388,7 @@ define([
                 
                 var nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
                 if (val < lowVal && nodes.length <= nodeLimit) {
-                    $.post('correlations/', {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
+                    $.post('correlations/', {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
                         for (n in data['nodes']) {
                             var node = data['nodes'][n];
                             var strain = Utils.getStrain(node);
