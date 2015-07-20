@@ -57,6 +57,12 @@ INSTALLED_APPS = (
     'contact_form',
     'rest_framework',
     'rest_framework_swagger',
+    
+    'require'
+)
+
+COMPRESS_PRECOMPILERS = (
+    ('text/requirejs', 'requirejs.RequireJSCompiler'),
 )
 
 # Place bcrypt first in the list, so it will be the default password hashing
@@ -237,11 +243,25 @@ MANAGERS = ADMINS
 # SECURITY WARNING: don't run with debug turned on in production!
 # Debugging displays nice error messages, but leaks memory. Set this to False
 # on all server instances and True only for development.
-DEBUG = TEMPLATE_DEBUG = False
+
+STATICFILES_STORAGE = 'require.storage.OptimizedStaticFilesStorage'
+STATICFILES_DIRS = ('base/static/', )
+REQUIRE_ENVIRONMENT = 'base.nodejs.NodeJSEnvironment'
+REQUIRE_BUILD_PROFILE = False
+REQUIRE_DEBUG = False
+REQUIRE_STANDALONE_MODULES = {
+    'network': {
+        'out': 'network-built.js',
+        "build_profile": "network.build.js",
+    }, 
+#     'custom': {
+#         'out': 'custom-built.js',
+#         "build_profile": "custom.build.js",
+#     }
+}
 
 # Is this a development instance? Set this to True on development/master
 # instances and False on stage/prod.
-DEV = False
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts

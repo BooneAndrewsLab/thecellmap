@@ -17,7 +17,6 @@ define([
     'ui',
     'events',
     'module',
-    
     'sigma',
 ], function($, _, Backbone, StateModel, 
     AnnotationCollection, RegionGroupCollection, StrainCollection,
@@ -61,7 +60,7 @@ define([
     };
     window.sliderProperties = $.extend({}, DEFAULTS.slider, module.config().slider || {});
     window.graphProperties = $.extend({}, DEFAULTS.graphProperties, module.config().graphProperties || {});
-    window.opts = $.extend({}, DEFAULTS, module.config());
+    $.extend(opts, DEFAULTS);
     window.vizdata = {
         annotations: new AnnotationCollection(),
         strains: new StrainCollection(),

@@ -3,6 +3,7 @@ define([
     'underscore',
     'backbone',
     
+    'jquery.cookie',
     'tinyColor',
     'utils',
     
@@ -10,8 +11,7 @@ define([
     'regionGroupModel',
     
     'pickAColor',
-    'jquery.cookie',
-], function($, _, Backbone, TinyColor,
+], function($, _, Backbone, Cookies, TinyColor,
     Utils,
     AnnotationModel, RegionGroupModel) {
     window.tinycolor = TinyColor;
@@ -24,8 +24,8 @@ define([
                 annot = data.get('map')[strain.get('orf')];
                 if (annot != undefined) {
                     if (annot.length == 1) {
-                        n.color = $.cookie(data.get('terms')[annot[0]].name) == undefined ? 
-                                data.get('colorPalette')[data.get('terms')[annot[0]].idx] : $.cookie(data.get('terms')[annot[0]].name);
+                        n.color = Cookies.get(data.get('terms')[annot[0]].name) == undefined ? 
+                                data.get('colorPalette')[data.get('terms')[annot[0]].idx] : Cookies.get(data.get('terms')[annot[0]].name);
                     } else {
                         n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
                     }
@@ -80,10 +80,10 @@ define([
             terms[-1] = annotation.get('terms')[-1];
         }
         _.each(terms, function(term) {
-            if ($.cookie(term.name) == undefined) {
+            if (Cookies.get(term.name) == undefined) {
                 var color = annotation.get('colorPalette')[term.idx];
             } else {
-                var color = $.cookie(term.name);
+                var color = Cookies.get(term.name);
             }
 //            restrict name length, keep all annotation in one line within legend
 //            if (name.length > 30) {
@@ -104,7 +104,7 @@ define([
                 if (terms[n].idx == a) break;
             }
             if (n != -1 && n != -2) {
-                $.cookie(term.name, color);
+                Cookies.set(term.name, color);
             } else {
                 annotation.get('colorPalette')[term.idx] = color;
             }

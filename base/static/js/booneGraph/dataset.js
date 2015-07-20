@@ -3,6 +3,8 @@ define([
     'underscore',
     'backbone',
     
+    'jquery.cookie',
+    
     'annotation',
     'dataset',
     'layout',
@@ -11,7 +13,7 @@ define([
     'utils',
     
     'strainModel',
-], function($, _, Backbone, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
+], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
     var updateEdges = function(ds) {
         var ele = $(".cutoff-bar-simple[data-dataset=\"" + ds + "\"], .cutoff-bar[data-dataset=\"" + ds + "\"]");
         sigInst._core.graph.edges.forEach(function(edge) {
@@ -185,7 +187,7 @@ define([
                 selected = Utils.getSelectedNodes();
             }
             
-            loadDataset(1, {csrfmiddlewaretoken: $.cookie('csrftoken'), nodes: selected}, function(edges) {
+            loadDataset(1, {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: selected}, function(edges) {
                 var nodes = [];
                 edges.forEach(function(e) {
                     if (nodes.indexOf(e.source) == -1) nodes.push(e.source);

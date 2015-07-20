@@ -6,18 +6,18 @@ import math
 import os
 import pickle
 
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
+from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
+from base.utils import print_queries, is_integer, JsonResponse
 from django.conf import settings
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
+from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
-
-from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
-from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
-from base.utils import print_queries, is_integer, JsonResponse
 
 
 def three_demension(request, dataset_id):
@@ -30,13 +30,17 @@ def three_demension(request, dataset_id):
 
 def _serve_dataset(request, dataset=None):
     dataset = Dataset.pk_or_default(dataset, request.user)
+    
     if request.user.is_authenticated() or dataset.is_published:
-        return render(request, 'base/network.html', {
+        response = render(request, 'base/network.html', {
                 'dataset': dataset,
                 'annotations': Annotation.objects.all(),
                 'regionGroups': RegionGroup.objects.all(),
-                'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt'))
-          })
+                'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
+        })
+        for x in ('base_ui', 'advance_ui', 'simple_ui', 'draw_ui'):
+            response.set_cookie(x, reverse(x))
+        return response
     else:
         return HttpResponseForbidden("Permission Required")
 

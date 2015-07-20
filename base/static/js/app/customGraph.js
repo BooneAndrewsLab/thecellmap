@@ -2,18 +2,18 @@ define([
     'jquery',
     'underscore',
     'backbone',
+    'jquery.cookie',
     'settings',
     'module',
     
     'bootstrap',
     'fileReader',
     'jquery.parser',
-    'jquery.cookie',
     'select2',
     'xls',
     'xlsx',
     'wizard',
-], function($, _, Backbone, Settings, module) {
+], function($, _, Backbone, Cookies, Settings, module) {
     var results = null, genes = null, maxid = 0, seen, workbook, nodeAttrs, wizard;
     var networkName, fileType, isFirst = true, isPrivate = localStorage.getItem('isPrivate') || false, overlay = null, dataType = 'C', networkType = 'U';
     var colMap = {
@@ -582,7 +582,7 @@ define([
             $.ajax({
                 dataType: 'json', 
                 data: {
-                   'csrfmiddlewaretoken': $.cookie('csrftoken'), 
+                   'csrfmiddlewaretoken': Cookies.get('csrftoken'), 
                    'nodes': JSON.stringify({nodes: nodes}), 
                    'layout': JSON.stringify({nodes: layout}), 
                    'dataset': JSON.stringify({edges: dataset}),
