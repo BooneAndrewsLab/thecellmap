@@ -1,5 +1,5 @@
 {% extends "_layouts/base.html" %}
-{% load staticfiles base_extras require %}
+{% load staticfiles compress require %}
 {% block page_title_suffix %} - {{ dataset.verbose_name }} network {% endblock %}
 
 {% block meta %}
@@ -25,51 +25,40 @@
 {% endblock css %}
 
 {% block js %}
-
 {{ block.super }}
   <script type='text/javascript'>
-  function getCookie(cname) {
-      var name = cname + '=';
-      var ca = document.cookie.split(';');
-      for(var i=0; i<ca.length; i++) {
-          var c = ca[i];
-          while (c.charAt(0)==' ') c = c.substring(1);
-          if (c.indexOf(name) == 0) {
-              return c.substring(name.length,c.length).replace(/^\"|\"$/g, '');
-          }
-      }
-      return '';
-  }
-      window.opts = {
-          dataset: {
-              id: "{{ dataset.id }}",
-              name: "{{ dataset.name }}",
-              fetched: [],
-          },
-          urls: {
-              nodes: "{{ dataset.static_url }}/nodes.json",
-              layout: "{{ dataset.static_url }}/layout.json",
-              correlations: "{{ dataset.static_url }}/correlations.json",
-              interactions: "interactions/",
-              circle: "{% url 'circle_pack' %}",
-              ui: {
-                  'advanced': "{% url 'advance_ui' %}",
-                  'draw': "{% url 'draw_ui' %}",
-                  'simple': "{% url 'simple_ui' %}",
-              }
-          },
-          annotations: [{% for annot in annotations %} {
-              id: "{{ annot.id }}",
-              name: "{{ annot.name }}",
-              url: "{% url 'annotation' annot.id %}",
-          }, {% endfor %}],
-          regionGroups: [{% for r in regionGroups %} {
-              id: {{ r.id }},
-              name: "{{ r.name }}",
-              url: "{% url 'region_group' dataset.id r.id %}",
-          }, {% endfor %}],
-          canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
-      }
+    function getCookie(cname) {
+        var name = cname + '=';
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1);
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length,c.length).replace(/^\"|\"$/g, '');
+            }
+        }
+        return '';
+    }
+    window.opts = {
+        urls: {
+            nodes: "{{ dataset.static_url }}/nodes.json",
+            layout: "{{ dataset.static_url }}/layout.json",
+            correlations: "{{ dataset.static_url }}/correlations.json",
+            interactions: "interactions/",
+            circle: "{% url 'circle_pack' %}",
+        },
+        annotations: [{% for annot in annotations %}{
+            id: "{{ annot.id }}",
+            name: "{{ annot.name }}",
+            url: "{% url 'annotation' annot.id %}",
+        },{% endfor %}],
+        regionGroups: [{% for r in regionGroups %} {
+            id: {{ r.id }},
+            name: "{{ r.name }}",
+            url: "{% url 'region_group' dataset.id r.id %}",
+        }, {% endfor %}],
+        canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
+    }
   </script>
   {% require_module 'network' %}
 {% endblock js %}
@@ -92,6 +81,14 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
         </div>
       </div>
     </div>
+</div>
+
+<div id='ui-placeholder' >
+  {% if ui == 'advance' %} 
+    {% include 'ui/ui.html' %}
+  {% else %}
+    {% include 'ui/simple_ui.html' %}
+  {% endif %}
 </div>
 {% endblock content %}
 

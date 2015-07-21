@@ -55,12 +55,12 @@ define([
                     placeholder: 'Start typing genes or annotations...',
                     allowClear: true,
                     width: '350px',
-                    tokenSeparators: [",", " ", "\t", "\n"],
+                    tokenSeparators: [',', ' ', '\t', '\n'],
                     initSelection: function (element, callback) {
                         var id = $(element).val(), strain, result = [];
-                        id.split(",").forEach(function(x) {
+                        id.split(',').forEach(function(x) {
                             if (x !== "") {
-                                var annot = state.get("annotation");
+                                var annot = state.get('annotation');
                                 if (x.indexOf('annot') == 0) {
                                     x = parseInt(x.replace('annot', ''));
                                     for (var term in annotations.get(annot).get('terms')) {
@@ -74,8 +74,8 @@ define([
                                 } else if (x.indexOf('action_loadannot') == 0) {
                                     x = x.replace('action_loadannot', '')
                                     result.push({
-                                        text: "Load:" + x,
-                                        id: "action_loadannot" + x
+                                        text: 'Load:' + x,
+                                        id: 'action_loadannot' + x
                                     });
                                 } else {
                                     strain = Utils.getStrain(x);
@@ -187,15 +187,15 @@ define([
                         
                         for (aterm in aterms) {
                             if (aterms.hasOwnProperty(aterm) && aterms[aterm].name.toLowerCase().indexOf(term) != -1) {
-                                data.results.unshift({id: 'annot' + aterm, text: "Annotation: " + aterms[aterm].name });
+                                data.results.unshift({id: 'annot' + aterm, text: 'Annotation: ' + aterms[aterm].name });
                                 acount++;
                             }
                             if (acount > 2) break; // List only 3 terms max
                         }
                         
                         opts.annotations.forEach(function(annotation) {
-                            if (("load " + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.get("annotation"))
-                                data.results.unshift({id: "action_loadannot " + annotation.name, text: "Load: " + annotation.name});
+                            if (('load ' + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.get('annotation'))
+                                data.results.unshift({id: 'action_loadannot ' + annotation.name, text: 'Load: ' + annotation.name});
                         });
                         
                         data.results = data.results.slice(0, 6);
@@ -204,14 +204,12 @@ define([
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
                     var selected = Utils.getSelectedNodes(true), numVisibleSelected = 0, strain;
-                    var selectionLength;
-                    
                     var toPaste = _.uniq(_.map(selected, function(s) {return Utils.getStrain(s).get('label');})).sort();
                     $('#copy-area').html(toPaste.toString())
                     
                     var moveOn = true;
                     sigInst.iterNodes(function(node) {
-                        if (node.pin || node.id.indexOf('tmp_') != -1) return;
+                        if (node.id.indexOf('tmp_') != -1) return;
                         if (state.get('showCircular')) var tmpNode = Utils.getNode('tmp_' + node.id);
                         
                         if ($.inArray(node.id + "", selected) >= 0) {
@@ -258,7 +256,6 @@ define([
                     }
                     
                     if (!tokenizing) {
-//                      updateMissingMessage();
                       sigInst.draw();
                         
                         if (!($(selected).not(state.get("selection")).length == 0 && $(state.get("selection")).not(selected).length == 0)) {
@@ -281,8 +278,6 @@ define([
                                 sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
                             }
                         }
-//                        /* Set the tooltips */
-////                            updateTooltips();
                     }
                 });
                 

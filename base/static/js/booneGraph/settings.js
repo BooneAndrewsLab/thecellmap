@@ -3,10 +3,11 @@ define([
     'underscore',
     'backbone',
     'settingsModel',
+    'jquery.cookie',
     'utils',
     
     'select2',
-], function($, _, Backbone, SettingsModel, Utils) {
+], function($, _, Backbone, SettingsModel, Cookies, Utils) {
     window.settings = new SettingsModel();
     
     var initialize = function() {
@@ -55,6 +56,7 @@ define([
         });
         
         settings.on('change:ui', function() {
+            Cookies.set('ui', settings.get('ui'));
             location.reload();
         });
         

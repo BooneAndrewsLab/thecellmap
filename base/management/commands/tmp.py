@@ -19,16 +19,15 @@ class Command(CellMapCommand):
     def handle(self, *args, **options):
         nodes = [];
         edges = [];
-        for ele in self._get_elements('/home/yizhao/Downloads/science_3d.gexf', ['{http://www.gexf.net/1.1draft}node', 'node']):
-            rcva = ele.find('{http://www.gexf.net/1.1draft/viz}position')
+        for ele in self._get_elements('/home/yizhao/Downloads/time1.gexf', ['{http://www.gexf.net/1.2draft}node', 'node']):
+            rcva = ele.find('{http://www.gexf.net/1.2draft/viz}position')
             nodes.append({
                 'id' : int(ele.get('id')), 
-                'x' : float(rcva.get('x')), 
-                'y' : float(rcva.get('y')),
-                'z' : float(rcva.get('z')),
+                'x' : float(rcva.get('x')) * 10, 
+                'y' : float(rcva.get('y')) * 10,
+                'z' : float(rcva.get('z')) * 10,
             })
-        
-        for ele in self._get_elements('/home/yizhao/Downloads/science_3d.gexf', ['{http://www.gexf.net/1.1draft}edge', 'edge']):
+        for ele in self._get_elements('/home/yizhao/Downloads/time1.gexf', ['{http://www.gexf.net/1.2draft}edge', 'edge']):
             edges.append({
                 'id' : int(ele.get('id')),
                 's' : int(ele.get('source')),
@@ -36,7 +35,7 @@ class Command(CellMapCommand):
                 'w' : float(ele.get('weight'))
             })
         
-        self._dump_clean_json({'nodes': nodes, 'edges': edges}, '/home/yizhao/Downloads/science_3d.json')
+        self._dump_clean_json({'nodes': nodes, 'edges': edges}, '/home/yizhao/workspace/thecellmap/static/visualization/Science/3d.json')
     
     def _dump_clean_json(self, obj, f):
         with open(f, 'wb') as out:

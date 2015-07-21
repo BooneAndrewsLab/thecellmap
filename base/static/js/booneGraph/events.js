@@ -131,25 +131,6 @@ define([
                     window.open('dl/','_blank');
                 }
                 break;
-            case 'list-selected':
-                var selectedLabel = Utils.getUnique(selected.map(function(s) {return Utils.getStrain(s).label;}).sort());
-                var selectedOrfs = Utils.getUnique(selected.map(function(s) {return Utils.getStrain(s).orf;}).sort());
-                
-                if (opts.hasFlash) {
-                    Utils.messageUser("Selected genes were copied to clipboard");
-                } else if (selectedLabel.length > 0) {
-                    Utils.alertUser('Selected genes', selectedLabel.join('<br>'), function(ele) {
-                        ele.find('.modal-footer').append(
-                            '<button type="button" class="btn btn-primary submit-ym" data-dismiss="modal">Submit ORFs to YeastMine</button>');
-                        ele.find('.submit-ym').click(function() {
-                            $('<form target="_blank" action="http://yeastmine.yeastgenome.org/yeastmine/portal.do" method="post">\
-                                    <input type="hidden" name="class" value="Gene"> \
-                                    <input type="hidden" name="externalids" value="' + selectedOrfs.join(',') + '"> \
-                               </form>').submit();
-                        });
-                    });
-                }
-                break;
             }
             e.preventDefault();
         },
@@ -211,7 +192,7 @@ define([
         },
         rotateConfirm: function(e) {
             var angle = $('.rotation-input').val(), onlySelected = $('.rotation-select').is(':checked');
-            var nodes = Node.getSelectedNodes(), selected = [];
+            var nodes = Utils.getSelectedNodes(), selected = [];
             
             if (onlySelected) {
                 for (var i = 0; i < nodes.length; i++) {

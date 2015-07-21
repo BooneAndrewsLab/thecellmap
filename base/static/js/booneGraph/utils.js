@@ -58,7 +58,7 @@ define([
     }
     
     var getSelection = function() {
-        var selector = $("#" + state.get('ui') + "-ui input.gene-search-input");
+        var selector = $('#ui input.gene-search-input');
         if (selector.length > 0) {
             return selector.select2('val');
         }
@@ -67,7 +67,7 @@ define([
     
     var clearSelection = function() {
         if (state.get("selection").length > 0) {
-            $("input.gene-search-input").select2('val', "", true);
+            $('input.gene-search-input').select2('val', '', true);
             state.set("selection", []);
         }
     }
@@ -81,7 +81,7 @@ define([
             return !_str.startsWith(sel, 'annot') && !_str.startsWith(sel, 'action');
         });
         
-        if (vizdata['annotations'].get(state.get("annotation"))) {
+        if (vizdata['annotations'].get(state.get('annotation'))) {
             map = vizdata['annotations'].get(state.get("annotation")).get('map');
             
             selected.forEach(function(sel) {
