@@ -19,13 +19,9 @@
   {% block meta %}
   {% endblock %}
 
-  {# use the CDN to get bootstrap css. can not be inside compress css block #}
-  {% block cdn_css %}
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css">
-  {% endblock cdn_css %}
-
   {% compress css %}
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <style type="text/css">
       body {
         padding-top: 50px;

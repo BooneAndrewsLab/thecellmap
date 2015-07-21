@@ -8,12 +8,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 {% endblock meta%}
 
-{% block cdn_css %}
-{{ block.super }}
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.css">
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/Ladda/0.9.8/ladda-themeless.min.css">
-{% endblock cdn_css %}
-
 {% block css %}
 {{ block.super }}
   <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
@@ -21,7 +15,10 @@
   <link href="{% static 'css/viznetworks.css' %}" rel="stylesheet">
   <link href="{% static 'css/pick-a-color-1.2.3.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/nouislider-8.0.1.min.css' %}" rel="stylesheet">
-  <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> <!-- The cdnjs version of this is still not ready... firefox problems with height -->
+  <link href="{% static 'css/settings.css' %}" rel="stylesheet">
+  <link href="{% static 'css/ladda-themeless.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/select2.css' %}" rel="stylesheet">
+  <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block js %}
