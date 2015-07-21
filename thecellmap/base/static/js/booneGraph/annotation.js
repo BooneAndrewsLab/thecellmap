@@ -16,10 +16,9 @@ define([
     AnnotationModel, RegionGroupModel) {
     window.tinycolor = TinyColor;
     var applyAnnotationColors = function() {
-        var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;;
-        if (!(vizdata['regionGroups'].get(state.get('annotation')) && state.get('showRegions'))) {
+        var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;
+        if (!vizdata['regionGroups'].get(state.get('annotation'))) {
             sigInst.iterNodes(function(n) {
-                if (n.pin) return;
                 strain = Utils.getStrain(n.id);
                 annot = data.get('map')[strain.get('orf')];
                 if (annot != undefined) {
@@ -123,8 +122,6 @@ define([
         if (!annotations.get(id)) {
             if (id == 'None') {
                 annotations.add(new AnnotationModel());
-                loadRegion(id);
-                rebuildLegend();
             } else {
                 opts['annotations'].forEach(function(annotation) {
                     if (annotation['name'] === id) {
@@ -159,7 +156,6 @@ define([
                                 addedAnnot['colorPalette'] = colors.concat([opts['defaultNodeColor'], opts['multifunctionNodeColor']]);
                                 
                                 annotations.add(new AnnotationModel(addedAnnot));
-                                
                                 loadRegion(id);
                                 rebuildLegend();
                             },
@@ -167,7 +163,11 @@ define([
                     }
                 });
             }
+        } else {
+            rebuildLegend();
+            loadRegion(id);
         }
+        
         $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
         $('#btn-group-annotation li').removeClass('active');
         $('#btn-group-annotation li a').each(function() {
@@ -256,39 +256,46 @@ define([
     var loadRegion = function(id) {
         var regionGroups = vizdata['regionGroups'], toApply = true;
         clearRegions();
+        state.set('showRegions', false);
+        
         opts['regionGroups'].forEach(function(regionGroup) {
             if (regionGroup.name === id) {
-                $.ajax({
-                    url : regionGroup.url,
-                    success : function(data) {
-                        if ($.isEmptyObject(data)) return;
-                        
-                        var addedGroup = {
-                            id: id,
-                            colorPalette: [], 
-                            regions: [],
-                            names: [],
-                        };
-                        
-                        for (r in data) {
-                            var nodes = [], color, name, n;
-                            for (n in data[r]) {
-                                var node = Utils.getNode(data[r][n]);
-                                if (node) nodes.push(node);
+                state.set('showRegions', true);
+                if (!regionGroups.get(id)) {
+                    toApply = false;
+                    $.ajax({
+                        url : regionGroup.url,
+                        success : function(data) {
+                            if ($.isEmptyObject(data)) return;
+                            var addedGroup = {
+                                id: id,
+                                colorPalette: [], 
+                                regions: [],
+                                names: [],
+                            };
+                            
+                            for (r in data) {
+                                var nodes = [], color, name, n;
+                                for (n in data[r]) {
+                                    var node = Utils.getNode(data[r][n]);
+                                    if (node) nodes.push(node);
+                                }
+                                
+                                addedGroup['colorPalette'].push(data[r]['color']);
+                                addedGroup['names'].push(data[r]['name'])
+                                addedGroup['regions'].push(nodes);
                             }
                             
-                            addedGroup['colorPalette'].push(data[r]['color']);
-                            addedGroup['names'].push(data[r]['name'])
-                            addedGroup['regions'].push(nodes);
-                        }
-                        
-                        regionGroups.add(new RegionGroupModel(addedGroup));
-                        drawRegions();
-                    },
-                }).always(function() {
+                            regionGroups.add(new RegionGroupModel(addedGroup));
+                            drawRegions();
+                        },
+                    }).always(function() {
+                        applyAnnotationColors();
+                    });
+                } else {
                     applyAnnotationColors();
-                });
-                toApply = false;
+                    drawRegions();
+                }
             }
         });
         if (toApply) applyAnnotationColors();

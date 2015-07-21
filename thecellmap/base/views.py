@@ -37,9 +37,8 @@ def _serve_dataset(request, dataset=None):
                 'annotations': Annotation.objects.all(),
                 'regionGroups': RegionGroup.objects.all(),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
+                'ui': request.COOKIES.get('ui') or 'simple',
         })
-        for x in ('base_ui', 'advance_ui', 'simple_ui', 'draw_ui'):
-            response.set_cookie(x, reverse(x))
         return response
     else:
         return HttpResponseForbidden("Permission Required")

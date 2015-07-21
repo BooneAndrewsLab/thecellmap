@@ -306,3 +306,6 @@
     font-size: 12px;
 }
 
+#ui-placeholder {
+    display: none;
+}

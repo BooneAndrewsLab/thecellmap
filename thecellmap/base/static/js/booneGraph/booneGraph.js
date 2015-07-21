@@ -23,7 +23,6 @@ define([
     Annotation, Dataset, Node, Settings, Utils,
     UI, EventsView, module) {
     var DEFAULTS = {
-        annotations: [],
         arrows: false,
         colorScheme: 'black',
         datasets: [],

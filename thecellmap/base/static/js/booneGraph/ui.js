@@ -11,28 +11,20 @@ define([
     'utils',
     'node',
     
-    'text!' + getCookie('base_ui'),
-    'text!' + getCookie('simple_ui'),
-    'text!' + getCookie('advance_ui'),
-    'text!' + getCookie('draw_ui'),
-    
     'noUISlider',
-], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node,
-    baseTemplate, simpleTemplate, advanceTemplate, drawTemplate, nouislider
+], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node, nouislider
     ) {
     
-    var layouts = {
-        simple: simpleTemplate,
-        advance: advanceTemplate,
-        base: baseTemplate,
-        draw: drawTemplate,
-    }
-    
     var buildUI = function() {
-        for (ui in layouts) {
-            if ((ui == 'simple' && state.get('ui') == 'advance') && (ui == 'advance' && state.get('ui') == 'simple')) continue
-            $(opts['rootElement']).append($('<div class="vizualization-ui" id="' + ui + '-ui" style="display: none;">').html(layouts[ui]));
-        }
+        $('.vizualization-ui').appendTo(opts['rootElement']);
+        $('.vizualization-ui').ready(function() {
+            $(window).resize(function() {
+                var parent = $('.vizualization-ui').parent();
+                $('.vizualization-ui').css('height', parent.innerHeight());
+                $('.vizualization-ui').css('width', parent.innerWidth());
+            }).resize();
+        });
+        $('#ui-placeholder').remove();
         
         $('#btn-group-layout').toggleClass('hidden', true);
         
@@ -318,7 +310,7 @@ define([
         $('#draw-cancel').click(function() {
             canvas.hide();
             $('#draw-ui').hide();
-            $('#' + state.get('ui') + '-ui').fadeIn(1000);
+            $('#ui').fadeIn(1000);
         });
     }
     
@@ -580,8 +572,7 @@ define([
     var showUI = function() {
         setTimeout(function() {
             $('.changed-network').fadeIn(2000);
-            $('#' + state.get('ui') + '-ui').fadeIn(1000);
-            $('#base-ui').fadeIn(1000);
+            $('#ui').fadeIn(1000);
         }, 1000);
     }
     

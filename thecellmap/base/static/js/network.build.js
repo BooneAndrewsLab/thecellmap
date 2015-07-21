@@ -4,7 +4,6 @@
         'backbone': 'libs/backbone-min',
         'underscore': 'libs/underscore-min',
         'bootstrap': 'libs/bootstrap.min',
-        'text': 'libs/text',
         
         'jquery.cookie': 'libs/js.cookie',
         'underscore.strings': 'libs/underscore.string.min',
