@@ -244,11 +244,9 @@ MANAGERS = ADMINS
 # Debugging displays nice error messages, but leaks memory. Set this to False
 # on all server instances and True only for development.
 
-STATICFILES_STORAGE = 'require.storage.OptimizedStaticFilesStorage'
+STATICFILES_STORAGE = 'require.storage.OptimizedCachedStaticFilesStorage'
 STATICFILES_DIRS = ('base/static/', )
-REQUIRE_ENVIRONMENT = 'base.nodejs.NodeJSEnvironment'
 REQUIRE_BUILD_PROFILE = False
-REQUIRE_DEBUG = False
 REQUIRE_STANDALONE_MODULES = {
     'network': {
         'out': 'network-built.js',

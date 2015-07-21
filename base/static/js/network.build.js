@@ -11,7 +11,6 @@
         'fileSaver': 'libs/FileSaver.min',
         'ladda': 'libs/ladda',
         'spin': 'libs/spin',
-        'zeroClipboard': 'libs/ZeroClipboard.min',
         
         'blob': 'libs/blob',
         'canvas2Blob': 'libs/canvas-toBlob',
@@ -73,5 +72,6 @@
         'sigma.searchlocator': ['sigma'],
     },
     name: 'network',
-    out: 'network-build.js',
+    out: 'network-built.js',
+//    optimize: "none",
 });
