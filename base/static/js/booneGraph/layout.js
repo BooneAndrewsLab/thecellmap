@@ -12,10 +12,10 @@ define([
 ], function($, _, Backbone, Ladda, Utils) {
     var ladda;
     var setRunningLayout = function(bool) {
-        if (state.get('ui') == 'simple') return;
+        opts.runningLayout = bool;
+        if ($('#btn-layout').length == 0) return;
         
         var button = $('#btn-layout');
-        opts.runningLayout = bool;
         button.toggleClass('btn-primary', !bool);
         button.toggleClass('btn-danger', bool);
         
@@ -38,7 +38,7 @@ define([
             return;
         }
         
-        ladda = Ladda.create($('#btn-layout')[0]);
+        if ($('#btn-layout').length != 0) ladda = Ladda.create($('#btn-layout')[0]);
         state.set('showRegions', false);
         
         if (opts.runningLayout) {
