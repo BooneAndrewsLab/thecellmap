@@ -12,6 +12,8 @@ define([
 ], function($, _, Backbone, Ladda, Utils) {
     var ladda;
     var setRunningLayout = function(bool) {
+        if (state.get('ui') == 'simple') return;
+        
         var button = $('#btn-layout');
         opts.runningLayout = bool;
         button.toggleClass('btn-primary', !bool);
@@ -52,7 +54,7 @@ define([
                         setRunningLayout(false);
                     },
                 progress_callback: function(p) {
-                    setTimeout(function(){ladda.setProgress(p);}, 0);
+                    if (state.get('ui') != 'simple') setTimeout(function(){ladda.setProgress(p);}, 0);
                 },
                 attraction_multiplier: $('#layout-slider-att').val() || 50,
                 repulsion_multiplier: $('#layout-slider-rep').val() || 1,
