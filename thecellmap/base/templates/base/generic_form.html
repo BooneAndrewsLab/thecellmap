@@ -1,13 +1,10 @@
 {% extends "_layouts/base.html" %}
 
-{% load staticfiles crispy_forms_tags %} 
-
-{% block css %}
-{{ block.super }}
-{% endblock css %}
+{% load staticfiles crispy_forms_tags require %} 
 
 {% block js %}
 {{ block.super }}
+  {% require_module 'base' %}
 {% endblock js %}
 
 {% block page_title_suffix %}{% if suffix %} - {{ suffix }}{% endif %}{% endblock %}

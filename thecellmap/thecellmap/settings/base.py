@@ -248,14 +248,30 @@ STATICFILES_STORAGE = 'require.storage.OptimizedCachedStaticFilesStorage'
 STATICFILES_DIRS = ('base/static/', )
 REQUIRE_BUILD_PROFILE = False
 REQUIRE_STANDALONE_MODULES = {
+    'annotation': {
+        'out': 'annotation-built.js',
+        'build_profile': 'build/annotation.build.js',
+    },
+    'base': {
+        'out': 'base-built.js',
+        'build_profile': 'build/base.build.js',
+    },
+    'custom': {
+        'out': 'custom-built.js',
+        'build_profile': 'build/custom.build.js',
+    },
+    'edit': {
+        'out': 'edit-built.js',
+        'build_profile': 'build/edit.build.js',
+    },
     'network': {
         'out': 'network-built.js',
-        "build_profile": "network.build.js",
+        'build_profile': 'build/network.build.js',
+    },
+    'tabular': {
+        'out': 'tabular-built.js',
+        'build_profile': 'build/tabular.build.js',
     }, 
-#     'custom': {
-#         'out': 'custom-built.js',
-#         "build_profile": "custom.build.js",
-#     }
 }
 
 # Is this a development instance? Set this to True on development/master

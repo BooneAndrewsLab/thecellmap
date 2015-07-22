@@ -1,5 +1,5 @@
 {% extends "_layouts/base.html" %}
-{% load staticfiles compress require %}
+{% load staticfiles require %}
 {% block page_title_suffix %} - {{ dataset.verbose_name }} network {% endblock %}
 
 {% block meta %}
@@ -36,6 +36,7 @@
         }
         return '';
     }
+    
     window.opts = {
         urls: {
             nodes: "{{ dataset.static_url }}/nodes.json",

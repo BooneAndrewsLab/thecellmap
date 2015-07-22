@@ -4,7 +4,6 @@ define([
     'backbone',
     'jquery.cookie',
     'settings',
-    'module',
     
     'bootstrap',
     'fileReader',
@@ -13,7 +12,7 @@ define([
     'xls',
     'xlsx',
     'wizard',
-], function($, _, Backbone, Cookies, Settings, module) {
+], function($, _, Backbone, Cookies, Settings) {
     var results = null, genes = null, maxid = 0, seen, workbook, nodeAttrs, wizard;
     var networkName, fileType, isFirst = true, isPrivate = localStorage.getItem('isPrivate') || false, overlay = null, dataType = 'C', networkType = 'U';
     var colMap = {
@@ -425,8 +424,7 @@ define([
     
     var init = function() {
         Settings.initialize();
-        
-        $.get(module.config().genesUrl, function(data) {
+        $.get(opts['genesUrl'], function(data) {
             genes = {};
             data.forEach(function(gene) {
                 maxid = Math.max(gene.id, maxid);
