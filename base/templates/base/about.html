@@ -1,14 +1,9 @@
 {% extends "_layouts/base.html" %}
-
-{% load staticfiles %}
-
-{% block css %}
-{{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/social.css' %}">
-{% endblock css %}
+{% load staticfiles require %}
 
 {% block js %}
 {{ block.super }}
+  {% require_module 'base' %}
 {% endblock js %}
 
 {% block page_title_suffix %} - About{% endblock %}

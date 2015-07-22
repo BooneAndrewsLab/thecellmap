@@ -1,4 +1,4 @@
-require.config({
+({
     paths: {
         'jquery': 'libs/jquery-2.1.4.min',
         'backbone': 'libs/backbone-min',
@@ -8,9 +8,9 @@ require.config({
         'jquery.cookie': 'libs/js.cookie',
         'underscore.strings': 'libs/underscore.string.min',
         
-        'jszip': '//cdnjs.cloudflare.com/ajax/libs/jszip/2.5.0/jszip.min',
-        'xls': '//cdnjs.cloudflare.com/ajax/libs/xls/0.7.5/xls.min',
-        'xlsx': '//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx',
+        'jszip': 'libs/jszip.min',
+        'xls': 'libs/xls.min',
+        'xlsx': 'libs/xlsx.min',
         
         'settingsModel': 'models/settingsModel',
         
@@ -34,10 +34,6 @@ require.config({
         'wizard': ['bootstrap'],
         'xlsx': ['jszip', 'load'],
     },
-})
-
-require(['customGraph'], function(booneGraph) {
-    require(['customGraph'], function(customGraph) {
-        customGraph.init();
-    });
+    name: 'custom',
+    out: 'custom-built.js',
 });
