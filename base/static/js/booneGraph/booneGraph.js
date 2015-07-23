@@ -101,32 +101,57 @@ define([
                 case 'ctrl':
                     break;
                 case 'shift':
-                    $("input.gene-search-input").select2("val", Utils.getSelectedNodes().concat(targets.content), true);
+                    $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(targets.content), true);
                     break;
                 default:
-                    $("input.gene-search-input").select2("val", targets.content, true);
+                    $('input.gene-search-input').select2('val', targets.content, true);
                     break;
                 }
             }
+            
+            var nodes = sigInst._core.graph.nodes.filter(function(node) {
+                return node.selected;
+            });
+            sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
+            
             clicking.wasDragging = false;
             clicking.modifierKey = null;
         }).bind('upgraph', function(evt) {
-            if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$(".btn-group").hasClass('open')) Utils.clearSelection();
+            if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$('.btn-group').hasClass('open')) {
+                Utils.clearSelection();
+                $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
+            }
         }).bind('startmovingnodes', function(evt) {
             Annotation.clearRegions();
+            $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         }).bind('stopmovingnodes', function(evt) {
             Annotation.drawRegions();
+            var nodes = sigInst._core.graph.nodes.filter(function(node) {
+                return node.selected;
+            });
+            sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
         }).bind('draggedNode', function() {
             clicking.wasDragging = true;
         }).bind('selectionStop', function(selection) {
-            if (selection.content.nodeSelect) $("input.gene-search-input").select2("val", Utils.getSelectedNodes().concat(selection.content.selected), true);
+            if (selection.content.nodeSelect) {
+                $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(selection.content.selected), true);
+            }
         }).bind('selectionStart', function() {
-        }).bind('downnodes', function() {
+        }).bind('downnodes', function(selection) {
+            for (var n in selection.content) {
+                var node = Utils.getNode(selection['content'][n]);
+                if (node && node.selected) {
+                    $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
+                    break;
+                }
+            }
          });
+        
         UI.initUI();
         Node.initSelect2(function() {
             Dataset.loadLayout();
         });
+        
         var eventsView = new EventsView({el: $(opts['rootElement'])});
         UI.showUI();
         Annotation.loadAnnotation(state.get('annotation'));
