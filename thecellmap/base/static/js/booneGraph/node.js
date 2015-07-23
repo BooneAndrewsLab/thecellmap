@@ -256,9 +256,9 @@ define([
                     }
                     
                     if (!tokenizing) {
-                      sigInst.draw();
+                        sigInst.draw();
                         
-                        if (!($(selected).not(state.get("selection")).length == 0 && $(state.get("selection")).not(selected).length == 0)) {
+                        if (!($(selected).not(state.get('selection')).length == 0 && $(state.get('selection')).not(selected).length == 0)) {
                             var diff = $(selected).not(state.get("selection")).get(), nodes = [];
                             state.set("selection", selected);
                           

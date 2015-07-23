@@ -6,14 +6,17 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     var self = this;
     var inst = instance;
     var size = 30;
+    var w = 14;
+    var h = 30;
+    
     this.graph = graph;
     this.m = {
-        runtime: 3,
+        runtime: 1,
     };
     
     this.m = jQuery.extend({}, this.m, properties || {});
     
-    var step = self.m.runtime*10;
+    var step = self.m.runtime * 10;
     
     this.init = function() {
         // one move
@@ -22,16 +25,31 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     }
 
     this.atomicGo = function() {
-        var graph = self.graph;
-        var canvas = $(".sigma_mouse_canvas")[0], context = canvas.getContext('2d'), distance = self.m.d * step;
-        
-        context.fillStyle = "rgb(255,0,0)";
+        var graph = self.graph, ratio = sigInst.position().ratio;
+        var canvas = $('.sigma_mouse_canvas')[0], context = canvas.getContext('2d');
         context.clearRect(0, 0, $(document).width(), $(document).height());
+        context.strokeStyle = '#222222';
         
         self.m.nodes.forEach(function(n) {
             if (!n.hidden && !n._hidden) {
+                distance = n.displaySize / ratio * step ;
+                
+                context.fillStyle = 'red';
                 context.beginPath();
-                context.arc(n.displayX, n.displayY, distance, 0, 2*Math.PI, false);
+                
+                context.moveTo(n.displayX, n.displayY - distance);
+                context.bezierCurveTo(n.displayX, n.displayY - 10 * ratio - distance, 
+                        n.displayX - 20 * ratio, n.displayY - 25 * ratio - distance, 
+                        n.displayX, n.displayY - 30 * ratio - distance);
+                context.bezierCurveTo(n.displayX + 20 * ratio, n.displayY - 25 * ratio - distance, 
+                        n.displayX, n.displayY - 10 * ratio - distance, 
+                        n.displayX, n.displayY - distance);
+                context.fill();
+                context.stroke();
+                
+                context.beginPath();
+                context.fillStyle = '#222222';
+                context.arc(n.displayX, n.displayY - 20 * ratio - distance, 4 * ratio, 0, 2*Math.PI);
                 context.fill();
             }
         });
@@ -43,8 +61,6 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     };
     
     this.cleanup = function() {
-        var canvas = $(".sigma_mouse_canvas")[0], context = canvas.getContext('2d');
-        context.clearRect(0, 0, $(document).width(), $(document).height());
         delete self.m.d;
     }
 };

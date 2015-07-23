@@ -1042,8 +1042,8 @@ function Graph() {
     var dx, dy, newx, newy, node;
     nodeids.forEach(function(nodeid) {
       node = self.nodesIndex[nodeid];
-      node.displayX = dispX;
-      node.displayY = dispY;
+      node['displayX'] = dispX;
+      node['displayY'] = dispY;
       
       var sizeMax = 0;
       
@@ -1736,36 +1736,19 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
   function drawNode(node) {
     var ctx = nodesCtx;
     var size = Math.round(node['displaySize'] * 10) / 10;
-
-    if (!node['pin']) {
-        ctx.fillStyle = node['selected'] ? 'red' : (node['color'] || self.p.defaultNodeColor);
-        ctx.beginPath();
-        ctx.arc(node['displayX'],
-                node['displayY'],
-                size,
-                0,
-                Math.PI * 2,
-                true);
-
-        ctx.closePath();
-        ctx.fill();
-
-        node['hover'] && drawHoverNode(node);
-    } else {
-        var w = 7 * size, h = 12 * size;
-        ctx.beginPath();
-        ctx.fillStyle = "#FF0000"
-        ctx.moveTo(node['displayX'], node['displayY']);
-        ctx.bezierCurveTo(node['displayX'] - w*2/3, node['displayY'] - (h * 2/3), node['displayX'] - w*2/3, node['displayY'] - h, node['displayX'], node['displayY'] - h);
-        ctx.bezierCurveTo(node['displayX'] + w*2/3, node['displayY'] - h, node['displayX'] + w*2/3, node['displayY'] - (h * 2/3), node['displayX'], node['displayY']);
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.fillStyle = "#e6e6e6";
-        ctx.arc(node['displayX'], node['displayY'] - (h * 2/3), w/4, 0, 2*Math.PI);
-        ctx.fill();
-        ctx.closePath();
-    }
+    
+    ctx.fillStyle = node['selected'] ? 'red' : (node['color'] || self.p.defaultNodeColor);
+    ctx.beginPath();
+    ctx.arc(node['displayX'],
+            node['displayY'],
+            size,
+            0,
+            Math.PI * 2,
+            true);
+    ctx.closePath();
+    ctx.fill();
+    
+    node['hover'] && drawHoverNode(node);
     
     return self;
   };
