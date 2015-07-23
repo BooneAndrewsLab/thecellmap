@@ -114,13 +114,21 @@ define([
             });
             sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
             
+            Annotation.drawRegions();
+            
             clicking.wasDragging = false;
             clicking.modifierKey = null;
         }).bind('upgraph', function(evt) {
             if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$('.btn-group').hasClass('open')) {
                 Utils.clearSelection();
                 $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
+            } else {
+                var nodes = sigInst._core.graph.nodes.filter(function(node) {
+                    return node.selected;
+                });
+                sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
             }
+            Annotation.drawRegions();
         }).bind('startmovingnodes', function(evt) {
             Annotation.clearRegions();
             $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
@@ -138,14 +146,9 @@ define([
             }
         }).bind('selectionStart', function() {
         }).bind('downnodes', function(selection) {
-            for (var n in selection.content) {
-                var node = Utils.getNode(selection['content'][n]);
-                if (node && node.selected) {
-                    $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
-                    break;
-                }
-            }
-         });
+            $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
+            Annotation.clearRegions();
+        });
         
         UI.initUI();
         Node.initSelect2(function() {

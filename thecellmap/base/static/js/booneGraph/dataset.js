@@ -66,6 +66,7 @@ define([
                 var strain, annot, color;
                 nodes = data.nodes || [];
                 edges = data.edges || [];
+                var xmax, xmin, ymax, ymin;
                 
                 nodes.forEach(function (node) {
                     strain = strains.get(node.id);
@@ -85,10 +86,18 @@ define([
                         node.color = color;
                         node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
                         node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
+                        
+                        xmax = Math.max(xmax, node.x) || node.x;
+                        xmin = Math.min(xmin, node.x) || node.x;
+                        ymax = Math.max(ymax, node.y) || node.y;
+                        ymin = Math.min(ymin, node.y) || node.y;
+                        
                         if (strain.color != undefined) node.color = strain.color;
                         sigInst.addNode(node.id, node);
                     }
                 });
+                
+                opts['boundingBox'] = { xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, };
                 
                 sigInst._core.graph.nodes.forEach(function(node) {
                     node.size_init = node.size;
