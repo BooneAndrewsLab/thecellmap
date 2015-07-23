@@ -6,8 +6,6 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     var self = this;
     var inst = instance;
     var size = 30;
-    var w = 14;
-    var h = 30;
     
     this.graph = graph;
     this.m = {
@@ -34,22 +32,26 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
             if (!n.hidden && !n._hidden) {
                 distance = n.displaySize / ratio * step ;
                 
+                if (n.displaySize / 2 > size) {
+                    size = n.displaySize;
+                }
+                
                 context.fillStyle = 'red';
                 context.beginPath();
                 
                 context.moveTo(n.displayX, n.displayY - distance);
-                context.bezierCurveTo(n.displayX, n.displayY - 10 * ratio - distance, 
-                        n.displayX - 20 * ratio, n.displayY - 25 * ratio - distance, 
-                        n.displayX, n.displayY - 30 * ratio - distance);
-                context.bezierCurveTo(n.displayX + 20 * ratio, n.displayY - 25 * ratio - distance, 
-                        n.displayX, n.displayY - 10 * ratio - distance, 
+                context.bezierCurveTo(n.displayX, n.displayY - 1/3 * size - distance, 
+                        n.displayX - 2/3 * size, n.displayY - 5/6 * size - distance, 
+                        n.displayX, n.displayY - size - distance);
+                context.bezierCurveTo(n.displayX + 2/3 * size, n.displayY - 5/6 * size - distance, 
+                        n.displayX, n.displayY - 1/3 * size - distance, 
                         n.displayX, n.displayY - distance);
                 context.fill();
                 context.stroke();
                 
                 context.beginPath();
                 context.fillStyle = '#222222';
-                context.arc(n.displayX, n.displayY - 20 * ratio - distance, 4 * ratio, 0, 2*Math.PI);
+                context.arc(n.displayX, n.displayY - 2/3 * size - distance, 2/15 * size, 0, 2 * Math.PI);
                 context.fill();
             }
         });
@@ -66,7 +68,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
 };
 
 sigma.publicPrototype.locateSearchedNodes = function(properties) {
-    if (!properties.hasOwnProperty("nodes")) return;
+    if (!properties.hasOwnProperty('nodes') || !!state.get('showCircular')) return;
     
     this.searchlocator = new sigma.searchlocator.SearchLocator(this._core.graph, this, properties);
     this.searchlocator.init();

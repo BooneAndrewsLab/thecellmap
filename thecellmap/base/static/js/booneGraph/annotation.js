@@ -11,6 +11,7 @@ define([
     'regionGroupModel',
     
     'pickAColor',
+    'sigma.drawregions',
 ], function($, _, Backbone, Cookies, TinyColor,
     Utils,
     AnnotationModel, RegionGroupModel) {
@@ -196,63 +197,33 @@ define([
                 drawRegions();
             });
         }
-        var canvas = $('#canvas-regions'), ctx = canvas[0].getContext('2d');
+        
+        var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
-        var texts = [];
         
         for (r in regionGroup.get('regions')) {
             var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
-            ctx.strokeStyle = '#' + color;
-            ctx.fillStyle = '#' + color;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.9;
-            ctx.beginPath();
-            ctx.moveTo(nodes[0]['displayX'], nodes[0]['displayY']);
-            var n1, n2, dx, dy, angle, dr,
-                        xmm = [nodes[0].displayX, nodes[0].displayX],
-                        ymm = [nodes[0].displayY, nodes[0].displayY];
+            var n1, n2,
+                xmm = [nodes[0].displayX, nodes[0].displayX],
+                ymm = [nodes[0].displayY, nodes[0].displayY];
+            
             nodes.push(nodes[0]);
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
-                dx = (n2.displayX - n1.displayX)/2, dy = (n2.displayY - n1.displayY)/2, angle = Math.atan(dx/dy);
-                dr = Math.sqrt(dx*dx + dy*dy) * 2/3;
-                
                 xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
                 ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
-                
-                if (dx > 0) {
-                    ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.cos(Math.PI/2 - angle), n1.displayY + dy - dr*Math.sin(Math.PI/2 - angle), n2.displayX, n2.displayY);
-                } else if (dy > 0){
-                    ctx.quadraticCurveTo(n1.displayX + dx + dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy - dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
-                } else {
-                    ctx.quadraticCurveTo(n1.displayX + dx - dr*Math.sin(Math.PI/2 - angle), n1.displayY + dy + dr*Math.cos(Math.PI/2 - angle), n2.displayX, n2.displayY);
-                }
             }
             
-            ctx.stroke();
-            ctx.closePath();
-            
-            texts.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2)});
+            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
         }
         
-        texts.sort(function(a, b){
+        regions.sort(function(a, b){
             return a.y - b.y;
         });
         
-        var last = 0, newPos, spacing = 20;
-        texts.forEach(function(t) {
-            if (t.y - last < spacing) {
-                t.y += spacing - (t.y - last);
-            }
-            
-            ctx.font = 'bold 16px Arial';
-            ctx.fillStyle = '#' + t.c;
-            ctx.textAlign = 'center';
-            ctx.fillText(t.n, t.x, t.y);
-            
-            last = t.y;
-        });
+        sigInst.displayRegions({regions: regions, runtime: 2});
     }
+    
     var loadRegion = function(id) {
         var regionGroups = vizdata['regionGroups'], toApply = true;
         clearRegions();

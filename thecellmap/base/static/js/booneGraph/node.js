@@ -275,6 +275,7 @@ define([
                                     var node = Utils.getNode(n);
                                     if (node) nodes.push(node);
                                 });
+                                
                                 sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
                             }
                         }

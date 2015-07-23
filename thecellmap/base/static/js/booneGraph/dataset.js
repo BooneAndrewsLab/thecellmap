@@ -159,6 +159,7 @@ define([
     
     var switchDataset = function(dsid, single, fromEdges) {
         state.set('dataset', dsid);
+        $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         
         if (dsid == 0) { // Correlations
             state.set('showCircular', false);
