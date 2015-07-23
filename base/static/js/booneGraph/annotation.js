@@ -18,7 +18,7 @@ define([
     window.tinycolor = TinyColor;
     var applyAnnotationColors = function() {
         var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;
-        if (!vizdata['regionGroups'].get(state.get('annotation'))) {
+        if (!vizdata['regionGroups'].get(state.get('annotation')) || !state.get('showRegions')) {
             sigInst.iterNodes(function(n) {
                 strain = Utils.getStrain(n.id);
                 annot = data.get('map')[strain.get('orf')];
@@ -227,11 +227,9 @@ define([
     var loadRegion = function(id) {
         var regionGroups = vizdata['regionGroups'], toApply = true;
         clearRegions();
-        state.set('showRegions', false);
         
         opts['regionGroups'].forEach(function(regionGroup) {
             if (regionGroup.name === id) {
-                state.set('showRegions', true);
                 if (!regionGroups.get(id)) {
                     toApply = false;
                     $.ajax({
@@ -264,11 +262,11 @@ define([
                         applyAnnotationColors();
                     });
                 } else {
-                    applyAnnotationColors();
                     drawRegions();
                 }
             }
         });
+        
         if (toApply) applyAnnotationColors();
     }
     

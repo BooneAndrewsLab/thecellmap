@@ -21,7 +21,7 @@ define([
             nodeSize: 2,
             selection: [],
             showCircular: false,
-            showRegions: false,
+            showRegions: true,
             ui: localStorage.getItem('ui') || 'simple',
         }
     });
