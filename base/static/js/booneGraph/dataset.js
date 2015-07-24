@@ -15,14 +15,12 @@ define([
     'strainModel',
 ], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
     var updateEdges = function(ds) {
-        var ele = $(".cutoff-bar-simple[data-dataset=\"" + ds + "\"], .cutoff-bar[data-dataset=\"" + ds + "\"]");
         sigInst._core.graph.edges.forEach(function(edge) {
             if (!edge.hasOwnProperty('ds')) {
                 edge.ds = ds;
                 edge.absweight = Math.abs(edge.weight);
             }
-            
-            edge.hidden = edge.ds != ds;
+            edge.hidden = (edge.ds != ds) || edge.hidden;
         });
         
         sigInst.draw();
@@ -87,17 +85,10 @@ define([
                         node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
                         node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
                         
-                        xmax = Math.max(xmax, node.x) || node.x;
-                        xmin = Math.min(xmin, node.x) || node.x;
-                        ymax = Math.max(ymax, node.y) || node.y;
-                        ymin = Math.min(ymin, node.y) || node.y;
-                        
                         if (strain.color != undefined) node.color = strain.color;
                         sigInst.addNode(node.id, node);
                     }
                 });
-                
-                opts['boundingBox'] = { xmax: xmax, xmin: xmin, ymax: ymax, ymin: ymin, };
                 
                 sigInst._core.graph.nodes.forEach(function(node) {
                     node.size_init = node.size;
@@ -116,7 +107,6 @@ define([
     var loadDataset = function(dsid, data, callback) {
         var datasetType = dsid == 0 ? 'correlations' : 'interactions';
         var method = dsid == 0 ? 'get' : 'post';
-        
         $.ajax({
             url: opts.urls[datasetType], 
             dataType : 'json',
@@ -153,15 +143,13 @@ define([
                 edges.forEach(function(edge){
                     if (!!sigInst._core.graph.nodesIndex[edge.source] && !!sigInst._core.graph.nodesIndex[edge.target] && !sigInst._core.graph.edgesIndex[edge.id]) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
-//                            edgesAdded++;
                     }
                 });
             },
         }).always(function() {
             updateEdges(dsid);
-            
             if (callback) callback(edges);
-        }).fail(function(e) { 
+        }).fail(function(e) {
             console.log('failed', e);
         });
     }
@@ -169,6 +157,7 @@ define([
     var switchDataset = function(dsid, single, fromEdges) {
         state.set('dataset', dsid);
         state.set('showRegions', false);
+        
         $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         
         if (dsid == 0) { // Correlations
@@ -185,7 +174,6 @@ define([
             Settings.updateLabels();
         } else if (dsid == 1) { //Interactions
             var selected = [];
-            
             if (fromEdges) {
                 state.get('hoveredTargets').forEach(function(e) {
                     e = Utils.getEdge(e);
@@ -199,7 +187,8 @@ define([
             }
             
             loadDataset(1, {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: selected}, function(edges) {
-                var nodes = [];
+                var nodes = [], labels = [];
+                
                 edges.forEach(function(e) {
                     if (nodes.indexOf(e.source) == -1) nodes.push(e.source);
                     if (nodes.indexOf(e.target) == -1) nodes.push(e.target);
@@ -240,6 +229,7 @@ define([
             var node = ntmp[n];
             tmpNetworks['current'][node.id] = {x: node.x, y: node.y};
         }
+        tmpNetworks['current']['nSize'] = node.size
         tmpNetworks['current']['showRegions'] = state.get('showRegions');
         
         if (dsid == 0) {
@@ -249,6 +239,7 @@ define([
                         node.hidden = false;
                         node.x = tmpNetworks['before'][node.id].x;
                         node.y = tmpNetworks['before'][node.id].y;
+                        node.size = tmpNetworks['before']['nSize']
                     } else {
                         node.hidden = true;
                     }
@@ -266,10 +257,8 @@ define([
     
     var circularFunc = function(nid) {
         state.set('showCircular', true);
-        
         var node = Utils.getNode(nid), groups = {}, draw = [];
-        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
-        var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden && n.id != parseInt(nid);});
+        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden;});
         
         if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
         var tmpN = Utils.getNode('tmp_' + node.id);
@@ -297,23 +286,13 @@ define([
             }
             
             if (e.weight < 0) {
-                tmpkey = "-";
+                tmpkey = '-';
                 sigInst.addEdge(tmpN.id + '-' + outNode.id, tmpN.id, outNode.id, e);
                 e._hidden = e.hidden = true; //hide the edges to the original node
-            }
+            } 
             
             if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
             groups[tmpkey].push(outNode);
-        });
-        
-        ntmp.forEach(function(n) {
-            var connected = false;
-            etmp.forEach(function (e) {
-                if (e.source.id == n.id || e.target.id == n.id) {
-                    connected = true;
-                }
-            });
-            n.hidden = !connected;
         });
         
         var size = 2;
@@ -365,6 +344,14 @@ define([
         sigInst.moveNodes({destinations: draw, runtime: 3}, function() {
             Settings.updateLabels();
             Utils.graphCenter();
+            
+            sigInst.iterEdges(function(e) {
+                var s = e.source.id.match(/\d/g).join('');
+                var t = e.target.id.match(/\d/g).join('');
+                if (!e.hidden && (s != parseInt(node.id) && t != parseInt(node.id))) {
+                    e.hidden = true;
+                }
+            });
         });
     }
     

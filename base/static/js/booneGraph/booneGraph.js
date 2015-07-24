@@ -122,24 +122,18 @@ define([
             if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$('.btn-group').hasClass('open')) {
                 Utils.clearSelection();
                 $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
-            } else {
-                var nodes = sigInst._core.graph.nodes.filter(function(node) {
-                    return node.selected;
-                });
-                sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
             }
-            Annotation.drawRegions();
         }).bind('startmovingnodes', function(evt) {
             Annotation.clearRegions();
             $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         }).bind('stopmovingnodes', function(evt) {
-            Annotation.drawRegions();
             var nodes = sigInst._core.graph.nodes.filter(function(node) {
                 return node.selected;
             });
             sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
         }).bind('draggedNode', function() {
             clicking.wasDragging = true;
+            state.set('showRegions', false);
         }).bind('selectionStop', function(selection) {
             if (selection.content.nodeSelect) {
                 $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(selection.content.selected), true);
