@@ -131,6 +131,7 @@ define([
                 return node.selected;
             });
             sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
+            Annotation.drawRegions();
         }).bind('draggedNode', function() {
             clicking.wasDragging = true;
             state.set('showRegions', false);
