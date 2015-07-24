@@ -227,19 +227,17 @@ define([
         tmpNetworks['current'] = {};
         for (n in ntmp) {
             var node = ntmp[n];
-            tmpNetworks['current'][node.id] = {x: node.x, y: node.y};
+            tmpNetworks['current'][node.id] = {x: node.x, y: node.y, hidden: node.hidden};
         }
-        tmpNetworks['current']['nSize'] = node.size
         tmpNetworks['current']['showRegions'] = state.get('showRegions');
         
         if (dsid == 0) {
             if (!$.isEmptyObject(tmpNetworks['before'])) {
                 sigInst.iterNodes(function(node) {
                     if (tmpNetworks['before'][node.id]) {
-                        node.hidden = false;
                         node.x = tmpNetworks['before'][node.id].x;
                         node.y = tmpNetworks['before'][node.id].y;
-                        node.size = tmpNetworks['before']['nSize']
+                        node.hidden = tmpNetworks['before'][node.id].hidden;
                     } else {
                         node.hidden = true;
                     }

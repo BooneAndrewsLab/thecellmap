@@ -330,8 +330,7 @@ define([
             slider.noUiSlider.on('set', function() {
                 var val = slider.noUiSlider.get(), preVal = state.get('cutoffInteraction');
                 if (parseFloat(val[0]) == parseFloat(preVal[0]) && parseFloat(val[1]) == parseFloat(preVal[1])) return;
-                
-                if (val[0] < 0 && val[1] > 0) {
+                if (parseFloat(val[0]) < 0 && parseFloat(val[1]) > 0) {
                     Node.applyCutoff(val);
                     state.set('cutoffInteraction', [val[0], val[1]]);
                 } else {
@@ -339,21 +338,10 @@ define([
                 }
             });
             
-            slider.noUiSlider.on('slide', function() {
-//                var val = slider.noUiSlider.get();
-//                console.log('SLIDERRRR', val);
-//                if (val[0] > 0) {
-//                    slider.noUiSlider.set([null, 0]);
-//                } else if (val[1] < 0) {
-//                    slider.noUiSlider.set([0, null]);
-//                }
-            });
-            
             slider.noUiSlider.on('update', function( values, handle ) {
                 $('.cutoff-label-min').html(values[0]);
                 $('.cutoff-label-max').html(values[1]);
             });
-            
         });
         
         $('.cutoff-cor').each(function() {
@@ -377,7 +365,6 @@ define([
                 }).map(function(node) {
                     return node.id;
                 });
-                
                 var nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
                 if (val < lowVal && nodes.length <= nodeLimit) {
                     $.post('correlations/', {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
@@ -425,12 +412,12 @@ define([
                 }
             });
             
-            slider.noUiSlider.on('update', function( values, handle ) {
+            slider.noUiSlider.on('update', function(values, handle) {
                 $('.cutoff-label-min').html(values);
             });
         });
         
-        $('.cutoff-label, .cutoff-label-simple').each(function() {
+        $('.cutoff-label').each(function() {
             var label = $(this), placement = label.data('placement') || 'left';
             label.popover({
                 container: 'body',
@@ -439,39 +426,51 @@ define([
                 content: '<div><input type="text" class="form-control cutoff-label-input" data-for-cutoff="' + label.attr('id') + '"></div>'
             }).on('hide.bs.popover', function () {
                 var value = $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(), data = state.get("dataset");
-                var cutoff = data == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction');
+                var cutoff = data == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction').slice();
                 
                 if ($.isNumeric(value)) {
                     value = parseFloat(value).toFixed(2);
-                    if (label.attr('id') == 'cutoff-label-min' || label.attr('id') == 'cutoff-label-min-simple') {
+                    if (label.attr('id') == 'cutoff-label-min'  || label.attr('id') == 'cutoff-label-min-simple') {
                         if (data == 0) {
                             cutoff = value;
                         } else {
-                            cutoff[1] = -value;
+                            cutoff[0] = value;
                         }
                     } else {
-                        cutoff[0] = -value;
+                        cutoff[1] = value;
                     }
-                    
-                    $('.cutoff-bar[data-dataset=\"' + data + '\"]').val(cutoff);
+                    $('.cutoff-bar[data-dataset=\"' + data + '\"], .cutoff-bar-simple[data-dataset=\"' + data + '\"]')[0].noUiSlider.set(cutoff);
                 }
             }).on('shown.bs.popover', function () {
                 $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keyup(function (e) {
                     var dataset = state.get('dataset'), hasError = true, val = parseFloat($(this).val());
+                    var cutoff = dataset == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction').slice();
+                    
                     if (dataset == 0) {
-                        if (val <= 1) hasError = false;
+                        if (val <= 1 && val >= 0) hasError = false;
                     } else {
-                        console.log(label.attr('id'), $(this).val(), val)
                         if (label.attr('id') == 'cutoff-label-min' || label.attr('id') == 'cutoff-label-min-simple') {
-                            if (val >= -1 && val <= 0) hasError = false;
+                            if (val >= -1 && val < 0) hasError = false;
                         } else {
-                            if (val <= 1 && val >= 0) hasError = false;
+                            if (val <= 1 && val > 0) hasError = false;
                         }
                     }
                     $(this).parent().toggleClass('has-error', !$.isNumeric($(this).val()) || hasError);
                     
-                    if (e.which == 13) {
-                        $(this).click();
+                    if ($.isNumeric($(this).val()) && !hasError) {
+                        if (label.attr('id') == 'cutoff-label-min'  || label.attr('id') == 'cutoff-label-min-simple') {
+                            if (dataset == 0) {
+                                cutoff = val;
+                            } else {
+                                cutoff[0] = val;
+                            }
+                        } else {
+                            cutoff[1] = val;
+                        }
+                        
+                        if (e.which == 13) {
+                            $('.cutoff-bar[data-dataset=\"' + dataset + '\"], .cutoff-bar-simple[data-dataset=\"' + dataset + '\"]')[0].noUiSlider.set(cutoff);
+                        }
                     }
                 }).focus();
             });
