@@ -18,6 +18,7 @@ define([
         sigInst._core.graph.edges.forEach(function(edge) {
             if (!edge.hasOwnProperty('ds')) {
                 edge.ds = ds;
+                edge.absweight = Math.abs(edge.weight);
             }
             edge.hidden = edge.ds != ds;
         });
