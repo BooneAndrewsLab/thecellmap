@@ -70,6 +70,18 @@ define([
             $('input.gene-search-input').select2('val', '', true);
             state.set("selection", []);
         }
+        clearSelectionCanvas();
+    }
+    
+    var clearSelectionCanvas = function() {
+        $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
+    }
+    
+    var graphSelectedNodes = function() {
+        var nodes = sigInst._core.graph.nodes.filter(function(node) {
+            return node.selected;
+        });
+        sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
     }
     
     var getSelectedNodes = function(getHidden) {
@@ -185,6 +197,7 @@ define([
                 }
             }
         }, timeout);
+        graphSelectedNodes();
     }
     
     var traverseRec = function(node, netNum, len) {
@@ -370,6 +383,8 @@ define([
         getStrain: getStrain,
         
         clearSelection: clearSelection,
+        clearSelectionCanvas: clearSelectionCanvas,
+        graphSelectedNodes, graphSelectedNodes,
         getSelectedNodes: getSelectedNodes,
         
         stackNetworks: stackNetworks,

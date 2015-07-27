@@ -38,10 +38,9 @@ define([
             return;
         }
         
-        $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         if ($('#btn-layout').length != 0) ladda = Ladda.create($('#btn-layout')[0]);
         state.set('showRegions', false);
-        
+        Utils.clearSelectionCanvas();
         
         if (opts.runningLayout) {
             sigInst.stopForceLayout();
