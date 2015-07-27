@@ -326,6 +326,3 @@ def region_group(request, dataset_id, region_group_id):
             response[region]['name'] = alias
     
     return JsonResponse(response)
-
-def foobar(request):
-    return render(request, 'base/matrix.html')
