@@ -163,19 +163,11 @@ def collect_score_matrix(ds, nodes, data):
             targets.append(smap[nmap[e['t']]['label']].id)
             weights.append(e['w'])
     
-    print weights, targets
-    
     df = DataFrame.from_csv(os.path.join(ds.static_path(), 'scores_matrix.csv'))
     new_row = Series(weights, targets)
     df.columns = df.columns.astype(new_row.index.dtype)
     
-    print new_row
-    
-    def foo(x):
-        return x.corr(new_row)
-    
-    
-    scores = df.apply(foo, axis=1)
+    scores = df.apply(x.corr(new_row), axis=1)
     
     result = [{'s': source, 't': nodes_inv_inv[t], 'w': w } for t, w in scores.iteritems()]
     
