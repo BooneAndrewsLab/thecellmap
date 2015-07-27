@@ -18,16 +18,14 @@ define([
         sigInst._core.graph.edges.forEach(function(edge) {
             if (!edge.hasOwnProperty('ds')) {
                 edge.ds = ds;
-                edge.absweight = Math.abs(edge.weight);
             }
-            edge.hidden = (edge.ds != ds) || edge.hidden;
+            edge.hidden = edge.ds != ds;
         });
-        
         sigInst.draw();
     }
     
     var updateLabels = function(ds) {
-        var ele = $(".cutoff-bar-simple[data-dataset=\"" + ds + "\"], .cutoff-bar[data-dataset=\"" + ds + "\"]");
+        var ele = $('.cutoff-bar-simple[data-dataset=\"' + ds + '\"], .cutoff-bar[data-dataset=\"' + ds + '\"]');
         var cutoffs = ds == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction');
         
         if (ds == 0) {
@@ -115,7 +113,7 @@ define([
             success: function(data) {
                 edges = data.edges;
                 
-                edges.forEach(function (edge, edgeIdx) {
+                edges.forEach(function(edge) {
                     edge.source = edge.source || edge.s; // s == source
                     edge.target = edge.target || edge.t; // t == target
                     edge.weight = edge.weight || edge.w; // w == weight
@@ -256,7 +254,7 @@ define([
     var circularFunc = function(nid) {
         state.set('showCircular', true);
         var node = Utils.getNode(nid), groups = {}, draw = [];
-        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden;});
+        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden && !e.hidden;});
         
         if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
         var tmpN = Utils.getNode('tmp_' + node.id);
@@ -295,13 +293,22 @@ define([
         
         var size = 2;
         for (var s in groups) {
+            var numNodes = groups[s].length;
+            var pass = true;
             var layers = [[]], l = 0;
+            
             for (var n in groups[s]) {
                 var count = (l + 2) * 10;
                 layers[l].push(groups[s][n]);
+                
                 if (layers[l].length >= count) {
-                    layers[++l] = [];
-                    size++;
+                    numNodes -= layers[l].length;
+                    if (pass && numNodes < count /2) {
+                        pass = false;
+                    } else if (pass) {
+                        layers[++l] = [];
+                        size++;
+                    }
                 }
             }
             groups[s] = layers;
