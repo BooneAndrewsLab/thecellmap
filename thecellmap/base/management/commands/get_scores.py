@@ -8,13 +8,13 @@ from pandas.tools.merge import concat
 
 class Command(CellMapCommand):
     help = '''Download scores for specific orfs'''
-    args = '<dataset_name> <file_with_orfs>'
+    args = '<dataset_name> <file_with_orfs> <output file prefix>'
     
     def handle(self, *args, **options):
-        if len(args) != 2:
+        if len(args) != 3:
             raise CommandError('Must provide arguments: ' + self.args)
         
-        dataset, orf_file = args
+        dataset, orf_file, output = args
         
         try:
             dataset = Dataset.objects.get(name=dataset)
@@ -31,13 +31,13 @@ class Command(CellMapCommand):
         data2 = data2.reindex(columns=['a_orf', 'a_allele', 'b_orf', 'b_allele', 'scores', 'pvalues'])
         data2.columns = ['query ORF', 'query allele', 'array ORF', 'array allele', 'score', 'pvalue']
         
-        data1.to_csv('/home/matej/yoshi_data_in_queries.csv', index=False)
-        data2.to_csv('/home/matej/yoshi_data_in_arrays.csv', index=False)
+        data1.to_csv(output + 'queries.csv', index=False)
+        data2.to_csv(output + 'arrays.csv', index=False)
         
         data = concat([data1, data2], ignore_index=True)
-        data.to_csv('/home/matej/yoshi_data_combined.csv', index=False)
+        data.to_csv(output + 'combined.csv', index=False)
         
-        data.groupby(['query ORF', 'query allele', 'array ORF', 'array allele']).mean().reset_index().to_csv('/home/matej/yoshi_data_combined_mean.csv', index=False)
+        data.groupby(['query ORF', 'query allele', 'array ORF', 'array allele']).mean().reset_index().to_csv(output + 'combined_mean.csv', index=False)
     
     def scores(self, dataset, orfs, x, y):
         strains = {s for s in x.select_related('gene') if s.gene.orf in orfs}

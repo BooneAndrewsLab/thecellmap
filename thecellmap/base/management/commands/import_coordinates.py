@@ -9,14 +9,14 @@ from base.utils import CellMapCommand, dump_clean_json
 
 class Command(CellMapCommand):
     help = 'Imports an existing layout for a dataset. Layout must have 3 columns: label, x, y'
-    args = '<dataset_name> <layout_file>'
+    args = '<dataset_name> <layout_file> <output file prefix>'
     
     @commit_on_success
     def handle(self, *args, **options):
         if len(args) != 2:
             raise CommandError('Must provide arguments: ' + self.args)
         
-        dataset, coordinates = args
+        dataset, coordinates, output = args
         
         dataset = Dataset.objects.get(name=dataset)
         coordinates = self.get_fd(coordinates)
@@ -83,4 +83,4 @@ class Command(CellMapCommand):
             
             layout.append({'x': float(x), 'y': float(y), 'id': nodeid})
         
-        dump_clean_json({'nodes': layout}, '/home/matej/newlayout.json')
+        dump_clean_json({'nodes': layout}, output +'newlayout.json')
