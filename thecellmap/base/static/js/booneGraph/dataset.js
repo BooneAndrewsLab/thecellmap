@@ -162,10 +162,6 @@ define([
         if (dsid == 0) { // Correlations
             state.set('showCircular', false);
             
-            sigInst._core.graph.nodes.filter(function(node) {
-                if (!node.hidden && node._hidden) node._hidden = false;
-            });
-            
             updateEdges(dsid);
             updateLabels(dsid);
             Utils.graphCenter();
@@ -220,13 +216,13 @@ define([
         
         tmpNetworks['before'] = $.extend({}, tmpNetworks['current']);
         var ntmp = sigInst._core.graph.nodes.filter(function(node) {
-            return !node.hidden;
+            return !node.hidden && !node._hidden;
         });
         
         tmpNetworks['current'] = {};
-        for (n in ntmp) {
+        for (var n in ntmp) {
             var node = ntmp[n];
-            tmpNetworks['current'][node.id] = {x: node.x, y: node.y, hidden: node.hidden};
+            tmpNetworks['current'][node.id] = {x: node.x, y: node.y};
         }
         tmpNetworks['current']['showRegions'] = state.get('showRegions');
         
@@ -236,9 +232,9 @@ define([
                     if (tmpNetworks['before'][node.id]) {
                         node.x = tmpNetworks['before'][node.id].x;
                         node.y = tmpNetworks['before'][node.id].y;
-                        node.hidden = tmpNetworks['before'][node.id].hidden;
+                        node.hidden = node._hidden = false;
                     } else {
-                        node.hidden = true;
+                        node.hidden = node._hidden = true;
                     }
                 });
                 state.set('showRegions', tmpNetworks['before']['showRegions']);
