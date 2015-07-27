@@ -917,10 +917,12 @@ function Graph() {
     // Recenter the nodes:
     var xMin, xMax, yMin, yMax;
     parseNodes && self.nodes.forEach(function(node) {
-      xMax = Math.max(node['x'], xMax || node['x']);
-      xMin = Math.min(node['x'], xMin || node['x']);
-      yMax = Math.max(node['y'], yMax || node['y']);
-      yMin = Math.min(node['y'], yMin || node['y']);
+        if (!node.hidden) {
+            xMax = Math.max(node['x'], xMax || node['x']);
+            xMin = Math.min(node['x'], xMin || node['x']);
+            yMax = Math.max(node['y'], yMax || node['y']);
+            yMin = Math.min(node['y'], yMin || node['y']);
+        }
     });
 
     // First, we compute the scaling ratio, without considering the sizes
@@ -973,7 +975,6 @@ function Graph() {
       c = (self.p.maxEdgeSize - self.p.minEdgeSize) / weightMax;
       d = self.p.minEdgeSize;
     }
-
     // Rescale the nodes:
     parseNodes && self.nodes.forEach(function(node) {
       node['displaySize'] = node['size'] * a + b;

@@ -109,11 +109,7 @@ define([
                 }
             }
             
-            var nodes = sigInst._core.graph.nodes.filter(function(node) {
-                return node.selected;
-            });
-            sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
-            
+            Utils.graphSelectedNodes();
             Annotation.drawRegions();
             
             clicking.wasDragging = false;
@@ -121,16 +117,12 @@ define([
         }).bind('upgraph', function(evt) {
             if (!evt.content.dragged && !evt.content.targeted && !evt.content.selecting && !$('.btn-group').hasClass('open')) {
                 Utils.clearSelection();
-                $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
             }
         }).bind('startmovingnodes', function(evt) {
             Annotation.clearRegions();
             $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         }).bind('stopmovingnodes', function(evt) {
-            var nodes = sigInst._core.graph.nodes.filter(function(node) {
-                return node.selected;
-            });
-            sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
+            Utils.graphSelectedNodes();
             Annotation.drawRegions();
         }).bind('draggedNode', function() {
             clicking.wasDragging = true;
@@ -141,7 +133,7 @@ define([
             }
         }).bind('selectionStart', function() {
         }).bind('downnodes', function(selection) {
-            $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
+            Utils.clearSelectionCanvas();
             Annotation.clearRegions();
         });
         
