@@ -42,9 +42,6 @@ urlpatterns += patterns('base.views',
     # contact
     url(r'^contact/', include('contact_form.urls')),
     
-    # DEBUG
-    url(r'^testingdebug/$', 'foobar', name='foobar'),
-    
     url(r'^circlepack/$', 'circle_pack', name='circle_pack'),
     url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),
     url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui'),
