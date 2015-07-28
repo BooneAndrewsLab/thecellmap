@@ -179,7 +179,7 @@ define([
         },
         
         toggleLayout: function(e) {
-            Layout.toggleLayout($(this).data('layout-type'));
+            Layout.toggleLayout($(e.target).data('layout-type'));
             e.preventDefault();
         },
         

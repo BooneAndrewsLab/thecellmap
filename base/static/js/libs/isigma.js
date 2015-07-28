@@ -476,6 +476,7 @@ function Graph() {
     maxNodeSize: 0,
     minEdgeSize: 0,
     maxEdgeSize: 0,
+    
     //   Scaling mode:
     //   - 'inside' (default)
     //   - 'outside'
@@ -975,20 +976,27 @@ function Graph() {
       c = (self.p.maxEdgeSize - self.p.minEdgeSize) / weightMax;
       d = self.p.minEdgeSize;
     }
+    
+    parseEdges && self.edges.forEach(function(edge) {
+        edge['displaySize'] = edge['size'] * c + d;
+    });
+    
+    var visibleNodes = 0;
+    self.nodes.forEach(function(node) {
+        if (!node.hidden) visibleNodes++;
+    })
+    
     // Rescale the nodes:
     parseNodes && self.nodes.forEach(function(node) {
-      node['displaySize'] = node['size'] * a + b;
-
-      if (!node['fixed']) {
-        node['displayX'] = (node['x'] - (xMax + xMin) / 2) * scale + w / 2;
-        node['displayY'] = (node['y'] - (yMax + yMin) / 2) * scale + h / 2;
-      }
+        var size = Math.log(self.nodes.length)/Math.log(visibleNodes) * node['size'];
+        node['displaySize'] = (size > 2) ? size : 2;
+        
+        if (!node['fixed']) {
+            node['displayX'] = (node['x'] - (xMax + xMin) / 2) * scale + w / 2;
+            node['displayY'] = (node['y'] - (yMax + yMin) / 2) * scale + h / 2;
+        }
     });
-
-    parseEdges && self.edges.forEach(function(edge) {
-      edge['displaySize'] = edge['size'] * c + d;
-    });
-
+    
     return self;
   };
 
@@ -1056,10 +1064,12 @@ function Graph() {
       
       var xMin = null, xMax = null, yMin = null, yMax = null;
       self.nodes.forEach(function(node) {
-        xMax = Math.max(node['x'], xMax || node['x']);
-        xMin = Math.min(node['x'], xMin || node['x']);
-        yMax = Math.max(node['y'], yMax || node['y']);
-        yMin = Math.min(node['y'], yMin || node['y']);
+          if (!node.hidden) {
+              xMax = Math.max(node['x'], xMax || node['x']);
+              xMin = Math.min(node['x'], xMin || node['x']);
+              yMax = Math.max(node['y'], yMax || node['y']);
+              yMin = Math.min(node['y'], yMin || node['y']);
+          }
       });
       var scale = self.p.scalingMode == 'outside' ?
                   Math.max(w / Math.max(xMax - xMin, 1),
