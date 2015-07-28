@@ -99,7 +99,6 @@ define([
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                         
                         tokenizing = true;
-                        var addedNew = false;
                         while (true) {
                             index = -1;
                             
@@ -132,7 +131,6 @@ define([
                                             
                                             if (!dupe) {
                                                 selectCallback(token);
-                                                addedNew = true;
                                             }
                                         }
                                     });
@@ -141,7 +139,6 @@ define([
                         }
                         
                         tokenizing = false;
-                        if (addedNew) this.triggerChange({foo: "bar"});
                         if (original !== input) return input;
                     },
                     createSearchChoice: function(term) {

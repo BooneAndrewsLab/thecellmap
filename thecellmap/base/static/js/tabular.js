@@ -228,7 +228,6 @@ require([
                     if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                     
                     tokenizing = true;
-                    var addedNew = false;
                     while (true) {
                         index = -1;
                         for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
@@ -261,9 +260,6 @@ require([
                         }
                     }
                     tokenizing = false;
-                    if (addedNew) {
-                        this.triggerChange({foo: "bar"});
-                    }
                     if (original!==input) return input;
                 },
                 createSearchChoice: function(term) {

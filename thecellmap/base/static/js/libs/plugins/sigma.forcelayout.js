@@ -71,7 +71,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
                 subnetworkLength = self.traverseRec(n, subnetwork, 0);
                 self.p.subnetworkLengths[subnetwork] = subnetworkLength;
                 subSum += subnetworkLength;
-                console.log("Subnetwork " + subnetwork + " length=" + subnetworkLength);
+//                console.log("Subnetwork " + subnetwork + " length=" + subnetworkLength);
             }
         });
         
@@ -81,7 +81,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         
         self.p.subnetworkLengths.mean = 1. * subSum / subnetwork;
         
-        console.log(self.p.nodes.length + " nodes in " + subnetwork + " unconnected subnetworks (sum=" + subSum + ", mean=" + self.p.subnetworkLengths.mean + ")");
+//        console.log(self.p.nodes.length + " nodes in " + subnetwork + " unconnected subnetworks (sum=" + subSum + ", mean=" + self.p.subnetworkLengths.mean + ")");
     }
     
     this.init = function() {

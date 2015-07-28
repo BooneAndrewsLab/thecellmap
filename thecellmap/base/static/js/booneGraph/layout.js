@@ -85,10 +85,6 @@ define([
                         }
                     });
                     
-                    if (tmp.length > 100) {
-                        return;
-                    }
-                    
                     tmp = tmp.sort();
                     tmpkey = tmp.join();
                     if (!groups.hasOwnProperty(tmpkey)) {
@@ -104,7 +100,7 @@ define([
                 
                 for (key in groups) {
                     if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
-                    weight = Math.log(groups[key].keylen)/Math.log(7) + 0.01;
+                    weight = groups[key].keylen * 0.01 - Math.min(groups[key]['nodes'].length * 0.00001, 0.009);
                     
                     k_combinations(groups[key].nodes, 2).forEach(function(x) {
                         lopts.edges.push({
@@ -212,10 +208,6 @@ define([
                         }
                     });
                     
-                    if (tmp.length > 100) {
-                        return;
-                    }
-                    
                     tmp = tmp.sort();
                     tmpkey = tmp.join();
                     if (!groups.hasOwnProperty(tmpkey)) {
@@ -279,10 +271,6 @@ define([
                         }
                     });
                     
-                    if (tmp.length > 100) {
-                        return;
-                    }
-                    
                     tmp = tmp.sort();
                     tmpkey = tmp.join();
                     if (!groups.hasOwnProperty(tmpkey)) {
@@ -298,7 +286,7 @@ define([
                     if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
                     
                     annotations = {};
-                    weight = Math.log(groups[key].keylen) + 0.01;
+                    weight = groups[key].keylen * 0.01 - Math.min(groups[key]['nodes'].length * 0.00001, 0.009);
                     
                     groups[key].nodes.forEach(function(n) {
                         strain = Utils.getStrain(n.id);
