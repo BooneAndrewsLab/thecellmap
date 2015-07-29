@@ -118,9 +118,9 @@ define([
                 annotations = {};
                 data = vizdata['annotations'].get(state.get("annotation"));
                 
-                iterVisibleNodes(function(n) {
-                    strain = getStrain(n.id);
-                    annot = data.map[strain.orf] || [-1];
+                Utils.iterVisibleNodes(function(n) {
+                    strain = Utils.getStrain(n.id);
+                    annot = data.get('map')[strain.get('orf')] || [-1];
                     
                     annot.forEach(function(a) {
                         if (!annotations.hasOwnProperty(a)) {
@@ -131,22 +131,22 @@ define([
                 });
                 
                 lopts.edges = [];
-                k_combinations(sigInst._core.graph.nodes.filter(function(node) {
-                    return !node.hidden;
-                }), 2).forEach(function(x) {
-                    lopts.edges.push({
-                        weight: .01,
-                        absweight: .01,
-                        source: x[0],
-                        target: x[1]
-                    })
-                });
+//                k_combinations(sigInst._core.graph.nodes.filter(function(node) {
+//                    return !node.hidden;
+//                }), 2).forEach(function(x) {
+//                    lopts.edges.push({
+//                        weight: .01,
+//                        absweight: .01,
+//                        source: x[0],
+//                        target: x[1]
+//                    })
+//                });
                 
                 for (key in annotations) {
                     k_combinations(annotations[key], 2).forEach(function(x) {
                         lopts.edges.push({
-                            weight: 1,
-                            absweight: 1,
+                            weight: 0.01,
+                            absweight: 0.01,
                             source: x[0],
                             target: x[1]
                         })
@@ -166,7 +166,7 @@ define([
                 });
                 
                 ntmp.forEach(function(n) {
-                    strain = getStrain(n.id);
+                    strain = Utisl.getStrain(n.id);
                     
                     if (strain.attributes && strain.attributes.hasOwnProperty(attribute)) {
                         if (!groups.hasOwnProperty(strain.attributes[attribute])) groups[strain.attributes[attribute]] = [];
@@ -229,8 +229,8 @@ define([
                     annotations = {};
                     
                     groups[key].nodes.forEach(function(n) {
-                        strain = getStrain(n.id);
-                        annot = data.map[strain.orf] || [-1];
+                        strain = Utils.getStrain(n.id);
+                        annot = data.get('map')[strain.orf] || [-1];
                         
                         annot.forEach(function(a) {
                             if (!annotations.hasOwnProperty(a)) {
