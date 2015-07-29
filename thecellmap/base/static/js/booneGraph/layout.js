@@ -46,7 +46,7 @@ define([
             sigInst.stopForceLayout();
             setRunningLayout(false);
         } else {
-            var lopts, annotations, data, strain, annot, key;
+            var lopts, annotations, data, strain, annot, key, groups;
             
             lopts = {
                 callback: function(n) {
@@ -55,7 +55,7 @@ define([
                         setRunningLayout(false);
                     },
                 progress_callback: function(p) {
-                    if (state.get('ui') != 'simple') setTimeout(function(){ladda.setProgress(p);}, 0);
+                    if (!!ladda) setTimeout(function(){ladda.setProgress(p);}, 0);
                 },
                 attraction_multiplier: $('#layout-slider-att').val() || 50,
                 repulsion_multiplier: $('#layout-slider-rep').val() || 1,
@@ -84,6 +84,8 @@ define([
                             tmp.push(e.weight < 0 ? "-" + other.id : other.id);
                         }
                     });
+                    
+                    if (tmp.length > 6) return;
                     
                     tmp = tmp.sort();
                     tmpkey = tmp.join();
@@ -208,6 +210,8 @@ define([
                         }
                     });
                     
+                    if (tmp.length > 6) return;
+                    
                     tmp = tmp.sort();
                     tmpkey = tmp.join();
                     if (!groups.hasOwnProperty(tmpkey)) {
@@ -270,6 +274,8 @@ define([
                             tmp.push(e.weight < 0 ? "-" + other.id : other.id);
                         }
                     });
+                    
+                    if (tmp.length > 6) return;
                     
                     tmp = tmp.sort();
                     tmpkey = tmp.join();
