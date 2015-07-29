@@ -15,12 +15,14 @@ define([
     'strainModel',
 ], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
     var updateEdges = function(ds) {
+        var selected = Utils.getSelectedNodes() || [];
         sigInst._core.graph.edges.forEach(function(edge) {
             if (!edge.hasOwnProperty('ds')) {
                 edge.ds = ds;
                 edge.absweight = Math.abs(edge.weight);
             }
-            edge.hidden = edge.ds != ds;
+            edge.hidden = (ds == 0) ? edge.ds != ds : 
+                (edge.ds != ds) || (selected.indexOf(edge.source.id) == -1 && selected.indexOf(edge.target.id) == -1);
         });
         sigInst.draw();
     }
@@ -95,6 +97,7 @@ define([
                 });
                 
                 loadDataset(0, {}, function () {
+                    updateEdges(0);
                     state.set('isInitializing', false);
                 });
             },
@@ -146,8 +149,11 @@ define([
                 });
             },
         }).always(function() {
-            updateEdges(dsid);
-            if (callback) callback(edges);
+            if (callback) {
+                callback(edges);
+            } else {
+                updateEdges(dsid);
+            }
         }).fail(function(e) {
             console.log('failed', e);
         });
@@ -161,6 +167,10 @@ define([
         
         if (dsid == 0) { // Correlations
             state.set('showCircular', false);
+            
+            for (var i = sigInst._core.graph.edges.length - 1; i > 0; i--) {
+                if (sigInst._core.graph.edges[i]['ds'] == 1) sigInst.dropEdge(sigInst._core.graph.edges[i]['id']);
+            }
             
             updateEdges(dsid);
             updateLabels(dsid);
@@ -181,7 +191,7 @@ define([
                 selected = Utils.getSelectedNodes();
             }
             
-            loadDataset(1, {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: selected}, function(edges) {
+            loadDataset(dsid, {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: selected}, function(edges) {
                 var nodes = [], labels = [];
                 
                 edges.forEach(function(e) {
@@ -192,6 +202,8 @@ define([
                 sigInst.iterNodes(function(node) {
                     node._hidden = node.hidden = nodes.indexOf(parseInt(node.id)) == -1;
                 });
+                
+                updateEdges(dsid);
                 
                 if (selected.length == 1) {
                     circularFunc(selected[0]);
