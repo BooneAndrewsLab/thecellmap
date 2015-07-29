@@ -384,7 +384,7 @@ define([
         
         clearSelection: clearSelection,
         clearSelectionCanvas: clearSelectionCanvas,
-        graphSelectedNodes, graphSelectedNodes,
+        graphSelectedNodes: graphSelectedNodes,
         getSelectedNodes: getSelectedNodes,
         
         stackNetworks: stackNetworks,
