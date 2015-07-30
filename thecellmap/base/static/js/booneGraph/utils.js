@@ -286,7 +286,13 @@ define([
         for (var i in groups) {
             for (var j in groups[i]) {
                 groups[i][j].sort(function(a, b) {
-                    return parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
+                    var diff = parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
+                    if (diff == 0) {
+                        if (a.label.toLowerCase() < b.label.toLowerCase()) return -1;
+                        if (a.label.toLowerCase() > b.label.toLowerCase()) return 1;
+                        return 0;
+                    }
+                    return diff;
                 });
             }
         }
