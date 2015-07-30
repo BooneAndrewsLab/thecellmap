@@ -50,7 +50,7 @@ define([
         $('.cutoff-bar').css('display', 'none');
         ele.css('display', 'block');
         
-        Node.applyCutoff(cutoffs);
+        Node.applyCutoff(cutoffs, true);
         sigInst.draw();
     }
     
@@ -167,10 +167,10 @@ define([
         
         if (dsid == 0) { // Correlations
             state.set('showCircular', false);
-            
             for (var i = sigInst._core.graph.edges.length - 1; i > 0; i--) {
                 if (sigInst._core.graph.edges[i]['ds'] == 1) sigInst.dropEdge(sigInst._core.graph.edges[i]['id']);
             }
+            sigInst.graphProperties({margin: graphProperties['margin']}).draw(-1, -1, 1);
             
             updateEdges(dsid);
             updateLabels(dsid);
@@ -206,15 +206,15 @@ define([
                 updateEdges(dsid);
                 
                 if (selected.length == 1) {
-                    circularFunc(selected[0]);
+                    Utils.circularFunc(selected[0]);
                 } else {
                     var layoutType = state.get('annotation') != 'None' ? 'gi+' : 'gi';
                     Layout.toggleLayout(layoutType);
+                    Settings.updateLabels();
                 }
                 
                 updateLabels(dsid);
                 Annotation.rebuildLegend();
-                Settings.updateLabels();
             });
         }
     }
@@ -258,115 +258,6 @@ define([
             state.set('showRegions', false);
             switchDataset(dsid);
         }
-    }
-    
-    var circularFunc = function(nid) {
-        state.set('showCircular', true);
-        var node = Utils.getNode(nid), groups = {}, draw = [];
-        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden && !e.hidden;});
-        
-        if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
-        var tmpN = Utils.getNode('tmp_' + node.id);
-        tmpN.hidden = tmpN._hidden = false;
-        tmpN.x = node.x;
-        tmpN.y = node.y;
-        
-        etmp.sort(function(e1, e2) {
-            if (e1.weight < e2.weight) return -1;
-            if (e1.weight > e2.weight) return 1;
-            return 0;
-        });
-        
-        etmp.forEach(function(e) {
-            var tmpkey = '+', centerNode, outNode;
-            if (e.source.id == node.id) {
-                centerNode = e.source;
-                outNode = e.target;
-            } else if (e.target.id == node.id) {
-                centerNode = e.target;
-                outNode = e.source;
-            } else {
-                e.hidden = true;
-                return;
-            }
-            
-            if (e.weight < 0) {
-                tmpkey = '-';
-                sigInst.addEdge(tmpN.id + '-' + outNode.id, tmpN.id, outNode.id, e);
-                e._hidden = e.hidden = true; //hide the edges to the original node
-            } 
-            
-            if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
-            groups[tmpkey].push(outNode);
-        });
-        
-        var size = 2;
-        for (var s in groups) {
-            var numNodes = groups[s].length;
-            var pass = true;
-            var layers = [[]], l = 0;
-            
-            for (var n in groups[s]) {
-                var count = (l + 2) * 10;
-                layers[l].push(groups[s][n]);
-                
-                if (layers[l].length >= count) {
-                    numNodes -= layers[l].length;
-                    if (pass && numNodes < count /2) {
-                        pass = false;
-                    } else if (pass) {
-                        layers[++l] = [];
-                        size++;
-                    }
-                }
-            }
-            groups[s] = layers;
-        }
-        
-        var radius = 300;
-        tmpN.x -= (size + 3) * radius;
-        for (var s in groups) {
-            var r = radius*2;
-            var center = s == '+' ? node : tmpN;
-            for (var l in groups[s]) {
-                var sides = [], theta;
-                sides[0] = sides[1] = groups[s][l].length/2;
-                if (groups[s][l].length % 2 != 0) {
-                    sides[0] = Math.floor(sides[0]);
-                    sides[1] = Math.ceil(sides[1]);
-                }
-                var i = j = 0;
-                for (var k in sides) {
-                    theta = 2/3 * Math.PI / sides[k];
-                    while (i < sides[k]) {
-                        var n = groups[s][l][j];
-                        var initTheta = k == 0 ? 5/3 : 2/3
-                        draw.push({
-                            x: center.x + r * Math.cos(i*theta + initTheta * Math.PI), 
-                            y: center.y + r * Math.sin(i*theta + initTheta * Math.PI), 
-                            node: n,
-                        });
-                        i++;
-                        j++;
-                    }
-                    i = 0;
-                }
-                r += radius;
-            }
-        }
-        
-        sigInst.moveNodes({destinations: draw, runtime: 3}, function() {
-            Settings.updateLabels();
-            Utils.graphCenter();
-            
-            sigInst.iterEdges(function(e) {
-                var s = e.source.id.match(/\d/g).join('');
-                var t = e.target.id.match(/\d/g).join('');
-                if (!e.hidden && (s != parseInt(node.id) && t != parseInt(node.id))) {
-                    e.hidden = true;
-                }
-            });
-        });
     }
     
     return {

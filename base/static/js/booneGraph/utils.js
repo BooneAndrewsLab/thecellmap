@@ -212,6 +212,133 @@ define([
         return len + 1;
     }
     
+    var circularFunc = function(nid) {
+        state.set('showCircular', true);
+        state.set('centerNode', nid);
+        
+        sigInst.graphProperties({margin: 75});
+        
+        var node = getNode(nid), groups = {}, draw = [], addedNode = false;
+        var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden && !e.hidden;});
+        
+        if (!nodeExists('tmp_' + node.id)) {
+            addedNode = true;
+            sigInst.addNode('tmp_' + node.id, node);
+        }
+        var tmpN = getNode('tmp_' + node.id);
+        tmpN.hidden = tmpN._hidden = false;
+        
+        etmp.sort(function(e1, e2) {
+            if (e1.weight < e2.weight) return -1;
+            if (e1.weight > e2.weight) return 1;
+            return 0;
+        });
+        
+        etmp.forEach(function(e) {
+            if (e.hidden) return;
+            var tmpkey = '+', outNode;
+            if (stripLetters(e.source.id) == node.id) {
+                outNode = e.target;
+            } else if (stripLetters(e.target.id) == node.id) {
+                outNode = e.source;
+            } else {
+                e.hidden = true;
+                return;
+            }
+            
+            if (e.weight < 0) {
+                tmpkey = '-';
+                if (!sigInst._core.graph.edgesIndex[tmpN.id + '-' + outNode.id]) {
+                    sigInst.addEdge(tmpN.id + '-' + outNode.id, tmpN.id, outNode.id, e);
+                    e._hidden = e.hidden = true; //hide the edges to the original node
+                }
+            }
+            
+            if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
+            groups[tmpkey].push(outNode);
+        });
+        
+        groups['+'] = groups['+'].reverse();
+        
+        var size = 2;
+        for (var s in groups) {
+            var numNodes = groups[s].length;
+            var pass = true;
+            var layers = [[]], l = 0;
+            
+            for (var n in groups[s]) {
+                var count = (l + 2) * 10;
+                layers[l].push(groups[s][n]);
+                
+                if (layers[l].length >= count) {
+                    numNodes -= layers[l].length;
+                    if (pass && numNodes < count /2) {
+                        pass = false;
+                    } else if (pass) {
+                        layers[++l] = [];
+                        size++;
+                    }
+                }
+            }
+            groups[s] = layers;
+        }
+        
+        for (var i in groups) {
+            for (var j in groups[i]) {
+                groups[i][j].sort(function(a, b) {
+                    return parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
+                });
+            }
+        }
+        
+        var radius = 200;
+        if (addedNode) {
+            tmpN.x = node.x - (size + 4) * radius;
+            tmpN.y = node.y;
+        }
+        
+        for (var s in groups) {
+            var r = radius*2;
+            var center = s == '+' ? node : tmpN;
+            for (var l in groups[s]) {
+                var sides = [], theta;
+                sides[0] = sides[1] = groups[s][l].length/2;
+                if (groups[s][l].length % 2 != 0) {
+                    sides[0] = Math.floor(sides[0]);
+                    sides[1] = Math.ceil(sides[1]);
+                }
+                var i = j = 0;
+                for (var k in sides) {
+                    theta = 2/3 * Math.PI / sides[k];
+                    while (i < sides[k]) {
+                        var n = groups[s][l][j];
+                        var initTheta = k == 0 ? 5/3 : 2/3
+                        draw.push({
+                            x: center.x + r * Math.cos(i*theta + initTheta * Math.PI), 
+                            y: center.y + r * Math.sin(i*theta + initTheta * Math.PI), 
+                            node: n,
+                        });
+                        i++;
+                        j++;
+                    }
+                    i = 0;
+                }
+                r += radius;
+            }
+        }
+        
+        sigInst.moveNodes({destinations: draw, runtime: 3}, function() {
+            sigInst.drawingProperties({labelThreshold: 0}).draw(-1, -1, 1);
+            graphCenter();
+            
+            sigInst.iterEdges(function(e) {
+                if (!e.hidden && (stripLetters(e.source.id) != parseInt(node.id) && stripLetters(e.target.id) != parseInt(node.id))) {
+                    e.hidden = true;
+                }
+            });
+        });
+    }
+    
     var stackNetworks = function() {
         var nodes = sigInst._core.graph.nodes.filter(function(node) { return !node.hidden; });
         var edges = sigInst._core.graph.edges.filter(function(e) { return !e.source.hidden && !e.target.hidden && !e.hidden; });
@@ -316,6 +443,10 @@ define([
         ).toUpperCase();
     }
     
+    var stripLetters = function(s) {
+        return s.match(/\d/g).join('');
+    }
+    
     var cleanUpNodes = function() {
         sigInst.iterNodes(function(node) {
             if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
@@ -387,6 +518,7 @@ define([
         graphSelectedNodes: graphSelectedNodes,
         getSelectedNodes: getSelectedNodes,
         
+        circularFunc: circularFunc,
         stackNetworks: stackNetworks,
         graphCenter: graphCenter,
         
@@ -395,6 +527,7 @@ define([
         
         cleanUpNodes: cleanUpNodes,
         messageUser: messageUser,
+        stripLetters: stripLetters,
         alertUser: alertUser,
         parseBool: parseBool,
     };
