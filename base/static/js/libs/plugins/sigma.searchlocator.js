@@ -5,7 +5,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     sigma.classes.Cascade.call(this);
     var self = this;
     var inst = instance;
-    var size = 30;
+    var size = 35;
     
     this.graph = graph;
     this.m = {
@@ -14,7 +14,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     
     this.m = jQuery.extend({}, this.m, properties || {});
     
-    var step = self.m.runtime * 10;
+    var step = self.m.runtime * 7;
     
     this.init = function() {
         // one move
