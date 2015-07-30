@@ -301,6 +301,7 @@ define([
         
         showNetwork: function(e) {
             if (Utils.getSelectedNodes().length < 0) return;
+            $('#panel-legend').show();
             Node.applyNeighbourhood(1);
             
             $('[data-simple-step]').each(function() {
