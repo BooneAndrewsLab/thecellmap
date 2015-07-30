@@ -35,6 +35,7 @@ define([
             maxEdgeSize : 1.5,
             nodesPowRatio : 1,
             edgesPowRatio : .5,
+            margin: 10,
             arrowRatio: 4,
             safe : false,
         },

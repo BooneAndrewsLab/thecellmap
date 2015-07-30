@@ -316,6 +316,7 @@ define([
             node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + "") == -1); // either we manually hid the node or it's not connected to anything
         });
         
+        if (state.get('showCircular')) Utils.circularFunc(state.get('centerNode'));
         state.set('showRegions', false);
         Settings.updateLabels();
         sigInst.draw();

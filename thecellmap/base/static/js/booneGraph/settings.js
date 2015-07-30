@@ -66,7 +66,7 @@ define([
     }
     
     var updateLabels = function() {
-        var val = settings.get('showLabel') && Utils.countVisibleNodes() <= 100 ? 0 : state.get('labelThreshold');
+        var val = settings.get('showLabel') && (Utils.countVisibleNodes() <= 100 || state.get('showCircular')) ? 0 : state.get('labelThreshold');
         sigInst.drawingProperties({labelThreshold: val}).draw(-1, -1, 1);
     }
     
