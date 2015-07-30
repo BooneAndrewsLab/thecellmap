@@ -35,7 +35,7 @@ define([
             }).draw();
             
             if ($('#panel-legend .panel-body').css('display') == 'none') $('#legend-handle').dblclick();
-            $('#btn-legend').click();
+            $('#panel-legend').show();
         } else {
             sigInst.iterNodes(function(n) {
                 n.color = opts['defaultNodeColor'];
