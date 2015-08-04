@@ -200,6 +200,7 @@ define([
                     },
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
+                    Utils.clearSelectionCanvas();
                     var selected = Utils.getSelectedNodes(true), numVisibleSelected = 0, strain;
                     var toPaste = _.uniq(_.map(selected, function(s) {return Utils.getStrain(s).get('label');})).sort();
                     $('#copy-area').html(toPaste.toString())
@@ -256,10 +257,9 @@ define([
                         sigInst.draw();
                         
                         if (!($(selected).not(state.get('selection')).length == 0 && $(state.get('selection')).not(selected).length == 0)) {
-                            var diff = $(selected).not(state.get("selection")).get(), nodes = [];
-                            state.set("selection", selected);
-                          
+                            var nodes = [];
 //                            //takes difference, and only blinks new nodes
+//                            var diff = $(selected).not(state.get("selection")).get()
 //                            diff.forEach(function(n) {
 //                                var node = Utils.getNode(n);
 //                                if (node) nodes.push(node);
@@ -267,7 +267,7 @@ define([
 //                            sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
                             
                             //blinks all nodes
-                            if (diff.length > 0 && !state.get('showCircular')) {
+                            if (!state.get('showCircular')) {
                                 selected.forEach(function(n) {
                                     var node = Utils.getNode(n);
                                     if (node) nodes.push(node);
@@ -275,6 +275,8 @@ define([
                                 
                                 sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
                             }
+                            
+                            state.set('selection', selected);
                         }
                     }
                 });

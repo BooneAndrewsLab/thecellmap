@@ -107,7 +107,7 @@ define([
                 for (i in map) {
                     if (map.hasOwnProperty(i)) {
                         for (j in map[i]) {
-                            if ($Property.inArray(map[i][j], annotations) >= 0 && !selectedByAnnotation.hasOwnProperty(i)) {
+                            if ($.inArray(map[i][j], annotations) >= 0 && !selectedByAnnotation.hasOwnProperty(i)) {
                                 selectedByAnnotation[i] = null;
                             }
                         }
