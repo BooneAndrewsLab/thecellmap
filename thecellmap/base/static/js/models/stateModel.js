@@ -18,6 +18,7 @@ define([
             labelThreshold: 6,
             layoutAttraction: 50,
             layoutRepulsion: 1,
+            missingNodes: [],
             nodeSize: 2,
             selection: [],
             showCircular: false,
