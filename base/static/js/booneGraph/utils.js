@@ -78,6 +78,8 @@ define([
     }
     
     var graphSelectedNodes = function() {
+        if (state.get('showCircular')) return;
+        
         var nodes = sigInst._core.graph.nodes.filter(function(node) {
             return node.selected;
         });

@@ -38,8 +38,8 @@ define([
             })
             
             state.on('change:annotation change:dataset', function() {
-                var enabled = true;
                 $('[data-annotation-constraint], [data-dataset-constraint]').each(function() {
+                    var enabled = true;
                     if ($(this).data('annotation-constraint') != undefined) {
                         enabled &= state.get('annotation') != 'None';
                     }
@@ -193,8 +193,12 @@ define([
             case 'context-edit-node':
                 Node.showNodeModal(targets[0]);
                 break;
-            case 'context-nodes-gi':
-                if (state.get('selection').length < 6 && state('selection').length > 0 && state.get('dataset') == 0) $('.image-dataset-icon').click();
+            case 'context-node-gi':
+                if (state.get('dataset') == 0 && state.get('annotation') != 'None'){
+                    $('input.gene-search-input').select2('val', targets, true);
+                    Utils.clearSelectionCanvas();
+                    $('.image-dataset-icon[data-dataset="' + 1 + '"]').click();
+                }
                 break;
             }
             
