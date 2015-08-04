@@ -15,7 +15,7 @@ define([
     'strainModel',
 ], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
     var updateEdges = function(ds) {
-        var selected = Utils.getSelectedNodes() || [];
+        var selected = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes() || [];
         sigInst._core.graph.edges.forEach(function(edge) {
             if (!edge.hasOwnProperty('ds')) {
                 edge.ds = ds;
@@ -159,10 +159,9 @@ define([
         });
     }
     
-    var switchDataset = function(dsid, single, fromEdges) {
+    var switchDataset = function(dsid) {
         state.set('dataset', dsid);
         state.set('showRegions', false);
-        
         $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         
         if (dsid == 0) { // Correlations
@@ -178,22 +177,9 @@ define([
             Annotation.rebuildLegend();
             Settings.updateLabels();
         } else if (dsid == 1) { //Interactions
-            var selected = [];
-            if (fromEdges) {
-                state.get('hoveredTargets').forEach(function(e) {
-                    e = Utils.getEdge(e);
-                    if (selected.indexOf(e.source.id) == -1) selected.push(e.source.id);
-                    if (selected.indexOf(e.target.id) == -1) selected.push(e.target.id);
-                });
-            } else if (single) {
-                selected.push(Utils.getNode(state.get('hoveredTargets')[0]).id);
-            } else {
-                selected = Utils.getSelectedNodes();
-            }
-            
+            var selected = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes();
             loadDataset(dsid, {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: selected}, function(edges) {
-                var nodes = [], labels = [];
-                
+                var nodes = [];
                 edges.forEach(function(e) {
                     if (nodes.indexOf(e.source) == -1) nodes.push(e.source);
                     if (nodes.indexOf(e.target) == -1) nodes.push(e.target);
@@ -202,7 +188,6 @@ define([
                 sigInst.iterNodes(function(node) {
                     node._hidden = node.hidden = nodes.indexOf(parseInt(node.id)) == -1;
                 });
-                
                 updateEdges(dsid);
                 
                 if (selected.length == 1) {
@@ -213,6 +198,7 @@ define([
                     Settings.updateLabels();
                 }
                 
+                state.set('missingNodes', []);
                 updateLabels(dsid);
                 Annotation.rebuildLegend();
             });
@@ -221,7 +207,7 @@ define([
     
     var tmpNetworks = {before: {}, current: {}};
     var toggleDataset = function(dsid) {
-        var selection = Utils.getSelectedNodes();
+        var selection = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes();
         if (selection.length < 1 || selection.length > 7) return;
         
         $('.image-datasets').toggleClass('hidden');
@@ -255,7 +241,6 @@ define([
             switchDataset(dsid);
             Annotation.drawRegions();
         } else {
-            state.set('showRegions', false);
             switchDataset(dsid);
         }
     }
@@ -264,5 +249,6 @@ define([
         updateEdges: updateEdges,
         loadLayout: loadLayout,
         toggleDataset: toggleDataset,
+        switchDataset: switchDataset,
     };
 });
