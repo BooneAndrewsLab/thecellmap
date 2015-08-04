@@ -206,7 +206,7 @@ define([
                 updateEdges(dsid);
                 
                 if (selected.length == 1) {
-                    Utils.circularFunc(selected[0]);
+                    Layout.circularFunc(selected[0]);
                 } else {
                     var layoutType = state.get('annotation') != 'None' ? 'gi+' : 'gi';
                     Layout.toggleLayout(layoutType);
