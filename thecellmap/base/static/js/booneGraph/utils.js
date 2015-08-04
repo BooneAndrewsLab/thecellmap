@@ -361,7 +361,7 @@ define([
         setTimeout(function() { 
             alert.alert('close'); 
             if (!target) $('#panel-alerts').hide();
-        }, 3000);
+        }, 6000);
     }
     
     var alertUser = function(title, text, preModalCallback) {
