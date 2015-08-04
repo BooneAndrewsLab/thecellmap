@@ -326,7 +326,7 @@ define([
         });
     }
     
-    var messageUser = function(text, target) {
+    var messageUser = function(text, target, missingNodes) {
         var alert = $('<div class="alert alert-warning fade in"> \
                 <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
                 ' + text + ' \
@@ -339,6 +339,17 @@ define([
             alert.on('close.bs.alert', function() {
                 $('#panel-alerts').hide();
             });
+            
+            if (missingNodes) {
+                alert.append('<a href="#"> Click to display interaction data for these nodes </a>');
+                alert.find('a').on('click', function(e) {
+                    e.preventDefault();
+                    alert.alert('close'); 
+                    if (!target) $('#panel-alerts').hide();
+                    state.set('missingNodes', missingNodes);
+                    $('input.gene-search-input').select2('val', getSelectedNodes().concat(missingNodes), true);
+                });
+            }
             
             $('#panel-alerts').append(alert);
             $('#panel-alerts').show();

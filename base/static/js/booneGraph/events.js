@@ -66,6 +66,35 @@ define([
                 });
             });
             
+            state.on('change:missingNodes', function() {
+                var nodes = state.get('missingNodes');
+                if (nodes.length) {
+                    _.each(nodes, function(n) {
+                        var strain = Utils.getStrain(n), annotation = vizdata['annotations'].get(state.get('annotation'));
+                        
+                        var color = annotation.get('defaultColor')
+                        var annot = annotation.get('map')[strain.get('id')];
+                        if (annot != undefined) {
+                            color = annotation.get('colorPalette')[annotations.get('terms')[annot[0]].idx];
+                        }
+                        
+                        var node = {
+                            id : n,
+                            label : strain.get('verboseName'),
+                            size : 2,
+                            color : color,
+                            x : (Math.random() * 100),
+                            y : (Math.random() * 100),
+                            hidden : false,
+                        };
+                        
+                        sigInst.addNode(node.id, node);
+                    });
+                    
+                    Dataset.toggleDataset(1);
+                }
+            })
+            
             var box = $(".content:first")[0].getBoundingClientRect();
             if ($('#panel-legend').length) {
                 Drag.init(document.getElementById('legend-handle'), document.getElementById('panel-legend'), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);

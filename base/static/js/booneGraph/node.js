@@ -202,6 +202,7 @@ define([
                 }).on('change', function(evt, a, b, c) {
                     Utils.clearSelectionCanvas();
                     var selected = Utils.getSelectedNodes(true), numVisibleSelected = 0, strain;
+                    if (state.get('annotation') == 'None') Annotation.loadAnnotation('SAFE');
                     
                     var moveOn = true, found = false;
                     sigInst.iterNodes(function(node) {
@@ -219,7 +220,6 @@ define([
                                 }
                             } else {
                                 numVisibleSelected++;
-                                if (state.get('annotation') == 'None') Annotation.loadAnnotation('SAFE');
                                 if (tmpNode) tmpNode.forceLabel = true;
                                 node.forceLabel = true;
 //                                    node.size_mult = 2;
@@ -238,14 +238,18 @@ define([
                         }
                     });
                     
-                    var diff = $(selected).not(state.get('selection')).get(), missingNodes = [];
+                    var diff = $(selected).not(state.get('selection')).get(), missingNodes = { labels: [], ids: [] };
                     _.each(diff, function(n) {
                         var node = Utils.getNode(n), strain = Utils.getStrain(n);
-                        if (!node) missingNodes.push(strain['attributes']['verboseName']);
+                        if (!node) {
+                            missingNodes['labels'].push(strain['attributes']['verboseName']);
+                            missingNodes['ids'].push(n);
+                            moveOn = false;
+                        }
                     });
                     
-                    if (missingNodes.length) {
-                        Utils.messageUser(missingNodes.join() + ' is below current threshold, somthing blah balh to display interaction data for this gene');
+                    if (missingNodes['labels'].length) {
+                        Utils.messageUser(missingNodes['labels'].join() + ' is below current threshold.', null, missingNodes['ids']);
                     }
                     
                     if (moveOn && !state.get('isInitializing')) {

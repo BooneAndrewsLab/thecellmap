@@ -358,7 +358,6 @@ define([
         });
         
         etmp.forEach(function(e) {
-            if (e.hidden) return;
             var tmpkey = '+', outNode;
             if (Utils.stripLetters(e.source.id) == node.id) {
                 outNode = e.target;
