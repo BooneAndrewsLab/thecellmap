@@ -25,7 +25,7 @@ define([
                 });
                 
                 var autocomp = [], strain, tokens;
-                for (i in nodes) {
+                for (var i in nodes) {
                     strain = Utils.getStrain(nodes[i].id);
                     strain.set('o', strain.get('orf').toLowerCase());
                     tokens = [strain.get('o')];
@@ -202,21 +202,19 @@ define([
                 }).on('change', function(evt, a, b, c) {
                     Utils.clearSelectionCanvas();
                     var selected = Utils.getSelectedNodes(true), numVisibleSelected = 0, strain;
-                    var toPaste = _.uniq(_.map(selected, function(s) {return Utils.getStrain(s).get('label');})).sort();
-                    $('#copy-area').html(toPaste.toString())
                     
-                    var moveOn = true;
+                    var moveOn = true, found = false;
                     sigInst.iterNodes(function(node) {
                         if (node.id.indexOf('tmp_') != -1) return;
                         if (state.get('showCircular')) var tmpNode = Utils.getNode('tmp_' + node.id);
                         
-                        if ($.inArray(node.id + "", selected) >= 0) {
+                        if ($.inArray(node.id + '', selected) >= 0) {
                             if (tmpNode) tmpNode.selected = true;
                             node.selected = true;
-                            
+                            found = true;
                             if (node.hidden) {
-                                if (!selected.byAnnot.hasOwnProperty(node.id)) {
-                                    messageUser('Gene you\'re looking for is below current threshold.');
+                                if (!selected.hasOwnProperty(node.id)) {
+                                    Utils.messageUser('Gene you\'re looking for is below current threshold.');
                                     moveOn = false;
                                 }
                             } else {
@@ -239,6 +237,16 @@ define([
 //                                node.size = node.size_init;
                         }
                     });
+                    
+                    var diff = $(selected).not(state.get('selection')).get(), missingNodes = [];
+                    _.each(diff, function(n) {
+                        var node = Utils.getNode(n), strain = Utils.getStrain(n);
+                        if (!node) missingNodes.push(strain['attributes']['verboseName']);
+                    });
+                    
+                    if (missingNodes.length) {
+                        Utils.messageUser(missingNodes.join() + ' is below current threshold, somthing blah balh to display interaction data for this gene');
+                    }
                     
                     if (moveOn && !state.get('isInitializing')) {
                         $('[data-simple-step]').each(function() {

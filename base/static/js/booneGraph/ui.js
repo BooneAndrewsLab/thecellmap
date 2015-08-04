@@ -44,6 +44,7 @@ define([
         
         $('#panel-legend').css('top', '105px');
         $('#panel-legend').css('left', '20px');
+        $('#panel-alerts').hide();
         
         $(opts['rootElement']).append('<canvas id="canvas-draw" width="' + $('canvas:first').width() + 'px" height="' + $('canvas:first').height() + 'px" style="display: none;"></canvas>');
         window.addEventListener('resize', function() {

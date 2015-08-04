@@ -464,14 +464,24 @@ define([
                 <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
                 ' + text + ' \
               </div>');
-        if (target) {
+        
+        alert.on('close.bs.alert', function() {
+            $('#panel-alerts').hide();
+        });
+        
+        if (!!target) {
             $('#' + target).empty();
             $('#' + target).append(alert);
         } else {
             $('#panel-alerts').append(alert);
         }
+        
+        $('#panel-alerts').show();;
         alert.alert();
-        setTimeout(function() { alert.alert('close'); }, 3000);
+        setTimeout(function() { 
+            alert.alert('close'); 
+            $('#panel-alerts').hide();
+        }, 3000);
     }
     
     var alertUser = function(title, text, preModalCallback) {
