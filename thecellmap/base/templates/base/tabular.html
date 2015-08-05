@@ -49,7 +49,12 @@
 
 {% block js %}
 {{ block.super }}
-  {% require_module 'edit' %}
+  <script type='text/javascript'>
+    window.urls = {
+        nodes: '{{ nodes_url }}',
+    }
+  </script>
+  {% require_module 'tabular' %}
 {% endblock js %}
 
 {% block content %}
