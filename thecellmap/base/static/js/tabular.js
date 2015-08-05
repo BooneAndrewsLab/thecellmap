@@ -40,7 +40,7 @@ require([
             target.addClass('data-loading');
             target.append($('#spinner>div').clone());
             
-            $.get(node_id + "/", function(d) {
+            $.get(node_id + '/', function(d) {
                 target.append('<div class="row"> \
                         <div class="col-md-2"> \
                           <ul class="nav nav-pills nav-stacked data-type-menu"> \
@@ -52,7 +52,6 @@ require([
                               </a> \
                               <ul class="dropdown-menu download-data"> \
                                 <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Current gene</a></li> \
-                                {% if strains|length > 1 %}<li{% if strains|length > 30 %} data-toggle="tooltip" title="Download limited to less than 30 nodes" data-placement="right"{% endif %}><a href="#" data-downloadtype="all"{% if strains|length > 30 %} class="disabled"{% endif %}>All genes</a></li>{% endif %} \
                               </ul> \
                             </li> \
                           </ul> \
@@ -124,6 +123,12 @@ require([
                         </div> \
                       </div>');
                 
+                if (opts['numStrains'] > 1 && opts['numStrains'] <= 30) {
+                    target.find('.download-data').append('<li><a href="#" data-downloadtype="all">All genes</a></li>');
+                } else if (opts['numStrains'] > 30) {
+                    target.find('.download-data').append('<li class="disabled"><a href="#" data-downloadtype="all">All genes</a></li>');
+                }
+                
                 target.find('li[data-toggle="tooltip"]').tooltip();
                 
                 $('#c' + node_id + ' tbody').append(
@@ -141,10 +146,10 @@ require([
                 target.removeClass('data-loading');
                 target.find('.bubblingG').remove();
                 $.bootstrapSortable(true);
-                $(".download-data a").click(function(evt) {
+                $('.download-data a').click(function(evt) {
                     switch ($(this).attr('data-downloadtype')) {
                         case "all":
-                            window.location.href = '../dl/' + location.search;
+                            if (opts['numStrains'] <= 30) window.location.href = '../dl/' + location.search;
                             break;
                         case "node":
                             window.location.href = '../dl/?n=' + $(this).attr('data-node');
@@ -169,13 +174,13 @@ require([
     };
     
     var update_links = function() {
-        $("table tbody tr td:first-child:not([colspan=3]):not([colspan=4])").click(function() {
+        $('table tbody tr td:first-child:not([colspan=3]):not([colspan=4])').click(function() {
             window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).data('value'), '_blank');
         });
     }
     
     var initSelect2 = function() {
-        $.getJSON("{{ nodes_url }}", function(data) {
+        $.getJSON(opts['nodesUrl'], function(data) {
             var strainMap = {}, autocomp = [], strain, tokens;
             for (i in data.nodes) {
                 strain = data.nodes[i];

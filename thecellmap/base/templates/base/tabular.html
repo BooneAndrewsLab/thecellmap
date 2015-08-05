@@ -50,8 +50,9 @@
 {% block js %}
 {{ block.super }}
   <script type='text/javascript'>
-    window.urls = {
-        nodes: '{{ nodes_url }}',
+    window.opts = {
+        nodesUrl: '{{ nodes_url }}',
+        numStrains: {{ strains|length }},
     }
   </script>
   {% require_module 'tabular' %}
