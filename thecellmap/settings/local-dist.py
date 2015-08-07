@@ -38,8 +38,7 @@ DATABASES = {
 
 # Recipients of traceback emails and other notifications.
 ADMINS = (
-    # ('Matej Usaj', 'm.usaj@thecellmap.org'),
-    # ('Anastasia Baryshnikova', 'abarysh@princeton.edu'),
+    # ('Your Name', 'your_email@domain.com'),
 )
 MANAGERS = ADMINS
 
