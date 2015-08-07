@@ -145,7 +145,6 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = [
@@ -175,31 +174,37 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
-# def custom_show_toolbar(request):
-#     """ Only show the debug toolbar to users with the superuser flag. """
-#     return request.user.is_superuser
-# 
-# DEBUG_TOOLBAR_CONFIG = {
-#     'INTERCEPT_REDIRECTS': False,
-#     'SHOW_TOOLBAR_CALLBACK': 'thecellmap.settings.base.custom_show_toolbar',
-#     'HIDE_DJANGO_SQL': True,
-#     'TAG': 'body',
-#     'SHOW_TEMPLATE_CONTEXT': True,
-#     'ENABLE_STACKTRACES': True,
-# }
-# 
-# DEBUG_TOOLBAR_PANELS = (
-#     'debug_toolbar_user_panel.panels.UserPanel',
-#     'debug_toolbar.panels.version.VersionDebugPanel',
-#     'debug_toolbar.panels.timer.TimerDebugPanel',
-#     'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
-#     'debug_toolbar.panels.headers.HeaderDebugPanel',
-#     'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
-#     'debug_toolbar.panels.template.TemplateDebugPanel',
-#     'debug_toolbar.panels.sql.SQLDebugPanel',
-#     'debug_toolbar.panels.signals.SignalDebugPanel',
-#     'debug_toolbar.panels.logger.LoggingPanel',
-# )
+ENABLED_DEBUG_TOOLBAR = False
+
+if ENABLED_DEBUG_TOOLBAR: 
+    def custom_show_toolbar(request):
+        """ Only show the debug toolbar to users with the superuser flag. """
+        return request.user.is_superuser
+     
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+        'SHOW_TOOLBAR_CALLBACK': 'thecellmap.settings.base.custom_show_toolbar',
+        'HIDE_DJANGO_SQL': True,
+        'TAG': 'body',
+        'SHOW_TEMPLATE_CONTEXT': True,
+        'ENABLE_STACKTRACES': True,
+    }
+     
+    DEBUG_TOOLBAR_PANELS = (
+        'debug_toolbar_user_panel.panels.UserPanel',
+        'debug_toolbar.panels.version.VersionDebugPanel',
+        'debug_toolbar.panels.timer.TimerDebugPanel',
+        'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+        'debug_toolbar.panels.headers.HeaderDebugPanel',
+        'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+        'debug_toolbar.panels.template.TemplateDebugPanel',
+        'debug_toolbar.panels.sql.SQLDebugPanel',
+        'debug_toolbar.panels.signals.SignalDebugPanel',
+        'debug_toolbar.panels.logger.LoggingPanel',
+    )
+    
+    MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+
 
 # Specify a custom user model to use
 #AUTH_USER_MODEL = 'accounts.MyUser'
@@ -218,21 +223,8 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
-        #'OPTIONS': {
-        #    'init_command': 'SET storage_engine=InnoDB',
-        #    'charset' : 'utf8',
-        #    'use_unicode' : True,
-        #},
-        #'TEST_CHARSET': 'utf8',
-        #'TEST_COLLATION': 'utf8_general_ci',
     },
-    # 'slave': {
-    #     ...
-    # },
 }
-
-# Uncomment this and set to all slave DBs in use on the site.
-# SLAVE_DATABASES = ['slave']
 
 # Recipients of traceback emails and other notifications.
 ADMINS = (
@@ -274,19 +266,9 @@ REQUIRE_STANDALONE_MODULES = {
     }, 
 }
 
-# Is this a development instance? Set this to True on development/master
-# instances and False on stage/prod.
-
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# Hardcoded values can leak through source control.
-# This is an example method of getting the value from an environment setting.
-# Uncomment to use, and then make sure you set the SECRET_KEY environment variable.
-# This is good to use in production, and on services that support it such as Heroku.
-#SECRET_KEY = get_env_setting('SECRET_KEY')
 
 # Uncomment these to activate and customize Celery:
 # CELERY_ALWAYS_EAGER = False  # required to activate celeryd
