@@ -42,21 +42,20 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
     <div id="inner-container">
       <div id="sigma-parent" class="sigma-parent">
         <div id="network-container" class="sigma-expand">
-          <div class="cutoff-bar-group">
-            <div id="cutoff-bar-date" class="cutoff-bar"></div>
-            <span id="cutoff-label" class="label label-primary">Date</span>
-          </div>
         </div>
       </div>
     </div>
 </div>
 
 <div id='ui-placeholder' >
-  {% if ui == 'advance' %} 
-    {% include 'ui/ui.html' %}
-  {% else %}
-    {% include 'ui/simple_ui.html' %}
-  {% endif %}
+    <div class="vizualization-ui" id="ui" style="display: none;">
+        <div class="top-left hidden-sm hidden-xs">
+            <div class="cutoff-bar-group">
+              <div id="cutoff-bar-date" class="cutoff-bar"></div>
+              <span id="cutoff-label" class="label label-primary">Date</span>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}
 

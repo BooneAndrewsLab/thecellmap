@@ -63,6 +63,16 @@ define([
     }
     
     var buildUI = function() {
+        $('.vizualization-ui').appendTo(opts['rootElement']);
+        $('.vizualization-ui').ready(function() {
+            $(window).resize(function() {
+                var parent = $('.vizualization-ui').parent();
+                $('.vizualization-ui').css('height', parent.innerHeight());
+                $('.vizualization-ui').css('width', parent.innerWidth());
+            }).resize();
+        });
+        $('#ui-placeholder').remove();
+        
         var slider = $('#cutoff-bar-date')[0];
         nouislider.create(slider, {
             range: {
@@ -80,6 +90,8 @@ define([
             sigInst.iterNodes(function(n) {
                 n.visibleDegree = 0;
             });
+            
+            sigInst.iterEdges(function(e){e.weight = 1;});
             
             sigInst.iterEdges(function(e) {
 //                sigInst.graphProperties({maxEdgeSize: }).draw();
@@ -109,6 +121,11 @@ define([
             toggleLayout();
             sigInst.draw();
         });
+        
+        setTimeout(function() {
+            $('#ui').fadeIn(1000);
+        }, 1000);
+        
 //        
 //        slider.noUiSlider.on('update', function( values, handle ) {
 //            $('.cutoff-label-min').html(values[0]);
