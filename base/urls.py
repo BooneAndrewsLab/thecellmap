@@ -49,6 +49,7 @@ urlpatterns += patterns('base.views',
     url(r'^ui/base/$', TemplateView.as_view(template_name='ui/base_ui.html'), name='base_ui'),
     
     url(r'^3D/(?P<dataset_id>\d+)/$', 'three_demension', name='three_demension'),
+    url(r'^ccbr_collaboration/$', 'ccbr_collaboration', name='ccbr_collaboration')
 )
 
 urlpatterns += patterns('base.tools',
