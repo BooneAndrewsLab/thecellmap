@@ -20,14 +20,6 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 
 
-def three_demension(request, dataset_id):
-    dataset = Dataset.pk_or_default(dataset_id, request.user)
-    if request.user.is_authenticated() or dataset.is_published:
-        return render(request, 'base/3D.html', {
-                'dataset': dataset,
-                'annotations': [Annotation.objects.get(name='SAFE')],
-        })
-
 def _serve_dataset(request, dataset=None):
     dataset = Dataset.pk_or_default(dataset, request.user)
     
@@ -210,6 +202,19 @@ def tabular(request, dataset_id=None):
             'strains': list(strains_for_nodes(dataset, nodes)),
             'nodes_url': dataset.static_url('nodes.json'),
       })
+
+def three_demension(request, dataset_id):
+    dataset = Dataset.pk_or_default(dataset_id, request.user)
+    if request.user.is_authenticated() or dataset.is_published:
+        return render(request, 'base/3D.html', {
+                'dataset': dataset,
+                'annotations': [Annotation.objects.get(name='SAFE')],
+        })
+
+def ccbr_collaboration(request):
+    return render(request, 'base/collaboration.html', {
+                'root': settings.STATIC_URL,
+    })
 
 @print_queries
 def tabular_data(request, dataset_id=None, node_id=None):

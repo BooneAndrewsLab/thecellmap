@@ -1,0 +1,47 @@
+.sigma-parent {
+    min-height: 480px;
+    height: 100%;
+}
+
+.sigma-expand {
+    background: #222222;
+    border-radius: 8px;
+    height: 100%;
+}
+
+#inner-container {
+    padding-top: 10px;
+}
+
+.vizualization-ui {
+    padding: 5px 5px; /* make a nice 5px gap between ui and network border */
+    pointer-events: none;
+    position: absolute;
+}
+
+.vizualization-ui > * {
+    position: absolute;
+}
+
+.vizualization-ui > * > * {
+    pointer-events: auto;
+}
+
+.cutoff-bar {
+    width: 300px;
+    top: 9px;
+    left: 20px;
+}
+
+#cutoff-label {
+    position: relative;
+    top: 30px;
+    left: 20px;
+    padding: 7px 7px;
+    text-align: center;
+    background-color: #01AEF0;
+}
+
+#cutoff-label-max {
+    margin-bottom: 20px;
+}
