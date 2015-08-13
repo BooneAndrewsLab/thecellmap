@@ -92,6 +92,10 @@
     max-height: 600px;
 }
 
+.publication-abstract {
+    display: none;
+}
+
 #pi-info .row {
     margin-top: 5px;
 }
