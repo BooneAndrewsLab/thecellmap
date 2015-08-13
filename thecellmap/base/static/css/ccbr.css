@@ -27,6 +27,23 @@
     pointer-events: auto;
 }
 
+.top-left > * {
+    display: inline-block;
+}
+
+.form-group .input-group-btn {
+    width: 1% !important;
+}
+
+.center {
+    left: 50%;
+}
+
+#btn-toggle-layout {
+    height: 54px;
+    margin-left: 36px;
+}
+
 .cutoff-bar {
     width: 300px;
     top: 9px;
@@ -42,6 +59,34 @@
     background-color: #01AEF0;
 }
 
-#cutoff-label-max {
-    margin-bottom: 20px;
+.modal-dialog {
+    width: 1024px;
+}
+.modal-body {
+    height: 600px;
+}
+
+.panel-publication {
+    margin-bottom: 0px;
+}
+
+.panel-publication .panel-body {
+    display: none;
+}
+
+.pi-image {
+    background: #ffffff url(../ccbr/all_pi.jpg) no-repeat left top;
+    width: 132px;
+    height: 198px;
+}
+
+.pi-icon {
+    background: #ffffff url(../ccbr/all_pi_round.jpg) no-repeat left top;
+    width: 75px;
+    height: 75px;
+}
+
+.form-info {
+    padding: 6px 2px;
+    display: block;
 }

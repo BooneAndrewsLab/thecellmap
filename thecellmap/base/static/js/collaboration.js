@@ -8,9 +8,10 @@ require.config({
         'noUISlider': 'libs/nouislider-8.0.1.min',
         'sigma': 'libs/isigma',
         
-        'packer': 'libs/packer.growing',
+        'scrollbar': 'libs/jquery.mCustomScrollbar.concat.min',
         
         'sigma.forcelayout': 'libs/plugins/sigma.fa2',
+        'sigma.highlight': 'libs/plugins/sigma.highlight',
         'sigma.move': 'libs/plugins/sigma.move',
         'sigma.rotate': 'libs/plugins/sigma.rotate',
         
@@ -21,8 +22,10 @@ require.config({
         'bootstrap': ['jquery'],
         
         'noUISlider': ['jquery'],
+        'scrollbar': ['jquery'],
         
         'sigma.forcelayout': ['sigma'],
+        'sigma.highlight': ['sigma'],
         'sigma.move': ['sigma'],
         'sigma.rotate': ['sigma'],
     },

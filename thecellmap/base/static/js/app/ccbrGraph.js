@@ -4,11 +4,13 @@ define([
     'backbone',
     'noUISlider',
     
+    'scrollbar',
+    
     'bootstrap',
     'sigma',
     
-    'packer',
     'sigma.forcelayout',
+    'sigma.highlight',
     'sigma.move',
     'sigma.rotate'
 ], function($, _, Backbone, nouislider) {
@@ -25,8 +27,9 @@ define([
             layout: null,
             layoutAlgo: ['fl'],
             layoutButtonHide: true,
-            minYear: null,
-            maxYear: null,
+            minDate: null,
+            piImageWidth: 132,
+            piImageHeight: 198,
             rootElement: '#network-container',
             runningLayout: null,
         };
@@ -38,7 +41,7 @@ define([
         }).drawingProperties({
             defaultLabelSize: 14,
             defaultLabelHoverColor: '#000',
-            labelThreshold: 6,
+            labelThreshold: 36,
             font: 'Arial',
             fontStyle: 'bold ',
             defaultLabelColor : '#E3E3E3',
@@ -56,13 +59,20 @@ define([
             drawHoverEdges: false,
             maxRatio : 64,
             blockScroll: false,
+        }).bind('upnodes', function(targets) {
+//            if (!opts.runningLayout) toggleLayout();
+            buildPIPanel(targets.content[0]);
+        }).bind('downnodes', function(targets) {
+            if (opts.runningLayout) toggleLayout();
         });
         
         loadAuthors();
+        sigInst.hoverHighlight();
         sigInst.draw();
     }
     
     var buildUI = function() {
+        //Load UI
         $('.vizualization-ui').appendTo(opts['rootElement']);
         $('.vizualization-ui').ready(function() {
             $(window).resize(function() {
@@ -73,68 +83,124 @@ define([
         });
         $('#ui-placeholder').remove();
         
+        //Create and initialize date cutoff bar
         var slider = $('#cutoff-bar-date')[0];
         nouislider.create(slider, {
             range: {
-                min: timestamp(opts['minYear'] + ''),
+                min: opts['minDate'],
                 max: new Date().getTime(),
             },
             step: 7 * 24 * 60 * 60 * 1000,
-            start: timestamp(opts['minYear']),
+            start: opts['minDate'],
             orientation: 'horizontal',
             direction: 'ltr',
         });
         
-        slider.noUiSlider.on('set', function() {
-            var val = parseInt(slider.noUiSlider.get());
-            sigInst.iterNodes(function(n) {
-                n.visibleDegree = 0;
-            });
-            
-            sigInst.iterEdges(function(e){e.weight = 1;});
-            
-            sigInst.iterEdges(function(e) {
-//                sigInst.graphProperties({maxEdgeSize: }).draw();
-                e.hidden = e.date > val;
-                e.size = 1;
-                
-                if (!e.hidden) {
-                    _.each(vizdata['edges'], function(edge) {
-                        if (e.id == (edge.source + '+' + edge.target) && edge.date < val) {
-                            e.weight++;
-                            e.size++;
-                        }
-                    });
-                    e.source.visibleDegree++;
-                    e.target.visibleDegree++;
-                }
-            });
-            
-            months = ['January', 'February', 'March',
-                      'April', 'May', 'June', 'July',
-                      'August', 'September', 'October',
-                      'November', 'December'];
-            
-            var date = new Date(val);
-            $('#cutoff-label').html(months[date.getMonth()] + ', ' + date.getFullYear());
-            
+        slider.noUiSlider.on('set', updateNetwork)
+        
+        //Initialize toggle layout button
+        $('#btn-toggle-layout').click(function(e) {
+            e.preventDefault();
             toggleLayout();
-            sigInst.draw();
         });
         
+        //Fade in UI
         setTimeout(function() {
             $('#ui').fadeIn(1000);
+            toggleLayout();
         }, 1000);
-        
-//        
-//        slider.noUiSlider.on('update', function( values, handle ) {
-//            $('.cutoff-label-min').html(values[0]);
-//            $('.cutoff-label-max').html(values[1]);
-//        });
     }
     
-    var timestamp = function(str) {
-        return new Date(str).getTime();
+    var buildPIPanel = function(id) {
+        var node = getNode(id);
+        var edges = sigInst._core.graph.edges.filter(function(e) {
+            return e.source.id == id || e.target.id == id;
+        });
+        
+        var modal = $('#modal-pi');
+        modal.find('.modal-title').html(node.label);
+        var uniPMID = {};
+        
+        _.each(edges, function(e) {
+            if (!uniPMID.hasOwnProperty(e.pmid)) {
+                $('#publication-list').append(
+                    '<div class="panel panel-default panel-publication" data-pmid="' + e.pmid + '">\
+                        <div class="panel-heading">' + e.name + '</div>\
+                        <div class="panel-body">\
+                            <form class="form-horizontal" role="form">\
+                                <div class="form-group">\
+                                    <label class="col-sm-2 control-label">Name</label>\
+                                    <div class="col-sm-10">\
+                                        <span class="publication-name form-info">' + e.name + '</span>\
+                                    </div>\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="col-sm-2 control-label">PubMed Link</label>\
+                                    <div class="col-sm-10">\
+                                        <a href="http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '" class="publication-pubmed form-info">http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '</a>\
+                                    </div>\
+                                </div>\
+                                <div class="form-group">\
+                                <label class="col-sm-2 control-label">Abstract</label>\
+                                    <div class="col-sm-10">\
+                                        <span class="publication-abstract form-info"></span>\
+                                    </div>\
+                                </div>\
+                                <div class="form-group">\
+                                    <label class="col-sm-2 control-label">Collaborators</label>\
+                                    <div class="publication-collaborators" class="col-sm-10">\
+                                    </div>\
+                                </div>\
+                            </form>\
+                        </div>\
+                    </div>');
+                uniPMID[e.pmid] = null;
+            }
+            
+            var collaborator = e.source.id != id ? e.source.id : e.target.id;
+            $('.panel-publication[data-pmid="'+ e.pmid + '"] .publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collaborator + '"></div>');
+        });
+        
+        $('.panel-heading').click(function(e) {
+            e.preventDefault();
+            
+            var panel = $(this).parent();
+            
+            var piIcons = panel.find('.publication-collaborators').children('.pi-icon');
+            piIcons.each(function(icon) {
+                var el = $(piIcons[icon]);
+                el.css('background-position-x', parseInt(el.data('pi')) * -75 + 'px');
+            });
+            
+            $.ajax({
+                url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=text&id=PMID' + panel.data('pmid') + '&rettype=abstract', 
+                dataType : 'text',
+                success: function(abs) {
+                    var maxStr = 0, paragraphs = abs.split('\n\n');
+                    for (var p in paragraphs) {
+                        if (paragraphs[p].indexOf('Author information') == -1) maxStr = paragraphs[p].length > paragraphs[maxStr].length ? p : maxStr;
+                    }
+                    $('.panel-publication[data-pmid="' + panel.data('pmid') + '"] .publication-abstract').html(paragraphs[maxStr]);
+                },
+            });
+            
+            panel.find('.panel-body').toggle();
+        });
+        
+        $('.pi-image').css('background-position-x', -id * 132 + 'px');
+        
+        $('#modal-publication').mCustomScrollbar({
+            axis: 'y',
+            scrollButtons: { enabled: true },
+            advance: {
+                updateOnContentResize: true,
+            }
+        });
+        
+        modal.modal({
+            backdrop: 'static',
+            keyboard: true,
+        });
     }
     
     var loadAuthors = function() {
@@ -147,10 +213,9 @@ define([
                     node.id = n.id;
                     node.label = n.name;
                     node.size = 2;
-                    node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
-                    node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
+                    node.x = !isNaN(node.x) ? node.x : (Math.random() * 1000);
+                    node.y = !isNaN(node.y) ? node.y : (Math.random() * 1000);
                     node.forceLabel = true;
-                    node.color = '#01AEF0';
                     
                     sigInst.addNode(node.id, node);
                 });
@@ -165,57 +230,109 @@ define([
             url: opts['urls']['articles'], 
             dataType : 'json',
             success: function(edges) {
-                vizdata['edges'] = edges;
+                vizdata['edges'] = edges, vizdata['articles'] = {};
                 edges.forEach(function(e) {
-                    var edge = {}
-                    edge.source = e.source;
-                    edge.target = e.target;
+                    var edge = {};
+                    edge.source = e.s;
+                    edge.target = e.t;
                     edge.id = edge.source + '+' + edge.target;
+                    edge.name = e.at;
+                    edge.journal = e.jt;
+                    edge.pmid = e.pmid;
+                    edge.label = '';
                     
                     var date = new Date();
-                    date.setFullYear(e.date.substring(0, 4), e.date.substring(4, 6));
-                    opts['minYear'] = Math.min(opts['minYear'], parseInt(e.date.substring(0, 4))) || parseInt(e.date.substring(0, 4));
-                    opts['maxYear'] = Math.max(opts['maxYear'], parseInt(e.date.substring(0, 4))) || parseInt(e.date.substring(0, 4));
-                    e.date = date.getTime();
+                    date.setFullYear(e.d.substring(0, 4), e.d.substring(4, 6));
+                    var time = date.getTime();
+                    opts['minDate'] = Math.min(opts['minDate'], time) || time;
+                    e.date = time;
                     
-                    edge.weight = 1;
+                    edge.weight = edge.size = edge.absweight = 1;
                     edge.size = 1;
-                    edge.color = '#FF9126'
+                    edge.color = '#FF9126';
                     
-                    if (!sigInst._core.graph.edgesIndex[edge.id]) {
+                    var addedEdge = getEdge(edge.id);
+                    if (!addedEdge) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
-                        sigInst._core.graph.edgesIndex[edge.id].date = date.getTime();
+                        getEdge(edge.id).date = time;
                     } else {
-                        var addedEdge = sigInst._core.graph.edgesIndex[edge.id];
-                        if (date.getTime() < addedEdge.date) {
-                            addedEdge.date = date.getTime();
+                        if (time < addedEdge.date) {
+                            addedEdge.date = time;
                         }
-                        addedEdge.weight++;
-                        addedEdge.size++;
                     }
                 });
                 
                 buildUI();
-                updateNetwork();
+                
+                sigInst.iterEdges(function(e) {
+                    for (key in e['attr']) {
+                        e[key] = e['attr'][key];
+                    }
+                });
+                
+                $('#cutoff-bar-date')[0].noUiSlider.set(new Date(opts['minDate']));
+                
+                sigInst.draw();
             },
         });
     }
     
     var updateNetwork = function() {
-        sigInst._core.graph.nodes.forEach(function(node) {
-            if (node.degree > 2) node.size = node.degree;
-            node._hidden = node.hidden;
+        var val = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()), uniPMID = {};
+        
+        sigInst.iterNodes(function(n) {
+            n.visibleDegree = 0;
+            n.colorDegree = 0;
+        }).iterEdges(function(e) {
+            e.hidden = e.date > val;
+            e.size = 1;
+            e.weight = 1;
+            
+            if (!e.hidden) {
+                _.each(vizdata['edges'], function(edge) {
+                    if (e.id == (edge.s + '+' + edge.t) && edge.date < val) {
+                        if (e.weight < 7) e.weight++;
+                        e.size++;
+                    }
+                });
+                
+//                //Color degree scales color of the node
+//                if (!uniPMID.hasOwnProperty(e.pmid)) {
+//                    e.source.colorDegree++;
+//                    e.target.colorDegree++;
+//                    uniPMID[e.pmid] = null;
+//                }
+//                
+//                //Visible degree scales size of the node
+//                e.source.visibleDegree++;
+//                e.target.visibleDegree++;
+                
+              //Visible degree scales color of the node
+                if (!uniPMID.hasOwnProperty(e.pmid)) {
+                    e.source.visibleDegree++;
+                    e.target.visibleDegree++;
+                    uniPMID[e.pmid] = null;
+                }
+                
+                //Color degree scales size of the node
+                e.source.colorDegree++;
+                e.target.colorDegree++;
+            }
         });
         
-        sigInst.iterEdges(function(e) {
-            e.absweight = Math.abs(e.weight);
-            //TODO: FIX THIS
-            delete e.label;
+        var maxDegree = 0;
+        sigInst.iterNodes(function(n) {
+            if (n.degree > 2) n.size = n.visibleDegree;
+            n.hidden = n.visibleDegree <= 0;
+            if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
+        }).iterNodes(function(n) {
+            n.color = shadeColor('#01AEF0', -Math.log(n.colorDegree/maxDegree) * 100);
         });
         
-        $('#cutoff-bar-date')[0].noUiSlider.set(new Date('March, 2002'));
+        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], date = new Date(val);
+        $('#cutoff-label').html(months[date.getMonth()] + ', ' + date.getFullYear());
+        
         sigInst.draw();
-        toggleLayout();
     }
     
     var toggleLayout = function() {
@@ -223,131 +340,29 @@ define([
             sigInst.stopForceAtlas2();
             opts.runningLayout = false;
         } else {
-            sigInst.iterNodes(function(n) {
-                n.hidden = n.visibleDegree <= 0
-            });
-            
-            var lopts = {
-                callback: function(n) {
-                    stackNetworks();
-                },
-//                attraction_multiplier : .75,
-//                repulsion_multiplier : 50,
-//                gravity: 10,
-            }
-            sigInst.startForceAtlas2(lopts);
+            sigInst.startForceAtlas2();
             opts.runningLayout = true;
         }
+        
+        $('#btn-toggle-layout').find('.btn-primary').html(opts.runningLayout ? 'Pause Layout' : 'Restart Layout');
     }
     
-    var traverseRec = function(node, netNum, len) {
-        var nextNode;
-        if (node.layout.subnetwork != null) return len;
+    var shadeColor = function(color, percent) {
+        var r = Math.min(parseInt(parseInt(color.substring(1,3),16) * (100 + percent) / 100), 255);
+        var g = Math.min(parseInt(parseInt(color.substring(3,5),16) * (100 + percent) / 100), 255);
+        var b = Math.min(parseInt(parseInt(color.substring(5,7),16) * (100 + percent) / 100), 255);
         
-        node.layout.subnetwork = netNum;
-        for (nextNode in node.layout.connections) {
-            nextNode = node.layout.connections[nextNode];
-            len = traverseRec(nextNode, netNum, len);
-        }
-        return len + 1;
+        return '#' + ((r.toString(16).length==1)?'0' + r.toString(16):r.toString(16)) +
+                     ((g.toString(16).length==1)?'0' + g.toString(16):g.toString(16)) +
+                     ((b.toString(16).length==1)?'0' + b.toString(16):b.toString(16));
     }
     
-    var stackNetworks = function() {
-        var nodes = sigInst._core.graph.nodes.filter(function(node) { return !node.hidden; });
-        var edges = sigInst._core.graph.edges.filter(function(e) { return !e.source.hidden && !e.target.hidden && !e.hidden; });
-        var subnetwork = -1, offset, subnetworks = [], blocks = [], packer = new GrowingPacker();
-        
-        nodes.forEach(function(n) {
-            n.layout = {
-                connections : {},
-                subnetwork : null
-            };
-        });
-        
-        edges.forEach(function(e) {
-            e.source.layout.connections[e.target.id] = e.target;
-            e.target.layout.connections[e.source.id] = e.source;
-        });
-        
-        nodes.forEach(function(n) {
-            if (n.layout.subnetwork == null) {
-                subnetwork++;
-                traverseRec(n, subnetwork, 0);
-            }
-            
-            if (subnetworks[n.layout.subnetwork] == undefined) {
-                subnetworks[n.layout.subnetwork] = [n];
-            } else {
-                subnetworks[n.layout.subnetwork].push(n);
-            }
-        });
-        
-        for (var i = 0; i < subnetworks.length; i++) {
-            var xmax = xmin = subnetworks[i][0].x, ymax = ymin = subnetworks[i][0].y;
-            for (var j = 0; j < subnetworks[i].length; j++) {
-                xmax = Math.max(xmax, subnetworks[i][j].x);
-                xmin = Math.min(xmin, subnetworks[i][j].x);
-                ymax = Math.max(ymax, subnetworks[i][j].y);
-                ymin = Math.min(ymin, subnetworks[i][j].y);
-            }
-            offset = Math.max(offset || (xmax-xmin)/10, (ymax-ymin)/10);
-            blocks.push({x: xmin, y: ymin, w: xmax - xmin + offset, h: ymax - ymin + offset, area: Math.abs((xmax - xmin) * (ymax - ymin))});
-        }
-        
-        for (var i = 0; i < blocks.length; i++) {
-            blocks[i]["subnetwork"] = subnetworks[i];
-        }
-        
-        blocks.sort(function (a, b) { return b.area - a.area; });
-        packer.fit(blocks);
-        
-        var newPositions = [];
-        for(var i = 0; i < blocks.length; i++) {
-            for (var j = 0; j < blocks[i].subnetwork.length; j++) {
-                var n = blocks[i].subnetwork[j], x = n.x, y = n.y;
-                if ((x - blocks[i].x) < blocks[i].w) {
-                    x += offset;
-                } else {
-                    x -= offset;
-                }
-                
-                if ((y - blocks[i].y) < blocks[i].h) {
-                    y += offset;
-                } else {
-                    y -= offset;
-                }
-                
-                newPositions.push({x: x - blocks[i].x + blocks[i].fit.x,
-                                  y: y - blocks[i].y + blocks[i].fit.y,
-                                  node: n});
-            }
-        }
-        
-        nodes.forEach(function(n) {
-            delete n.layout;
-        });
-        
-        sigInst.moveNodes({destinations: newPositions, runtime: 3}, function() {
-            var sx = sy = sxx = syy = sxy = 0.0;
-            var n = sigInst._core.graph.nodes.length;
-            sigInst.iterNodes(function(n) {
-                if (n.degree > 0) {
-                    sx += n.x;
-                    sy += n.y;
-                    sxx += n.x * n.x;
-                    syy += n.y * n.y;
-                    sxy += n.x * n.y;
-                }
-            });
-            var theta = Math.atan2((sxy * n - sy * sx), (sxx * n - sx * sx)) * 180 / Math.PI;
-            sigInst.rotateNodes({
-                callback: function() {
-                    opts.runningLayout = false;
-                }, 
-                degrees: theta, 
-                nodes: sigInst._core.graph.nodes,
-            });
-        });
+    var getNode = function(id) {
+        return sigInst._core.graph.nodesIndex[id];
+    }
+    
+    var getEdge = function(id) {
+        return sigInst._core.graph.edgesIndex[id];
     }
     
     return {
