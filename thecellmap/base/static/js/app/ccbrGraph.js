@@ -121,72 +121,86 @@ define([
         modal.find('.modal-title').html(node.label);
         var uniPMID = {};
         
+        $('#publication-list').mCustomScrollbar('destroy');
+        $('#publication-list').empty();
+        
         _.each(edges, function(e) {
-            if (!uniPMID.hasOwnProperty(e.pmid)) {
-                $('#publication-list').append(
-                    '<div class="panel panel-default panel-publication" data-pmid="' + e.pmid + '">\
-                        <div class="panel-heading">' + e.name + '</div>\
-                        <div class="panel-body">\
-                            <div class="row">\
-                                <div class="col-md-2"><label>Name</label></div>\
-                                <div class="col-md-10"><span class="publication-name">' + e.name + '</span></div>\
+            for (var a in e['articles']) {
+                if (!uniPMID.hasOwnProperty(a)) {
+                    $('#publication-list').append(
+                        '<div class="panel panel-default panel-publication" data-pmid="' + a + '">\
+                            <div class="panel-heading">' + e['articles'][a] + '</div>\
+                            <div class="panel-body">\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>Name</label></div>\
+                                    <div class="col-md-10"><span class="publication-name">' + e['articles'][a] + '</span></div>\
+                                </div>\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>PubMed Link</label></div>\
+                                    <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + a +  '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + a + '</a></div>\
+                                </div>\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>Collaborators</label></div>\
+                                    <div class="col-md-10"><div class="publication-collaborators"></div></div>\
+                                </div>\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>Abstract</label></div>\
+                                    <div class="col-md-10"><span class="publication-abstract"></span></div>\
+                                </div>\
                             </div>\
-                            <div class="row">\
-                                <div class="col-md-2"><label>PubMed Link</label></div>\
-                                <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '</a></div>\
-                            </div>\
-                            <div class="row">\
-                                <div class="col-md-2"><label>Abstract</label></div>\
-                                <div class="col-md-10"><span class="publication-abstract"></span></div>\
-                            </div>\
-                            <div class="row">\
-                                <div class="col-md-2"><label>Collaborators</label></div>\
-                                <div class="col-md-10"><div class="publication-collaborators"></div></div>\
-                            </div>\
-                        </div>\
-                    </div>');
-                uniPMID[e.pmid] = null;
+                        </div>');
+                    uniPMID[a] = null;
+                }
+                
+                var collaborator = e.source.id != id ? e.source.id : e.target.id;
+                $('.panel-publication[data-pmid="'+ a + '"] .publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collaborator + '"></div>');
             }
-            
-            var collaborator = e.source.id != id ? e.source.id : e.target.id;
-            $('.panel-publication[data-pmid="'+ e.pmid + '"] .publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collaborator + '"></div>');
         });
         
         $('.panel-heading').click(function(e) {
             e.preventDefault();
+            var panel = $(this).parent(), heading = $(this);
             
-            var panel = $(this).parent();
+            $('.panel-heading.panel-active').removeClass('panel-active');
+            heading.addClass('panel-active');
             
-            var piIcons = panel.find('.publication-collaborators').children('.pi-icon');
-            piIcons.each(function(icon) {
-                var el = $(piIcons[icon]);
-                el.css('background-position-x', parseInt(el.data('pi')) * -75 + 'px');
-            });
-            
-            $.ajax({
-                url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=text&id=PMID' + panel.data('pmid') + '&rettype=abstract', 
-                dataType : 'text',
-                success: function(abs) {
-                    var maxStr = 0, paragraphs = abs.split('\n\n');
-                    for (var p in paragraphs) {
-                        if (paragraphs[p].indexOf('Author information') == -1) maxStr = paragraphs[p].length > paragraphs[maxStr].length ? p : maxStr;
-                    }
-                    $('.panel-publication[data-pmid="' + panel.data('pmid') + '"] .publication-abstract').html(paragraphs[maxStr]);
-                },
-            });
+            if (panel.find('.panel-body').is(':hidden')) {
+                var piIcons = panel.find('.publication-collaborators').children('.pi-icon');
+                piIcons.each(function(icon) {
+                    var el = $(piIcons[icon]);
+                    el.css('background-position-x', parseInt(el.data('pi')) * -75 + 'px');
+                });
+                
+                $('#publication-list').mCustomScrollbar('scrollTo', heading, { scrollInertia: 1000 });
+                
+                setTimeout(function() {
+                    var pmid = $('.panel-active').parent().data('pmid');
+                    $.ajax({
+                        url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=text&id=PMID' + pmid + '&rettype=abstract', 
+                        dataType : 'text',
+                        success: function(abs) {
+                            var maxStr = 0, paragraphs = abs.split('\n\n');
+                            for (var p in paragraphs) {
+                                if (paragraphs[p].indexOf('Author information') == -1) maxStr = paragraphs[p].length > paragraphs[maxStr].length ? p : maxStr;
+                            }
+                            $('.panel-publication[data-pmid="' + pmid + '"] .publication-abstract').html(paragraphs[maxStr]).slideDown(700);
+                        },
+                    });
+                }, 1000);
+            }
             
             panel.find('.panel-body').toggle();
         });
-        
-        $('.pi-image').css('background-position-x', -id * 132 + 'px');
         
         $('#publication-list').mCustomScrollbar({
             axis: 'y',
             scrollButtons: { enabled: true },
             advance: {
                 updateOnContentResize: true,
-            }
+            },
         });
+        
+        $('.pi-image').css('background-position-x', -id * 132 + 'px');
         
         modal.modal({
             backdrop: 'static',
@@ -227,29 +241,29 @@ define([
                     edge.source = e.s;
                     edge.target = e.t;
                     edge.id = edge.source + '+' + edge.target;
-                    edge.name = e.at;
-                    edge.journal = e.jt;
-                    edge.pmid = e.pmid;
                     edge.label = '';
                     
                     var date = new Date();
                     date.setFullYear(e.d.substring(0, 4), e.d.substring(4, 6));
                     var time = date.getTime();
-                    opts['minDate'] = Math.min(opts['minDate'], time) || time;
+                    opts.minDate = Math.min(opts.minDate, time) || time;
                     e.date = time;
                     
-                    edge.weight = edge.size = edge.absweight = 1;
-                    edge.size = 1;
+                    edge.weight = edge.size = 1;
                     edge.color = '#FF9126';
                     
                     var addedEdge = getEdge(edge.id);
                     if (!addedEdge) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
-                        getEdge(edge.id).date = time;
+                        addedEdge = getEdge(edge.id);
+                        addedEdge.date = time;
+                        addedEdge.articles = {};
+                        addedEdge.articles[e.pmid] = e.at;
+                        addedEdge.absweight = Math.abs(addedEdge.weight);
+                        
                     } else {
-                        if (time < addedEdge.date) {
-                            addedEdge.date = time;
-                        }
+                        if (time < addedEdge.date) addedEdge.date = time;
+                        if (!addedEdge.articles.hasOwnProperty(e.pmid)) addedEdge.articles[e.pmid] = e.at
                     }
                 });
                 
@@ -298,11 +312,13 @@ define([
 //                e.source.visibleDegree++;
 //                e.target.visibleDegree++;
                 
-              //Visible degree scales color of the node
-                if (!uniPMID.hasOwnProperty(e.pmid)) {
-                    e.source.visibleDegree++;
-                    e.target.visibleDegree++;
-                    uniPMID[e.pmid] = null;
+                //Visible degree scales color of the node
+                for (var a in e.articles) {
+                    if (!uniPMID.hasOwnProperty(a)) {
+                        e.source.visibleDegree++;
+                        e.target.visibleDegree++;
+                        uniPMID[a] = null;
+                    }
                 }
                 
                 //Color degree scales size of the node
@@ -313,7 +329,7 @@ define([
         
         var maxDegree = 0;
         sigInst.iterNodes(function(n) {
-            if (n.degree > 2) n.size = n.visibleDegree;
+            if (n.degree > 2) n.size = Math.sqrt(n.visibleDegree * 25);
             n.hidden = n.visibleDegree <= 0;
             if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
         }).iterNodes(function(n) {
