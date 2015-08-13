@@ -81,10 +81,11 @@
 }
 
 .pi-icon {
-    background: #ffffff url(../ccbr/all_pi_round.jpg) no-repeat left top;
+    background: #ffffff url(../ccbr/all_pi_small_square_75x75.jpg) no-repeat left top;
     width: 75px;
     height: 75px;
     margin: 0px 5px;
+    border-radius: 50%;
 }
 
 #publication-list {
