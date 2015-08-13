@@ -251,6 +251,7 @@ define([
                     
                     edge.weight = edge.size = 1;
                     edge.color = '#FF9126';
+//                    edge.color = '#3399FF'
                     
                     var addedEdge = getEdge(edge.id);
                     if (!addedEdge) {
@@ -301,18 +302,7 @@ define([
                     }
                 });
                 
-//                //Color degree scales color of the node
-//                if (!uniPMID.hasOwnProperty(e.pmid)) {
-//                    e.source.colorDegree++;
-//                    e.target.colorDegree++;
-//                    uniPMID[e.pmid] = null;
-//                }
-//                
-//                //Visible degree scales size of the node
-//                e.source.visibleDegree++;
-//                e.target.visibleDegree++;
-                
-                //Visible degree scales color of the node
+                //Visible degree scales size of the node
                 for (var a in e.articles) {
                     if (!uniPMID.hasOwnProperty(a)) {
                         e.source.visibleDegree++;
@@ -321,7 +311,7 @@ define([
                     }
                 }
                 
-                //Color degree scales size of the node
+                //Color degree scales color of the node
                 e.source.colorDegree++;
                 e.target.colorDegree++;
             }
@@ -333,7 +323,10 @@ define([
             n.hidden = n.visibleDegree <= 0;
             if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
         }).iterNodes(function(n) {
-            n.color = shadeColor('#01AEF0', -Math.log(n.colorDegree/maxDegree) * 100);
+//            var c2 = hexToRgb('#E2E417'), c1 = hexToRgb('#01AEF0'), g = n.colorDegree/maxDegree;
+            var c1 = hexToRgb('#66FF33'), c2 = hexToRgb('#006ED9'), g = n.colorDegree/maxDegree;
+            
+            n.color = 'rgb(' + parseInt((c2.r - c1.r) * g + c1.r) + ',' + parseInt((c2.g - c1.g) * g + c1.g) + ',' + parseInt((c2.b - c1.b) * g + c1.b) + ')';
         });
         
         var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], date = new Date(val);
@@ -354,14 +347,13 @@ define([
         $('#btn-toggle-layout').find('.btn-primary').html(opts.runningLayout ? 'Pause Layout' : 'Restart Layout');
     }
     
-    var shadeColor = function(color, percent) {
-        var r = Math.min(parseInt(parseInt(color.substring(1,3),16) * (100 + percent) / 100), 255);
-        var g = Math.min(parseInt(parseInt(color.substring(3,5),16) * (100 + percent) / 100), 255);
-        var b = Math.min(parseInt(parseInt(color.substring(5,7),16) * (100 + percent) / 100), 255);
-        
-        return '#' + ((r.toString(16).length==1)?'0' + r.toString(16):r.toString(16)) +
-                     ((g.toString(16).length==1)?'0' + g.toString(16):g.toString(16)) +
-                     ((b.toString(16).length==1)?'0' + b.toString(16):b.toString(16));
+    var hexToRgb = function(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
     }
     
     var getNode = function(id) {
