@@ -264,6 +264,10 @@ REQUIRE_STANDALONE_MODULES = {
         'out': 'tabular-built.js',
         'build_profile': 'build/tabular.build.js',
     }, 
+    'collaboration': {
+        'out': 'collaboration-built.js',
+        'build_profile': 'build/collaboration.build.js',
+    },
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
