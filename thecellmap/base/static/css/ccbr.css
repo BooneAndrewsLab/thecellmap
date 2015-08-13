@@ -78,6 +78,7 @@
     background: #ffffff url(../ccbr/all_pi.jpg) no-repeat left top;
     width: 132px;
     height: 198px;
+    border-radius: 5%;
 }
 
 .pi-icon {
