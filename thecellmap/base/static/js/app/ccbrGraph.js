@@ -127,31 +127,22 @@ define([
                     '<div class="panel panel-default panel-publication" data-pmid="' + e.pmid + '">\
                         <div class="panel-heading">' + e.name + '</div>\
                         <div class="panel-body">\
-                            <form class="form-horizontal" role="form">\
-                                <div class="form-group">\
-                                    <label class="col-sm-2 control-label">Name</label>\
-                                    <div class="col-sm-10">\
-                                        <span class="publication-name form-info">' + e.name + '</span>\
-                                    </div>\
-                                </div>\
-                                <div class="form-group">\
-                                    <label class="col-sm-2 control-label">PubMed Link</label>\
-                                    <div class="col-sm-10">\
-                                        <a href="http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '" class="publication-pubmed form-info">http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '</a>\
-                                    </div>\
-                                </div>\
-                                <div class="form-group">\
-                                <label class="col-sm-2 control-label">Abstract</label>\
-                                    <div class="col-sm-10">\
-                                        <span class="publication-abstract form-info"></span>\
-                                    </div>\
-                                </div>\
-                                <div class="form-group">\
-                                    <label class="col-sm-2 control-label">Collaborators</label>\
-                                    <div class="publication-collaborators" class="col-sm-10">\
-                                    </div>\
-                                </div>\
-                            </form>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>Name</label></div>\
+                                <div class="col-md-10"><span class="publication-name">' + e.name + '</span></div>\
+                            </div>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>PubMed Link</label></div>\
+                                <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + e.pmid + '</a></div>\
+                            </div>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>Abstract</label></div>\
+                                <div class="col-md-10"><span class="publication-abstract"></span></div>\
+                            </div>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>Collaborators</label></div>\
+                                <div class="col-md-10"><div class="publication-collaborators"></div></div>\
+                            </div>\
                         </div>\
                     </div>');
                 uniPMID[e.pmid] = null;
@@ -189,7 +180,7 @@ define([
         
         $('.pi-image').css('background-position-x', -id * 132 + 'px');
         
-        $('#modal-publication').mCustomScrollbar({
+        $('#publication-list').mCustomScrollbar({
             axis: 'y',
             scrollButtons: { enabled: true },
             advance: {

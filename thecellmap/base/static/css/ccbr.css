@@ -62,9 +62,9 @@
 .modal-dialog {
     width: 1024px;
 }
-.modal-body {
-    height: 600px;
-}
+/* .modal-body { */
+/*     height: 600px; */
+/* } */
 
 .panel-publication {
     margin-bottom: 0px;
@@ -84,9 +84,18 @@
     background: #ffffff url(../ccbr/all_pi_round.jpg) no-repeat left top;
     width: 75px;
     height: 75px;
+    margin: 0px 5px;
 }
 
-.form-info {
-    padding: 6px 2px;
-    display: block;
+#publication-list {
+    max-height: 600px;
 }
+
+#pi-info .row {
+    margin-top: 5px;
+}
+
+.panel-publication .row {
+    padding: 6px;
+}
+
