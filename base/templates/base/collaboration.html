@@ -12,6 +12,7 @@
 {{ block.super }}
   <link href="{% static 'css/ccbr.css' %}" rel="stylesheet">
   <link href="{% static 'css/nouislider-8.0.1.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/jquery.mCustomScrollbar.min.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block js %}
@@ -41,21 +42,45 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
      onmousedown='return false;'>
     <div id="inner-container">
       <div id="sigma-parent" class="sigma-parent">
-        <div id="network-container" class="sigma-expand">
-        </div>
+        <div id="network-container" class="sigma-expand"></div>
       </div>
     </div>
 </div>
 
 <div id='ui-placeholder' >
-    <div class="vizualization-ui" id="ui" style="display: none;">
-        <div class="top-left hidden-sm hidden-xs">
-            <div class="cutoff-bar-group">
-              <div id="cutoff-bar-date" class="cutoff-bar"></div>
-              <span id="cutoff-label" class="label label-primary">Date</span>
-            </div>
-        </div>
+  <div class="vizualization-ui" id="ui" style="display: none;">
+    
+    <div class="top-left hidden-sm hidden-xs">
+      <div class="cutoff-bar-group">
+        <div id="cutoff-bar-date" class="cutoff-bar"></div>
+        <span id="cutoff-label" class="label label-primary">Date</span>
+      </div>
+      <div id="btn-toggle-layout" class="btn-group">
+        <button type="button" class="btn btn-primary">Pause Layout</button>
+      </div>
     </div>
+    
+    <div class="modal fade" id="modal-pi" tabindex="-1" role="dialog" aria-labelledby="modal-style-label"
+    aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="modal-style-label">Network style</h4>
+          </div>
+          <div class="modal-body" id="modal-publication" data-mcs-theme="rounded-dark">
+            <div class="pi-image"></div>
+            <div>
+              <div id="publication-list" class="list-group"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div> <!-- /.modal-content -->
+      </div> <!-- /.modal-dialog -->
+    </div> <!-- /.modal -->
+  </div>
 </div>
 {% endblock content %}
 
