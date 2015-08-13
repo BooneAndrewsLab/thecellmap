@@ -19,3 +19,7 @@ pylint
 ipython
 django-extensions
 matplotlib
+pyzmq
+tornado
+jsonschema
+python-Levenshtein
