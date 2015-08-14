@@ -41,7 +41,7 @@ define([
         }).drawingProperties({
             defaultLabelSize: 14,
             defaultLabelHoverColor: '#000',
-            labelThreshold: 36,
+            labelThreshold: 144,
             font: 'Arial',
             fontStyle: 'bold ',
             defaultLabelColor : '#E3E3E3',
@@ -104,6 +104,9 @@ define([
             toggleLayout();
         });
         
+        
+        
+        
         //Fade in UI
         setTimeout(function() {
             $('#ui').fadeIn(1000);
@@ -129,11 +132,11 @@ define([
                 if (!uniPMID.hasOwnProperty(a)) {
                     $('#publication-list').append(
                         '<div class="panel panel-default panel-publication" data-pmid="' + a + '">\
-                            <div class="panel-heading">' + e['articles'][a] + '</div>\
+                            <div class="panel-heading">' + e['articles'][a]['name'] + '</div>\
                             <div class="panel-body">\
                                 <div class="row">\
                                     <div class="col-md-2"><label>Name</label></div>\
-                                    <div class="col-md-10"><span class="publication-name">' + e['articles'][a] + '</span></div>\
+                                    <div class="col-md-10"><span class="publication-name">' + e['articles'][a]['name'] + '</span></div>\
                                 </div>\
                                 <div class="row">\
                                     <div class="col-md-2"><label>PubMed Link</label></div>\
@@ -168,7 +171,7 @@ define([
                 var piIcons = panel.find('.publication-collaborators').children('.pi-icon');
                 piIcons.each(function(icon) {
                     var el = $(piIcons[icon]);
-                    el.css('background-position-x', parseInt(el.data('pi')) * -75 + 'px');
+                    el.css('background-position', parseInt(el.data('pi')) * -75 + 'px 0');
                 });
                 
                 $('#publication-list').mCustomScrollbar('scrollTo', heading, { scrollInertia: 1000 });
@@ -235,7 +238,7 @@ define([
             url: opts['urls']['articles'], 
             dataType : 'json',
             success: function(edges) {
-                vizdata['edges'] = edges, vizdata['articles'] = {};
+                vizdata['articles'] = {};
                 edges.forEach(function(e) {
                     var edge = {};
                     edge.source = e.s;
@@ -247,7 +250,6 @@ define([
                     date.setFullYear(e.d.substring(0, 4), e.d.substring(4, 6));
                     var time = date.getTime();
                     opts.minDate = Math.min(opts.minDate, time) || time;
-                    e.date = time;
                     
                     edge.weight = edge.size = 1;
                     edge.color = '#FF9126';
@@ -259,12 +261,14 @@ define([
                         addedEdge = getEdge(edge.id);
                         addedEdge.date = time;
                         addedEdge.articles = {};
-                        addedEdge.articles[e.pmid] = e.at;
+                        addedEdge.articles[e.pmid] = { name: e.at, date: time, };
                         addedEdge.absweight = Math.abs(addedEdge.weight);
-                        
                     } else {
                         if (time < addedEdge.date) addedEdge.date = time;
-                        if (!addedEdge.articles.hasOwnProperty(e.pmid)) addedEdge.articles[e.pmid] = e.at
+                        if (!addedEdge.articles.hasOwnProperty(e.pmid)) addedEdge.articles[e.pmid] = {
+                                name: e.at,
+                                date: time,
+                        }
                     }
                 });
                 
@@ -285,29 +289,30 @@ define([
     
     var updateNetwork = function() {
         var val = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()), uniPMID = {};
+        var maxDegree = 0;
         
         sigInst.iterNodes(function(n) {
             n.visibleDegree = 0;
             n.colorDegree = 0;
-        }).iterEdges(function(e) {
+        });
+        
+        sigInst.iterEdges(function(e) {
             e.hidden = e.date > val;
             e.size = 1;
             e.weight = 1;
             
             if (!e.hidden) {
-                _.each(vizdata['edges'], function(edge) {
-                    if (e.id == (edge.s + '+' + edge.t) && edge.date < val) {
-                        if (e.weight < 7) e.weight++;
-                        e.size++;
-                    }
-                });
-                
                 //Visible degree scales size of the node
                 for (var a in e.articles) {
                     if (!uniPMID.hasOwnProperty(a)) {
                         e.source.visibleDegree++;
                         e.target.visibleDegree++;
                         uniPMID[a] = null;
+                    }
+                    
+                    if (e.articles[a].date < val) {
+                        if (e.weight < 7) e.weight++;
+                        e.size++;
                     }
                 }
                 
@@ -317,16 +322,17 @@ define([
             }
         });
         
-        var maxDegree = 0;
         sigInst.iterNodes(function(n) {
-            if (n.degree > 2) n.size = Math.sqrt(n.visibleDegree * 25);
             n.hidden = n.visibleDegree <= 0;
+            if (n.degree > 2) n.size = Math.sqrt(n.visibleDegree * 25);
             if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
-        }).iterNodes(function(n) {
-//            var c2 = hexToRgb('#E2E417'), c1 = hexToRgb('#01AEF0'), g = n.colorDegree/maxDegree;
-            var c1 = hexToRgb('#66FF33'), c2 = hexToRgb('#006ED9'), g = n.colorDegree/maxDegree;
-            
-            n.color = 'rgb(' + parseInt((c2.r - c1.r) * g + c1.r) + ',' + parseInt((c2.g - c1.g) * g + c1.g) + ',' + parseInt((c2.b - c1.b) * g + c1.b) + ')';
+        });
+        
+        sigInst.iterNodes(function(n) {
+            if (!n.hidden) {
+                var c1 = hexToRgb('#66FF33'), c2 = hexToRgb('#006ED9'), g = n.colorDegree/maxDegree;
+                n.color = 'rgb(' + parseInt((c2.r - c1.r) * g + c1.r) + ',' + parseInt((c2.g - c1.g) * g + c1.g) + ',' + parseInt((c2.b - c1.b) * g + c1.b) + ')';
+            }
         });
         
         var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], date = new Date(val);

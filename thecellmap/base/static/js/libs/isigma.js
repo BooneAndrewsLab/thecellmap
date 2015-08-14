@@ -988,7 +988,7 @@ function Graph() {
     
     // Rescale the nodes:
     parseNodes && self.nodes.forEach(function(node) {
-        var size = Math.log(self.nodes.length)/Math.log(visibleNodes) * node['size'];
+        var size = Math.log(self.nodes.length)/Math.log(visibleNodes + 1) * node['size'];
         node['displaySize'] = (size > 2) ? size : 2;
         
         if (!node['fixed']) {
