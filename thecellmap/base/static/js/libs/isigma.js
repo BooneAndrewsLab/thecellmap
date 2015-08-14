@@ -2998,7 +2998,7 @@ function Sigma(root, id) {
       'edge_' + self.id, 2
     ).removeTask(
       'label_' + self.id, 2
-    ).stopTasks();
+    ); //.stopTasks();
     return self;
   };
 
@@ -4623,7 +4623,7 @@ sigma.chronos = new (function() {
       }
     }
 
-    isRunning = !!(!tasks.length || (stopTasks() && false));
+    isRunning = !!tasks.length || (stopTasks() && false);
     return self;
   };
 
