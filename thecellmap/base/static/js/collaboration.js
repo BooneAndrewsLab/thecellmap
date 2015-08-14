@@ -1,6 +1,6 @@
 require.config({
     paths: {
-        'jquery': 'libs/jquery-2.1.4.min',
+        'jquery': 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min',
         'backbone': 'libs/backbone-min',
         'underscore': 'libs/underscore-min',
         'bootstrap': 'libs/bootstrap.min',
