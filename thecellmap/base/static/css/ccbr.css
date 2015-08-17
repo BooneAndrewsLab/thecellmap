@@ -82,7 +82,7 @@
     background: #ffffff url(../ccbr/all_pi_small_square_75x75.jpg) no-repeat left top;
     width: 75px;
     height: 75px;
-    margin: 0px 5px;
+    margin: 0 0 5px 5px;
     border-radius: 50%;
 }
 
@@ -90,7 +90,7 @@
     max-height: 600px;
 }
 
-.publication-abstract {
+.data-loading {
     display: none;
 }
 
