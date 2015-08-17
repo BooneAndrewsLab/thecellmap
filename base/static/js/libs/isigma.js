@@ -2760,6 +2760,10 @@ function Sigma(root, id) {
           }).map(function(n) {
             return n.id;
           });
+      
+      self.graph.nodes.forEach(function(n) {
+          n['dragging'] = false;
+      });
     }
     
     self.dispatch(eventType, {dragged: draggedMouse, targeted: targeted.length + targetedEdges.length, selecting: e['type'] == 'shiftup'});
@@ -2889,6 +2893,7 @@ function Sigma(root, id) {
               self.mousecaptor.mouseY - self.mousecaptor.startY);
     } else if (eventType == 'downnodes') {
       var targetedNode = self.graph.nodesIndex[targeted[0]];
+      targetedNode['dragging'] = true;
       draggedNode = true;
       var diff = self.graph.translateNodes(
               targeted.slice(0, 1),
@@ -2901,7 +2906,7 @@ function Sigma(root, id) {
               e.content['ratio']
             );
       
-      if (targetedNode.selected) {
+      if (targetedNode.selected) { // Move also other selected nodes
           selected.forEach(function(nodeid) {
               if (nodeid == targeted[0]) return;
               var node = self.graph.nodesIndex[nodeid];

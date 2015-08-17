@@ -1,10 +1,19 @@
 sigma.publicPrototype.hoverHighlight = function(state) {
     var greyColor = '#333';
     var inst = this;
+    var isDragging = function() {
+        var dragging = false;
+        inst.iterNodes(function(n) {
+            dragging |= n.dragging;
+        });
+        return dragging;
+    };
     
     this.bind('overnodes', function(event) {
         var nodes = event.content;
         var neighbors = {};
+        if (isDragging()) return;
+        
         inst.iterEdges(function(e) {
             if (e.hidden || (nodes.indexOf(e.source.id) < 0 && nodes.indexOf(e.target.id) < 0)) {
                 if (!e.attr['grey']) {
@@ -34,6 +43,7 @@ sigma.publicPrototype.hoverHighlight = function(state) {
             }
         }).draw(2, 2, 2);
     }).bind('outnodes', function() {
+        if (isDragging()) return;
         inst.iterEdges(function(e) {
             e.color = e.attr['grey'] ? e.attr['true_color'] : e.color;
             e.attr['grey'] = 0;
