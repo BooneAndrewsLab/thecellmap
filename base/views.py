@@ -5,10 +5,9 @@ import json
 import math
 import os
 import pickle
+from urllib import urlencode
+import urllib2
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
-from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
-from base.utils import print_queries, is_integer, JsonResponse
 from django.conf import settings
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
@@ -19,6 +18,13 @@ from django.http.response import HttpResponseRedirect, Http404, HttpResponseForb
 from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
+from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
+from base.utils import print_queries, is_integer, JsonResponse
+from bs4 import BeautifulSoup
+
+
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
 
 def _serve_dataset(request, dataset=None):
     dataset = Dataset.pk_or_default(dataset, request.user)
@@ -331,3 +337,32 @@ def region_group(request, dataset_id, region_group_id):
             response[region]['name'] = alias
     
     return JsonResponse(response)
+
+def publication_citations(request, title):
+    params = {
+        'as_epq': title,
+        'as_q': '',
+        'as_occt': 'any',
+        'as_sdt': '0,5',
+        'as_vis': '0',
+        'hl': 'en',
+        'num': '1'
+    }
+    url = 'http://scholar.google.com/scholar?' + urlencode(params)
+    
+    citations = None
+    
+    try:
+        req = urllib2.Request(url, headers={'User-Agent': USER_AGENT})
+        data = urllib2.urlopen(req)
+        data = data.read()
+        
+        soup = BeautifulSoup(data)
+        for tag in soup.findAll('a'):
+            if tag.get('href', '').startswith('/scholar?cites'):
+                if hasattr(tag, 'string') and tag.string.startswith('Cited by'):
+                    citations = int(tag.string.replace('Cited by ', ''))
+    except:
+        pass
+    
+    return JsonResponse({'cited': citations})
