@@ -134,6 +134,10 @@ define([
                         '<div class="panel panel-default panel-publication" data-pmid="' + a + '">\
                             <div class="panel-heading">' + e['articles'][a]['name'] + '</div>\
                             <div class="panel-body">\
+                                <div class="row data-loading">\
+                                    <div class="col-md-2"><label>Published in</label></div>\
+                                    <div class="col-md-10"><span class="publication-date"></span></div>\
+                                </div>\
                                 <div class="row">\
                                     <div class="col-md-2"><label>Name</label></div>\
                                     <div class="col-md-10"><span class="publication-name">' + e['articles'][a]['name'] + '</span></div>\
@@ -146,7 +150,11 @@ define([
                                     <div class="col-md-2"><label>Collaborators</label></div>\
                                     <div class="col-md-10"><div class="publication-collaborators"></div></div>\
                                 </div>\
-                                <div class="row">\
+                                <div class="row data-loading">\
+                                    <div class="col-md-2"><label>Cited by</label></div>\
+                                    <div class="col-md-10"><span class="publication-citations"></span></div>\
+                                </div>\
+                                <div class="row data-loading">\
                                     <div class="col-md-2"><label>Abstract</label></div>\
                                     <div class="col-md-10"><span class="publication-abstract"></span></div>\
                                 </div>\
@@ -179,14 +187,27 @@ define([
                 setTimeout(function() {
                     var pmid = $('.panel-active').parent().data('pmid');
                     $.ajax({
-                        url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=text&id=PMID' + pmid + '&rettype=abstract', 
-                        dataType : 'text',
-                        success: function(abs) {
-                            var maxStr = 0, paragraphs = abs.split('\n\n');
-                            for (var p in paragraphs) {
-                                if (paragraphs[p].indexOf('Author information') == -1) maxStr = paragraphs[p].length > paragraphs[maxStr].length ? p : maxStr;
+                        url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&id=PMID' + pmid + '&rettype=abstract', 
+                        dataType : 'xml',
+                        success: function(res) {
+                            var xml = $(res);
+                            var dat = xml.find('PubDate');
+                            var abs = xml.find('AbstractText');
+                            
+                            if (!!abs) {
+                                panel.find('.publication-abstract').html(abs.text()).closest('.row').slideDown(700);
+                                panel.find('.publication-date').html(dat.find('Month').text() + ' ' + dat.find('Year').text()).closest('.row').slideDown(700);
                             }
-                            $('.panel-publication[data-pmid="' + pmid + '"] .publication-abstract').html(paragraphs[maxStr]).slideDown(700);
+                        },
+                    });
+                    
+                    $.ajax({
+                        url: 'citations/' + heading.text() + '/', 
+                        dataType : 'json',
+                        success: function(res) {
+                            if (res['cited'] != null) {
+                                panel.find('.publication-citations').html(res['cited']).closest('.row').slideDown(700);
+                            }
                         },
                     });
                 }, 1000);
