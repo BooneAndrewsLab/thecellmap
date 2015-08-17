@@ -130,42 +130,56 @@ define([
         _.each(edges, function(e) {
             for (var a in e['articles']) {
                 if (!uniPMID.hasOwnProperty(a)) {
-                    $('#publication-list').append(
-                        '<div class="panel panel-default panel-publication" data-pmid="' + a + '">\
-                            <div class="panel-heading">' + e['articles'][a]['name'] + '</div>\
-                            <div class="panel-body">\
-                                <div class="row data-loading">\
-                                    <div class="col-md-2"><label>Published in</label></div>\
-                                    <div class="col-md-10"><span class="publication-date"></span></div>\
-                                </div>\
-                                <div class="row">\
-                                    <div class="col-md-2"><label>Name</label></div>\
-                                    <div class="col-md-10"><span class="publication-name">' + e['articles'][a]['name'] + '</span></div>\
-                                </div>\
-                                <div class="row">\
-                                    <div class="col-md-2"><label>PubMed Link</label></div>\
-                                    <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + a +  '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + a + '</a></div>\
-                                </div>\
-                                <div class="row">\
-                                    <div class="col-md-2"><label>Collaborators</label></div>\
-                                    <div class="col-md-10"><div class="publication-collaborators"></div></div>\
-                                </div>\
-                                <div class="row data-loading">\
-                                    <div class="col-md-2"><label>Cited by</label></div>\
-                                    <div class="col-md-10"><span class="publication-citations"></span></div>\
-                                </div>\
-                                <div class="row data-loading">\
-                                    <div class="col-md-2"><label>Abstract</label></div>\
-                                    <div class="col-md-10"><span class="publication-abstract"></span></div>\
-                                </div>\
-                            </div>\
-                        </div>');
-                    uniPMID[a] = null;
+                    uniPMID[a] = {p: e['articles'][a], c: []};
                 }
                 
                 var collaborator = e.source.id != id ? e.source.id : e.target.id;
-                $('.panel-publication[data-pmid="'+ a + '"] .publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collaborator + '"></div>');
+                uniPMID[a]['c'].push(collaborator);
             }
+        });
+        
+        var keys = Object.keys(uniPMID);
+        keys.sort();
+        keys.reverse();
+        
+        _.each(keys, function(pmid) {
+            var paper = uniPMID[pmid], paperDiv;
+            
+            $('#publication-list').append(
+                    '<div class="panel panel-default panel-publication" data-pmid="' + pmid + '">\
+                        <div class="panel-heading">' + paper.p['name'] + '</div>\
+                        <div class="panel-body">\
+                            <div class="row data-loading">\
+                                <div class="col-md-2"><label>Published in</label></div>\
+                                <div class="col-md-10"><span class="publication-date"></span></div>\
+                            </div>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>Name</label></div>\
+                                <div class="col-md-10"><span class="publication-name">' + paper.p['name'] + '</span></div>\
+                            </div>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>PubMed Link</label></div>\
+                                <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid +  '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '</a></div>\
+                            </div>\
+                            <div class="row">\
+                                <div class="col-md-2"><label>Collaborators</label></div>\
+                                <div class="col-md-10"><div class="publication-collaborators"></div></div>\
+                            </div>\
+                            <div class="row data-loading">\
+                                <div class="col-md-2"><label>Cited by</label></div>\
+                                <div class="col-md-10"><span class="publication-citations"></span></div>\
+                            </div>\
+                            <div class="row data-loading">\
+                                <div class="col-md-2"><label>Abstract</label></div>\
+                                <div class="col-md-10"><span class="publication-abstract"></span></div>\
+                            </div>\
+                        </div>\
+                    </div>');
+            
+            paperDiv = $('.panel-publication[data-pmid="'+ pmid + '"]');
+            _.each(paper.c, function(collab) {
+                paperDiv.find('.publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collab + '"></div>');
+            });
         });
         
         $('.panel-heading').click(function(e) {
