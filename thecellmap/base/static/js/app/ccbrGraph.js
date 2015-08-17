@@ -67,11 +67,11 @@ define([
             if (!state['isDragging']) buildPIPanel(targets.content[0]);
             
             getNode(targets.content[0]).active = false;
-            if (!opts.runningLayout) toggleLayout();
+//            if (!opts.runningLayout) toggleLayout();
             
             state['isDragging'] = false;
         }).bind('downnodes', function(targets) {
-            if (opts.runningLayout) toggleLayout();
+//            if (opts.runningLayout) toggleLayout();
             getNode(targets.content[0]).active = true;
         }).bind('draggedNode', function() {
             state['isDragging'] = true;

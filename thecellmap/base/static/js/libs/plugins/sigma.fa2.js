@@ -52,7 +52,7 @@ sigma.forceatlas2.ForceAtlas2 = function(graph) {
 
   this.atomicGo = function() {
     var graph = self.graph;
-    var nodes = graph.nodes.filter(function (n) { return !n.hidden && !n.active; });
+    var nodes = graph.nodes.filter(function (n) { return !n.hidden && !n.dragging; });
     var edges = graph.edges.filter(function (e) { 
         return !e.source.hidden && !e.target.hidden;
     });
