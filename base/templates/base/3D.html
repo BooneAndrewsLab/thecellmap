@@ -10,55 +10,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 {% endblock meta%}
 
-{% block cdn_css %}
-{{ block.super }}
-  <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.4.5/select2.min.css">
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/Ladda/0.9.8/ladda-themeless.min.css"> -->
-{% endblock cdn_css %}
-
 {% block css %}
 {{ block.super }}
-  <!-- <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
-  
-  <link href="{% static 'css/spectrum.css' %}" rel="stylesheet">
-  <link href="{% static 'css/viznetworks.css' %}" rel="stylesheet">
-  <link href="{% static 'css/pick-a-color-1.2.3.min.css' %}" rel="stylesheet">
-  <link href="{% static 'css/jquery.nouislider.css' %}" rel="stylesheet">
-  <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet"> The cdnjs version of this is still not ready... firefox problems with height
-  
-  <link href="{% static 'css/bootstrap-submenu.css' %}" rel="stylesheet"> -->
   <link href="{% static 'css/networks.css' %}" rel="stylesheet">
   <link href="{% static 'css/boone3D.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block js %}
 {{ block.super }}
+  <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.18/require.min.js"></script>
   <script type="text/javascript">
-      require.config({
-          config: {
-              boone3D: {
-                  urls: {
-                      'layout' : '{{ dataset.static_url }}/3d.json',
-                      'annotation' : '{% url 'annotation' annotation.id %}',
-                      'node' : '{% static "images/sphere.png" %}',
-                  },
-                  ui: {
-                      'root' : '{{ dataset.static_url }}/root.png',
-                      'extract' : '{{ dataset.static_url }}/extract.png'
-                  },
-              },
+      window.opts = {
+          urls: {
+              'layout' : '{{ dataset.static_url }}/3d.json',
+              'node' : '{% static "images/sphere.png" %}',
           },
+          annotations: [{% for annot in annotations %}{
+              id: '{{ annot.id }}',
+              name: '{{ annot.name }}',
+              url: '{% url "annotation" annot.id %}',
+          },{% endfor %}],
+          ui: {
+              'root' : '{{ dataset.static_url }}/root.png',
+              'extract' : '{{ dataset.static_url }}/extract.png',
+/*               'annotation' : '{{ dataset.static_url }}/annotation.png',
+              'term' : '{{ dataset.static_url }}/term.png',
+              'legend' : '{{ dataset.static_url }}/legend.png', */
+          },
+      }
+      
+      require.config({
           paths: {
-              'leap': '{% static "js/libs/leap-0.6.4.min" %}',
+              'jquery': '{% static "js/libs/jquery-2.1.4.min" %}',
+              'backbone': '{% static "js/libs/backbone-min" %}',
+              'underscore': '{% static "js/libs/underscore-min" %}',
+              
               'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three',
               'stats': '{% static "js/libs/stats.min" %}',
+              
               'boone3D': '{% static "js/boone3D/boone3D" %}',
-              'leapControls': '{% static "js/boone3D/leapControls" %}',
               'build': '{% static "js/boone3D/buildGraph" %}',
+              
+              'mouse': '{% static "js/boone3D/mouseControls" %}',
               'utils': '{% static "js/boone3D/utils" %}',
+              
+              //'leapControls': '{% static "js/boone3D/leapControls" %}',
           },
           shim: {
+              'backbone' : ['jquery', 'underscore'],
               'stats' : ['three'],
+              'mouse' : ['three'],
           }
       });
       

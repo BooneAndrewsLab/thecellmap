@@ -4,36 +4,71 @@ define([
     'backbone',
     
     'build',
+    'leapControls',
+    'module',
     
+    'leap',
     'three',
+    
     'stats',
-    'mouse',
-], function($, _, Backbone, Build) {
+], function($, _, Backbone, Build, LeapControls, module) {
     var DEFAULTS = {
         rootElement: $('#network-container'),
         
-        nodeOpacity: 0.5,
+        uiScale: 0.8,
         
+        nodeOpacity: 0.5,
         edgeOpacity: 0.3,
         edgeWidth: 0.25,
         
+        rotateSpeed: 1.0,
+        rotateHands: 1,
+        rotateFingers: [2, 3], 
+        rotateRightHanded: true,
+        rotateHandPosition: true,
+        rotateStabilized: true,
+        rotateMin: 0,
+        rotateMax: Math.PI,
+        
+        zoomSpeed: 1.0,
+        zoomHands: 2,
+        zoomFingers: [6, 12],
+        zoomRightHanded: true,
+        zoomHandPosition: true,
+        zoomStabilized: true,
         zoomMin: 25,
         zoomMax: 10000,
+        
+        selectHands: 1,
+        selectFingers: 1,
+        selectRightHanded: true,
+        selectHandPosition: false,
+        selectStabilized: true,
+        
+        timeGesture:      600000,
+        timeSelect:       700000,
+        timeUIShow:      1400000,
+        timeUIHide:       900000,
+        timeUIExtract:   2000000,
     }
     
-    window.vizdata = { nodes: {}, edges: {}, annotations: {} };
-    $.extend(window.opts, DEFAULTS);
+    window.vizdata = { nodes: {}, edges: {}, annotation: null };
+    window.opts = $.extend({}, DEFAULTS, module.config());
     window.three = {};
     window.state = {
-        annotation: 'SAFE',
+        'isInitializing': true,
+        'showUI': false,
+        'showTerm': false,
+        'uiCoord' : {},
     };
     
     var init = function () {
+        var windowWidth = opts['rootElement'].width(), windowHeight = opts['rootElement'].height();
+        
         three['scene'] = new THREE.Scene();
         three['ui'] = new THREE.Scene();
         three['cloud'] = new THREE.Geometry();
         
-        var windowWidth = opts['rootElement'].width(), windowHeight = opts['rootElement'].height();
         three['renderer'] = new THREE.WebGLRenderer({antialias: true, alpha: true});
         three['renderer'].setSize(windowWidth, windowHeight);
         three['renderer'].setClearColor(0x222222, 1);
@@ -43,22 +78,18 @@ define([
         three['uiRender'].setSize(windowWidth, windowHeight);
         three['uiRender'].setClearColor(0x222222, 0);
         opts['rootElement'].append(three['uiRender'].domElement);
-        three['uiRender'].domElement.id = 'scene-ui';
+        three['uiRender'].domElement.id = 'scene-gui';
         
         three['camera'] = new THREE.PerspectiveCamera(opts['zoomMin'], windowWidth/windowHeight, 0.1, opts['zoomMax']);
         three['uiCamera'] = new THREE.PerspectiveCamera(opts['zoomMin'], windowWidth/windowHeight, 0.1, opts['zoomMax']);
         
-        three['control'] = new THREE.TrackballControls(three['camera']);
-        three['control'].damping = 0.2;
-        three['control'].addEventListener('change', render);
-        
         three['stats'] = new Stats();
         opts['rootElement'].append(three['stats'].domElement);
         
-        loadSprites('sphereSprite', opts['urls']['node']);
-        for (var png in opts['ui']) {
-            loadSprites(png + 'Sprite', opts['ui'][png]);
-        }
+        var loader = new THREE.TextureLoader();
+        loader.load(opts['urls']['node'], function(image) {
+            three['sphereSprite'] = image;
+        });
         
         $.ajax({
             url: opts['urls']['layout'], 
@@ -74,53 +105,33 @@ define([
                 three['cloud'] = three['cloud'].boundingSphere;
                 
                 three['camera'].position.setZ(Math.PI * three['cloud'].radius);
-//                TODO: FIX THE DISTANCE
-                three['uiCamera'].position.setZ(2880);
+                three['uiCamera'].position.setZ(2880)
             },
         });
         
-        for (var annot in opts['annotations']) {
-            var annotation = opts['annotations'][annot];
-            $.ajax({
-                url : annotation['url'],
-                dataType : 'json',
-                success : function(data) {
-                    vizdata['annotations'][annotation['name']] = data;
-                    
-                    if (annot == opts['annotations'].length - 1) {
-                        Build.init();
-//                        LeapControls.init();
-                    }
-                },
-            });
-        }
+        $.ajax({
+            url : opts['urls']['annotation'],
+            dataType : 'json',
+            success : function(data) {
+                vizdata['annotation'] = data;
+                Build.init();
+                LeapControls.init();
+            },
+        });
         
         window.addEventListener('resize', onWindowResize, false);
         render();
     };
     
-    var loadSprites = function(name, url) {
-        var loader = new THREE.TextureLoader();
-        loader.load(url, function(image) {
-            three[name] = image;
-        });
-    }
-    
-    var animate = function() {
-        requestAnimationFrame(animate);
-        render();
-        three['stats'].update();
-        three['control'].update();
-    }
-    
     var render = function() {
         three['renderer'].render(three['scene'], three['camera']);
         three['uiRender'].render(three['ui'], three['uiCamera']);
-//        if (!!three['light']) three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
+        if (!!three['light']) three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
     };
     
     var onWindowResize = function() {
         var windowWidth = opts['rootElement'].width(), windowHeight = opts['rootElement'].height();
+        
         three['camera'].aspect = windowWidth/windowHeight;
         three['camera'].updateProjectionMatrix();
         three['renderer'].setSize(windowWidth, windowHeight);
@@ -130,17 +141,14 @@ define([
     
     var runFrame = function() {
         init();
-        animate();
-        
-        
-//        window.controller = Leap.loop({enableGestures: true}, function(frame) {
-//            if (!state['isInitializing']) {
-//                render();
-//                
-//                LeapControls.update(frame);
-//                three['stats'].update();
-//            }
-//        });
+        window.controller = Leap.loop({enableGestures: true}, function(frame) {
+            if (!state['isInitializing']) {
+                render();
+                
+                LeapControls.update(frame);
+                three['stats'].update();
+            }
+        });
     };
     
     return {

@@ -3,7 +3,6 @@ define([
     'underscore',
     'backbone',
     
-    'leap',
     'three',
 ], function($, _, Backbone) {
     var clearScene = function() {
@@ -19,20 +18,62 @@ define([
         }
     }
     
-    var iterFingers = function(frame) {
-        var fl = 0, f = [];
-        for (p in frame.pointables) {
-            if (frame.pointables[p].extended) {
-                f[fl++] = p;
+    var createClusters = function(vertices) {
+        var maxDist = 90, minSize = 7;
+        var clusters = [], points = [];
+        
+        _.each(vertices, function(pt) {
+            points.push({ 'p' : pt, 'visted' : false, 'clustered': false, });
+        });
+        
+        _.each(points, function(pt) {
+            if (pt.visted) return;
+            pt.visted = true;
+            
+            var neighbors = findRegion(pt, points, maxDist);
+            if (neighbors.length >= minSize) {
+                var c = [];
+                c.push(pt);
+//                pt.clustered = true;
+                _.each(neighbors, function(npt) {
+                    if (npt.visted) return;
+                    npt.visted = true;
+                    
+                    var nNeighbors = findRegion(npt, points, maxDist);
+                    if (nNeighbors.length >= minSize) {
+                        var diff = _.uniq(_.difference(neighbors, nNeighbors));
+                        if (_.isArray(diff)) {
+                            neighbors.concat(diff);
+                        } else {
+                            neighbors.push(diff);
+                        }
+                    }
+                    if (!npt.visited) {
+                        c.push(npt);
+                        npt.visited = true;
+                    }
+                });
+                clusters.push(c);
             }
-        }
-        return { 'count': fl, 'extended': f }
+        });
+        
+        var result = [];
+        _.each(clusters, function(c) {
+            result.push(_.pluck(c, 'p'))
+        });
+        return result;
+    }
+    
+    var findRegion = function(center, points, dist) {
+        return _.filter(points, function(point) {
+            return point['p'].distanceTo(center['p']) < dist;
+        });
     }
     
     return {
         clearScene: clearScene,
         clearUI: clearUI,
         
-        iterFingers: iterFingers,
+        createClusters: createClusters,
     }
 });
