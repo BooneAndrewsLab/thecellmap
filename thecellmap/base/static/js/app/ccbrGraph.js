@@ -5,6 +5,7 @@ define([
     'noUISlider',
     
     'scrollbar',
+    'drawer',
     
     'bootstrap',
     'sigma',
@@ -14,7 +15,7 @@ define([
     'sigma.move',
     'sigma.rotate'
 ], function($, _, Backbone, nouislider) {
-    var sigInst, vizdata = {};
+    var sigInst, vizdata = {}, state = {};
     
     var init = function() {
         var DEFAULTS = {
@@ -22,11 +23,14 @@ define([
             colorScheme: 'black',
             debug: true,
             downloadLimit: 30,
+            edgeColor: '#FF9126',
             hideLayouts: false,
             highlight: false,
             layout: null,
             layoutAlgo: ['fl'],
             layoutButtonHide: true,
+            maxColor: '#006ED9',
+            minColor: '#66FF33',
             minDate: null,
             piImageWidth: 132,
             piImageHeight: 198,
@@ -35,6 +39,7 @@ define([
         };
         $.extend(opts, DEFAULTS);
         
+        state['isDragging'] = false;
         sigInst = sigma.init($(opts['rootElement'])[0]).configProperties({
             auto: false,
             drawEdges: 2,
@@ -60,14 +65,21 @@ define([
             maxRatio : 64,
             blockScroll: false,
         }).bind('upnodes', function(targets) {
-//            if (!opts.runningLayout) toggleLayout();
-            buildPIPanel(targets.content[0]);
+            if (!state['isDragging']) buildPIPanel(targets.content[0]);
+            
+            getNode(targets.content[0]).active = false;
+            if (!opts.runningLayout) toggleLayout();
+            
+            state['isDragging'] = false;
         }).bind('downnodes', function(targets) {
             if (opts.runningLayout) toggleLayout();
+            getNode(targets.content[0]).active = true;
+        }).bind('draggedNode', function() {
+            state['isDragging'] = true;
         });
         
         loadAuthors();
-        sigInst.hoverHighlight();
+        sigInst.hoverHighlight(state);
         sigInst.draw();
     }
     
@@ -98,20 +110,43 @@ define([
         
         slider.noUiSlider.on('set', updateNetwork)
         
+        //Create tooltip
+        $('#cutoff-bar-date .noUi-handle').append('<div id="label-date"></div>');
+        slider.noUiSlider.on('update', function(values, handle){
+            var time = new Date(parseInt(values[handle]));
+            var months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+            $('#label-date').html(months[time.getMonth()] + ' ' + time.getFullYear());
+        });
+        
         //Initialize toggle layout button
         $('#btn-toggle-layout').click(function(e) {
             e.preventDefault();
             toggleLayout();
         });
         
-        
-        
+//        buildLegend();
         
         //Fade in UI
         setTimeout(function() {
             $('#ui').fadeIn(1000);
             toggleLayout();
         }, 1000);
+    }
+    
+    var buildLegend = function() {
+        var canvas = $('#canvas-legend'), ctx = canvas[0].getContext('2d');
+        canvas.width
+        ctx.clearRect(0, 0, canvas.width(), canvas.height())
+        
+        
+        var shade = shadeColor(opts['minColor'], opts['maxColor'], 0.5);
+        ctx.fillStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
+        ctx.fill();
+        
+        
+        ctx.strokeStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
+        ctx.rect(0, 0, canvas.width(), canvas.height())
+        ctx.stroke();
     }
     
     var buildPIPanel = function(id) {
@@ -238,7 +273,7 @@ define([
             },
         });
         
-        $('.pi-image').css('background-position-x', -id * 132 + 'px');
+        $('.pi-image').css('background-position', -id * 132 + 'px 0');
         
         modal.modal({
             backdrop: 'static',
@@ -287,7 +322,7 @@ define([
                     opts.minDate = Math.min(opts.minDate, time) || time;
                     
                     edge.weight = edge.size = 1;
-                    edge.color = '#FF9126';
+                    edge.color = opts['edgeColor'];
 //                    edge.color = '#3399FF'
                     
                     var addedEdge = getEdge(edge.id);
@@ -337,7 +372,7 @@ define([
             e.weight = 1;
             
             if (!e.hidden) {
-                //Visible degree scales size of the node
+                //Visible and size of the node scales with # of unique PMID
                 for (var a in e.articles) {
                     if (!uniPMID.hasOwnProperty(a)) {
                         e.source.visibleDegree++;
@@ -351,7 +386,7 @@ define([
                     }
                 }
                 
-                //Color degree scales color of the node
+                //Color the node scales with # of collaboration
                 e.source.colorDegree++;
                 e.target.colorDegree++;
             }
@@ -363,15 +398,19 @@ define([
             if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
         });
         
+        state['minColor'] = null, state['maxColor'] = null;
+        
         sigInst.iterNodes(function(n) {
             if (!n.hidden) {
-                var c1 = hexToRgb('#66FF33'), c2 = hexToRgb('#006ED9'), g = n.colorDegree/maxDegree;
-                n.color = 'rgb(' + parseInt((c2.r - c1.r) * g + c1.r) + ',' + parseInt((c2.g - c1.g) * g + c1.g) + ',' + parseInt((c2.b - c1.b) * g + c1.b) + ')';
+                var c = shadeColor(opts['minColor'], opts['maxColor'], n.colorDegree/maxDegree), hex = rgbToHex(c.r, c.g, c.b);
+                n.color = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ', 1)';
+                
+                state['minColor'] = parseInt(hex, 16) < parseInt(state['minColor'], 16) ? hex : state['minColor'] || hex;
+                state['maxColor'] = parseInt(hex, 16) > parseInt(state['maxColor'], 16) ? hex : state['maxColor'] || hex;
             }
         });
         
-        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], date = new Date(val);
-        $('#cutoff-label').html(months[date.getMonth()] + ', ' + date.getFullYear());
+//        buildLegend();
         
         sigInst.draw();
     }
@@ -395,6 +434,17 @@ define([
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
         } : null;
+    }
+    
+    var rgbToHex = function(r, g, b) {
+        return ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+    
+    var shadeColor = function(c1, c2, g) {
+        c1 = hexToRgb(opts['minColor']);
+        c2 = hexToRgb(opts['maxColor']);
+        
+        return { r: parseInt((c2.r - c1.r) * g + c1.r), g: parseInt((c2.g - c1.g) * g + c1.g), b: parseInt((c2.b - c1.b) * g + c1.b) };
     }
     
     var getNode = function(id) {
