@@ -5,7 +5,6 @@ define([
     'noUISlider',
     
     'scrollbar',
-    'drawer',
     
     'bootstrap',
     'sigma',
@@ -124,7 +123,7 @@ define([
             toggleLayout();
         });
         
-//        buildLegend();
+        buildLegend();
         
         //Fade in UI
         setTimeout(function() {
@@ -135,13 +134,13 @@ define([
     
     var buildLegend = function() {
         var canvas = $('#canvas-legend'), ctx = canvas[0].getContext('2d');
-        canvas.width
+        canvas.width(400);
+        canvas.height(400);
         ctx.clearRect(0, 0, canvas.width(), canvas.height())
         
-        
         var shade = shadeColor(opts['minColor'], opts['maxColor'], 0.5);
-        ctx.fillStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
-        ctx.fill();
+        
+        ctx.fillStyle = 
         
         
         ctx.strokeStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
