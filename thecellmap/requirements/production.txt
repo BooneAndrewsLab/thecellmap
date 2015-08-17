@@ -39,6 +39,7 @@ django-contact-form
 openpyxl
 xlwt
 xlrd
+beautifulsoup4
 
 # REST stuff
 djangorestframework
