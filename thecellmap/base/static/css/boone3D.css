@@ -1,22 +1,15 @@
-body {
-    cursor: none;
-}
-
 #stats {
     position: absolute;
     top: 0px;
     margin: 5px;
 }
 
-#scene-gui {
+#scene-ui {
     position: absolute;
-    left: 0;
-}
-
-#canvas-gui {
-    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
 #network-container {
-    position: absolute;
+     position: relative;
 }

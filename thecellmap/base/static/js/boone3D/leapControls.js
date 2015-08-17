@@ -17,7 +17,7 @@ define([
     var elapse              = null;
     
     var step                = null;
-    var regions             = [];
+    var regions             = [], nodes = [];
     
     var init = function() {
         step = (three['camera'].position.z == 0 ? Math.pow(10, (Math.log(three['camera'].near) + Math.log(three['camera'].far))/Math.log(10))/10.0 : three['camera'].position.z);
@@ -158,6 +158,7 @@ define([
             if (!rotateXLast) rotateXLast = x;
             var xDelta = x - rotateXLast;
             var matrixY = new THREE.Matrix4().makeRotationY(-rotateTransform(xDelta));
+            
             three['camera'].position.sub(target).applyMatrix4(matrixY).add(target); // translate, rotate and translate back
             three['camera'].lookAt(target);
             
@@ -187,12 +188,11 @@ define([
             
             if (state['showTerm']) {
                 var dist = three['camera'].position.distanceTo(new THREE.Vector3(0, 0, 0));
-                if (dist > 3500) {
-                    var grayScale = parseInt(dist/5000 * 255);
-                    var color = new THREE.Color('rgb(' + grayScale + ',' + grayScale + ',' + grayScale + ')');
-                    three['renderer'].setClearColor(color, 1);
+                if (dist > (three['termCloud']['radius'] * 9)) {
+                    var alpha = (dist - 8 * three['termCloud']['radius']) / (three['termCloud']['radius']);
+                    three['renderer'].setClearColor(0x222222, alpha);
                     
-                    if (grayScale >= 255) {
+                    if (alpha >= 7) {
                         Utils.clearScene();
                         three['renderer'].setClearColor(0x222222, 1);
                         Build.buildNodes();
@@ -233,26 +233,49 @@ define([
             three['cursor'].position.set(pos['x'], pos['y'], pos['z']);
             
             if (state['showUI']) toggleUI(frame, pos['x'], pos['y']);
-            if (!state['showTerm']) getSelection(frame, x, y);
+            if (!state['showTerm']) {
+                getSelection(frame, x, y);
+            } else {
+                getNodes(frame, x, y);
+            }
         }
         rotateXLast = null;
         rotateYLast = null;
         zoomZLast = null;
     }
     
+    var getNodes = function(frame, x, y) {
+        var raycaster = new THREE.Raycaster(), intersects;
+        raycaster.setFromCamera(new THREE.Vector2((x / opts['rootElement'].width()) * 2 - 1, - (y / opts['rootElement'].height()) * 2 + 1), three['camera']);
+        
+        intersects = raycaster.intersectObjects(nodes);
+        if (intersects.length > 0) {
+            var obj = intersects[0].object;
+            three['cursor'].position.set(obj.position.x, obj.position.y, obj.position.z);
+        }
+    }
+    
     var getSelection = function(frame, x, y) {
         var raycaster = new THREE.Raycaster(), intersects;
         var term = selectLast ? selectLast.name.replace(/\D/g,'') : '';
+        
         raycaster.setFromCamera(new THREE.Vector2((x / opts['rootElement'].width()) * 2 - 1, - (y / opts['rootElement'].height()) * 2 + 1), three['camera']);
-        elapse['select'] += controller.frame(1).valid ? frame.timestamp - controller.frame(1).timestamp : 0;
+        elapseFrame('select', frame);
         
         if (state['showUI']) {
             intersects = raycaster.intersectObjects(three['ui'].children);
             if (intersects.length > 0) {
                 if (intersects[0].object.name == 'extract') {
-                    elapse['uiExtract'] += controller.frame(1).valid ? frame.timestamp - controller.frame(1).timestamp : 0;
+                    elapseFrame('uiExtract', frame);
                     if (elapse['uiExtract'] > opts['timeUIExtract']) {
                         Build.extractTerm(term);
+                        
+                        for (var i in three['scene'].children) {
+                            if (three['scene'].children[i].type == 'Node') {
+                                nodes.push(three['scene'].children[i]);
+                            }
+                        }
+                        
                         elapse['uiExtract'] = 0;
                         state['showTerm'] = true;
                         state['showUI'] = false;
@@ -263,24 +286,22 @@ define([
                 elapse['uiHide'] = 0;
             } else {
                 elapse['uiExtract'] = 0;
-                elapse['uiHide'] += controller.frame(1).valid ? frame.timestamp - controller.frame(1).timestamp : 0;
+                elapseFrame('uiHide', frame);
+                
                 if (elapse['uiHide'] > opts['timeUIHide']) {
                     elapse['uiHide'] = 0;
                     state['showUI'] = false;
                     Utils.clearUI();
                 }
             }
-            
         } else {
             intersects = raycaster.intersectObjects(regions);
             if (intersects.length > 0) {
                 var obj = three['scene'].getObjectByName('edges' + term);
                 if (selectLast != intersects[0].object && elapse['select'] > opts['timeSelect']) { //Change selection
-                    if (!!selectLast) {
-                        obj.material.opacity = opts['edgeOpacity'];
-                        obj.material.linewidth = opts['edgeWidth'];
-                    }
                     selectLast = intersects[0].object;
+                    selectLast.material.opacity = opts['edgeOpacity'];
+                    selectLast.material.linewidth = opts['edgeWidth'];
                     elapse['select'] = 0;
                 } else if (!!selectLast) { //No change in selection
                     if (elapse['select'] < opts['timeUIShow']) {
@@ -295,10 +316,8 @@ define([
                 }
             } else { //No selection
                 if (!!selectLast && elapse['select'] > opts['timeSelect']) { //Clear previous selections
-                    term = selectLast.name.replace(/\D/g,'');
-                    var obj = three['scene'].getObjectByName('edges' + term);
-                    obj.material.opacity = opts['edgeOpacity'];
-                    obj.material.linewidth = opts['edgeWidth'];
+                    selectLast.material.opacity = opts['edgeOpacity'];
+                    selectLast.material.linewidth = opts['edgeWidth'];
                     elapse['select'] = 0;
                     selectLast = null;
                 }
@@ -321,11 +340,15 @@ define([
         }
     }
     
+    var elapseFrame = function(type, frame) {
+        elapse[type] += controller.frame(1).valid ? frame.timestamp - controller.frame(1).timestamp : 0
+    }
+    
     var update = function(frame) {
         var hl = frame.hands.length;
         var fl = Utils.iterFingers(frame);
         
-        elapse['gesture'] += controller.frame(1).valid ? frame.timestamp - controller.frame(1).timestamp : 0;
+        elapseFrame('gesture', frame);
         
         if (elapse['gesture'] > opts['timeGesture'] || gesture == null) {
             if (hl == 1 && fl['count'] == 1 && fl['extended'][0] == 1) {
@@ -337,7 +360,6 @@ define([
             }
             elapse['gesture'] = 0;
         }
-        console.log(gesture)
         switch(gesture) {
         case 'select':
             selectCamera(frame);

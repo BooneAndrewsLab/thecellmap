@@ -123,7 +123,7 @@ define([
             toggleLayout();
         });
         
-        buildLegend();
+//        buildLegend();
         
         //Fade in UI
         setTimeout(function() {
@@ -132,21 +132,21 @@ define([
         }, 1000);
     }
     
-    var buildLegend = function() {
-        var canvas = $('#canvas-legend'), ctx = canvas[0].getContext('2d');
-        canvas.width(400);
-        canvas.height(400);
-        ctx.clearRect(0, 0, canvas.width(), canvas.height())
-        
-        var shade = shadeColor(opts['minColor'], opts['maxColor'], 0.5);
-        
-        ctx.fillStyle = 
-        
-        
-        ctx.strokeStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
-        ctx.rect(0, 0, canvas.width(), canvas.height())
-        ctx.stroke();
-    }
+//    var buildLegend = function() {
+//        var canvas = $('#canvas-legend'), ctx = canvas[0].getContext('2d');
+//        canvas.width(400);
+//        canvas.height(400);
+//        ctx.clearRect(0, 0, canvas.width(), canvas.height())
+//        
+//        var shade = shadeColor(opts['minColor'], opts['maxColor'], 0.5);
+//        
+//        ctx.fillStyle = 
+//        
+//        
+//        ctx.strokeStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
+//        ctx.rect(0, 0, canvas.width(), canvas.height())
+//        ctx.stroke();
+//    }
     
     var buildPIPanel = function(id) {
         var node = getNode(id);
