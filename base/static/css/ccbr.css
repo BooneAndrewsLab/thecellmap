@@ -27,27 +27,21 @@
     pointer-events: auto;
 }
 
+.top-left {
+    padding-left: 42px;
+}
+
 .top-left > * {
     display: inline-block;
 }
 
-.form-group .input-group-btn {
-    width: 1% !important;
-}
-
-.center {
-    left: 50%;
-}
-
 #btn-toggle-layout {
-    height: 54px;
+    height: 44px;
     margin-left: 36px;
 }
 
 .cutoff-bar {
     width: 300px;
-    top: 9px;
-    left: 20px;
 }
 
 #cutoff-label {
@@ -102,3 +96,36 @@
     padding: 6px;
 }
 
+#canvas-legend {
+    position: absolute;
+}
+
+#drawer-legend {
+    height: 140px;
+    top: auto;
+    bottom: 9px;
+    border-radius: 10px;
+}
+
+.drawer-contents {
+    border-radius: 10px;
+}
+
+.drawer-controls a {
+    bottom: 0px;
+    position: absolute;
+}
+
+#label-date {
+    display: block;
+    position: absolute;
+    border: 1px solid #D9D9D9;
+    font: bold 12px Arial;
+    border-radius: 3px;
+    background: #fff;
+    top: 32px;
+    padding: 5px;
+    left: -21px;
+    text-align: center;
+    width: 76px;
+}

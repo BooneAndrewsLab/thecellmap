@@ -1,6 +1,6 @@
 require.config({
     paths: {
-        'jquery': 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min',
+        'jquery': 'libs/jquery-2.1.4.min',
         'backbone': 'libs/backbone-min',
         'underscore': 'libs/underscore-min',
         'bootstrap': 'libs/bootstrap.min',
@@ -9,6 +9,7 @@ require.config({
         'sigma': 'libs/isigma',
         
         'scrollbar': 'libs/jquery.mCustomScrollbar.concat.min',
+        'drawer': 'libs/drawer.min',
         
         'sigma.forcelayout': 'libs/plugins/sigma.fa2',
         'sigma.highlight': 'libs/plugins/sigma.highlight',
@@ -21,6 +22,7 @@ require.config({
         'backbone': ['underscore', 'jquery'],
         'bootstrap': ['jquery'],
         
+        'drawer': ['jquery', 'bootstrap'],
         'noUISlider': ['jquery'],
         'scrollbar': ['jquery'],
         
