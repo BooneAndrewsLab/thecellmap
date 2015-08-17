@@ -10,9 +10,11 @@
 
 {% block css %}
 {{ block.super }}
-  <link href="{% static 'css/ccbr.css' %}" rel="stylesheet">
+  <link href="{% static 'css/bootstrap-drawer.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/nouislider-8.0.1.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/jquery.mCustomScrollbar.min.css' %}" rel="stylesheet">
+  
+  <link href="{% static 'css/ccbr.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block js %}
@@ -48,17 +50,27 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
 </div>
 
 <div id='ui-placeholder' >
-  <div class="vizualization-ui" id="ui" style="display: none;">
+  <div class="vizualization-ui has-inner-drawer" id="ui" style="display: none;">
     
     <div class="top-left hidden-sm hidden-xs">
-      <div class="cutoff-bar-group">
-        <div id="cutoff-bar-date" class="cutoff-bar"></div>
-        <span id="cutoff-label" class="label label-primary">Date</span>
-      </div>
+      <div id="cutoff-bar-date" class="cutoff-bar"></div>
       <div id="btn-toggle-layout" class="btn-group">
         <button type="button" class="btn btn-primary">Pause Layout</button>
       </div>
     </div>
+    
+    <!-- <div class="bottom-left">
+      <canvas id="canvas-legend"></canvas>
+    </div> -->
+    
+<!--       <div id="drawer-legend" class="drawer drawer-inverse drawer-insided dw-xs-4 dw-sm-2 dw-md-2 fold" aria-labelledby="drawer-legend">
+        <div class="drawer-controls">
+          <a data-toggle="drawer" href="#drawer-legend" aria-foldedopen="false" aria-controls="drawer-legend" class="btn btn-primary">Legend</a>
+        </div>
+        <div class="drawer-contents">
+          
+        </div>
+      </div> -->
     
     <div class="modal fade" id="modal-pi" tabindex="-1" role="dialog" aria-labelledby="modal-style-label"
     aria-hidden="true">
@@ -73,7 +85,6 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
               <div id="pi-info" class="col-md-2">
                 <div class="pi-image"></div>
                 <div class="row"><div class="col-md-12"><a href="" class="pi-homepage">Homepage</a></div></div>
-                
               </div>
               <div class="col-md-10"><div id="publication-list" class="list-group" data-mcs-theme="rounded-dark"></div></div>
             </div>

@@ -1,7 +1,7 @@
-sigma.publicPrototype.hoverHighlight = function() {
+sigma.publicPrototype.hoverHighlight = function(state) {
     var greyColor = '#333';
     var inst = this;
-
+    
     this.bind('overnodes', function(event) {
         var nodes = event.content;
         var neighbors = {};
