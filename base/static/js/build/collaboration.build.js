@@ -5,7 +5,7 @@
         'underscore': 'libs/underscore-min',
         'bootstrap': 'libs/bootstrap.min',
         
-        'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three',
+        'three': 'libs/three.min',
         'noUISlider': 'libs/nouislider-8.0.1.min',
         'sigma': 'libs/isigma',
         
