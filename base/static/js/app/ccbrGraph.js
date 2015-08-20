@@ -140,6 +140,7 @@ define([
         //Initialize icons for start and pause time line animation
         $('.icon-time').click(function() {
             if (parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) >= opts['maxDate']) return;
+            state['runningAnimation'] = true;
             
             if ($(this).data('toggle') == 'start') {
                 timeout(function() {
@@ -149,8 +150,6 @@ define([
                     if (state['runningAnimation'] && parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) >= opts['maxDate']){
                         $('.icon-group-time').find('span').toggleClass('hidden');
                         state['runningAnimation'] = false;
-                    } else {
-                        state['runningAnimation'] = true;
                     }
                     
                     return state['runningAnimation'];
@@ -177,7 +176,7 @@ define([
     
     function timeout(func, delay) {
         setTimeout(function () {
-            func() && timeout(func);
+            func() && timeout(func, delay);
         }, delay);
     }
     
@@ -208,44 +207,45 @@ define([
             canvas.height = 155;
             
             state['currentNode'] = 0;
-//            timeout(function() {
-//                var n = getNode(state['currentNode']);
-//                
-//                ctx.fillStyle = '#' + n['three']['color'];
-//                ctx.rect(0, 0, 155, 155);
-//                ctx.fill();
-//                ctx.drawImage(image, 75*n.id, 0, 75, 75, 40, 40, 75, 75);
-//                
-//                var texture = new THREE.Texture(canvas);
-//                texture.needsUpdate = true;
-//                
-//                var sphere = new THREE.Mesh(
-//                    new THREE.SphereGeometry(Math.min(n.size * 3, 20), 32, 32),
-//                    new THREE.MeshLambertMaterial({ map: texture, color: 0xffffff /*parseInt('0x' + n['three']['color'])*/, size: THREE.DoubleSide })
-//                );
-//                
-//                sphere.position.set(n.three['x'] - three['cloud'].center.x, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
-//                sphere.name = 'node_' + n.id;
-//                three['scene'].add(sphere);
-//                
-//                return !!getNode(++state['currentNode']);
-//            }, 1000);
-            
-            sigInst.iterNodes(function(n) {
-                ctx.clearRect(0, 0, 155, 155);
+            timeout(function() {
+                var n = getNode(state['currentNode']);
+                
                 ctx.fillStyle = '#' + n['three']['color'];
-                ctx.font = '30px bold Arial';
-                ctx.fillText(n.label, 0, 0);
+                ctx.rect(0, 0, 155, 155);
+                ctx.fill();
+                ctx.drawImage(image, 75*n.id, 0, 75, 75, 40, 40, 75, 75);
                 
                 var texture = new THREE.Texture(canvas);
                 texture.needsUpdate = true;
                 
-                var sprite = new THREE.Mesh(new THREE.BoxGeometry(155, 40, 1), new THREE.MeshBasicMaterial({
-                    color: 0xffffff, map: texture,  
-                }));
-                sprite.position.set(n.three['x'] - three['cloud'].center.x + 155, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
-                three['scene'].add(sprite)
-            })
+                var sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(Math.min(n.size * 3, 20), 32, 32),
+                    new THREE.MeshLambertMaterial({ map: texture, color: 0xffffff /*parseInt('0x' + n['three']['color'])*/, size: THREE.DoubleSide })
+                );
+                
+                sphere.position.set(n.three['x'] - three['cloud'].center.x, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
+                sphere.name = 'node_' + n.id;
+                three['scene'].add(sphere);
+                
+                return !!getNode(++state['currentNode']);
+            }, 1000);
+            
+//            ctx.textAlign = 'start';
+//            ctx.textBaseline = 'hanging';
+//            sigInst.iterNodes(function(n) {
+//                ctx.clearRect(0, 0, 155, 155);
+//                ctx.fillStyle = '#222222';
+//                ctx.font = '30px bold Arial';
+//                ctx.fillText(n.label, 20, 20);
+//                
+//                var texture = new THREE.Texture(canvas);
+//                texture.needsUpdate = true;
+//                
+//                var sprite = new THREE.Mesh(new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } ));
+//                
+//                sprite.position.set(n.three['x'] - three['cloud'].center.x, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
+//                three['scene'].add(sprite)
+//            })
             
 //            sigInst.iterEdges(function(e) {
 //                var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
