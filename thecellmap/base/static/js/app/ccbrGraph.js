@@ -4,37 +4,30 @@ define([
     'backbone',
     'noUISlider',
     
+    'three',
     'scrollbar',
     
     'bootstrap',
     'sigma',
+    'mouse',
     
     'sigma.forcelayout',
     'sigma.highlight',
     'sigma.move',
     'sigma.rotate'
 ], function($, _, Backbone, nouislider) {
-    var sigInst, vizdata = {}, state = {};
+    var sigInst, vizdata = {}, state = {}, three = {};
     
     var init = function() {
         var DEFAULTS = {
-            arrows: false,
-            colorScheme: 'black',
-            debug: true,
-            downloadLimit: 30,
-            edgeColor: '#FF9126',
-            hideLayouts: false,
-            highlight: false,
-            layout: null,
-            layoutAlgo: ['fl'],
-            layoutButtonHide: true,
+            edgeColor: 'FF9126',
             maxColor: '#006ED9',
             minColor: '#66FF33',
             minDate: null,
+            maxDate: null,
             piImageWidth: 132,
             piImageHeight: 198,
             rootElement: '#network-container',
-            runningLayout: null,
         };
         $.extend(opts, DEFAULTS);
         
@@ -65,16 +58,16 @@ define([
             blockScroll: false,
         }).bind('upnodes', function(targets) {
             if (!state['isDragging']) buildPIPanel(targets.content[0]);
-            
-            getNode(targets.content[0]).active = false;
-//            if (!opts.runningLayout) toggleLayout();
-            
+            getNode(targets.content[0]).dragging = false;
             state['isDragging'] = false;
         }).bind('downnodes', function(targets) {
-//            if (opts.runningLayout) toggleLayout();
-            getNode(targets.content[0]).active = true;
+            getNode(targets.content[0]).dragging = true;
         }).bind('draggedNode', function() {
             state['isDragging'] = true;
+        }).bind('upgraph', function() {
+            sigInst.iterNodes(function(n) {
+                n.dragging = false;
+            });
         });
         
         loadAuthors();
@@ -90,6 +83,13 @@ define([
                 var parent = $('.vizualization-ui').parent();
                 $('.vizualization-ui').css('height', parent.innerHeight());
                 $('.vizualization-ui').css('width', parent.innerWidth());
+                
+                if (!!three['scene']) {
+                    three['camera'].aspect = parent.innerWidth()/parent.innerHeight();
+                    three['camera'].updateProjectionMatrix();
+                    three['renderer'].setSize(parent.innerWidth(), parent.innerHeight());
+                    three['renderer'].render(three['scene'], three['camera']);
+                }
             }).resize();
         });
         $('#ui-placeholder').remove();
@@ -99,7 +99,7 @@ define([
         nouislider.create(slider, {
             range: {
                 min: opts['minDate'],
-                max: new Date().getTime(),
+                max: opts['maxDate'],
             },
             step: 7 * 24 * 60 * 60 * 1000,
             start: opts['minDate'],
@@ -109,7 +109,7 @@ define([
         
         slider.noUiSlider.on('set', updateNetwork)
         
-        //Create tooltip
+        //Create slider tooltip
         $('#cutoff-bar-date .noUi-handle').append('<div id="label-date"></div>');
         slider.noUiSlider.on('update', function(values, handle){
             var time = new Date(parseInt(values[handle]));
@@ -117,13 +117,56 @@ define([
             $('#label-date').html(months[time.getMonth()] + ' ' + time.getFullYear());
         });
         
-        //Initialize toggle layout button
-        $('#btn-toggle-layout').click(function(e) {
-            e.preventDefault();
+        //Initialize icons for start and pause layout
+        $('#icon-pin').click(function(e) {
             toggleLayout();
+            $('#icon-pin').toggleClass('icon-dark');
         });
         
-//        buildLegend();
+        //Initialize icons for show and hide legend
+        $('.icon-legend').click(function() {
+            if ($(this).data('legend') == 'closed') {
+                $('#canvas-legend').show();
+                $('.top-right').animate({ width:'390px' }, 500);
+            } else {
+                $('.top-right').animate({ width:'40px' }, 500, function() {
+                    $('#canvas-legend').hide();
+                });
+            }
+            
+            $('.icon-group-legend').find('span').toggleClass('hidden');
+        });
+        
+        //Initialize icons for start and pause time line animation
+        $('.icon-time').click(function() {
+            if (parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) >= opts['maxDate']) return;
+            
+            if ($(this).data('toggle') == 'start') {
+                timeout(function() {
+                    var time = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) + 7 * 24 * 60 * 60 * 1000;
+                    $('#cutoff-bar-date')[0].noUiSlider.set(new Date(time));
+                    
+                    if (state['runningAnimation'] && parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) >= opts['maxDate']){
+                        $('.icon-group-time').find('span').toggleClass('hidden');
+                        state['runningAnimation'] = false;
+                    } else {
+                        state['runningAnimation'] = true;
+                    }
+                    
+                    return state['runningAnimation'];
+                }, 50);
+            } else {
+                state['runningAnimation'] = false;
+            }
+            
+            $('.icon-group-time').find('span').toggleClass('hidden');
+        });
+        
+        $('.icon-three').click(buildThree);
+        $('.icon-center').click(graphCenter);
+        
+        buildLegend();
+        $('[data-toggle="tooltip"]').tooltip()
         
         //Fade in UI
         setTimeout(function() {
@@ -132,21 +175,146 @@ define([
         }, 1000);
     }
     
-//    var buildLegend = function() {
-//        var canvas = $('#canvas-legend'), ctx = canvas[0].getContext('2d');
-//        canvas.width(400);
-//        canvas.height(400);
-//        ctx.clearRect(0, 0, canvas.width(), canvas.height())
-//        
-//        var shade = shadeColor(opts['minColor'], opts['maxColor'], 0.5);
-//        
-//        ctx.fillStyle = 
-//        
-//        
-//        ctx.strokeStyle = 'rgba(' + shade.r + ',' + shade.g + ',' + shade.b + ', 1)';
-//        ctx.rect(0, 0, canvas.width(), canvas.height())
-//        ctx.stroke();
-//    }
+    function timeout(func, delay) {
+        setTimeout(function () {
+            func() && timeout(func);
+        }, delay);
+    }
+    
+    var buildThree = function() {
+        var rootElement = $(opts['rootElement']);
+        rootElement.children().fadeOut(1000);
+        
+        three['scene'] = new THREE.Scene();
+        three['renderer'] = new THREE.WebGLRenderer({antialias: true, alpha: true});
+        three['renderer'].setSize(rootElement.width(), rootElement.height());
+        three['renderer'].setClearColor(0x222222, 1);
+        rootElement.append(three['renderer'].domElement);
+        
+        three['camera'] = new THREE.PerspectiveCamera(25, rootElement.width()/rootElement.height(), 0.1, 5000);
+        three['camera'].position.set(0, 0, 1700);
+        
+        three['control'] = new THREE.TrackballControls(three['camera']);
+        three['control'].damping = 0.2;
+        
+        three['light'] = new THREE.DirectionalLight(0xffffff, 1); // soft white light
+        three['light'].position.set(0, 0, 1);
+        three['scene'].add(three['light']);
+        
+        var loader = new THREE.ImageLoader();
+        loader.load(opts['urls']['texture'], function(image) {
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = 155;
+            canvas.height = 155;
+            
+            state['currentNode'] = 0;
+//            timeout(function() {
+//                var n = getNode(state['currentNode']);
+//                
+//                ctx.fillStyle = '#' + n['three']['color'];
+//                ctx.rect(0, 0, 155, 155);
+//                ctx.fill();
+//                ctx.drawImage(image, 75*n.id, 0, 75, 75, 40, 40, 75, 75);
+//                
+//                var texture = new THREE.Texture(canvas);
+//                texture.needsUpdate = true;
+//                
+//                var sphere = new THREE.Mesh(
+//                    new THREE.SphereGeometry(Math.min(n.size * 3, 20), 32, 32),
+//                    new THREE.MeshLambertMaterial({ map: texture, color: 0xffffff /*parseInt('0x' + n['three']['color'])*/, size: THREE.DoubleSide })
+//                );
+//                
+//                sphere.position.set(n.three['x'] - three['cloud'].center.x, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
+//                sphere.name = 'node_' + n.id;
+//                three['scene'].add(sphere);
+//                
+//                return !!getNode(++state['currentNode']);
+//            }, 1000);
+            
+            sigInst.iterNodes(function(n) {
+                ctx.clearRect(0, 0, 155, 155);
+                ctx.fillStyle = '#' + n['three']['color'];
+                ctx.font = '30px bold Arial';
+                ctx.fillText(n.label, 0, 0);
+                
+                var texture = new THREE.Texture(canvas);
+                texture.needsUpdate = true;
+                
+                var sprite = new THREE.Mesh(new THREE.BoxGeometry(155, 40, 1), new THREE.MeshBasicMaterial({
+                    color: 0xffffff, map: texture,  
+                }));
+                sprite.position.set(n.three['x'] - three['cloud'].center.x + 155, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
+                three['scene'].add(sprite)
+            })
+            
+//            sigInst.iterEdges(function(e) {
+//                var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
+//                                            three['scene'].getObjectByName('node_' + e.target.id).position);
+//                three['scene'].add(cylinder);
+//            });
+            
+            animate();
+        });
+    }
+    
+    var cylinderMesh = function(pointX, pointY) {
+        var direction = new THREE.Vector3().subVectors(pointY, pointX), arrow = new THREE.ArrowHelper(direction, pointX);
+        var edge = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, direction.length(), 16, 16),
+            new THREE.MeshLambertMaterial({ color: parseInt('0x' + opts['edgeColor']) }));
+        
+        var offsetRotation = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
+        var orientation = new THREE.Matrix4().lookAt(pointX,pointY,new THREE.Vector3(0,1,0)).multiply(offsetRotation);
+        
+        edge.applyMatrix(orientation);
+        edge.position.addVectors(pointX, direction.multiplyScalar(0.5));
+        return edge;
+    }
+    
+    var animate = function() {
+        requestAnimationFrame(animate);
+        three['control'].update();
+//        three['camera'].rotation.z += 0.01;
+        three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
+        three['renderer'].render(three['scene'], three['camera']);
+    }
+    
+    var buildLegend = function(step) {
+        var canvas = $('#canvas-legend'), ctx = canvas[0].getContext('2d');
+        
+        ctx.clearRect(0, 0, canvas[0].width, canvas[0].height);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        
+        var y1 = 12, y2 = 41;
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('Collaborations: ', 10, y1);
+        ctx.fillText('Publications: ', 10, y2);
+        
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Least', 125, y1);
+        ctx.fillText('Least', 125, y2);
+        ctx.fillText('Most', 270, y1);
+        ctx.fillText('Most', 270, y2);
+        
+        var index = 3, ix = 185, dx = 30;
+        for (var i = 0; i < index; i++) {
+            var c = shadeColor(opts['minColor'], opts['maxColor'], i/(index - 1));
+            ctx.fillStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',1)';
+            ctx.beginPath();
+            ctx.arc(ix + i * dx, y1, 7, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        
+        var ir = 5, dr = 4;
+        var c = shadeColor(opts['minColor'], opts['maxColor'], 0.5);
+        ctx.fillStyle = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',1)';
+        for (var i = 0; i < index; i++) {
+            ctx.beginPath();
+            ctx.arc(ix + i * dx, y2, ir + i * dr, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
     
     var buildPIPanel = function(id) {
         var node = getNode(id);
@@ -272,7 +440,7 @@ define([
             },
         });
         
-        $('.pi-image').css('background-position', -id * 132 + 'px 0');
+        $('.pi-image').css('background-position', -id * opts['piImageWidth'] + 'px 0');
         
         modal.modal({
             backdrop: 'static',
@@ -285,17 +453,24 @@ define([
             url: opts['urls']['authors'], 
             dataType : 'json',
             success: function(nodes) {
+                three.cloud = new THREE.Geometry();
+                
                 nodes.forEach(function(n) {
                     var node = {}
                     node.id = n.id;
                     node.label = n.name;
                     node.size = 2;
-                    node.x = !isNaN(node.x) ? node.x : (Math.random() * 1000);
-                    node.y = !isNaN(node.y) ? node.y : (Math.random() * 1000);
+                    node.x = !isNaN(n.two.x) ? n.two.x : (Math.random() * 100);
+                    node.y = !isNaN(n.two.y) ? n.two.y : (Math.random() * 100);
                     node.forceLabel = true;
                     
                     sigInst.addNode(node.id, node);
+                    getNode(node.id).three = { x: n.three.x, y: n.three.y, z: n.three.z, color: n.color };
+                    three.cloud.vertices.push(new THREE.Vector3(n.three.x, n.three.y, n.three.z));
                 });
+                
+                three.cloud.computeBoundingSphere();
+                three.cloud = three.cloud.boundingSphere;
                 
                 loadArticles();
             },
@@ -319,10 +494,10 @@ define([
                     date.setFullYear(e.d.substring(0, 4), e.d.substring(4, 6));
                     var time = date.getTime();
                     opts.minDate = Math.min(opts.minDate, time) || time;
+                    opts.maxDate = Math.max(opts.maxDate, time) || time;
                     
                     edge.weight = edge.size = 1;
-                    edge.color = opts['edgeColor'];
-//                    edge.color = '#3399FF'
+                    edge.color = '#' + opts['edgeColor'];
                     
                     var addedEdge = getEdge(edge.id);
                     if (!addedEdge) {
@@ -350,10 +525,76 @@ define([
                 });
                 
                 $('#cutoff-bar-date')[0].noUiSlider.set(new Date(opts['minDate']));
-                
                 sigInst.draw();
             },
         });
+    }
+    
+    var graphCenter = function() {
+        var mmx = {};
+        sigInst.iterNodes(function(node) {
+            if (!node.hidden) {
+                mmx.ax = Math.min(node.displayX, mmx.ax || node.displayX);
+                mmx.zx = Math.max(node.displayX, mmx.zx || node.displayX);
+                mmx.ay = Math.min(node.displayY, mmx.ay || node.displayY);
+                mmx.zy = Math.max(node.displayY, mmx.zy || node.displayY);
+            }
+        });
+        
+        var position = sigInst.position(), size = sigInst.size();
+        var x = -(mmx.ax + mmx.zx - (2 * position.stageX) - size.w) / 2;
+        var y = -(mmx.ay + mmx.zy - (2 * position.stageY) - size.h) / 2;
+        
+        var moveRequired = Math.round(position.stageX) != Math.round(x) || Math.round(position.stageY) != Math.round(y);
+        var timeout = 0;
+        
+        if (moveRequired) {
+            sigInst.goTo(x, y).draw();
+            timeout = 150; // We know goTo needs 100ms, 50ms buffer just in case
+        }
+        
+        setTimeout(function() {
+            if (timeout != 0) {
+                mmx = {};
+                sigInst.iterNodes(function(node) {
+                    if (!node.hidden) {
+                        mmx.ax = Math.min(node.displayX, mmx.ax || node.displayX);
+                        mmx.zx = Math.max(node.displayX, mmx.zx || node.displayX);
+                        mmx.ay = Math.min(node.displayY, mmx.ay || node.displayY);
+                        mmx.zy = Math.max(node.displayY, mmx.zy || node.displayY);
+                    }
+                });
+                
+                position = sigInst.position();
+                size = sigInst.size();
+            }
+            
+            var xmin = Math.min(mmx.ax, size.w - mmx.zx);
+            var ymin = Math.min(mmx.ay, size.h - mmx.zy);
+            var ratio = 0;
+            
+            if (mmx.ax < 0 || mmx.zx > size.w || mmx.ay < 0 || mmx.zy > size.h) { // Zoom out required
+                if (xmin < ymin) {
+                    ratio = -xmin / size.w;
+                } else {
+                    ratio = -ymin / size.h;
+                }
+                
+                // ratio multiplier should be 2.11 but let's set it to 3 for a nice padding around the newtwork
+                sigInst.goTo(size.w / 2, size.h / 2, position.ratio / (3 * ratio + 1)).draw();
+            } else { // Zoom in could be required
+                if (xmin < ymin) {
+                    ratio = xmin / size.w;
+                } else {
+                    ratio = ymin / size.h;
+                }
+                
+                if (ratio > 0.22) {
+                    // ratio multiplier should be 2 but let's set it to 1.9 for a nice padding around the newtwork
+                    sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
+                }
+            }
+        }, timeout);
     }
     
     var updateNetwork = function() {
@@ -397,33 +638,24 @@ define([
             if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
         });
         
-        state['minColor'] = null, state['maxColor'] = null;
-        
         sigInst.iterNodes(function(n) {
             if (!n.hidden) {
-                var c = shadeColor(opts['minColor'], opts['maxColor'], n.colorDegree/maxDegree), hex = rgbToHex(c.r, c.g, c.b);
-                n.color = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ', 1)';
-                
-                state['minColor'] = parseInt(hex, 16) < parseInt(state['minColor'], 16) ? hex : state['minColor'] || hex;
-                state['maxColor'] = parseInt(hex, 16) > parseInt(state['maxColor'], 16) ? hex : state['maxColor'] || hex;
+                var c = shadeColor(opts['minColor'], opts['maxColor'], n.colorDegree/maxDegree), cHex = rgbToHex(c.r, c.g, c.b);
+                n.color = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',1)';
             }
         });
-        
-//        buildLegend();
         
         sigInst.draw();
     }
     
     var toggleLayout = function() {
-        if (!!opts.runningLayout) {
+        if (!!state['runningLayout']) {
             sigInst.stopForceAtlas2();
-            opts.runningLayout = false;
+            state['runningLayout'] = false;
         } else {
             sigInst.startForceAtlas2();
-            opts.runningLayout = true;
+            state['runningLayout'] = true;
         }
-        
-        $('#btn-toggle-layout').find('.btn-primary').html(opts.runningLayout ? 'Pause Layout' : 'Restart Layout');
     }
     
     var hexToRgb = function(hex) {

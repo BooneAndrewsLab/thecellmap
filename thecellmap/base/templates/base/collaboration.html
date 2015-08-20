@@ -10,7 +10,7 @@
 
 {% block css %}
 {{ block.super }}
-  <link href="{% static 'css/bootstrap-drawer.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
   <link href="{% static 'css/nouislider-8.0.1.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/jquery.mCustomScrollbar.min.css' %}" rel="stylesheet">
   
@@ -24,6 +24,7 @@
         urls: {
             authors: "{{ root }}/ccbr/authors.json",
             articles: "{{ root }}/ccbr/articles.json",
+            texture: "{{ root }}/ccbr/all_pi_small_square_75x75.jpg",
         },
     }
   </script>
@@ -50,27 +51,33 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
 </div>
 
 <div id='ui-placeholder' >
-  <div class="vizualization-ui has-inner-drawer" id="ui" style="display: none;">
+  <div class="vizualization-ui" id="ui" style="display: none;">
     
     <div class="top-left hidden-sm hidden-xs">
       <div id="cutoff-bar-date" class="cutoff-bar"></div>
-      <div id="btn-toggle-layout" class="btn-group">
-        <button type="button" class="btn btn-primary">Pause Layout</button>
+    </div>
+    
+    <div class="top-center">
+      <div class="icon-group center-block">
+        <div class='icon-group-layout' data-toggle="tooltip" data-placement="left" title="Toggle layout">
+          <span class="glyphicons glyphicons-pushpin icon icon-layout icon-dark" id="icon-pin"></span>
+        </div>
+        <div class='icon-group-time' data-toggle="tooltip" data-placement="bottom" title="Move through timeline">
+          <span class="glyphicons glyphicons-play icon icon-time" data-toggle="start"></span>
+          <span class="glyphicons glyphicons-pause icon icon-time hidden" data-toggle="pause"></span>
+        </div>
+        <span class="glyphicons glyphicons-record icon icon-center" data-toggle="tooltip" data-placement="bottom" title="Center graph"></span>
+        <!-- <span class="glyphicons glyphicons-global icon icon-three" data-toggle="tooltip" data-placement="right" title="Show 3D animation"></span> -->
       </div>
     </div>
     
-    <!-- <div class="bottom-left">
-      <canvas id="canvas-legend"></canvas>
-    </div> -->
-    
-<!--       <div id="drawer-legend" class="drawer drawer-inverse drawer-insided dw-xs-4 dw-sm-2 dw-md-2 fold" aria-labelledby="drawer-legend">
-        <div class="drawer-controls">
-          <a data-toggle="drawer" href="#drawer-legend" aria-foldedopen="false" aria-controls="drawer-legend" class="btn btn-primary">Legend</a>
-        </div>
-        <div class="drawer-contents">
-          
-        </div>
-      </div> -->
+    <div class="top-right">
+      <div class='icon-group-legend'>
+        <span class="glyphicons glyphicons-chevron-left icon icon-legend" data-legend="closed"></span>
+        <span class="glyphicons glyphicons-chevron-right icon icon-legend hidden" data-legend="opened"></span>
+      </div>
+      <canvas id="canvas-legend"  width="305" height="60"></canvas>
+    </div>
     
     <div class="modal fade" id="modal-pi" tabindex="-1" role="dialog" aria-labelledby="modal-style-label"
     aria-hidden="true">
