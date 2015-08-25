@@ -102,12 +102,27 @@ define([
     
     var buildUI = function() {
         var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-        var size = 1024;
-        canvas.width = size;
-        canvas.height = size;
-        
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvas.getContext('2d');
         var annotation = vizdata['annotations'][state['annotation']];
-        var lineHeight = 36, maxLine = 0;
+        var lineHeight = 36, maxLine = 0, paddingFactor = 1.14;
+        
+        ctxMeas.font = '29px Palatino Linotype';
+        _.each(annotation['terms'], function(term) {
+            var name = term['name'];
+            if (name.length >= 36) {
+                var words = name.split(' '), name = '';
+                _.each(words, function(word) {
+                    if (name.length < 36) name += name.length == 0 ? word : ' ' + word;
+                });
+                name += '...'
+            }
+            maxLine = Math.max(ctxMeas.measureText(name).width, maxLine);
+            term['alias'] = name;
+        });
+        
+        
+        canvas.width = maxLine * paddingFactor;
+        canvas.height = lineHeight * _.size(annotation['terms']) + 70;
         
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#ffffff';
@@ -117,16 +132,7 @@ define([
         
         var i = 0;
         _.each(annotation['terms'], function(term) {
-            var name = term['name'].toUpperCase();
-            if (name.length >= 36) {
-                var words = name.split(' '), name = '';
-                _.each(words, function(word) {
-                    if (name.length < 36) name += name.length == 0 ? word : ' ' + word;
-                });
-                name += '...'
-            }
-            ctx.fillText(name, 14, lineHeight * (i++ + 0.5) + 70);
-            maxLine = Math.max(ctx.measureText(name).width, maxLine);
+            ctx.fillText(term['alias'], 14, lineHeight * (i++ + 0.5) + 70);
         });
         
         ctx.globalAlpha = 0.4;
@@ -134,7 +140,7 @@ define([
         _.each(annotation['terms'], function(term) {
             if (i % 2 == 0 || i == 0) {
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, lineHeight * i + 70, maxLine * 1.14, lineHeight);
+                ctx.fillRect(0, lineHeight * i + 70, canvas.width, lineHeight);
             }
             ctx.fillStyle = '#' + term['color'];
             ctx.fillRect(maxLine * 1.07, (lineHeight * i++) + (lineHeight - 25)/2 + 70, 25, 25);
@@ -145,24 +151,25 @@ define([
         ctx.font = '50px Palatino Linotype';
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(maxLine * 1.14, 0);
+        ctx.lineTo(canvas.width, 0);
         ctx.stroke();
         ctx.lineWidth = 14;
         ctx.fillText('LEGEND', 0, 30);
         ctx.beginPath();
         ctx.moveTo(0, 60);
-        ctx.lineTo(maxLine * 1.14, 60);
+        ctx.lineTo(canvas.width, 60);
         ctx.stroke();
         
-        var geometry = new THREE.BoxGeometry(size, size, 1);
+        var geometry = new THREE.BoxGeometry(canvas.width, canvas.height, 1);
         var texture = new THREE.Texture(canvas);
         texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
         var sprite = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
             color: 0xFFFFFF, map: texture, transparent: true, opacity: 1, 
         }));
         
         //TODO: FIX THIS SO ITS NOT HARD CODED NUMBERS. ONLY WORKS WITH CONSOLE OPENED ATM
-        sprite.position.set(-1040, -200, 0);
+        sprite.position.set(-$(opts['rootElement']).width()/2, $(opts['rootElement']).height()/5, 0);
         sprite.rotation.set(0, Math.PI/8, 0);
         three['ui'].add(sprite);
     }
