@@ -140,6 +140,8 @@ define([
         //Initialize icons for start and pause time line animation
         $('.icon-time').click(function() {
             if (parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) >= opts['maxDate']) return;
+            if (!state['runningLayout']) toggleLayout();
+            
             state['runningAnimation'] = true;
             
             if ($(this).data('toggle') == 'start') {
@@ -161,7 +163,23 @@ define([
             $('.icon-group-time').find('span').toggleClass('hidden');
         });
         
-        $('.icon-three').click(buildThree);
+        $('.icon-group-demension').click(function() {
+            if (state['three']) {
+                for (var i = three['scene'].children.length; i > 0; i--) {
+                    var obj = three['scene'].children[i];
+                    three['scene'].remove(obj);
+                }
+                state['three'] = false;
+                
+                $('#scene').remove();
+                $(opts['rootElement']).children(':not(#ui)').fadeIn(1000);
+            } else {
+                buildThree();
+            }
+            
+            $('.icon-group-demension').find('span').toggleClass('hidden');
+        });
+        
         $('.icon-center').click(graphCenter);
         
         buildLegend();
@@ -182,13 +200,15 @@ define([
     
     var buildThree = function() {
         var rootElement = $(opts['rootElement']);
-        rootElement.children().fadeOut(1000);
+        rootElement.children(':not(#ui)').fadeOut(1000);
+        state['three'] = true;
         
         three['scene'] = new THREE.Scene();
         three['renderer'] = new THREE.WebGLRenderer({antialias: true, alpha: true});
         three['renderer'].setSize(rootElement.width(), rootElement.height());
         three['renderer'].setClearColor(0x222222, 1);
         rootElement.append(three['renderer'].domElement);
+        three['renderer'].domElement.id = 'scene';
         
         three['camera'] = new THREE.PerspectiveCamera(25, rootElement.width()/rootElement.height(), 0.1, 5000);
         three['camera'].position.set(0, 0, 1700);
@@ -196,86 +216,132 @@ define([
         three['control'] = new THREE.TrackballControls(three['camera']);
         three['control'].damping = 0.2;
         
-        three['light'] = new THREE.DirectionalLight(0xffffff, 1); // soft white light
+        three['light'] = new THREE.DirectionalLight(0xffffff, 1);
         three['light'].position.set(0, 0, 1);
         three['scene'].add(three['light']);
         
-        var loader = new THREE.ImageLoader();
-        loader.load(opts['urls']['texture'], function(image) {
+        var canvasMeasure = document.createElement('canvas'), ctxMeasure = canvasMeasure.getContext('2d');
+        ctxMeasure.font = '14px bold Arial';
+        sigInst.iterNodes(function(n) {
+            var sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(1, 32, 32),
+                new THREE.MeshLambertMaterial({ color: parseInt('0x' + n['three']['color']), transparent: true, opacity: 0 })
+            );
+            sphere.position.set(n.three['x'], n.three['y'], n.three['z']);
+            sphere.name = 'node_' + n.id;
+            sphere.visible = false;
+            three['scene'].add(sphere);
+            
             var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-            canvas.width = 155;
-            canvas.height = 155;
+            canvas.width = ctxMeasure.measureText(n.label).width;
+            canvas.height = 14;
+            ctx.font = '14px bold Arial';
+            ctx.textAlign = 'start';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(n.label, 0, canvas.height/2);
             
-            state['currentNode'] = 0;
-            timeout(function() {
-                var n = getNode(state['currentNode']);
-                
-                ctx.fillStyle = '#' + n['three']['color'];
-                ctx.rect(0, 0, 155, 155);
-                ctx.fill();
-                ctx.drawImage(image, 75*n.id, 0, 75, 75, 40, 40, 75, 75);
-                
-                var texture = new THREE.Texture(canvas);
-                texture.needsUpdate = true;
-                
-                var sphere = new THREE.Mesh(
-                    new THREE.SphereGeometry(Math.min(n.size * 3, 20), 32, 32),
-                    new THREE.MeshLambertMaterial({ map: texture, color: 0xffffff /*parseInt('0x' + n['three']['color'])*/, size: THREE.DoubleSide })
-                );
-                
-                sphere.position.set(n.three['x'] - three['cloud'].center.x, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
-                sphere.name = 'node_' + n.id;
-                three['scene'].add(sphere);
-                
-                return !!getNode(++state['currentNode']);
-            }, 1000);
+            var texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            texture.minFilter = THREE.LinearFilter;
             
-//            ctx.textAlign = 'start';
-//            ctx.textBaseline = 'hanging';
-//            sigInst.iterNodes(function(n) {
-//                ctx.clearRect(0, 0, 155, 155);
-//                ctx.fillStyle = '#222222';
-//                ctx.font = '30px bold Arial';
-//                ctx.fillText(n.label, 20, 20);
-//                
-//                var texture = new THREE.Texture(canvas);
-//                texture.needsUpdate = true;
-//                
-//                var sprite = new THREE.Mesh(new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } ));
-//                
-//                sprite.position.set(n.three['x'] - three['cloud'].center.x, n.three['y'] - three['cloud'].center.y, n.three['z'] - three['cloud'].center.z);
-//                three['scene'].add(sprite)
-//            })
+            var sprite = new THREE.Sprite(new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true } ));
+            sprite.scale.set(canvas.width, canvas.height, 1)
+            sprite.visible = false;
+            sprite.name = 'label_' + n.id;
             
-//            sigInst.iterEdges(function(e) {
-//                var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
-//                                            three['scene'].getObjectByName('node_' + e.target.id).position);
-//                three['scene'].add(cylinder);
-//            });
-            
-            animate();
+            three['scene'].add(sprite);
         });
+        
+        sigInst.iterEdges(function(e) {
+            var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
+                                        three['scene'].getObjectByName('node_' + e.target.id).position,
+                                        e);
+            cylinder.visible = false;
+            three['scene'].add(cylinder);
+        });
+        
+        $('#cutoff-bar-date')[0].noUiSlider.set(opts['minDate']);
+        animate();
     }
     
-    var cylinderMesh = function(pointX, pointY) {
+    var cylinderMesh = function(pointX, pointY, e) {
         var direction = new THREE.Vector3().subVectors(pointY, pointX), arrow = new THREE.ArrowHelper(direction, pointX);
-        var edge = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, direction.length(), 16, 16),
-            new THREE.MeshLambertMaterial({ color: parseInt('0x' + opts['edgeColor']) }));
+        var edge = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, direction.length(), 16, 16),
+            new THREE.MeshLambertMaterial({ color: parseInt('0x' + opts['edgeColor']), transparent: true, opacity: 0 }));
         
         var offsetRotation = new THREE.Matrix4().makeRotationX(Math.PI * 0.5);
         var orientation = new THREE.Matrix4().lookAt(pointX,pointY,new THREE.Vector3(0,1,0)).multiply(offsetRotation);
         
         edge.applyMatrix(orientation);
         edge.position.addVectors(pointX, direction.multiplyScalar(0.5));
+        edge.name = 'edge_' + e.id;
+        
+        edge.source = e.source.id;
+        edge.target = e.target.id;
+        
         return edge;
     }
     
-    var animate = function() {
-        requestAnimationFrame(animate);
-        three['control'].update();
-//        three['camera'].rotation.z += 0.01;
+    var render = function() {
+        if (state['three']) requestAnimationFrame(render);
+//        three['control'].update();
+        
+        var radius = 1700;
+        three['camera'].position.x = radius * Math.cos( (new Date() - state['startTime'])/2000 );
+        three['camera'].position.z = radius * Math.sin( (new Date() - state['startTime'])/2000 );
+        three['camera'].position.y = radius * Math.cos( (new Date() - state['startTime'])/2000 );
+        three['camera'].lookAt(three['scene'].position);
+        
         three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
         three['renderer'].render(three['scene'], three['camera']);
+    }
+    
+    var animate = function() {
+        state['time'] = opts['minDate'];
+        
+        timeout(function() {
+            var time = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) + 7 * 24 * 60 * 60 * 1000;
+            $('#cutoff-bar-date')[0].noUiSlider.set(new Date(time));
+            
+            sigInst.iterNodes(function(n) {
+                if (!n.hidden) {
+                    var node = three['scene'].getObjectByName('node_' + n.id);
+                    if (!!node) {
+                        if (!node.visible) {
+                            node.visible = true;
+                            node.scale.set(n.size, n.size, n.size);
+                        } else {
+                            if (node.material.opacity < 1) node.material.opacity += 0.02;
+                        }
+                    }
+                    
+                    var label = three['scene'].getObjectByName('label_' + n.id);
+                    if (!!label) {
+                        label.visible = true;
+                        var padding = label.material.map.image.width/2 + node.geometry.boundingSphere.radius * n.size + 5;
+                        label.position.set(node.position.x + padding, node.position.y, node.position.z);
+                    }
+                }
+            }).iterEdges(function(e) {
+                if (!e.hidden) {
+                    var edge = three['scene'].getObjectByName('edge_' + e.id);
+                    if (!!edge) {
+                        var source = three['scene'].getObjectByName('node_' + edge.source), target = three['scene'].getObjectByName('node_' + edge.target);
+                        if (!edge.visible && source.visible && target.visible) {
+                            edge.visible = true;
+                        } else {
+                            if (edge.material.opacity < 1) edge.material.opacity += 0.02;
+                        }
+                    }
+                }
+            })
+            
+            return time <= opts['maxDate'] && state['three'];
+        }, 15);
+        
+        state['startTime'] = new Date();
+        render();
     }
     
     var buildLegend = function(step) {
@@ -472,6 +538,12 @@ define([
                 three.cloud.computeBoundingSphere();
                 three.cloud = three.cloud.boundingSphere;
                 
+                sigInst.iterNodes(function(n) {
+                    n.three.x -= three.cloud.center.x;
+                    n.three.y -= three.cloud.center.y;
+                    n.three.z -= three.cloud.center.z;
+                });
+                
                 loadArticles();
             },
         });
@@ -546,7 +618,7 @@ define([
         var y = -(mmx.ay + mmx.zy - (2 * position.stageY) - size.h) / 2;
         
         var moveRequired = Math.round(position.stageX) != Math.round(x) || Math.round(position.stageY) != Math.round(y);
-        var timeout = 0;
+        var pause = 0;
         
         if (moveRequired) {
             sigInst.goTo(x, y).draw();
@@ -554,7 +626,7 @@ define([
         }
         
         setTimeout(function() {
-            if (timeout != 0) {
+            if (pause != 0) {
                 mmx = {};
                 sigInst.iterNodes(function(node) {
                     if (!node.hidden) {
@@ -594,7 +666,7 @@ define([
                     sigInst.goTo(size.w / 2, size.h / 2, position.ratio / ((-1.5 * ratio) + 1)).draw();
                 }
             }
-        }, timeout);
+        }, pause);
     }
     
     var updateNetwork = function() {
@@ -632,16 +704,26 @@ define([
             }
         });
         
+        var xMax, yMax, xMin, yMin;
         sigInst.iterNodes(function(n) {
             n.hidden = n.visibleDegree <= 0;
-            if (n.degree > 2) n.size = Math.sqrt(n.visibleDegree * 25);
-            if (!n.hidden) maxDegree = Math.max(maxDegree, n.colorDegree);
+            if (!n.hidden) {
+                if (n.degree > 2) n.size = Math.sqrt(n.visibleDegree * 25);
+                maxDegree = Math.max(maxDegree, n.colorDegree);
+                xMax = Math.max(xMax, n.x) || n.x;
+                xMin = Math.min(xMin, n.x) || n.x;
+                yMax = Math.max(yMax, n.y) || n.y;
+                yMin = Math.min(yMin, n.y) || n.y;
+            }
         });
         
         sigInst.iterNodes(function(n) {
             if (!n.hidden) {
                 var c = shadeColor(opts['minColor'], opts['maxColor'], n.colorDegree/maxDegree), cHex = rgbToHex(c.r, c.g, c.b);
                 n.color = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',1)';
+            } else {
+                n.x = (Math.random() * (xMax - xMin) / 3) + Math.abs(xMax - xMin) / 2;
+                n.y = (Math.random() * (yMax - yMin) / 3) + Math.abs(yMax - yMin) / 2;
             }
         });
         
@@ -676,6 +758,10 @@ define([
         c2 = hexToRgb(opts['maxColor']);
         
         return { r: parseInt((c2.r - c1.r) * g + c1.r), g: parseInt((c2.g - c1.g) * g + c1.g), b: parseInt((c2.b - c1.b) * g + c1.b) };
+    }
+    
+    var stripLetters = function(s) {
+        return s.match(/\d/g).join('');
     }
     
     var getNode = function(id) {
