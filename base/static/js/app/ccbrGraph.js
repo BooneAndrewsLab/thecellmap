@@ -119,6 +119,7 @@ define([
         
         //Initialize icons for start and pause layout
         $('#icon-pin').click(function(e) {
+            if (state['three']) return;
             toggleLayout();
             $('#icon-pin').toggleClass('icon-dark');
         });
@@ -171,10 +172,13 @@ define([
                 }
                 state['three'] = false;
                 
+                $('#cutoff-bar-date')[0].removeAttribute('disabled');
+                $('.icon-group').find('span:not(.icon-three)').removeClass('disabled');
                 $('#scene').remove();
                 $(opts['rootElement']).children(':not(#ui)').fadeIn(1000);
             } else {
                 buildThree();
+                $('.icon-group').find('span:not(.icon-three)').addClass('disabled');
             }
             
             $('.icon-group-demension').find('span').toggleClass('hidden');
@@ -211,7 +215,7 @@ define([
         three['renderer'].domElement.id = 'scene';
         
         three['camera'] = new THREE.PerspectiveCamera(25, rootElement.width()/rootElement.height(), 0.1, 5000);
-        three['camera'].position.set(0, 0, 1700);
+        three['camera'].position.set(0, 0, 1750);
         
         three['control'] = new THREE.TrackballControls(three['camera']);
         three['control'].damping = 0.2;
@@ -251,9 +255,7 @@ define([
             sprite.name = 'label_' + n.id;
             
             three['scene'].add(sprite);
-        });
-        
-        sigInst.iterEdges(function(e) {
+        }).iterEdges(function(e) {
             var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
                                         three['scene'].getObjectByName('node_' + e.target.id).position,
                                         e);
@@ -287,7 +289,7 @@ define([
         if (state['three']) requestAnimationFrame(render);
 //        three['control'].update();
         
-        var radius = 1700;
+        var radius = 1750;
         three['camera'].position.x = radius * Math.cos( (new Date() - state['startTime'])/2000 );
         three['camera'].position.z = radius * Math.sin( (new Date() - state['startTime'])/2000 );
         three['camera'].position.y = radius * Math.cos( (new Date() - state['startTime'])/2000 );
@@ -302,6 +304,7 @@ define([
         
         timeout(function() {
             var time = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) + 7 * 24 * 60 * 60 * 1000;
+            var maxEdge = 0;
             $('#cutoff-bar-date')[0].noUiSlider.set(new Date(time));
             
             sigInst.iterNodes(function(n) {
@@ -324,6 +327,8 @@ define([
                     }
                 }
             }).iterEdges(function(e) {
+                maxEdge = Math.max(e.size, maxEdge);
+            }).iterEdges(function(e) {
                 if (!e.hidden) {
                     var edge = three['scene'].getObjectByName('edge_' + e.id);
                     if (!!edge) {
@@ -331,11 +336,13 @@ define([
                         if (!edge.visible && source.visible && target.visible) {
                             edge.visible = true;
                         } else {
-                            if (edge.material.opacity < 1) edge.material.opacity += 0.02;
+                            if (edge.material.opacity < Math.max(e.size/maxEdge, 0.2)) edge.material.opacity += 0.02;
                         }
                     }
                 }
-            })
+            });
+            
+            if (time > opts['maxDate']) $('#cutoff-bar-date')[0].setAttribute('disabled', true);
             
             return time <= opts['maxDate'] && state['three'];
         }, 15);
@@ -454,6 +461,7 @@ define([
             e.preventDefault();
             var panel = $(this).parent(), heading = $(this);
             
+            $('.panel-heading.panel-active').parent().find('.panel-body').toggle();
             $('.panel-heading.panel-active').removeClass('panel-active');
             heading.addClass('panel-active');
             

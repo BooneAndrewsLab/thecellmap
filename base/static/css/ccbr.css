@@ -178,3 +178,7 @@
 #scene {
     border-radius: 8px;
 }
+
+.disabled {
+    color: #404040;
+}
