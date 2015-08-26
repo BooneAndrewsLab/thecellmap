@@ -145,6 +145,7 @@ define([
             
             state['runningAnimation'] = true;
             
+            var pause = state['three'] ? 15 : 50;
             if ($(this).data('toggle') == 'start') {
                 timeout(function() {
                     var time = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) + 7 * 24 * 60 * 60 * 1000;
@@ -156,7 +157,7 @@ define([
                     }
                     
                     return state['runningAnimation'];
-                }, 50);
+                }, pause);
             } else {
                 state['runningAnimation'] = false;
             }
@@ -164,7 +165,7 @@ define([
             $('.icon-group-time').find('span').toggleClass('hidden');
         });
         
-        $('.icon-group-demension').click(function() {
+        $('.icon-group-three').click(function() {
             if (state['three']) {
                 for (var i = three['scene'].children.length; i > 0; i--) {
                     var obj = three['scene'].children[i];
@@ -173,18 +174,32 @@ define([
                 state['three'] = false;
                 
                 $('#cutoff-bar-date')[0].removeAttribute('disabled');
-                $('.icon-group').find('span:not(.icon-three)').removeClass('disabled');
+                
+                $('.icon-layout').removeClass('disabled');
+                
                 $('#scene').remove();
                 $(opts['rootElement']).children(':not(#ui)').fadeIn(1000);
             } else {
                 buildThree();
-                $('.icon-group').find('span:not(.icon-three)').addClass('disabled');
+                $('.icon-layout').addClass('disabled');
             }
             
-            $('.icon-group-demension').find('span').toggleClass('hidden');
+            $('.icon-group-three').find('span').toggleClass('hidden');
         });
         
-        $('.icon-center').click(graphCenter);
+        $('.icon-center').click(function() {
+            if (state['three']) {
+                var index = 0, step = 20;
+                var delta = new THREE.Vector3(1400, 1400, 1400).sub(three['camera'].position).divideScalar(step);
+                
+                timeout(function() {
+                    three['camera'].position.add(delta);
+                    return index++ <= 20;
+                }, 10);
+            } else {
+                graphCenter();
+            }
+        });
         
         buildLegend();
         $('[data-toggle="tooltip"]').tooltip()
@@ -208,8 +223,6 @@ define([
     }
     
     var buildThree = function() {
-        $('#cutoff-bar-date')[0].noUiSlider.set(opts['minDate']);
-        
         var rootElement = $(opts['rootElement']);
         rootElement.children(':not(#ui)').fadeOut(1000);
         state['three'] = true;
@@ -221,7 +234,7 @@ define([
         rootElement.append(three['renderer'].domElement);
         three['renderer'].domElement.id = 'scene';
         
-        three['camera'] = new THREE.PerspectiveCamera(25, rootElement.width()/rootElement.height(), 0.1, 5000);
+        three['camera'] = new THREE.PerspectiveCamera(25, rootElement.width()/rootElement.height(), 20, 5000);
         three['camera'].position.set(0, 0, 1750);
         
         three['control'] = new THREE.TrackballControls(three['camera']);
@@ -270,7 +283,9 @@ define([
             three['scene'].add(cylinder);
         });
         
-        animate();
+        state['startTime'] = new Date();
+        $('.icon-time[data-toggle="start"]').click();
+        render();
     }
     
     var cylinderMesh = function(pointX, pointY, e) {
@@ -293,68 +308,19 @@ define([
     
     var render = function() {
         if (state['three']) requestAnimationFrame(render);
-//        three['control'].update();
         
-        var radius = 1750;
-        three['camera'].position.x = radius * Math.cos( (new Date() - state['startTime'])/2000 );
-        three['camera'].position.z = radius * Math.sin( (new Date() - state['startTime'])/2000 );
-        three['camera'].position.y = radius * Math.cos( (new Date() - state['startTime'])/2000 );
-        three['camera'].lookAt(three['scene'].position);
+        if (state['runningAnimation']) {
+            var radius = 1750;
+            three['camera'].position.x = radius * Math.cos( (new Date() - state['startTime'])/2000 );
+            three['camera'].position.z = radius * Math.sin( (new Date() - state['startTime'])/2000 );
+            three['camera'].position.y = radius * Math.cos( (new Date() - state['startTime'])/2000 );
+            three['camera'].lookAt(three['scene'].position);
+        } else {
+            three['control'].update();
+        }
         
         three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
         three['renderer'].render(three['scene'], three['camera']);
-    }
-    
-    var animate = function() {
-        state['time'] = opts['minDate'];
-        
-        timeout(function() {
-            var time = parseInt($('#cutoff-bar-date')[0].noUiSlider.get()) + 7 * 24 * 60 * 60 * 1000;
-            var maxEdge = 0;
-            $('#cutoff-bar-date')[0].noUiSlider.set(new Date(time));
-            
-            sigInst.iterNodes(function(n) {
-                if (!n.hidden) {
-                    var node = three['scene'].getObjectByName('node_' + n.id);
-                    if (!!node) {
-                        if (!node.visible) {
-                            node.visible = true;
-                            node.scale.set(n.size, n.size, n.size);
-                        } else {
-                            if (node.material.opacity < 1) node.material.opacity += 0.02;
-                        }
-                    }
-                    
-                    var label = three['scene'].getObjectByName('label_' + n.id);
-                    if (!!label) {
-                        label.visible = true;
-                        var padding = label.material.map.image.width/2 + node.geometry.boundingSphere.radius * n.size + 5;
-                        label.position.set(node.position.x + padding, node.position.y, node.position.z);
-                    }
-                }
-            }).iterEdges(function(e) {
-                maxEdge = Math.max(e.size, maxEdge);
-            }).iterEdges(function(e) {
-                if (!e.hidden) {
-                    var edge = three['scene'].getObjectByName('edge_' + e.id);
-                    if (!!edge) {
-                        var source = three['scene'].getObjectByName('node_' + edge.source), target = three['scene'].getObjectByName('node_' + edge.target);
-                        if (!edge.visible && source.visible && target.visible) {
-                            edge.visible = true;
-                        } else {
-                            if (edge.material.opacity < Math.max(e.size/maxEdge, 0.2)) edge.material.opacity += 0.02;
-                        }
-                    }
-                }
-            });
-            
-            if (time > opts['maxDate']) $('#cutoff-bar-date')[0].setAttribute('disabled', true);
-            
-            return time <= opts['maxDate'] && state['three'];
-        }, 15);
-        
-        state['startTime'] = new Date();
-        render();
     }
     
     var buildLegend = function(step) {
@@ -740,6 +706,54 @@ define([
                 n.y = (Math.random() * (yMax - yMin) / 3) + Math.abs(yMax - yMin) / 2;
             }
         });
+        
+        if (state['three']) {
+            var maxEdge = 0;
+            sigInst.iterNodes(function(n) {
+                var node = three['scene'].getObjectByName('node_' + n.id);
+                if (!!node) {
+                    node.visible = !n.hidden;
+                    
+                    if (node.visible) {
+                        node.scale.set(n.size, n.size, n.size);
+                        
+                        if (node.material.opacity < 1) {
+                            timeout(function() {
+                                node.material.opacity += 0.02;
+                                return node.material.opacity < 1;
+                            }, 10);
+                        }
+                    } else {
+                        node.material.opacity = 0;
+                    }
+                    
+                    var label = three['scene'].getObjectByName('label_' + n.id);
+                    if (!!label) {
+                        label.visible = !n.hidden;
+                        var padding = label.material.map.image.width/2 + node.geometry.boundingSphere.radius * n.size + 5;
+                        label.position.set(node.position.x + padding, node.position.y, node.position.z);
+                    }
+                }
+            }).iterEdges(function(e) {
+                maxEdge = Math.max(e.size, maxEdge);
+            }).iterEdges(function(e) {
+                var edge = three['scene'].getObjectByName('edge_' + e.id);
+                if (!!edge) {
+                    edge.visible = !e.hidden && !e.source.hidden && !e.target.hidden;
+                    
+                    if (edge.visible) {
+                        if (edge.material.opacity < Math.max(e.size/maxEdge, 0.2)) {
+                            timeout(function() {
+                                edge.material.opacity += 0.02;
+                                return edge.material.opacity < Math.max(e.size/maxEdge, 0.2);
+                            }, 10);
+                        }
+                    } else {
+                        edge.material.opacity = 0;
+                    }
+                }
+            });
+        }
         
         sigInst.draw();
     }
