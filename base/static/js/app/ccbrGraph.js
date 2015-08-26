@@ -189,6 +189,11 @@ define([
         buildLegend();
         $('[data-toggle="tooltip"]').tooltip()
         
+        
+        $(window).focus(function() {
+            if (state['runningLayout']) sigInst.startGenerators();
+        })
+        
         //Fade in UI
         setTimeout(function() {
             $('#ui').fadeIn(1000);
@@ -203,6 +208,8 @@ define([
     }
     
     var buildThree = function() {
+        $('#cutoff-bar-date')[0].noUiSlider.set(opts['minDate']);
+        
         var rootElement = $(opts['rootElement']);
         rootElement.children(':not(#ui)').fadeOut(1000);
         state['three'] = true;
@@ -263,7 +270,6 @@ define([
             three['scene'].add(cylinder);
         });
         
-        $('#cutoff-bar-date')[0].noUiSlider.set(opts['minDate']);
         animate();
     }
     
@@ -459,10 +465,10 @@ define([
         
         $('.panel-heading').click(function(e) {
             e.preventDefault();
-            var panel = $(this).parent(), heading = $(this);
+            var panel = $(this).parent(), heading = $(this), lastActive = $('.panel-heading.panel-active');
             
-            $('.panel-heading.panel-active').parent().find('.panel-body').toggle();
-            $('.panel-heading.panel-active').removeClass('panel-active');
+            lastActive.parent().toggle();
+            lastActive.removeClass('panel-active');
             heading.addClass('panel-active');
             
             if (panel.find('.panel-body').is(':hidden')) {

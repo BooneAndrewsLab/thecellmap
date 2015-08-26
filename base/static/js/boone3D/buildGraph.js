@@ -101,8 +101,7 @@ define([
     }
     
     var buildUI = function() {
-        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-        var canvasMeas = document.createElement('canvas'), ctxMeas = canvas.getContext('2d');
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
         var annotation = vizdata['annotations'][state['annotation']];
         var lineHeight = 36, maxLine = 0, paddingFactor = 1.14;
         
@@ -120,64 +119,68 @@ define([
             term['alias'] = name;
         });
         
-        
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
         canvas.width = maxLine * paddingFactor;
-        canvas.height = lineHeight * _.size(annotation['terms']) + 70;
+        canvas.height = lineHeight * 2;
         
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#ffffff';
-        ctx.textBaseline = 'middle';
-        ctx.lineWidth = 3;
-        ctx.font = '29px Palatino Linotype';
-        
-        var i = 0;
-        _.each(annotation['terms'], function(term) {
-            ctx.fillText(term['alias'], 14, lineHeight * (i++ + 0.5) + 70);
-        });
-        
-        ctx.globalAlpha = 0.4;
-        i = 0;
-        _.each(annotation['terms'], function(term) {
-            if (i % 2 == 0 || i == 0) {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, lineHeight * i + 70, canvas.width, lineHeight);
-            }
-            ctx.fillStyle = '#' + term['color'];
-            ctx.fillRect(maxLine * 1.07, (lineHeight * i++) + (lineHeight - 25)/2 + 70, 25, 25);
-        });
-        
-        ctx.globalAlpha = 1;
+        ctx.textBaseline = 'middle'
         ctx.fillStyle = '#e3e3e3';
         ctx.font = '50px Palatino Linotype';
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(canvas.width, 0);
-        ctx.stroke();
-        ctx.lineWidth = 14;
-        ctx.fillText('LEGEND', 0, 30);
-        ctx.beginPath();
-        ctx.moveTo(0, 60);
-        ctx.lineTo(canvas.width, 60);
-        ctx.stroke();
+        ctx.fillText(state['annotation'], 0, 30);
         
-        var geometry = new THREE.BoxGeometry(canvas.width, canvas.height, 1);
         var texture = new THREE.Texture(canvas);
         texture.needsUpdate = true;
         texture.minFilter = THREE.LinearFilter;
-        var sprite = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+        var sprite = new THREE.Mesh(new THREE.BoxGeometry(maxLine, lineHeight * 2, 1), new THREE.MeshBasicMaterial({
             color: 0xFFFFFF, map: texture, transparent: true, opacity: 1, 
         }));
         
-        //TODO: FIX THIS SO ITS NOT HARD CODED NUMBERS. ONLY WORKS WITH CONSOLE OPENED ATM
-        sprite.position.set(-$(opts['rootElement']).width()/2, $(opts['rootElement']).height()/5, 0);
+        var w = -$(opts['rootElement']).width()/2, h = $(opts['rootElement']).width()/4 - canvas.height;
+        sprite.position.set(w, h, 0);
         sprite.rotation.set(0, Math.PI/8, 0);
         three['ui'].add(sprite);
+        
+        var i = 0, geometry = new THREE.BoxGeometry(maxLine, lineHeight, 1);
+        for (var t in annotation['terms']) {
+            var term = annotation['terms'][t];
+            
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = maxLine * paddingFactor;
+            canvas.height = lineHeight;
+            
+            ctx.fillStyle = ctx.strokeStyle = '#e3e3e3';
+            ctx.textBaseline = 'top';
+            ctx.font = '29px Palatino Linotype';
+            
+            ctx.globalAlpha = 1;
+            ctx.fillText(term['alias'], 14, 0);
+            ctx.fillStyle = '#' + term['color'];
+            ctx.fillRect(maxLine * 1.07, (canvas.height - 25)/2, 25, 25);
+            
+            var texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            texture.minFilter = THREE.LinearFilter;
+            var sprite = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+                color: 0xffffff, map: texture, transparent: true, opacity: 1, 
+//                color: parseInt('0x' + term.color), transparent: true, opacity: 1, 
+            }));
+            
+            sprite.position.set(w, h - canvas.height * i++ - lineHeight * 2, i * 2);
+            sprite.rotation.set(0, Math.PI/8, 0);
+            sprite.name = 'legend' + t;
+            three['ui'].add(sprite);
+        }
+    }
+    
+    var buildTerm = function() {
+        
     }
     
     var init = function() {
         buildUI();
         buildNodes();
         buildEdges();
+        buildTerm();
     }
     
     return {
