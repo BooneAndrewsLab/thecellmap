@@ -18,6 +18,20 @@ define([
         }
     }
     
+    var resetScene = function(all) {
+        for (var i = three['scene'].children.length - 1; i >= 0; i--) {
+            if (three['scene'].children[i].name.indexOf('edges') != -1) {
+                three['scene'].children[i].material.opacity = opts['edgeOpacity'];
+            }
+        }
+        
+        for (var i = three['ui'].children.length - 1; i >= 0; i--) {
+            if (three['ui'].children[i].name.indexOf('legend') != -1) {
+                three['ui'].children[i].material.color.set(0xffffff);
+            }
+        }
+    }
+    
     var createClusters = function(vertices) {
         var maxDist = 90, minSize = 7;
         var clusters = [], points = [];
@@ -70,10 +84,16 @@ define([
         });
     }
     
+    var stripLetters = function(s) {
+        return s.match(/\d/g).join('');
+    }
+    
     return {
         clearScene: clearScene,
         clearUI: clearUI,
+        resetScene: resetScene,
         
         createClusters: createClusters,
+        stripLetters: stripLetters,
     }
 });

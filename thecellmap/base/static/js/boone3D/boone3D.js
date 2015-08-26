@@ -5,10 +5,11 @@ define([
     
     'build',
     
+    'utils',
     'three',
     'stats',
     'mouse',
-], function($, _, Backbone, Build) {
+], function($, _, Backbone, Build, Utils) {
     var DEFAULTS = {
         rootElement: $('#network-container'),
         
@@ -31,6 +32,10 @@ define([
     var init = function () {
         three['scene'] = new THREE.Scene();
         three['ui'] = new THREE.Scene();
+        
+        three['mouse'] = new THREE.Vector2();
+        three['raycaster'] = new THREE.Raycaster();
+        three['selected'] = null;
         three['cloud'] = new THREE.Geometry();
         
         var windowWidth = opts['rootElement'].width(), windowHeight = opts['rootElement'].height();
@@ -95,6 +100,8 @@ define([
             });
         }
         
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+        document.addEventListener('click', checkClick, false)
         window.addEventListener('resize', onWindowResize, false);
         render();
     };
@@ -116,13 +123,24 @@ define([
     var render = function() {
         three['renderer'].render(three['scene'], three['camera']);
         three['uiRender'].render(three['ui'], three['uiCamera']);
+        checkHover();
 //        if (!!three['light']) three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
     };
+    
+    var onDocumentMouseMove = function(e) {
+        e.preventDefault();
+        var x = event.offsetX == undefined ? event.layerX : event.offsetX;
+        var y = event.offsetY == undefined ? event.layerY : event.offsetY;
+        three['mouse'].x = (x/opts['rootElement'].width()) * 2 - 1;
+        three['mouse'].y = -(y/opts['rootElement'].height()) * 2 + 1;
+    }
     
     var onWindowResize = function() {
         var windowWidth = opts['rootElement'].width(), windowHeight = opts['rootElement'].height();
         three['camera'].aspect = windowWidth/windowHeight;
         three['camera'].updateProjectionMatrix();
+        three['uiCamera'].aspect = windowWidth/windowHeight;
+        three['uiCamera'].updateProjectionMatrix();
         three['renderer'].setSize(windowWidth, windowHeight);
         three['uiRender'].setSize(windowWidth, windowHeight)
         render();
@@ -142,6 +160,35 @@ define([
 //            }
 //        });
     };
+    
+    var checkHover = function() {
+        three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
+        var intersects = three['raycaster'].intersectObjects(three['ui'].children);
+        
+        if (intersects.length > 0) {
+            if (state['selected'] != intersects[0].object) {
+                Utils.resetScene();
+                
+                state['selected'] = intersects[0].object;
+                var termId = Utils.stripLetters(state['selected'].name);
+                intersects[0].object.material.color.setHex(parseInt('0x' + vizdata['annotations'][state['annotation']]['terms'][termId]['color']));
+                three['scene'].getObjectByName('edges' + termId).material.opacity = 1;
+            }
+        } else {
+            state['selected'] = null;
+            Utils.resetScene();
+        }
+    }
+    
+    var checkClick = function() {
+        three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
+        var intersects = three['raycaster'].intersectObjects(three['ui'].children);
+        
+        if (intersects.length > 0) {
+            var termId = Utils.stripLetters(intersects[0].object.name);
+            Build.buildTerm(termId);
+        }
+    }
     
     return {
         runFrame: runFrame,

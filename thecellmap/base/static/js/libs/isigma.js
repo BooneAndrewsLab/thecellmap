@@ -3936,6 +3936,11 @@ function SigmaPublic(sigmaInstance) {
     return self;
   };
 
+  this.startGenerators = function() {
+    sigma.chronos.startGenerators();
+    return self;
+  };
+  
   // Graph methods:
   this.addNode = function(id, params) {
     s.graph.addNode(id, params);
