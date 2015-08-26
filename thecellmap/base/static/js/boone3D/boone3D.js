@@ -118,13 +118,14 @@ define([
         render();
         three['stats'].update();
         three['control'].update();
+        checkHover();
+        
+        if (!!three['light']) three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
     }
     
     var render = function() {
         three['renderer'].render(three['scene'], three['camera']);
         three['uiRender'].render(three['ui'], three['uiCamera']);
-        checkHover();
-//        if (!!three['light']) three['light'].position.set(three['camera'].position.x, three['camera'].position.y, three['camera'].position.z);
     };
     
     var onDocumentMouseMove = function(e) {
@@ -150,7 +151,6 @@ define([
         init();
         animate();
         
-        
 //        window.controller = Leap.loop({enableGestures: true}, function(frame) {
 //            if (!state['isInitializing']) {
 //                render();
@@ -165,16 +165,20 @@ define([
         three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
         var intersects = three['raycaster'].intersectObjects(three['ui'].children);
         
-        if (intersects.length > 0) {
+        if (intersects.length > 0 && intersects[0].object.name.length > 0) {
+            opts['rootElement'].css('cursor', 'pointer');
             if (state['selected'] != intersects[0].object) {
                 Utils.resetScene();
                 
                 state['selected'] = intersects[0].object;
                 var termId = Utils.stripLetters(state['selected'].name);
                 intersects[0].object.material.color.setHex(parseInt('0x' + vizdata['annotations'][state['annotation']]['terms'][termId]['color']));
-                three['scene'].getObjectByName('edges' + termId).material.opacity = 1;
+                
+                var edges = three['scene'].getObjectByName('edges' + termId);
+                if (!!edges) edges.material.opacity = 1;
             }
         } else {
+            opts['rootElement'].css('cursor', 'default');
             state['selected'] = null;
             Utils.resetScene();
         }
@@ -184,8 +188,9 @@ define([
         three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
         var intersects = three['raycaster'].intersectObjects(three['ui'].children);
         
-        if (intersects.length > 0) {
+        if (intersects.length > 0 && intersects[0].object.name.length > 0) {
             var termId = Utils.stripLetters(intersects[0].object.name);
+            three['showTerms'] = true;
             Build.buildTerm(termId);
         }
     }
