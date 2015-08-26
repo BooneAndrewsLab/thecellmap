@@ -162,7 +162,6 @@ define([
             texture.minFilter = THREE.LinearFilter;
             var sprite = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
                 color: 0xffffff, map: texture, transparent: true, opacity: 1, 
-//                color: parseInt('0x' + term.color), transparent: true, opacity: 1, 
             }));
             
             sprite.position.set(w, h - canvas.height * i++ - lineHeight * 2, i * 2);
@@ -172,18 +171,85 @@ define([
         }
     }
     
-    var buildTerm = function() {
+    var buildTerm = function(termId) {
+        Utils.clearScene();
+        var annotation = vizdata['annotations'][state['annotation']], term = vizdata['annotations'][state['annotation']]['terms'][termId];
         
+        var cloud = new THREE.Geometry();
+        _.each(vizdata['nodes'], function(node) {
+            var terms = annotation['map'][node.orf];
+            if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
+                cloud.vertices.push(new THREE.Vector3(node.x, node.y, node.z));
+            }
+        });
+        
+        cloud.computeBoundingSphere();
+        cloud = cloud.boundingSphere;
+        
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
+        ctxMeas.font = '14px bold Arial';
+        
+        var geometry = new THREE.SphereGeometry(7, 32, 32), material = new THREE.MeshLambertMaterial({ color: parseInt('0x' + term['color']) });
+        _.each(vizdata['nodes'], function(node) {
+            var terms = annotation['map'][node.orf];
+            
+            if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
+                var sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(node.x - cloud.center.x, node.y - cloud.center.y, node.z - cloud.center.z);
+                three['scene'].add( sphere );
+                
+                var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+                canvas.width = ctxMeas.measureText(node.label).width;
+                canvas.height = 14;
+                ctx.font = '14px bold Arial';
+                ctx.textAlign = 'start';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(node.label, 0, canvas.height/2);
+                
+                var texture = new THREE.Texture(canvas);
+                texture.needsUpdate = true;
+                texture.minFilter = THREE.LinearFilter;
+                
+                var label = new THREE.Sprite(new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true } ));
+                label.scale.set(canvas.width, canvas.height, 1)
+                
+                var padding = label.material.map.image.width/2 + 7 + 2;
+                label.position.set(node.x + padding - cloud.center.x, node.y - cloud.center.y, node.z - cloud.center.z);
+                three['scene'].add(label);
+            }
+        });
+        
+        var material = new THREE.LineBasicMaterial({ color: 0xe3e3e3 });
+        _.each(vizdata['edges'], function(edge) {
+            var s = vizdata['nodes'][edge['s']], t = vizdata['nodes'][edge['t']];
+            if (s && t) {
+                var sterm = annotation['map'][s.orf] || [], tterm = annotation['map'][t.orf] || [];
+                var intersect = sterm.filter(function(n) { return tterm.indexOf(n) != -1 });
+                if ($.inArray(parseInt(termId), intersect) != -1) {
+                    var geometry = new THREE.Geometry();
+                    geometry.vertices.push(new THREE.Vector3(s.x - cloud.center.x, s.y - cloud.center.y, s.z - cloud.center.z), 
+                                           new THREE.Vector3(t.x - cloud.center.x, t.y - cloud.center.y, t.z - cloud.center.z));
+                    var edge = new THREE.Line(geometry, material);
+                    
+                    three['scene'].add(edge);
+                }
+            }
+        });
+        
+        three['light'] = new THREE.DirectionalLight(0xffffff, 1);
+        three['light'].position.set(0, 0, 1);
+        three['scene'].add(three['light']);
     }
     
     var init = function() {
         buildUI();
         buildNodes();
         buildEdges();
-        buildTerm();
     }
     
     return {
         init: init,
+        buildTerm: buildTerm,
     };
 });

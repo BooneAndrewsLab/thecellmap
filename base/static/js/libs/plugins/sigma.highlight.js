@@ -13,7 +13,6 @@ sigma.publicPrototype.hoverHighlight = function(state) {
         var nodes = event.content;
         var neighbors = {};
         if (isDragging() || state['runningAnimation']) return;
-        
         inst.iterEdges(function(e) {
             if (e.hidden || (nodes.indexOf(e.source.id) < 0 && nodes.indexOf(e.target.id) < 0)) {
                 if (!e.attr['grey']) {
@@ -43,7 +42,7 @@ sigma.publicPrototype.hoverHighlight = function(state) {
             }
         }).draw(2, 2, 2);
     }).bind('outnodes', function() {
-        if (isDragging() || state['runningAnimation']) return;
+        if (state['runningAnimation']) return;
         
         inst.iterEdges(function(e) {
             e.color = e.attr['grey'] ? e.attr['true_color'] : e.color;
@@ -55,7 +54,6 @@ sigma.publicPrototype.hoverHighlight = function(state) {
         }).draw(2, 2, 2);
     }).bind('upgraph', function() {
         if (state['runningAnimation']) return;
-        
         inst.iterEdges(function(e) {
             e.color = e.attr['true_color'] || e.color;
             e.attr['grey'] = 0;
