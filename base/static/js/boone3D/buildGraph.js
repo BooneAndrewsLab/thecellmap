@@ -100,94 +100,20 @@ define([
         }
     }
     
-    var buildUI = function() {
-        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
-        var annotation = vizdata['annotations'][state['annotation']];
-        var lineHeight = 36, maxLine = 0, paddingFactor = 1.14;
-        
-        ctxMeas.font = '29px Palatino Linotype';
-        _.each(annotation['terms'], function(term) {
-            var name = term['name'];
-            if (name.length >= 36) {
-                var words = name.split(' '), name = '';
-                _.each(words, function(word) {
-                    if (name.length < 36) name += name.length == 0 ? word : ' ' + word;
-                });
-                name += '...'
-            }
-            maxLine = Math.max(ctxMeas.measureText(name).width, maxLine);
-            term['alias'] = name;
-        });
-        
-        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-        canvas.width = maxLine * paddingFactor;
-        canvas.height = lineHeight * 2;
-        
-        ctx.textBaseline = 'middle'
-        ctx.fillStyle = '#e3e3e3';
-        ctx.font = '50px Palatino Linotype';
-        ctx.fillText(state['annotation'], 0, 30);
-        
-        var texture = new THREE.Texture(canvas);
-        texture.needsUpdate = true;
-        texture.minFilter = THREE.LinearFilter;
-        var sprite = new THREE.Mesh(new THREE.BoxGeometry(maxLine, lineHeight * 2, 1), new THREE.MeshBasicMaterial({
-            color: 0xFFFFFF, map: texture, transparent: true, opacity: 1, 
-        }));
-        
-        var w = -$(opts['rootElement']).width()/2, h = $(opts['rootElement']).width()/4 - canvas.height;
-        sprite.position.set(w, h, 0);
-        sprite.rotation.set(0, Math.PI/8, 0);
-        three['ui'].add(sprite);
-        
-        var i = 0, geometry = new THREE.BoxGeometry(maxLine, lineHeight, 1);
-        for (var t in annotation['terms']) {
-            var term = annotation['terms'][t];
-            
-            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-            canvas.width = maxLine * paddingFactor;
-            canvas.height = lineHeight;
-            
-            ctx.fillStyle = ctx.strokeStyle = '#e3e3e3';
-            ctx.textBaseline = 'top';
-            ctx.font = '29px Palatino Linotype';
-            
-            ctx.globalAlpha = 1;
-            ctx.fillText(term['alias'], 14, 0);
-            ctx.fillStyle = '#' + term['color'];
-            ctx.fillRect(maxLine * 1.07, (canvas.height - 25)/2, 25, 25);
-            
-            var texture = new THREE.Texture(canvas);
-            texture.needsUpdate = true;
-            texture.minFilter = THREE.LinearFilter;
-            var sprite = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-                color: 0xffffff, map: texture, transparent: true, opacity: 1, 
-            }));
-            
-            sprite.position.set(w, h - canvas.height * i++ - lineHeight * 2, i * 2);
-            sprite.rotation.set(0, Math.PI/8, 0);
-            sprite.name = 'legend' + t;
-            three['ui'].add(sprite);
-        }
-    }
-    
     var buildTerm = function(termId) {
         Utils.clearScene();
         var annotation = vizdata['annotations'][state['annotation']], term = vizdata['annotations'][state['annotation']]['terms'][termId];
         
-        var cloud = new THREE.Geometry();
+        three['termCloud'] = new THREE.Geometry();
         _.each(vizdata['nodes'], function(node) {
             var terms = annotation['map'][node.orf];
             if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
-                cloud.vertices.push(new THREE.Vector3(node.x, node.y, node.z));
+                three['termCloud'].vertices.push(new THREE.Vector3(node.x, node.y, node.z));
             }
         });
         
-        cloud.computeBoundingSphere();
-        cloud = cloud.boundingSphere;
-        
-        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
-        ctxMeas.font = '14px bold Arial';
+        three['termCloud'].computeBoundingSphere();
+        three['termCloud'] = three['termCloud'].boundingSphere;
         
         var geometry = new THREE.SphereGeometry(7, 32, 32), material = new THREE.MeshLambertMaterial({ color: parseInt('0x' + term['color']) });
         _.each(vizdata['nodes'], function(node) {
@@ -195,28 +121,10 @@ define([
             
             if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
                 var sphere = new THREE.Mesh(geometry, material);
-                sphere.position.set(node.x - cloud.center.x, node.y - cloud.center.y, node.z - cloud.center.z);
-                three['scene'].add( sphere );
+                sphere.position.set(node.x - three['termCloud'].center.x, node.y - three['termCloud'].center.y, node.z - three['termCloud'].center.z);
+                sphere.name = 'node_' + node.id;
                 
-                var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
-                canvas.width = ctxMeas.measureText(node.label).width;
-                canvas.height = 14;
-                ctx.font = '14px bold Arial';
-                ctx.textAlign = 'start';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(node.label, 0, canvas.height/2);
-                
-                var texture = new THREE.Texture(canvas);
-                texture.needsUpdate = true;
-                texture.minFilter = THREE.LinearFilter;
-                
-                var label = new THREE.Sprite(new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true } ));
-                label.scale.set(canvas.width, canvas.height, 1)
-                
-                var padding = label.material.map.image.width/2 + 7 + 2;
-                label.position.set(node.x + padding - cloud.center.x, node.y - cloud.center.y, node.z - cloud.center.z);
-                three['scene'].add(label);
+                three['scene'].add(sphere);
             }
         });
         
@@ -228,8 +136,8 @@ define([
                 var intersect = sterm.filter(function(n) { return tterm.indexOf(n) != -1 });
                 if ($.inArray(parseInt(termId), intersect) != -1) {
                     var geometry = new THREE.Geometry();
-                    geometry.vertices.push(new THREE.Vector3(s.x - cloud.center.x, s.y - cloud.center.y, s.z - cloud.center.z), 
-                                           new THREE.Vector3(t.x - cloud.center.x, t.y - cloud.center.y, t.z - cloud.center.z));
+                    geometry.vertices.push(new THREE.Vector3(s.x - three['termCloud'].center.x, s.y - three['termCloud'].center.y, s.z - three['termCloud'].center.z), 
+                                           new THREE.Vector3(t.x - three['termCloud'].center.x, t.y - three['termCloud'].center.y, t.z - three['termCloud'].center.z));
                     var edge = new THREE.Line(geometry, material);
                     
                     three['scene'].add(edge);
@@ -242,6 +150,142 @@ define([
         three['scene'].add(three['light']);
     }
     
+    var buildLabel = function(nId) {
+        var node = vizdata['nodes'][nId];
+        
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
+        ctxMeas.font = '14px bold Arial';
+        
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        canvas.width = ctxMeas.measureText(node.label).width;
+        canvas.height = 14;
+        ctx.font = '14px bold Arial';
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(node.label, 0, canvas.height/2);
+        
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
+        
+        var label = new THREE.Sprite(new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true } ));
+        label.scale.set(canvas.width, canvas.height, 1);
+        label.name = 'label_' + nId;
+        
+        var padding = label.material.map.image.width/2 + 7 + 5;
+        label.position.set(node.x + padding - three['termCloud'].center.x, node.y - three['termCloud'].center.y, node.z - three['termCloud'].center.z);
+        three['ui'].add(label);
+    }
+    
+    var buildUI = function() {
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
+        var annotation = vizdata['annotations'][state['annotation']];
+        var lineHeight = 36, paddingFactor = 1.14;
+        state['uiWidth'] = 0
+        
+        ctxMeas.font = '29px Palatino Linotype';
+        _.each(annotation['terms'], function(term) {
+            var name = term['name'];
+            if (name.length >= 36) {
+                var words = name.split(' '), name = '';
+                _.each(words, function(word) {
+                    if (name.length < 36) name += name.length == 0 ? word : ' ' + word;
+                });
+                name += '...'
+            }
+            state['uiWidth'] = Math.max(ctxMeas.measureText(name).width, state['uiWidth']);
+            term['alias'] = name;
+        });
+        
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        canvas.width = state['uiWidth'] * paddingFactor;
+        canvas.height = lineHeight * 2;
+        
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#e3e3e3';
+        ctx.font = '50px Palatino Linotype';
+        ctx.fillText(state['annotation'], 0, 30);
+        
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
+        var sprite = new THREE.Mesh(new THREE.BoxGeometry(state['uiWidth'], lineHeight * 2, 1), new THREE.MeshBasicMaterial({
+            color: 0xFFFFFF, map: texture, transparent: true, opacity: 1, 
+        }));
+        
+        var w = -$(opts['rootElement']).width()/2, h = $(opts['rootElement']).width()/4 - canvas.height;
+        sprite.position.set(w, h, 0);
+        sprite.rotation.set(0, Math.PI/8, 0);
+        three['ui'].add(sprite);
+        
+        var i = 0, geometry = new THREE.BoxGeometry(state['uiWidth'], lineHeight, 1);
+        for (var t in annotation['terms']) {
+            var term = annotation['terms'][t];
+            
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = state['uiWidth'] * paddingFactor;
+            canvas.height = lineHeight;
+            
+            ctx.fillStyle = ctx.strokeStyle = '#e3e3e3';
+            ctx.textBaseline = 'top';
+            ctx.font = '29px Palatino Linotype';
+            
+            ctx.globalAlpha = 1;
+            ctx.fillText(term['alias'], 14, 0);
+            ctx.fillStyle = '#' + term['color'];
+            ctx.fillRect(state['uiWidth'] * 1.07, (canvas.height - 25)/2, 25, 25);
+            
+            var texture = new THREE.Texture(canvas);
+            texture.needsUpdate = true;
+            texture.minFilter = THREE.LinearFilter;
+            var sprite = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+                color: 0xffffff, map: texture, transparent: true, opacity: 1, 
+            }));
+            
+            sprite.position.set(w, h - canvas.height * i++ - lineHeight * 2, i * 2);
+            sprite.rotation.set(0, Math.PI/8, 0);
+            sprite.name = 'legend_' + t;
+            three['ui'].add(sprite);
+        }
+    }
+    
+    var buildNodeUI = function(nId) {
+        var node = vizdata['nodes'][nId];
+        
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
+        ctxMeas.font = '29px Palatino Linotype';
+        
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        canvas.width = state['uiWidth'];
+        canvas.height = 14 * 10;
+        
+        var lineHeight = 36, paddingFactor = 1.14;
+        
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#e3e3e3';
+        ctx.font = '50px Palatino Linotype';
+        ctx.fillText(node.label, 0, 30);
+        
+        ctx.font = '29px Palatino Linotype';
+        ctx.fillText('ORF : ', 14, 2 * lineHeight);
+        ctx.fillText(node.orf, ctxMeas.measureText('ORF : ').width + 14, 2 * lineHeight);
+        
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
+        
+        var sprite = new THREE.Sprite(new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true } ));
+        sprite.scale.set(canvas.width, canvas.height, 1)
+        sprite.name = 'nodeUI';
+        
+        var w = $(opts['rootElement']).width()/2, h = $(opts['rootElement']).width()/4 - canvas.height;
+        sprite.position.set(w, h, 0);
+        sprite.rotation.set(0, -Math.PI/8, 0);
+        
+        three['ui'].add(sprite);
+    }
+    
     var init = function() {
         buildUI();
         buildNodes();
@@ -251,5 +295,7 @@ define([
     return {
         init: init,
         buildTerm: buildTerm,
+        buildLabel: buildLabel,
+        buildNodeUI: buildNodeUI,
     };
 });

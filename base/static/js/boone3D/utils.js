@@ -11,10 +11,10 @@ define([
         }
     }
     
-    var clearUI = function() {
+    var clearLabels = function() {
         for (var i = three['ui'].children.length - 1; i >= 0; i--) {
-            three['ui'].remove(three['ui'].getObjectByName('extract'));
-            three['ui'].remove(three['ui'].getObjectByName('termMenu'));
+            var child = three['ui'].children[i];
+            if (child.name.indexOf('label') != -1) three['ui'].remove(child);
         }
     }
     
@@ -30,6 +30,15 @@ define([
                 three['ui'].children[i].material.color.set(0xffffff);
             }
         }
+    }
+    
+    var getSceneObjects = function(scene, type) {
+        var results = [];
+        for (var i = scene.children.length - 1; i >= 0; i--) {
+            var child = scene.children[i];
+            if (child.name.indexOf(type) != -1) results.push(child);
+        }
+        return results
     }
     
     var createClusters = function(vertices) {
@@ -90,8 +99,9 @@ define([
     
     return {
         clearScene: clearScene,
-        clearUI: clearUI,
+        clearLabels: clearLabels,
         resetScene: resetScene,
+        getSceneObjects: getSceneObjects,
         
         createClusters: createClusters,
         stripLetters: stripLetters,

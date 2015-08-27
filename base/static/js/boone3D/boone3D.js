@@ -162,9 +162,20 @@ define([
     };
     
     var checkHover = function() {
-        three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
-        var intersects = three['raycaster'].intersectObjects(three['ui'].children);
+        if (state['showTerms']) {
+            three['raycaster'].setFromCamera(three['mouse'], three['camera']);
+            
+            var intersects = three['raycaster'].intersectObjects(three['scene'].children);
+            if (intersects.length > 0 && intersects[0].object.name.length > 0) {
+                Build.buildLabel(Utils.stripLetters(intersects[0].object.name));
+            } else {
+                Utils.clearLabels();
+            }
+        }
         
+        three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
+        
+        var intersects = three['raycaster'].intersectObjects(Utils.getSceneObjects(three['ui'], 'legend'));
         if (intersects.length > 0 && intersects[0].object.name.length > 0) {
             opts['rootElement'].css('cursor', 'pointer');
             if (state['selected'] != intersects[0].object) {
@@ -185,14 +196,29 @@ define([
     }
     
     var checkClick = function() {
+        if (state['showTerms']) {
+            three['raycaster'].setFromCamera(three['mouse'], three['camera']);
+            
+            var intersects = three['raycaster'].intersectObjects(Utils.getSceneObjects(three['scene'], 'node'));
+            if (intersects.length > 0 && intersects[0].object.name.length > 0) {
+                cleanUIScene();
+                Build.buildNodeUI(Utils.stripLetters(intersects[0].object.name));
+            }
+        }
+        
         three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
-        var intersects = three['raycaster'].intersectObjects(three['ui'].children);
+        var intersects = three['raycaster'].intersectObjects(Utils.getSceneObjects(three['ui'], 'legend'));
         
         if (intersects.length > 0 && intersects[0].object.name.length > 0) {
             var termId = Utils.stripLetters(intersects[0].object.name);
-            three['showTerms'] = true;
+            state['showTerms'] = true;
             Build.buildTerm(termId);
         }
+    }
+    
+    var cleanUIScene = function() {
+        three['ui'].remove(three['ui'].getObjectByName('nodeUI'));
+        Utils.clearLabels
     }
     
     return {
