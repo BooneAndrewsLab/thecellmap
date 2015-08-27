@@ -174,32 +174,21 @@ define([
                 state['three'] = false;
                 
                 $('#cutoff-bar-date')[0].removeAttribute('disabled');
-                
                 $('.icon-layout').removeClass('disabled');
+                $('.icon-center').removeClass('disabled');
                 
                 $('#scene').remove();
                 $(opts['rootElement']).children(':not(#ui)').fadeIn(1000);
             } else {
                 buildThree();
                 $('.icon-layout').addClass('disabled');
+                $('.icon-center').addClass('disabled');
             }
             
             $('.icon-group-three').find('span').toggleClass('hidden');
         });
         
-        $('.icon-center').click(function() {
-            if (state['three']) {
-                var index = 0, step = 20;
-                var delta = new THREE.Vector3(1400, 1400, 1400).sub(three['camera'].position).divideScalar(step);
-                
-                timeout(function() {
-                    three['camera'].position.add(delta);
-                    return index++ <= 20;
-                }, 10);
-            } else {
-                graphCenter();
-            }
-        });
+        $('.icon-center').click(graphCenter);
         
         buildLegend();
         $('[data-toggle="tooltip"]').tooltip()
@@ -425,7 +414,8 @@ define([
             
             paperDiv = $('.panel-publication[data-pmid="'+ pmid + '"]');
             _.each(paper.c, function(collab) {
-                paperDiv.find('.publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collab + '"></div>');
+                var pi = getNode(collab);
+                paperDiv.find('.publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collab + '" data-toggle="tooltip" data-placement="bottom" title="' + pi.label + '"></div>');
             });
         });
         
@@ -433,7 +423,7 @@ define([
             e.preventDefault();
             var panel = $(this).parent(), heading = $(this), lastActive = $('.panel-heading.panel-active');
             
-            lastActive.parent().toggle();
+            lastActive.parent().find('.panel-body').toggle(0);
             lastActive.removeClass('panel-active');
             heading.addClass('panel-active');
             
@@ -444,7 +434,7 @@ define([
                     el.css('background-position', parseInt(el.data('pi')) * -75 + 'px 0');
                 });
                 
-                $('#publication-list').mCustomScrollbar('scrollTo', heading, { scrollInertia: 1000 });
+                $('#publication-list').mCustomScrollbar('scrollTo', heading, { scrollInertia: 700 });
                 
                 setTimeout(function() {
                     var pmid = $('.panel-active').parent().data('pmid');
@@ -472,7 +462,7 @@ define([
                             }
                         },
                     });
-                }, 1000);
+                }, 700);
             }
             
             panel.find('.panel-body').toggle();
@@ -602,7 +592,7 @@ define([
         
         if (moveRequired) {
             sigInst.goTo(x, y).draw();
-            timeout = 150; // We know goTo needs 100ms, 50ms buffer just in case
+            pause = 150; // We know goTo needs 100ms, 50ms buffer just in case
         }
         
         setTimeout(function() {
