@@ -162,16 +162,16 @@ define([
     };
     
     var checkHover = function() {
-        if (state['showTerms']) {
-            three['raycaster'].setFromCamera(three['mouse'], three['camera']);
-            
-            var intersects = three['raycaster'].intersectObjects(three['scene'].children);
-            if (intersects.length > 0 && intersects[0].object.name.length > 0) {
-                Build.buildLabel(Utils.stripLetters(intersects[0].object.name));
-            } else {
-                Utils.clearLabels();
-            }
-        }
+//        if (state['showTerms']) {
+//            three['raycaster'].setFromCamera(three['mouse'], three['camera']);
+//            
+//            var intersects = three['raycaster'].intersectObjects(three['scene'].children);
+//            if (intersects.length > 0 && intersects[0].object.name.length > 0) {
+//                Build.buildLabel(Utils.stripLetters(intersects[0].object.name));
+//            } else {
+//                Utils.clearLabels();
+//            }
+//        }
         
         three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
         
