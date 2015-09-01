@@ -478,6 +478,13 @@ define([
         
         $('.pi-image').css('background-position', -id * opts['piImageWidth'] + 'px 0');
         
+        if (!!node.url) {
+            $('.pi-homepage').show();
+            $('.pi-homepage').attr('href', node.url);
+        } else {
+            $('.pi-homepage').hide();
+        }
+        
         modal.modal({
             backdrop: 'static',
             keyboard: true,
@@ -502,6 +509,9 @@ define([
                     
                     sigInst.addNode(node.id, node);
                     getNode(node.id).three = { x: n.three.x, y: n.three.y, z: n.three.z, color: n.color };
+                    if (!!n.url) {
+                        getNode(node.id).url = n.url;
+                    }
                     three.cloud.vertices.push(new THREE.Vector3(n.three.x, n.three.y, n.three.z));
                 });
                 
@@ -542,14 +552,14 @@ define([
                     edge.color = '#' + opts['edgeColor'];
                     
                     var addedEdge = getEdge(edge.id);
-                    if (!addedEdge) {
+                    if (!addedEdge && getNode(edge.source) && getNode(edge.target)) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
                         addedEdge = getEdge(edge.id);
                         addedEdge.date = time;
                         addedEdge.articles = {};
                         addedEdge.articles[e.pmid] = { name: e.at, date: time, };
                         addedEdge.absweight = Math.abs(addedEdge.weight);
-                    } else {
+                    } else if (addedEdge) {
                         if (time < addedEdge.date) addedEdge.date = time;
                         if (!addedEdge.articles.hasOwnProperty(e.pmid)) addedEdge.articles[e.pmid] = {
                                 name: e.at,
