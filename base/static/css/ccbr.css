@@ -53,6 +53,11 @@
 
 .cutoff-bar {
     width: 300px;
+    cursor: pointer;
+}
+
+.noUi-handle {
+    cursor: pointer;
 }
 
 #cutoff-label {
@@ -69,6 +74,7 @@
 }
 
 .panel-publication {
+    cursor: pointer;
     margin-bottom: 0px;
 }
 
@@ -118,6 +124,7 @@
     color: #e2e2e2;
     margin: 0 2px;
     font-size: 17px;
+    cursor: pointer;
 }
 
 .icon-dark {
