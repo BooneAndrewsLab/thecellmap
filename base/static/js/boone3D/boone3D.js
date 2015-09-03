@@ -27,6 +27,8 @@ define([
     window.three = {};
     window.state = {
         annotation: 'SAFE',
+        shownTerms: [],
+        builtTerms: [],
     };
     
     var init = function () {
@@ -183,7 +185,7 @@ define([
                 
                 state['selected'] = intersects[0].object;
                 var termId = Utils.stripLetters(state['selected'].name);
-                intersects[0].object.material.color.setHex(parseInt('0x' + vizdata['annotations'][state['annotation']]['terms'][termId]['color']));
+                state['selected'].material.color.setHex(parseInt('0x' + vizdata['annotations'][state['annotation']]['terms'][termId]['color']));
                 
                 var edges = three['scene'].getObjectByName('edges' + termId);
                 if (!!edges) edges.material.opacity = 1;
@@ -196,7 +198,8 @@ define([
     }
     
     var checkClick = function() {
-        if (state['showTerms']) {
+        //Check node click and build node panel
+        if (state['shownTerms'].length > 0) {
             three['raycaster'].setFromCamera(three['mouse'], three['camera']);
             
             var intersects = three['raycaster'].intersectObjects(Utils.getSceneObjects(three['scene'], 'node'));
@@ -206,13 +209,17 @@ define([
             }
         }
         
+        //Check legend term click and extract term
         three['raycaster'].setFromCamera(three['mouse'], three['uiCamera']);
         var intersects = three['raycaster'].intersectObjects(Utils.getSceneObjects(three['ui'], 'legend'));
         
         if (intersects.length > 0 && intersects[0].object.name.length > 0) {
             var termId = Utils.stripLetters(intersects[0].object.name);
-            state['showTerms'] = true;
-            Build.buildTerm(termId);
+            if (state['shownTerms'].indexOf(termId) == -1) { //Show term
+                Build.showTerm(termId);
+            } else { //Hide term
+                Build.hideTerm(termId);
+            }
         }
     }
     
