@@ -29,6 +29,7 @@ define([
         annotation: 'SAFE',
         shownTerms: [],
         builtTerms: [],
+        selection: [],
     };
     
     var init = function () {
@@ -62,11 +63,6 @@ define([
         three['stats'] = new Stats();
         opts['rootElement'].append(three['stats'].domElement);
         
-        loadSprites('sphereSprite', opts['urls']['node']);
-        for (var png in opts['ui']) {
-            loadSprites(png + 'Sprite', opts['ui'][png]);
-        }
-        
         $.ajax({
             url: opts['urls']['layout'], 
             dataType : 'json', 
@@ -95,7 +91,11 @@ define([
                     vizdata['annotations'][annotation['name']] = data;
                     
                     if (annot == opts['annotations'].length - 1) {
-                        Build.init();
+                        var loader = new THREE.TextureLoader();
+                        loader.load(opts['urls']['node'], function(image) {
+                            three['sphereSprite'] = image;
+                            Build.init();
+                        });
 //                        LeapControls.init();
                     }
                 },
@@ -107,13 +107,6 @@ define([
         window.addEventListener('resize', onWindowResize, false);
         render();
     };
-    
-    var loadSprites = function(name, url) {
-        var loader = new THREE.TextureLoader();
-        loader.load(url, function(image) {
-            three[name] = image;
-        });
-    }
     
     var animate = function() {
         requestAnimationFrame(animate);
@@ -132,8 +125,8 @@ define([
     
     var onDocumentMouseMove = function(e) {
         e.preventDefault();
-        var x = event.offsetX == undefined ? event.layerX : event.offsetX;
-        var y = event.offsetY == undefined ? event.layerY : event.offsetY;
+        var x = e.offsetX == undefined ? e.layerX : e.offsetX;
+        var y = e.offsetY == undefined ? e.layerY : e   .offsetY;
         three['mouse'].x = (x/opts['rootElement'].width()) * 2 - 1;
         three['mouse'].y = -(y/opts['rootElement'].height()) * 2 + 1;
     }
@@ -205,6 +198,7 @@ define([
             var intersects = three['raycaster'].intersectObjects(Utils.getSceneObjects(three['scene'], 'node'));
             if (intersects.length > 0 && intersects[0].object.name.length > 0) {
                 cleanUIScene();
+                intersects[0].object.scale.set(2, 2, 2);
                 Build.buildNodeUI(Utils.stripLetters(intersects[0].object.name));
             }
         }
@@ -225,7 +219,11 @@ define([
     
     var cleanUIScene = function() {
         three['ui'].remove(three['ui'].getObjectByName('nodeUI'));
-        Utils.clearLabels
+        
+        //Temp fix 
+        Utils.getSceneObjects(three['scene'], 'node').forEach(function(n) {
+            n.scale.set(1, 1, 1);
+        })
     }
     
     return {

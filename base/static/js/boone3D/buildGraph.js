@@ -137,6 +137,7 @@ define([
                         geometry.vertices.push(new THREE.Vector3(s.x, s.y, s.z), 
                                                new THREE.Vector3(t.x, t.y, t.z));
                         var edge = new THREE.Line(geometry, material);
+                        edge.name = 'edge_' + s.id + '-' + t.id
                         edge.term = termId;
                         
                         three['scene'].add(edge);
@@ -152,6 +153,8 @@ define([
                 }
             }
         }
+        
+//        buildStats();
     }
     
     var hideTerm = function(termId) {
@@ -164,9 +167,52 @@ define([
         }
     }
     
+    var buildStats = function() {
+        three['ui'].remove(three['ui'].getObjectByName('networkUI'));
+        
+        var numNodes = numEdges = 0;
+        Utils.getSceneObjects(three['scene'], 'node').forEach(function(n) {
+            if (n.visible) numNodes++;
+        });
+        
+        Utils.getSceneObjects(three['scene'], 'edge').forEach(function(e) {
+            if (e.visible) numEdges++;
+        });
+        
+        var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
+        ctxMeas.font = '14px bold Arial';
+        
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        canvas.width = 410;
+        canvas.height = 200;
+        ctx.fillStyle = '#e3e3e3';
+        
+        ctx.textBaseline = 'middle'
+        ctx.font = '50px Palatino Linotype';
+        ctx.fillText('Network Overview', 0, 30);
+        
+        ctx.textBaseline = 'top';
+        ctx.font = '29px Palatino Linotype';
+        ctx.fillText('Number of nodes: ' + numNodes, 14, 50 + 28);
+        ctx.fillText('Number of edges: ' + numEdges, 14, 50 + 28 * 2);
+        
+        var texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
+        
+        var sprite = new THREE.Sprite(new THREE.SpriteMaterial( { map: texture, color: 0xffffff, fog: true } ));
+        sprite.scale.set(canvas.width, canvas.height, 1)
+        sprite.name = 'networkUI';
+        
+        var w = $(opts['rootElement']).width()/2, h = $(opts['rootElement']).width()/4 - canvas.height;
+        sprite.position.set(w, h, 0);
+        sprite.rotation.set(0, -Math.PI/8, 0);
+        
+        three['ui'].add(sprite);
+    }
+    
     var buildLabel = function(nId) {
         var node = vizdata['nodes'][nId];
-        
         var canvasMeas = document.createElement('canvas'), ctxMeas = canvasMeas.getContext('2d');
         ctxMeas.font = '14px bold Arial';
         
@@ -188,7 +234,7 @@ define([
         label.name = 'label_' + nId;
         
         var padding = label.material.map.image.width/2 + 7 + 5;
-        label.position.set(node.x + padding - three['termCloud'].center.x, node.y - three['termCloud'].center.y, node.z - three['termCloud'].center.z);
+        label.position.set(node.x + padding, node.y, node.z);
         three['ui'].add(label);
     }
     
