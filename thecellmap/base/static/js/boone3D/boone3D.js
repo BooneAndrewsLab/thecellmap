@@ -214,6 +214,7 @@ define([
             } else { //Hide term
                 Build.hideTerm(termId);
             }
+            Build.toggleNetwork();
         }
     }
     
