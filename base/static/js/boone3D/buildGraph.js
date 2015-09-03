@@ -42,6 +42,7 @@ define([
             });
             var term = new THREE.PointCloud(sphereGeometries[t], material);
             term.name = 'nodes' + t;
+            term.type = 'world';
             three['scene'].add(term);
             
             if (t == 'default') continue;
@@ -63,6 +64,7 @@ define([
             
             var region = new THREE.Mesh(geometry, material);
             region.name = 'regions' + t;
+            region.type = 'world';
             three['scene'].add(region);
         }
     }
@@ -96,14 +98,13 @@ define([
                 }), THREE.LinePieces);
             
             term.name = 'edges' + t;
+            term.type = 'world';
             three['scene'].add(term);
         }
     }
     
     var showTerm = function(termId) {
         if (state['builtTerms'].length == 0) {
-            Utils.clearScene();
-            
             three['light'] = new THREE.DirectionalLight(0xffffff, 1);
             three['light'].position.set(0, 0, 1);
             three['scene'].add(three['light']);
@@ -163,6 +164,14 @@ define([
         for (var i = three['scene'].children.length - 1; i >= 0; i--) {
             if (three['scene'].children[i].term == termId) {
                 three['scene'].children[i].visible = false;
+            }
+        }
+    }
+    
+    var toggleNetwork = function() {
+        for (var i = three['scene'].children.length - 1; i >= 0; i--) {
+            if (three['scene'].children[i].type == 'world') {
+                three['scene'].children[i].visible = state['shownTerms'].length == 0;
             }
         }
     }
@@ -356,6 +365,7 @@ define([
         init: init,
         showTerm: showTerm,
         hideTerm: hideTerm,
+        toggleNetwork: toggleNetwork,
         buildLabel: buildLabel,
         buildNodeUI: buildNodeUI,
     };
