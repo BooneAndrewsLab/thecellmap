@@ -97,7 +97,7 @@ define([
     }
     
     var stripLetters = function(s) {
-        return s.match(/\d/g).join('');
+        return !!s.match(/\d/g) ? s.match(/\d/g).join('') : s;
     }
     
     return {
