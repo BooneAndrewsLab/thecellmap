@@ -100,54 +100,68 @@ define([
         }
     }
     
-    var buildTerm = function(termId) {
-        Utils.clearScene();
-        var annotation = vizdata['annotations'][state['annotation']], term = vizdata['annotations'][state['annotation']]['terms'][termId];
-        
-        three['termCloud'] = new THREE.Geometry();
-        _.each(vizdata['nodes'], function(node) {
-            var terms = annotation['map'][node.orf];
-            if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
-                three['termCloud'].vertices.push(new THREE.Vector3(node.x, node.y, node.z));
-            }
-        });
-        
-        three['termCloud'].computeBoundingSphere();
-        three['termCloud'] = three['termCloud'].boundingSphere;
-        
-        var geometry = new THREE.SphereGeometry(7, 32, 32), material = new THREE.MeshLambertMaterial({ color: parseInt('0x' + term['color']) });
-        _.each(vizdata['nodes'], function(node) {
-            var terms = annotation['map'][node.orf];
+    var showTerm = function(termId) {
+        if (state['builtTerms'].length == 0) {
+            Utils.clearScene();
             
-            if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
-                var sphere = new THREE.Mesh(geometry, material);
-                sphere.position.set(node.x - three['termCloud'].center.x, node.y - three['termCloud'].center.y, node.z - three['termCloud'].center.z);
-                sphere.name = 'node_' + node.id;
-                
-                three['scene'].add(sphere);
-            }
-        });
+            three['light'] = new THREE.DirectionalLight(0xffffff, 1);
+            three['light'].position.set(0, 0, 1);
+            three['scene'].add(three['light']);
+        }
         
-        var material = new THREE.LineBasicMaterial({ color: 0xe3e3e3 });
-        _.each(vizdata['edges'], function(edge) {
-            var s = vizdata['nodes'][edge['s']], t = vizdata['nodes'][edge['t']];
-            if (s && t) {
-                var sterm = annotation['map'][s.orf] || [], tterm = annotation['map'][t.orf] || [];
-                var intersect = sterm.filter(function(n) { return tterm.indexOf(n) != -1 });
-                if ($.inArray(parseInt(termId), intersect) != -1) {
-                    var geometry = new THREE.Geometry();
-                    geometry.vertices.push(new THREE.Vector3(s.x - three['termCloud'].center.x, s.y - three['termCloud'].center.y, s.z - three['termCloud'].center.z), 
-                                           new THREE.Vector3(t.x - three['termCloud'].center.x, t.y - three['termCloud'].center.y, t.z - three['termCloud'].center.z));
-                    var edge = new THREE.Line(geometry, material);
+        state['shownTerms'].push(termId);
+        if (state['builtTerms'].indexOf(termId) == -1) {
+            var annotation = vizdata['annotations'][state['annotation']], term = vizdata['annotations'][state['annotation']]['terms'][termId];
+            var geometry = new THREE.SphereGeometry(7, 32, 32), material = new THREE.MeshLambertMaterial({ color: parseInt('0x' + term['color']) });
+            _.each(vizdata['nodes'], function(node) {
+                var terms = annotation['map'][node.orf];
+                
+                if (!!terms && $.inArray(parseInt(termId), terms) != -1) {
+                    var sphere = new THREE.Mesh(geometry, material);
+                    sphere.position.set(node.x, node.y, node.z);
+                    sphere.name = 'node_' + node.id;
+                    sphere.term = termId;
                     
-                    three['scene'].add(edge);
+                    three['scene'].add(sphere);
+                }
+            });
+            
+            var material = new THREE.LineBasicMaterial({ color: 0xe2e2e2, transparent: true, opacity: 0.3 });
+            _.each(vizdata['edges'], function(edge) {
+                var s = vizdata['nodes'][edge['s']], t = vizdata['nodes'][edge['t']];
+                if (s && t) {
+                    var sterm = annotation['map'][s.orf] || [], tterm = annotation['map'][t.orf] || [];
+                    var intersect = sterm.filter(function(n) { return tterm.indexOf(n) != -1 });
+                    if ($.inArray(parseInt(termId), intersect) != -1) {
+                        var geometry = new THREE.Geometry();
+                        geometry.vertices.push(new THREE.Vector3(s.x, s.y, s.z), 
+                                               new THREE.Vector3(t.x, t.y, t.z));
+                        var edge = new THREE.Line(geometry, material);
+                        edge.term = termId;
+                        
+                        three['scene'].add(edge);
+                    }
+                }
+            });
+            
+            state['builtTerms'].push(termId);
+        } else {
+            for (var i = three['scene'].children.length - 1; i >= 0; i--) {
+                if (three['scene'].children[i].term == termId) {
+                    three['scene'].children[i].visible = true;
                 }
             }
-        });
+        }
+    }
+    
+    var hideTerm = function(termId) {
+        state['shownTerms'].splice(state['shownTerms'].indexOf(termId), 1);
         
-        three['light'] = new THREE.DirectionalLight(0xffffff, 1);
-        three['light'].position.set(0, 0, 1);
-        three['scene'].add(three['light']);
+        for (var i = three['scene'].children.length - 1; i >= 0; i--) {
+            if (three['scene'].children[i].term == termId) {
+                three['scene'].children[i].visible = false;
+            }
+        }
     }
     
     var buildLabel = function(nId) {
@@ -294,7 +308,8 @@ define([
     
     return {
         init: init,
-        buildTerm: buildTerm,
+        showTerm: showTerm,
+        hideTerm: hideTerm,
         buildLabel: buildLabel,
         buildNodeUI: buildNodeUI,
     };

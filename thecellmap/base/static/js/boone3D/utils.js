@@ -26,8 +26,11 @@ define([
         }
         
         for (var i = three['ui'].children.length - 1; i >= 0; i--) {
-            if (three['ui'].children[i].name.indexOf('legend') != -1) {
-                three['ui'].children[i].material.color.set(0xffffff);
+            if (three['ui'].children[i].name.length > 0) {
+                var termId = stripLetters(three['ui'].children[i].name);
+                if (three['ui'].children[i].name.indexOf('legend') != -1 && state['shownTerms'].indexOf(termId) == -1) {
+                    three['ui'].children[i].material.color.set(0xffffff);
+                }
             }
         }
     }
