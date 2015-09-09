@@ -16,6 +16,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST, require_GET
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
@@ -217,6 +218,7 @@ def three_demension(request, dataset_id):
                 'annotations': [Annotation.objects.get(name='SAFE')],
         })
 
+@xframe_options_exempt
 def ccbr_collaboration(request):
     return render(request, 'base/collaboration.html', {
                 'root': settings.STATIC_URL,
