@@ -27,11 +27,15 @@
         padding-top: 50px;
         padding-bottom: 20px;
       }
+      
+      body.nohead {
+        padding-top: 0;
+      }
     </style>
   {% block css %}{% endblock %}
   {% endcompress %}
 </head>
-<body class="{% block body_class %}{% endblock %}"{% block body_attributes %}{% endblock %}>
+<body class="{% block body_class %}{% endblock %}{% if nohead %} nohead{% endif %}"{% block body_attributes %}{% endblock %}>
 {% block body %}
   {% if not nohead %}
   <header>
