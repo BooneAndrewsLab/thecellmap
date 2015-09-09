@@ -222,6 +222,7 @@ def three_demension(request, dataset_id):
 def ccbr_collaboration(request):
     return render(request, 'base/collaboration.html', {
                 'root': settings.STATIC_URL,
+                'nohead': 'nohead' in request.GET
     })
 
 @print_queries
