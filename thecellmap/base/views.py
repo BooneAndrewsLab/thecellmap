@@ -108,6 +108,7 @@ def custom_dataset(request, hash):
                             'type': custom.type,
                             'directed': custom.network_type == Custom.NET_DIRECTED,
                         },
+                     'ui': request.COOKIES.get('ui') or 'simple',
               })
         else:
             return HttpResponseForbidden("Permission Required")
@@ -121,7 +122,8 @@ def custom_dataset(request, hash):
                     'directed': custom.network_type == Custom.NET_DIRECTED,
                 },
                 'annotations': Annotation.objects.all(),
-                'can_bulk_download': False
+                'can_bulk_download': False,
+                'ui': request.COOKIES.get('ui') or 'simple',
           })
 
 @require_POST
