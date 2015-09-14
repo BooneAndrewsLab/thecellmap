@@ -11,5 +11,7 @@
         'select2': ['jquery'],
         'bootstrap-sortable': ['bootstrap'],
         'bootstrap-tabdrop': ['bootstrap'],
-    }
+    },
+    name: 'tabular',
+    out: 'tabular-built.js'
 });

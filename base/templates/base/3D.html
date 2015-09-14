@@ -1,6 +1,6 @@
 {% extends "_layouts/base.html" %}
 
-{% load staticfiles base_extras %}
+{% load staticfiles base_extras require %}
 
 {% block page_title_suffix %} - {{ dataset.verbose_name }} network{% endblock %}
 
@@ -18,7 +18,6 @@
 
 {% block js %}
 {{ block.super }}
-  <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.18/require.min.js"></script>
   <script type="text/javascript">
       window.opts = {
           urls: {
@@ -38,40 +37,8 @@
               'legend' : '{{ dataset.static_url }}/legend.png', */
           },
       }
-      
-      require.config({
-          paths: {
-              'jquery': '{% static "js/libs/jquery-2.1.4.min" %}',
-              'backbone': '{% static "js/libs/backbone-min" %}',
-              'underscore': '{% static "js/libs/underscore-min" %}',
-              
-              'three': '//cdnjs.cloudflare.com/ajax/libs/three.js/r71/three',
-              'stats': '{% static "js/libs/stats.min" %}',
-              
-              'boone3D': '{% static "js/boone3D/boone3D" %}',
-              'build': '{% static "js/boone3D/buildGraph" %}',
-              
-              'mouse': '{% static "js/boone3D/mouseControls" %}',
-              'utils': '{% static "js/boone3D/utils" %}',
-              
-              //'leapControls': '{% static "js/boone3D/leapControls" %}',
-          },
-          shim: {
-              'backbone' : ['jquery', 'underscore'],
-              'stats' : ['three'],
-              'mouse' : ['three'],
-          }
-      });
-      
-      require(['boone3D'], function(boone3D) {
-          $(window).resize(function() {
-              $('#network-container').css('height', $(window).height() - $('.navbar').height() - 30);
-              $('#network-container').css('width', $(window).width() - 30);
-          }).resize();
-//           $.cookie('csrftoken', $("{% csrf_token %}").attr('value'));
-          boone3D.runFrame();
-      });
   </script>
+  {% require_module 'threeD' %}
 {% endblock js %}
 
 {% block content %}

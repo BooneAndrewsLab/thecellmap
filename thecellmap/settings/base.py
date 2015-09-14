@@ -263,7 +263,11 @@ REQUIRE_STANDALONE_MODULES = {
     'tabular': {
         'out': 'tabular-built.js',
         'build_profile': 'build/tabular.build.js',
-    }, 
+    },
+    'threeD': {
+        'out': 'threeD-built.js',
+        'build_profile': 'build/threeD.build.js',
+    },
     'collaboration': {
         'out': 'collaboration-built.js',
         'build_profile': 'build/collaboration.build.js',
