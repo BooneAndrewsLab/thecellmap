@@ -457,7 +457,7 @@ define([
         node.label = modal.find('#edit-node-label').val();
         node.color = '#' + modal.find('#edit-node-color').val().toUpperCase();
         node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
-        node.size_mult = modal.find('#style-slider-snsize').val();
+        node.size_mult = parseInt(modal.find('#style-slider-snsize')[0].noUiSlider.get());
         node.size = node.size_init * node.size_mult;
         modal.find('.annotation-color').each(function() {
             var color = '#' + $(this).val().toUpperCase(), annotation = vizdata['annotations'].get(state.get('annotation'));
