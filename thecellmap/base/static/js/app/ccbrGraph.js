@@ -84,6 +84,9 @@ define([
                 $('.vizualization-ui').css('height', parent.innerHeight());
                 $('.vizualization-ui').css('width', parent.innerWidth());
                 
+                $('.modal-dialog').css('width', Math.min(1024, parent.innerWidth() - 50));
+                $('#publication-list').css('height', Math.min(600, parent.innerHeight() - 300));
+                
                 if (!!three['scene']) {
                     three['camera'].aspect = parent.innerWidth()/parent.innerHeight();
                     three['camera'].updateProjectionMatrix();
