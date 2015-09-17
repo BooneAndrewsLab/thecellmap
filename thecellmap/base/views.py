@@ -219,6 +219,8 @@ def three_demension(request, dataset_id):
                 'dataset': dataset,
                 'annotations': [Annotation.objects.get(name='SAFE')],
         })
+    
+    return HttpResponseForbidden()
 
 @xframe_options_exempt
 def ccbr_collaboration(request):
