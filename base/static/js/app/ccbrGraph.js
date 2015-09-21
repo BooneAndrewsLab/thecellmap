@@ -184,6 +184,7 @@ define([
                 $(opts['rootElement']).children(':not(#ui)').fadeIn(1000);
             } else {
                 buildThree();
+                updateNetwork();
                 $('.icon-layout').addClass('disabled');
                 $('.icon-center').addClass('disabled');
             }
@@ -243,6 +244,7 @@ define([
                 new THREE.SphereGeometry(1, 32, 32),
                 new THREE.MeshLambertMaterial({ color: parseInt('0x' + n['three']['color']), transparent: true, opacity: 0 })
             );
+            
             sphere.position.set(n.three['x'], n.three['y'], n.three['z']);
             sphere.name = 'node_' + n.id;
             sphere.visible = false;
@@ -506,25 +508,29 @@ define([
                     node.id = n.id;
                     node.label = n.name;
                     node.size = 2;
-                    node.x = !isNaN(n.two.x) ? n.two.x : (Math.random() * 100);
-                    node.y = !isNaN(n.two.y) ? n.two.y : (Math.random() * 100);
+                    node.x = Math.random() * 100;
+                    node.y = Math.random() * 100;
                     node.forceLabel = true;
                     
                     sigInst.addNode(node.id, node);
-                    getNode(node.id).three = { x: n.three.x, y: n.three.y, z: n.three.z, color: n.color };
-                    if (!!n.url) {
-                        getNode(node.id).url = n.url;
+                    var addedNode = getNode(node.id);
+                    if (n.three) {
+                        addedNode.three = { x: n.three.x, y: n.three.y, z: n.three.z, color: n.color };
+                        three.cloud.vertices.push(new THREE.Vector3(n.three.x, n.three.y, n.three.z));
                     }
-                    three.cloud.vertices.push(new THREE.Vector3(n.three.x, n.three.y, n.three.z));
+                    
+                    if (!!n.url) addedNode.url = n.url;
                 });
                 
                 three.cloud.computeBoundingSphere();
                 three.cloud = three.cloud.boundingSphere;
                 
                 sigInst.iterNodes(function(n) {
-                    n.three.x -= three.cloud.center.x;
-                    n.three.y -= three.cloud.center.y;
-                    n.three.z -= three.cloud.center.z;
+                    if (n.three) {
+                        n.three.x -= three.cloud.center.x;
+                        n.three.y -= three.cloud.center.y;
+                        n.three.z -= three.cloud.center.z;
+                    }
                 });
                 
                 loadArticles();
@@ -709,6 +715,21 @@ define([
                 n.y = (Math.random() * (yMax - yMin) / 3) + Math.abs(yMax - yMin) / 2;
             }
         });
+        
+        if (val == opts['maxDate']) {
+            var unconnected = [];
+            sigInst.iterNodes(function(n) {
+                if (n.visibleDegree <= 0) {
+                    unconnected.push(n);
+                    n.hidden = false;
+                }
+            });
+            
+            for (var i in unconnected) {
+                var eId = unconnected[i]['id'] + '+0';
+                if (!getEdge(eId)) sigInst.addEdge(eId, unconnected[i]['id'], 0, { weight: 0.1, hidden: true });
+            }
+        }
         
         if (state['three']) {
             var maxEdge = 0;
