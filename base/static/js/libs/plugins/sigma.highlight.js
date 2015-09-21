@@ -45,15 +45,16 @@ sigma.publicPrototype.hoverHighlight = function(state) {
         if (state['runningAnimation']) return;
         
         inst.iterEdges(function(e) {
-            e.color = e.attr['true_color'];
+            e.color = e.attr['grey'] ? e.attr['true_color'] : e.color;
             e.attr['grey'] = 0;
         }).iterNodes(function(n) {
-            n.color = n.attr['true_color'];
+            n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
             n.forceLabel = true;
             n.attr['grey'] = 0;
         }).draw(2, 2, 2);
     }).bind('upgraph', function() {
         if (state['runningAnimation']) return;
+        
         inst.iterEdges(function(e) {
             e.color = e.attr['true_color'] || e.color;
             e.attr['grey'] = 0;
