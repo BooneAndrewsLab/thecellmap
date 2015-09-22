@@ -697,7 +697,9 @@ define([
         sigInst.iterNodes(function(n) {
             n.hidden = n.visibleDegree <= 0;
             if (!n.hidden) {
-                if (n.degree > 2) n.size = Math.sqrt(n.visibleDegree * 25);
+                if (n.degree > 2) {
+                    n.size = Math.sqrt(n.visibleDegree * 2 * Math.log($(opts['rootElement']).width()));
+                }
                 maxDegree = Math.max(maxDegree, n.colorDegree);
                 xMax = Math.max(xMax, n.x) || n.x;
                 xMin = Math.min(xMin, n.x) || n.x;
