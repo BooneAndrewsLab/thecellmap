@@ -169,6 +169,7 @@ define([
         });
         
         $('.icon-group-three').click(function() {
+            return;
             if (state['three']) {
                 for (var i = three['scene'].children.length; i > 0; i--) {
                     var obj = three['scene'].children[i];
@@ -240,6 +241,8 @@ define([
         var canvasMeasure = document.createElement('canvas'), ctxMeasure = canvasMeasure.getContext('2d');
         ctxMeasure.font = '14px bold Arial';
         sigInst.iterNodes(function(n) {
+            if (!n['three']) return;
+            
             var sphere = new THREE.Mesh(
                 new THREE.SphereGeometry(1, 32, 32),
                 new THREE.MeshLambertMaterial({ color: parseInt('0x' + n['three']['color']), transparent: true, opacity: 0 })
@@ -270,6 +273,7 @@ define([
             
             three['scene'].add(sprite);
         }).iterEdges(function(e) {
+            console.log(e.source.id)
             var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
                                         three['scene'].getObjectByName('node_' + e.target.id).position,
                                         e);
@@ -729,7 +733,11 @@ define([
             
             for (var i in unconnected) {
                 var eId = unconnected[i]['id'] + '+0';
-                if (!getEdge(eId)) sigInst.addEdge(eId, unconnected[i]['id'], 0, { weight: 0.1, hidden: true });
+                if (!getEdge(eId)) {
+                    sigInst.addEdge(eId, unconnected[i]['id'], 0, { weight: 0.1, hidden: true });
+                } else {
+                    getEdge(eId).hidden = true;
+                }
             }
         }
         
