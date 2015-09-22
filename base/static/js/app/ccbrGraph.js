@@ -387,46 +387,50 @@ define([
         keys.sort();
         keys.reverse();
         
-        _.each(keys, function(pmid) {
-            var paper = uniPMID[pmid], paperDiv;
-            
-            $('#publication-list').append(
-                    '<div class="panel panel-default panel-publication" data-pmid="' + pmid + '">\
-                        <div class="panel-heading">' + paper.p['name'] + '</div>\
-                        <div class="panel-body">\
-                            <div class="row data-loading">\
-                                <div class="col-md-2"><label>Published in</label></div>\
-                                <div class="col-md-10"><span class="publication-date"></span></div>\
+        if (keys.length != 0) {
+            _.each(keys, function(pmid) {
+                var paper = uniPMID[pmid], paperDiv;
+                
+                $('#publication-list').append(
+                        '<div class="panel panel-default panel-publication" data-pmid="' + pmid + '">\
+                            <div class="panel-heading">' + paper.p['name'] + '</div>\
+                            <div class="panel-body">\
+                                <div class="row data-loading">\
+                                    <div class="col-md-2"><label>Published in</label></div>\
+                                    <div class="col-md-10"><span class="publication-date"></span></div>\
+                                </div>\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>Name</label></div>\
+                                    <div class="col-md-10"><span class="publication-name">' + paper.p['name'] + '</span></div>\
+                                </div>\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>PubMed Link</label></div>\
+                                    <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid +  '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '</a></div>\
+                                </div>\
+                                <div class="row">\
+                                    <div class="col-md-2"><label>Collaborators</label></div>\
+                                    <div class="col-md-10"><div class="publication-collaborators"></div></div>\
+                                </div>\
+                                <div class="row data-loading">\
+                                    <div class="col-md-2"><label>Cited by</label></div>\
+                                    <div class="col-md-10"><span class="publication-citations"></span></div>\
+                                </div>\
+                                <div class="row data-loading">\
+                                    <div class="col-md-2"><label>Abstract</label></div>\
+                                    <div class="col-md-10"><span class="publication-abstract"></span></div>\
+                                </div>\
                             </div>\
-                            <div class="row">\
-                                <div class="col-md-2"><label>Name</label></div>\
-                                <div class="col-md-10"><span class="publication-name">' + paper.p['name'] + '</span></div>\
-                            </div>\
-                            <div class="row">\
-                                <div class="col-md-2"><label>PubMed Link</label></div>\
-                                <div class="col-md-10"><a href="http://www.ncbi.nlm.nih.gov/pubmed/' + pmid +  '" class="publication-pubmed">http://www.ncbi.nlm.nih.gov/pubmed/' + pmid + '</a></div>\
-                            </div>\
-                            <div class="row">\
-                                <div class="col-md-2"><label>Collaborators</label></div>\
-                                <div class="col-md-10"><div class="publication-collaborators"></div></div>\
-                            </div>\
-                            <div class="row data-loading">\
-                                <div class="col-md-2"><label>Cited by</label></div>\
-                                <div class="col-md-10"><span class="publication-citations"></span></div>\
-                            </div>\
-                            <div class="row data-loading">\
-                                <div class="col-md-2"><label>Abstract</label></div>\
-                                <div class="col-md-10"><span class="publication-abstract"></span></div>\
-                            </div>\
-                        </div>\
-                    </div>');
-            
-            paperDiv = $('.panel-publication[data-pmid="'+ pmid + '"]');
-            _.each(paper.c, function(collab) {
-                var pi = getNode(collab);
-                paperDiv.find('.publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collab + '" data-toggle="tooltip" data-placement="bottom" title="' + pi.label + '"></div>');
+                        </div>');
+                
+                paperDiv = $('.panel-publication[data-pmid="'+ pmid + '"]');
+                _.each(paper.c, function(collab) {
+                    var pi = getNode(collab);
+                    paperDiv.find('.publication-collaborators').append('<div class="pi-icon pull-left" data-pi="' + collab + '" data-toggle="tooltip" data-placement="bottom" title="' + pi.label + '"></div>');
+                });
             });
-        });
+        } else {
+            $('#publication-list').html('No collaborations found');
+        }
         
         $('.panel-heading').click(function(e) {
             e.preventDefault();
@@ -487,12 +491,12 @@ define([
         
         $('.pi-image').css('background-position', -id * opts['piImageWidth'] + 'px 0');
         
-        if (!!node.url) {
+//        if (!!node.url) {
             $('.pi-homepage').show();
             $('.pi-homepage').attr('href', node.url);
-        } else {
-            $('.pi-homepage').hide();
-        }
+//        } else {
+//            $('.pi-homepage').hide();
+//        }
         
         modal.modal({
             backdrop: 'static',
@@ -713,10 +717,10 @@ define([
         });
         
         sigInst.iterNodes(function(n) {
-            if (!n.hidden) {
-                var c = shadeColor(opts['minColor'], opts['maxColor'], n.colorDegree/maxDegree), cHex = rgbToHex(c.r, c.g, c.b);
-                n.color = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',1)';
-            } else {
+            var c = shadeColor(opts['minColor'], opts['maxColor'], Math.max(n.colorDegree, 1)/maxDegree), cHex = rgbToHex(c.r, c.g, c.b);
+            n.color = 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',1)';
+            
+            if (!!n.hidden) {
                 n.x = (Math.random() * (xMax - xMin) / 3) + Math.abs(xMax - xMin) / 2;
                 n.y = (Math.random() * (yMax - yMin) / 3) + Math.abs(yMax - yMin) / 2;
             }
@@ -734,7 +738,7 @@ define([
             for (var i in unconnected) {
                 var eId = unconnected[i]['id'] + '+0';
                 if (!getEdge(eId)) {
-                    sigInst.addEdge(eId, unconnected[i]['id'], 0, { weight: 0.1, hidden: true });
+                    sigInst.addEdge(eId, unconnected[i]['id'], 0, { weight: .5, hidden: true });
                 } else {
                     getEdge(eId).hidden = true;
                 }
