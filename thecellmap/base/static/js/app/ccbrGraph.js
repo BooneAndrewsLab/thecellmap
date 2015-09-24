@@ -169,7 +169,6 @@ define([
         });
         
         $('.icon-group-three').click(function() {
-            return;
             if (state['three']) {
                 for (var i = three['scene'].children.length; i > 0; i--) {
                     var obj = three['scene'].children[i];
@@ -273,7 +272,6 @@ define([
             
             three['scene'].add(sprite);
         }).iterEdges(function(e) {
-            console.log(e.source.id)
             var cylinder = cylinderMesh(three['scene'].getObjectByName('node_' + e.source.id).position, 
                                         three['scene'].getObjectByName('node_' + e.target.id).position,
                                         e);
