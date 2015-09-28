@@ -278,8 +278,10 @@ define([
             minimumResultsForSearch: -1
         });
         $('#edges-sheet').val('edges').change();
+        
         var table = $('#data-table').clone().removeAttr('id'), body = table.find('tbody'), row;
         autoColumn(null, data.results.rows);
+        
         data.results.fields.forEach(function(field) {
             table.find('thead tr').append('<th><select id="' + field + '" class="column-selection column-selection-button">\
                     <option></option><option value="default">Not in Use</option><option value="source">Source</option>\
@@ -287,6 +289,7 @@ define([
             table.find('#' + field).select2({
                 minimumResultsForSearch: -1
             });
+            
             for (key in colMap) {
                 var diff = levDist(key, field.toLowerCase()), maxLength = Math.max(key.length, field.length);
                 if (diff/maxLength < 0.5 && colMap[key] == null) {
@@ -297,6 +300,7 @@ define([
                 }
             }
         });
+        
         count = 0;
         data.results.rows.forEach(function(r) {
             row = $('<tr></tr>');
@@ -307,12 +311,15 @@ define([
             if (count < 5) body.append(row);
             count++;
         });
+        
         isFirst = false;
+        
         $('#edges-column-selection').find('.selection').append(table);
         $('.wizard-buttons-container').removeClass('hidden');
         $('.column-selection select').on('change', function(e) {
             var index = $(this).attr('id'), val = e.val;
             var selects = $('.column-selection select').not('#' + index);
+            
             for (key in colMap) if (colMap[key] == index) colMap[key] = null;
             if (val != 'default') {
                 colMap[val] = index;
@@ -577,6 +584,7 @@ define([
                 processCsv(workbook, nodes, layout, dataset);
             }
             
+            console.log(Cookies.get('csrftoken'))
             $.ajax({
                 dataType: 'json', 
                 data: {

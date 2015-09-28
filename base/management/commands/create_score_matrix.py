@@ -4,7 +4,6 @@ import csv
 from base.models import Dataset, StrainData
 from base.utils import CellMapCommand
 
-
 class Command(CellMapCommand):
     help = '''create csv file for dataset'''
     args = '<dataset name>'
@@ -20,15 +19,13 @@ class Command(CellMapCommand):
             os.makedirs(outpath)
         
         arrays_axis = [id for id, in dataset.arrays.through.objects.filter(dataset=dataset).order_by('id').values_list('strain_id')]
+        
         data = dataset.data.filter(type=StrainData.TYPE_QUERY).values_list('strain', 'scores')
         scores = []
         
-        for q, s in data:
-            scores.append(s)
-        
         with open(os.path.join(outpath, 'scores_matrix.csv'), 'wb') as csvfile:
-            spamwriter = csv.writer(csvfile, delimiter=',',
+            csvwriter = csv.writer(csvfile, delimiter=',',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            spamwriter.writerow([''] + arrays_axis)
-            for q, s in zip(arrays_axis, scores):
-                spamwriter.writerow([q] + s)
+            csvwriter.writerow([''] + arrays_axis)
+            for q, s in data:
+                csvwriter.writerow([q] + s)
