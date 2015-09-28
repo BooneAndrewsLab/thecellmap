@@ -4,20 +4,21 @@ Created on Jan 13, 2014
 @author: matej
 '''
 import cPickle
+import json
+import math
 import os
-from scipy.stats import pearsonr
 
-from django.core.paginator import Paginator
-from django.utils.datastructures import SortedDict
-from pandas.core.frame import DataFrame
+from numpy.ma import corrcoef
 
 from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
+from django.core.paginator import Paginator
+from django.utils.datastructures import SortedDict
 import numpy as np
-import math
+from pandas.core.frame import DataFrame
 from pandas.core.series import Series
-import json
+from scipy.stats import pearsonr
 
 
 ONLY = (
@@ -159,7 +160,7 @@ def collect_score_matrix(ds, nodes, data):
     weights = []
     
     for e in data:
-        if nmap[e['t']]['label'] in smap:
+        if 'label' in nmap[e['t']] and nmap[e['t']]['label'] in smap:
             targets.append(smap[nmap[e['t']]['label']].id)
             weights.append(e['w'])
     
@@ -167,11 +168,24 @@ def collect_score_matrix(ds, nodes, data):
     new_row = Series(weights, targets)
     df.columns = df.columns.astype(new_row.index.dtype)
     
-    scores = df.apply(x.corr(new_row), axis=1)
+    new_row = new_row.groupby(lambda x: x).mean()
     
-    result = [{'s': source, 't': nodes_inv_inv[t], 'w': w } for t, w in scores.iteritems()]
+    df = df.reindex(columns=set(df.columns).intersection(new_row.index))
+    new_row = new_row.reindex(index=df.columns)
     
-    return result
+    mask_new_row = ~np.isnan(new_row.values)
+    
+    results = []
+    for idx, row in df.iterrows():
+        new_mask = ~np.isnan(row.values)
+        
+        mask = mask_new_row & new_mask
+        results.append({'s': source, 't': idx, 'w': corrcoef(new_row[mask], row[mask])[0, 1]})
+        
+        if idx == 2053:
+            print results[-1]
+    
+    return results
 
 def _collect_data(ds, nodes, callback, defer_data=False):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
