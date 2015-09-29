@@ -39,7 +39,6 @@ define([
             arrowRatio: 4,
             safe : false,
         },
-        hasFlash: false,
         hideLayouts: false,
         highlight: false,
         layout: null,
@@ -56,8 +55,8 @@ define([
             max : 1,
             filter: 'edges',
         },
-        uiUrl: "url/",
     };
+    
     window.sliderProperties = $.extend({}, DEFAULTS.slider, module.config().slider || {});
     window.graphProperties = $.extend({}, DEFAULTS.graphProperties, module.config().graphProperties || {});
     $.extend(opts, DEFAULTS);

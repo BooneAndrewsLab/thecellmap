@@ -100,15 +100,28 @@ define([
                     updateEdges(0);
                     state.set('isInitializing', false);
                 });
+                
+                if (!!opts['extra']) loadPin();
             },
         }).fail(function(e) { 
             // TODO: Some meaningful message to user here
         });
     }
     
+    var loadPin = function() {
+        $.ajax({
+            url: opts['extra']['static_url'], 
+            dataType : 'json',
+            success: function(data) {
+                
+            },
+        });
+    }
+    
     var loadDataset = function(dsid, data, callback) {
         var datasetType = dsid == 0 ? 'correlations' : 'interactions';
         var method = dsid == 0 ? 'get' : 'post';
+        
         $.ajax({
             url: opts.urls[datasetType], 
             dataType : 'json',

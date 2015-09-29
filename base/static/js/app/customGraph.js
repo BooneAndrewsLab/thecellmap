@@ -584,7 +584,6 @@ define([
                 processCsv(workbook, nodes, layout, dataset);
             }
             
-            console.log(Cookies.get('csrftoken'))
             $.ajax({
                 dataType: 'json', 
                 data: {

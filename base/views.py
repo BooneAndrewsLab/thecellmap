@@ -102,13 +102,13 @@ def custom_dataset(request, hash):
                     'annotations': Annotation.objects.all(),
                     'can_bulk_download': False,
                     'extra': {
-                            'id': hash,
-                            'static_url': custom.static_url(),
-                            'name': hash,
-                            'type': custom.type,
-                            'directed': custom.network_type == Custom.NET_DIRECTED,
-                        },
-                     'ui': request.COOKIES.get('ui') or 'simple',
+                        'id': hash,
+                        'static_url': custom.static_url(),
+                        'name': hash,
+                        'type': custom.type,
+                        'directed': custom.network_type == Custom.NET_DIRECTED,
+                    },
+                    'ui': request.COOKIES.get('ui') or 'simple',
               })
         else:
             return HttpResponseForbidden("Permission Required")

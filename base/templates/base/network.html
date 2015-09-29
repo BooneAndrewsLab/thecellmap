@@ -51,11 +51,17 @@
             url: "{% url 'annotation' annot.id %}",
         },{% endfor %}],
         regionGroups: [{% for r in regionGroups %} {
-            id: {{ r.id }},
+            id: "{{ r.id }}",
             name: "{{ r.name }}",
             url: "{% url 'region_group' dataset.id r.id %}",
         }, {% endfor %}],
         canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
+        {% if extra %}
+        extra: {
+            'id': "{{ extra.id }}",
+            'static_url': "{{ extra.static_url }}/scores.json",
+        }
+        {% endif %}
     }
   </script>
   {% require_module 'network' %}
