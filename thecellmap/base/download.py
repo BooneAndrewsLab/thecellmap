@@ -181,9 +181,6 @@ def collect_score_matrix(ds, nodes, data):
         
         mask = mask_new_row & new_mask
         results.append({'s': source, 't': idx, 'w': corrcoef(new_row[mask], row[mask])[0, 1]})
-        
-        if idx == 2053:
-            print results[-1]
     
     return results
 
