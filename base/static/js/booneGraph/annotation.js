@@ -21,6 +21,8 @@ define([
         if (!vizdata['regionGroups'].get(state.get('annotation')) || !state.get('showRegions')) {
             sigInst.iterNodes(function(n) {
                 strain = Utils.getStrain(n.id);
+                if (!strain) return;
+                
                 annot = data.get('map')[strain.get('orf')];
                 if (annot != undefined) {
                     if (annot.length == 1) {
