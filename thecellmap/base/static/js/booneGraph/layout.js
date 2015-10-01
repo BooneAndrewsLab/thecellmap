@@ -380,7 +380,8 @@ define([
             groups[tmpkey].push(outNode);
         });
         
-        groups['+'] = groups['+'].reverse();
+        if (groups.hasOwnProperty('+'))
+            groups['+'] = groups['+'].reverse();
         
         var size = 2;
         for (var s in groups) {
