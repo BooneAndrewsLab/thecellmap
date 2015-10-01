@@ -13,6 +13,8 @@ define([
     'utils',
     
     'strainModel',
+    
+    'sigma.pinlayout',
 ], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Node, Settings, Utils, StrainModel) {
     var updateEdges = function(ds) {
         var selected = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes() || [];
@@ -70,7 +72,7 @@ define([
                 nodes.forEach(function (node) {
                     strain = strains.get(node.id);
                     if (strain == undefined) {
-                        console.log("Strain not found:", node.id);
+                        console.log('Strain not found: ', node.id);
                         strain = {};
                     } else {
                         annot = annotation.get('map')[strain.get('id')];
@@ -97,11 +99,11 @@ define([
                 });
                 
                 loadDataset(0, {}, function () {
+                    if (!!opts['extra']) loadPin();
                     updateEdges(0);
+                    
                     state.set('isInitializing', false);
                 });
-                
-                if (!!opts['extra']) loadPin();
             },
         }).fail(function(e) { 
             // TODO: Some meaningful message to user here
@@ -113,7 +115,47 @@ define([
             url: opts['extra']['static_url'], 
             dataType : 'json',
             success: function(data) {
+                var added = false;
                 
+                data.forEach(function(e) {
+                    if (e.w < 0.2) return;
+                    
+                    if (!added && !sigInst._core.graph.nodesIndex[e.s]) {
+                        var node = {};
+                        node.label = 'ADDED NODE';
+                        node.size = 3;
+                        node.color = '#FF0000';
+                        node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
+                        node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
+                        
+                        sigInst.addNode(e.s, node);
+                        Utils.getNode(e.s).type = 'pin';
+                        added = true;
+                    }
+                    
+                    var edge = {};
+                    edge.source = e.s;
+                    edge.target = e.t;
+                    edge.weight = e.w;
+                    edge.id = edge.source + '+' + edge.target; // We can ommit ids, can be auto generated here
+                    edge.absweight = Math.abs(edge.weight);
+                    
+                    if (!!sigInst._core.graph.nodesIndex[edge.source] && !!sigInst._core.graph.nodesIndex[edge.target] && !sigInst._core.graph.edgesIndex[edge.id]) {
+                        sigInst.addEdge(edge.id, edge.source, edge.target, edge);
+                        
+                        var addedEdge = Utils.getEdge(edge.id);
+                        addedEdge.type = 'pin';
+                        addedEdge.absweight = Math.abs(edge.weight)
+                        
+                        console.log(addedEdge.target, e.w)
+                        
+                        Utils.getNode(edge.target).type = 'pin_connect';
+                    }
+                });
+                
+                sigInst.draw();
+                
+                sigInst.startPinLayout();
             },
         });
     }

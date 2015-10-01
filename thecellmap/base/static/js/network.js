@@ -26,6 +26,7 @@ require.config({
         'xmlWriter': 'libs/XMLWriter-1.0.0-min',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
+        'sigma.pinlayout': 'libs/plugins/sigma.pinlayout',
         'sigma.drawregions': 'libs/plugins/sigma.drawregions',
         'sigma.move': 'libs/plugins/sigma.move',
         'sigma.rotate': 'libs/plugins/sigma.rotate',
@@ -68,6 +69,7 @@ require.config({
         'underscore.strings': ['underscore'],
         
         'sigma.forcelayout': ['sigma'],
+        'sigma.pinlayout': ['sigma'],
         'sigma.drawregions': ['sigma'],
         'sigma.move': ['sigma'],
         'sigma.rotate': ['sigma'],

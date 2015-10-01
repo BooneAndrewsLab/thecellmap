@@ -35,7 +35,7 @@ define([
         
         if (Utils.countVisibleEdges() > 7000) {
             Utils.alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + Utils.countVisibleEdges());
-            return;
+//            return;
         }
         
         if ($('#btn-layout').length != 0) ladda = Ladda.create($('#btn-layout')[0]);
