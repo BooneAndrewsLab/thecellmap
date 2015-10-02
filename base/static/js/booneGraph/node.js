@@ -79,10 +79,17 @@ define([
                                     });
                                 } else {
                                     strain = Utils.getStrain(x);
-                                    result.push({
-                                        text: strain.get('verboseName'),
-                                        id: strain.get('id')
-                                    });
+                                    if (!!strain) {
+                                        result.push({
+                                            text: strain.get('verboseName'),
+                                            id: strain.get('id')
+                                        });
+                                    } else {
+                                        result.push({
+                                            text: 'Custom data',
+                                            id: x
+                                        });
+                                    }
                                 }
                             }
                         });

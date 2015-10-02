@@ -34,7 +34,7 @@ def _serve_dataset(request, dataset=None):
         response = render(request, 'base/network.html', {
                 'dataset': dataset,
                 'annotations': Annotation.objects.all(),
-                'regionGroups': RegionGroup.objects.all(),
+                'regionGroups': RegionGroup.objects.filter(dataset=dataset),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
                 'ui': request.COOKIES.get('ui') or 'simple',
         })
@@ -108,6 +108,7 @@ def custom_dataset(request, hash):
                         'type': custom.type,
                         'directed': custom.network_type == Custom.NET_DIRECTED,
                     },
+                    'regionGroups': RegionGroup.objects.filter(dataset=custom.dataset),
                     'ui': request.COOKIES.get('ui') or 'simple',
               })
         else:

@@ -19,6 +19,7 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 from scipy.stats import pearsonr
+from tables.utils import idx2long
 
 
 ONLY = (
@@ -146,6 +147,7 @@ def collect_score_matrix(ds, nodes, data):
     smap = {}
     for s in Strain.objects.all().select_related('gene'):
         smap[s.label()] = s
+        smap[s.pk] = s
     
     with open(ds.static_path('nodes_inv.pickle')) as fp:
         nodes_inv = cPickle.load(fp)
@@ -165,22 +167,37 @@ def collect_score_matrix(ds, nodes, data):
             weights.append(e['w'])
     
     df = DataFrame.from_csv(os.path.join(ds.static_path(), 'scores_matrix.csv'))
-    new_row = Series(weights, targets)
+    new_row = Series(weights, targets, dtype=np.float64)
     df.columns = df.columns.astype(new_row.index.dtype)
     
     new_row = new_row.groupby(lambda x: x).mean()
     
+    print 'newrow', new_row.shape
+    
     df = df.reindex(columns=set(df.columns).intersection(new_row.index))
+    print 'intersect df', df.shape
     new_row = new_row.reindex(index=df.columns)
+    print 'intersect new_row', new_row.shape
     
     mask_new_row = ~np.isnan(new_row.values)
+    print 'new_row mask', np.sum(mask_new_row)
     
     results = []
+    fubar = []
     for idx, row in df.iterrows():
         new_mask = ~np.isnan(row.values)
         
         mask = mask_new_row & new_mask
-        results.append({'s': source, 't': idx, 'w': corrcoef(new_row[mask], row[mask])[0, 1]})
+        corr = corrcoef(new_row[mask], row[mask])[0, 1]
+        
+        results.append({'s': source, 't': idx, 'w': corr})
+        fubar.append((results[-1]['w'], smap[idx], np.sum(new_mask), np.sum(mask)))
+        
+        if corr < 0:
+            continue
+    
+    for w,x,s,ss in sorted(fubar, reverse=True):
+        print '\t'.join(map(str, (w,x.gene, x.allele, x.boonelab_id,s,ss)))
     
     return results
 
