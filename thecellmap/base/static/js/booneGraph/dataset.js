@@ -115,10 +115,13 @@ define([
             url: opts['extra']['static_url'], 
             dataType : 'json',
             success: function(data) {
-                var added = false;
+                var added = false, max_edges = 5;
+                var pin_node;
                 
-                data.forEach(function(e) {
+                data.sort(function(a, b){return b.w-a.w;}).forEach(function(e) {
+                    console.log(e, Utils.getStrain(e.t));
                     if (e.w < 0.2) return;
+                    if (max_edges == 0) return;
                     
                     if (!added && !sigInst._core.graph.nodesIndex[e.s]) {
                         var node = {};
@@ -129,7 +132,8 @@ define([
                         node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
                         
                         sigInst.addNode(e.s, node);
-                        Utils.getNode(e.s).type = 'pin';
+                        pin_node = Utils.getNode(e.s);
+                        pin_node.type = 'pin';
                         added = true;
                     }
                     
@@ -150,8 +154,11 @@ define([
                         console.log(addedEdge.target, e.w)
                         
                         Utils.getNode(edge.target).type = 'pin_connect';
+                        max_edges--;
                     }
                 });
+                
+                $('input.gene-search-input').select2('val', [pin_node.id], true);
                 
                 sigInst.draw();
                 

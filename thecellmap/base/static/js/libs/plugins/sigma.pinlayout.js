@@ -90,7 +90,7 @@ sigma.pinlayout.PinLayout = function(graph, instance, properties) {
         self.p.height = self.p.nodes.length * 15;
         
         self.p.finished = false;
-        base_temperature = temperature = self.p.width / 10.0;
+        base_temperature = temperature = self.p.width / 5.0;
         nodes_length = self.p.nodes.length;
         edges_length = self.p.edges.length;
         forceConstant = Math.sqrt(self.p.height * self.p.width / nodes_length);
@@ -224,6 +224,10 @@ sigma.pinlayout.PinLayout = function(graph, instance, properties) {
 
         var end = new Date().getTime();
         mean_time += end - start;
+        
+        if (delta_length < 1) {
+            self.force_done = true;
+        }
     }
 
     this.end = function() {
@@ -237,11 +241,11 @@ sigma.pinlayout.PinLayout = function(graph, instance, properties) {
     }
     
     this.isDone = function() {
-        return layout_iterations == 160 || this.force_done;
+        return layout_iterations == this.p.max_iterations || this.force_done;
     }
     
     this.percentDone = function() {
-        return layout_iterations / 160;
+        return layout_iterations / this.p.max_iterations;
     }
     
     this.calc_bound_box = function() {
