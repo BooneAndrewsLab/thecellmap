@@ -185,7 +185,7 @@ define([
             ctx.clearRect(0, 0, canvas.width(), canvas.height());
         }
     }
-    var drawRegions = function() {
+    var drawRegions = function(direct) {
         clearRegions();
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
         if (!$('#canvas-regions').length) {
@@ -223,7 +223,11 @@ define([
             return a.y - b.y;
         });
         
-        sigInst.displayRegions({regions: regions, runtime: 2});
+        if (!direct) {
+            sigInst.displayRegions({regions: regions, runtime: 2});
+        } else {
+            sigInst.drawRegionsDirect({regions: regions, runtime: 2, context: direct});
+        }
     }
     
     var loadRegion = function(id) {

@@ -5,13 +5,14 @@ define([
     
     'utils',
     'node',
+    'annotation',
     
     'fileSaver',
     'blob',
     'canvas2Blob',
     'canvas2Svg',
     'xmlWriter',
-], function($, _, Backbone, Utils, Node) {
+], function($, _, Backbone, Utils, Node, Annotation) {
     var downloadCanvasSnapshot = function() {
         var canvas = $('canvas:first').clone(), ctx = canvas[0].getContext("2d"), cx;
         
@@ -48,6 +49,9 @@ define([
         sigInst.draw(0,0,2,0);
         sigInst._core.plotter.restoreCxt();
         sigInst.draw();
+        
+        Annotation.drawRegions(canvas);
+        Utils.graphSelectedNodes(canvas);
         
 //        var annot = state.get('annotation');
 //        if (settings['showLegendSvg'] && annot != 'None') {

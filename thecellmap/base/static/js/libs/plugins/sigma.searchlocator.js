@@ -24,8 +24,14 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
 
     this.atomicGo = function() {
         var graph = self.graph, ratio = sigInst.position().ratio;
-        var canvas = $('.sigma_mouse_canvas')[0], context = canvas.getContext('2d');
-        context.clearRect(0, 0, $(document).width(), $(document).height());
+//        var canvas = $('.sigma_mouse_canvas')[0], context = canvas.getContext('2d');
+        var context = $('.sigma_mouse_canvas')[0].getContext('2d');
+        if (!!self.m.hasOwnProperty('context')) {
+            context = self.m.context
+        } else {
+            context.clearRect(0, 0, $(document).width(), $(document).height());
+        }
+        
         context.strokeStyle = '#222222';
         
         self.m.nodes.forEach(function(n) {
@@ -65,6 +71,10 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
     this.cleanup = function() {
         delete self.m.d;
     }
+    
+    this.setStep = function(s) {
+        step = s;
+    }
 };
 
 sigma.publicPrototype.locateSearchedNodes = function(properties) {
@@ -82,4 +92,15 @@ sigma.publicPrototype.locateSearchedNodes = function(properties) {
         }
         return true;
     });
+};
+
+sigma.publicPrototype.drawSearchedNodesDirect = function(properties) {
+    if (!properties.hasOwnProperty('nodes') || !!state.get('showCircular')) return;
+    
+    this.searchlocator = new sigma.searchlocator.SearchLocator(this._core.graph, this, properties);
+    this.searchlocator.init();
+    
+    var sl = this.searchlocator;
+    sl.setStep(1);
+    sl.atomicGo();
 };
