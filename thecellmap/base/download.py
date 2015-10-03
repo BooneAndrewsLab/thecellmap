@@ -19,7 +19,6 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 from scipy.stats import pearsonr
-from tables.utils import idx2long
 
 
 ONLY = (
