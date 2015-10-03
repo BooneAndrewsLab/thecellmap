@@ -77,13 +77,18 @@ define([
         $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
     }
     
-    var graphSelectedNodes = function() {
+    var graphSelectedNodes = function(direct) {
         if (state.get('showCircular')) return;
         
         var nodes = sigInst._core.graph.nodes.filter(function(node) {
             return node.selected;
         });
-        sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
+        
+        if (!direct) {
+            sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
+        } else {
+            sigInst.drawSearchedNodesDirect({nodes: nodes, context: direct});
+        }
     }
     
     var getSelectedNodes = function(getHidden) {

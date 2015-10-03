@@ -16,7 +16,11 @@ sigma.drawregions.RegionDraw = function(graph, instance, properties) {
     
     this.atomicGo = function() {
         var graph = self.graph;
-        var canvas = $('#canvas-regions'), ctx = canvas[0].getContext('2d');
+        var ctx = $('#canvas-regions')[0].getContext('2d');
+        if (!!self.m.hasOwnProperty('context')) {
+            ctx = self.m.context
+        }
+        var last = 0, spacing = 20;
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
         ctx.lineWidth = 2;
@@ -49,7 +53,6 @@ sigma.drawregions.RegionDraw = function(graph, instance, properties) {
                 ctx.stroke();
                 ctx.closePath();
             } else {
-                var last = 0, newPos, spacing = 20;
                 if (region.y - last < spacing) {
                     region.y += spacing - (region.y - last);
                 }
@@ -84,4 +87,12 @@ sigma.publicPrototype.displayRegions = function(properties) {
         }
         return true;
     });
+};
+
+sigma.publicPrototype.drawRegionsDirect = function(properties) {
+    if (!properties.hasOwnProperty('regions')) return;
+    
+    this.drawregions = new sigma.drawregions.RegionDraw(this._core.graph, this, properties);
+    this.drawregions.atomicGo();
+    this.drawregions.atomicGo();
 };
