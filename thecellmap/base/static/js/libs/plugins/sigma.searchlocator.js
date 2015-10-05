@@ -35,7 +35,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
         context.strokeStyle = '#222222';
         
         self.m.nodes.forEach(function(n) {
-            if (!n.hidden && !n._hidden) {
+            if (!n.hidden && !n._hidden && n.type != 'pin') {
                 distance = n.displaySize / ratio * step ;
                 
                 if (n.displaySize / 2 > size) {
