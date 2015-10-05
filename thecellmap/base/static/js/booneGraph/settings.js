@@ -63,6 +63,8 @@ define([
         settings.on('change:disableScroll', function() {
             sigInst.mouseProperties({blockScroll: settings.get('disableScroll')});
         });
+        
+        if (!Cookies.get('ui')) localStorage.setItem('ui', 'simple');
     }
     
     var updateLabels = function() {
