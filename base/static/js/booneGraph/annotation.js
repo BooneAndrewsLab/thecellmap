@@ -63,7 +63,8 @@ define([
           <tbody id="style-annotation-table"></tbody></table>');
         var id = state.get('annotation'), terms = {}, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
         sigInst.iterNodes(function(node) {
-            if (!node.hidden && node.type != 'pin') strains.push(Utils.getStrain(node.id));
+//            if (!node.hidden && node.type != 'pin') strains.push(Utils.getStrain(node.id));
+            if (!node.hidden) strains.push(Utils.getStrain(node.id));
         });
         if (strains.length) {
             _.each(strains, function(s) {

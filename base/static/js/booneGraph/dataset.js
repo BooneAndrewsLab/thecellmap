@@ -115,19 +115,27 @@ define([
             url: opts['extra']['static_url'], 
             dataType : 'json',
             success: function(data) {
-                var added = false, max_edges = 5;
+                var added = false, max_edges = 1;
                 var pin_node;
                 
                 data.sort(function(a, b){ return b.w-a.w; }).forEach(function(e) {
                     if (e.w < 0.2 || max_edges == 0) return;
                     
-                    if (!added && !sigInst._core.graph.nodesIndex[e.s]) {
+                    pin_node = Utils.getNode(e.t);
+                    pin_node.type = 'pin';
+                    
+                    max_edges--;
+                    
+                    //For adding multiple edges that correlates with the pin
+                    
+                    /*if (!added && !sigInst._core.graph.nodesIndex[e.s]) {
+                        var end_node = Utils.getNode(e.t);
+                        
                         var node = {};
-                        node.label = 'ADDED NODE';
                         node.size = 3;
                         node.color = '#FF0000';
-                        node.x = Math.random() * 100;
-                        node.y = Math.random() * 100;
+                        node.x = end_node ? end_node.x : Math.random() * 100;
+                        node.y = end_node ? end_node.y : Math.random() * 100;
                         
                         sigInst.addNode(e.s, node);
                         pin_node = Utils.getNode(e.s);
@@ -151,14 +159,13 @@ define([
                         
                         Utils.getNode(edge.target).type = 'pin_connect';
                         max_edges--;
-                    }
+                    }*/
                 });
                 
                 $('input.gene-search-input').select2('val', [pin_node.id], true);
-                
                 sigInst.draw();
                 
-                sigInst.startPinLayout();
+//                sigInst.startPinLayout();
             },
         });
     }

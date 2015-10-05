@@ -35,14 +35,14 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
         context.strokeStyle = '#222222';
         
         self.m.nodes.forEach(function(n) {
-            if (!n.hidden && !n._hidden && n.type != 'pin') {
+            if (!n.hidden && !n._hidden) {
                 distance = n.displaySize / ratio * step ;
                 
                 if (n.displaySize / 2 > size) {
                     size = n.displaySize;
                 }
                 
-                context.fillStyle = 'red';
+                context.fillStyle = n.type == 'pin' ? '#0066FF' : 'red';
                 context.beginPath();
                 
                 context.moveTo(n.displayX, n.displayY - distance);
