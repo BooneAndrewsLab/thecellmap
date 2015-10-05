@@ -331,7 +331,7 @@ define([
                 edge.target.visibleDegree--;
             }
         }).iterNodes(function(node) {
-            if (node.pin) return;
+            if (node.type == 'pin') return;
             
             strain = Utils.getStrain(node.id);
             node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + "") == -1); // either we manually hid the node or it's not connected to anything
@@ -367,7 +367,7 @@ define([
         }
         
         sigInst.iterNodes(function(node) {
-            if (node.pin) {
+            if (node.type == 'pin') {
                 node.hidden = node._hidden = true;
                 return
             }
