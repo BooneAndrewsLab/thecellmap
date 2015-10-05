@@ -118,18 +118,16 @@ define([
                 var added = false, max_edges = 5;
                 var pin_node;
                 
-                data.sort(function(a, b){return b.w-a.w;}).forEach(function(e) {
-                    console.log(e, Utils.getStrain(e.t));
-                    if (e.w < 0.2) return;
-                    if (max_edges == 0) return;
+                data.sort(function(a, b){ return b.w-a.w; }).forEach(function(e) {
+                    if (e.w < 0.2 || max_edges == 0) return;
                     
                     if (!added && !sigInst._core.graph.nodesIndex[e.s]) {
                         var node = {};
                         node.label = 'ADDED NODE';
                         node.size = 3;
                         node.color = '#FF0000';
-                        node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
-                        node.y = !isNaN(node.y) ? node.y : (Math.random() * 100);
+                        node.x = Math.random() * 100;
+                        node.y = Math.random() * 100;
                         
                         sigInst.addNode(e.s, node);
                         pin_node = Utils.getNode(e.s);
@@ -150,8 +148,6 @@ define([
                         var addedEdge = Utils.getEdge(edge.id);
                         addedEdge.type = 'pin';
                         addedEdge.absweight = Math.abs(edge.weight)
-                        
-                        console.log(addedEdge.target, e.w)
                         
                         Utils.getNode(edge.target).type = 'pin_connect';
                         max_edges--;
