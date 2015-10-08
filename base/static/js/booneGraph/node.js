@@ -173,8 +173,8 @@ define([
                             query.callback({results: []});
                             return;
                         }
+                        
                         var data = {results: []}, term = query.term.replace('*', '').toLowerCase();
-                        var aterm, aterms = annotations.get(state.get('annotation')).get('terms'), acount = 0;
                         
                         autocomp.forEach(function(node) {
                             if (query.term.length == 0){
@@ -189,12 +189,16 @@ define([
                             }
                         });
                         
-                        for (aterm in aterms) {
-                            if (aterms.hasOwnProperty(aterm) && aterms[aterm].name.toLowerCase().indexOf(term) != -1) {
-                                data.results.unshift({id: 'annot' + aterm, text: 'Annotation: ' + aterms[aterm].name });
-                                acount++;
+                        if (annotations.get(state.get('annotation'))) {
+                            var aterm, aterms = annotations.get(state.get('annotation')).get('terms'), acount = 0;
+                            
+                            for (aterm in aterms) {
+                                if (aterms.hasOwnProperty(aterm) && aterms[aterm].name.toLowerCase().indexOf(term) != -1) {
+                                    data.results.unshift({id: 'annot' + aterm, text: 'Annotation: ' + aterms[aterm].name });
+                                    acount++;
+                                }
+                                if (acount > 2) break; // List only 3 terms max
                             }
-                            if (acount > 2) break; // List only 3 terms max
                         }
                         
                         opts.annotations.forEach(function(annotation) {
