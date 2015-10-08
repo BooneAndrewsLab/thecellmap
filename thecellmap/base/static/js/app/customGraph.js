@@ -397,6 +397,18 @@ define([
         alert.alert();
     }
     
+    var messageError = function(text) {
+        $('.modal').modal('hide');
+        $('#panel-alerts').empty();
+        
+        var alert = $('<div class="alert alert-danger fade in"> \
+                <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
+                ' + text + '</div>');
+        
+        $('#panel-alerts').append(alert);
+        alert.alert();
+    }
+    
     var toArray = function(sheet) {
         if (fileType == 'xls') {
             return XLS.utils.sheet_to_row_object_array(sheet);
@@ -452,6 +464,10 @@ define([
                 }
             });
         });
+        
+        window.onerror = function myErrorHandler(errorMsg, url, lineNumber) {
+            messageError('Oops, something went wrong.');
+        }
         
         wizard = $('#custom-setting-wizard').wizard({contentHeight: 500, contentWidth: 800});
         
@@ -545,16 +561,18 @@ define([
             fileType = name.split('.').pop();
             wizard.show();
             $('.wizard-buttons-container').addClass('hidden');
+            
             if (fileType != 'csv') {
                 setTimeout(function() {
                     reader.onload = function(e) {
                         var data = e.target.result;
                         if (fileType == 'xls') {
                             workbook = XLS.read(data, {type:'binary'});
-                        } else if (fileType == 'xlsx') {
-                            workbook = XLSX.read(data, {type:'binary'});
+//                        } else if (fileType == 'xlsx') {
+//                            workbook = XLSX.read(data, {type:'binary'});
                         } else {
-                            alert('Incompatible file types');
+                            messageError('Incompatible file types');
+                            return;
                         }
                         loadSheets(workbook);
                     };
@@ -562,10 +580,6 @@ define([
                 }, 500);
             } else {
                 $(this).parse({
-                    before: function(data) {
-                    },
-                    error: function(data) {
-                    },
                     complete: function(data) {
                         wizard.cards['nodes-column'].disable();
                         workbook = data;
@@ -573,7 +587,6 @@ define([
                     }
                 });
             }
-            
         });
         
         wizard.on('submit', function(wizard) {
@@ -603,7 +616,8 @@ define([
                     window.location.href = data['url'];
                 }
             }).always(function() { 
-            }).fail(function(e) { 
+            }).fail(function(e) {
+                messageError('File failed to be sent to server.');
             });
         });
     };
