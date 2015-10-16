@@ -1749,17 +1749,36 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     var size = Math.round(node['displaySize'] * 10) / 10;
 //    var size = node.type == 'pin' ? 35 : Math.round(node['displaySize'] * 10) / 10;
     
+    ctx.fillStyle = node['selected'] ? 'red' : node['color'] || self.p.defaultNodeColor;
+    ctx.beginPath();
+    ctx.arc(node['displayX'],
+            node['displayY'],
+            size,
+            0,
+            Math.PI * 2,
+            true);
+    ctx.closePath();
+    ctx.fill();
     
-        ctx.fillStyle = node['selected'] ? 'red' : (node['color'] || self.p.defaultNodeColor);
+    if (node['selected']) {
+        var rsize = 35;
         ctx.beginPath();
-        ctx.arc(node['displayX'],
-                node['displayY'],
-                size,
-                0,
-                Math.PI * 2,
-                true);
-        ctx.closePath();
+        
+        ctx.moveTo(node.displayX, node.displayY);
+        ctx.bezierCurveTo(node.displayX, node.displayY - 1/3 * rsize, 
+                node.displayX - 2/3 * rsize, node.displayY - 5/6 * rsize, 
+                node.displayX, node.displayY - rsize);
+        ctx.bezierCurveTo(node.displayX + 2/3 * rsize, node.displayY - 5/6 * rsize, 
+                node.displayX, node.displayY - 1/3 * rsize, 
+                node.displayX, node.displayY);
         ctx.fill();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.fillStyle = '#222222';
+        ctx.arc(node.displayX, node.displayY - 2/3 * rsize, 2/15 * rsize, 0, 2 * Math.PI);
+        ctx.fill();
+    }
 //    if (node.type != 'pin') {
 //    } else {
 //        ctx.fillStyle = '#0066ff';

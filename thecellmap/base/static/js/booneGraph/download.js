@@ -51,7 +51,6 @@ define([
         sigInst.draw();
         
         Annotation.drawRegions(canvas);
-        Utils.graphSelectedNodes(canvas);
         
 //        var annot = state.get('annotation');
 //        if (settings['showLegendSvg'] && annot != 'None') {

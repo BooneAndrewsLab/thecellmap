@@ -70,7 +70,6 @@ define([
             $('input.gene-search-input').select2('val', '', true);
             state.set("selection", []);
         }
-        clearSelectionCanvas();
     }
     
     var clearSelectionCanvas = function() {
@@ -204,7 +203,6 @@ define([
                 }
             }
         }, timeout);
-        graphSelectedNodes();
     }
     
     var traverseRec = function(node, netNum, len) {

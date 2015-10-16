@@ -35,12 +35,11 @@ define([
         
         if (Utils.countVisibleEdges() > 7000) {
             Utils.alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + Utils.countVisibleEdges());
-//            return;
+            return;
         }
         
         if ($('#btn-layout').length != 0) ladda = Ladda.create($('#btn-layout')[0]);
         state.set('showRegions', false);
-        Utils.clearSelectionCanvas();
         
         if (opts.runningLayout) {
             sigInst.stopForceLayout();
@@ -344,10 +343,8 @@ define([
         var node = Utils.getNode(nid), groups = {}, draw = [], addedNode = false;
         var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden && !e.hidden;});
         
-        if (!Utils.nodeExists('tmp_' + node.id)) {
-            addedNode = true;
-            sigInst.addNode('tmp_' + node.id, node);
-        }
+        if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
+        
         var tmpN = Utils.getNode('tmp_' + node.id);
         tmpN.hidden = tmpN._hidden = false;
         
@@ -380,8 +377,7 @@ define([
             groups[tmpkey].push(outNode);
         });
         
-        if (groups.hasOwnProperty('+'))
-            groups['+'] = groups['+'].reverse();
+        if (groups.hasOwnProperty('+')) groups['+'] = groups['+'].reverse();
         
         var size = 2;
         for (var s in groups) {
@@ -421,10 +417,8 @@ define([
         }
         
         var radius = 200;
-        if (addedNode) {
-            tmpN.x = node.x - (size + 4) * radius;
-            tmpN.y = node.y;
-        }
+        tmpN.x = node.x - (size + 4) * radius;
+        tmpN.y = node.y;
         
         for (var s in groups) {
             var r = radius*2;
