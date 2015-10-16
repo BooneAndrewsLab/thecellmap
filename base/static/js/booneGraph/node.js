@@ -48,7 +48,7 @@ define([
 //                    addAttributeLayouts();
                 
                 var tokenizing = false;
-                $("input.gene-search-input").select2({
+                $('input.gene-search-input').select2({
                     multiple: true,
                     minimumInputLength: 2,
                     containerCssClass: 'form-control', 
@@ -104,6 +104,8 @@ define([
                         separator; // the matched separator
                         
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
+                        
+                        if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) input += ',';
                         
                         tokenizing = true;
                         while (true) {
@@ -211,7 +213,6 @@ define([
                     },
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
-                    Utils.clearSelectionCanvas();
                     var selected = Utils.getSelectedNodes(true), numVisibleSelected = 0, strain;
                     if (state.get('annotation') == 'None') Annotation.loadAnnotation('SAFE');
                     
@@ -280,24 +281,24 @@ define([
                         sigInst.draw();
                         
                         if (!($(selected).not(state.get('selection')).length == 0 && $(state.get('selection')).not(selected).length == 0)) {
-                            var nodes = [];
-//                            //takes difference, and only blinks new nodes
-//                            var diff = $(selected).not(state.get("selection")).get()
-//                            diff.forEach(function(n) {
-//                                var node = Utils.getNode(n);
-//                                if (node) nodes.push(node);
-//                            });
-//                            sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
-                            
-                            //blinks all nodes
-                            if (!state.get('showCircular')) {
-                                selected.forEach(function(n) {
-                                    var node = Utils.getNode(n);
-                                    if (node) nodes.push(node);
-                                });
-                                
-                                sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
-                            }
+//                            var nodes = [];
+////                            //takes difference, and only blinks new nodes
+////                            var diff = $(selected).not(state.get("selection")).get()
+////                            diff.forEach(function(n) {
+////                                var node = Utils.getNode(n);
+////                                if (node) nodes.push(node);
+////                            });
+////                            sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
+//                            
+//                            //blinks all nodes
+//                            if (!state.get('showCircular')) {
+//                                selected.forEach(function(n) {
+//                                    var node = Utils.getNode(n);
+//                                    if (node) nodes.push(node);
+//                                });
+//                                
+//                                sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
+//                            }
                             
                             state.set('selection', selected);
                         }
@@ -315,19 +316,20 @@ define([
         sigInst.iterNodes(function(node) {
             node.visibleDegree = node.degree;
         }).iterEdges(function(edge) {
+            var showCircular = state.get('showCircular');
+            
             if (isArray) {
                 state.set('cutoffInteraction', cutoff);
-                var showCircular = state.get('showCircular');
                 if (edge.id.indexOf('tmp') != -1 && showCircular) {
                     edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]);
                 } else if (edge.id.indexOf('tmp') == -1 && showCircular && edge._hidden) {
                     edge.hidden = edge._hidden;
                 } else {
-                    edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]) || edge.ds != state.get("dataset");
+                    edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]) || edge.ds != state.get('dataset');
                 }
             } else {
                 state.set('cutoffCorrelation', cutoff);
-                edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.get("dataset");
+                edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.get('dataset');
             }
             
             if (edge.hidden || edge.source._hidden || edge.target._hidden) {

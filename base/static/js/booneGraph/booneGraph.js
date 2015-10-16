@@ -109,7 +109,6 @@ define([
                 }
             }
             
-            Utils.graphSelectedNodes();
             Annotation.drawRegions();
             
             clicking.wasDragging = false;
@@ -120,9 +119,7 @@ define([
             }
         }).bind('startmovingnodes', function(evt) {
             Annotation.clearRegions();
-            $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
         }).bind('stopmovingnodes', function(evt) {
-            Utils.graphSelectedNodes();
             Annotation.drawRegions();
         }).bind('draggedNode', function() {
             clicking.wasDragging = true;
@@ -133,7 +130,6 @@ define([
             }
         }).bind('selectionStart', function() {
         }).bind('downnodes', function(selection) {
-            Utils.clearSelectionCanvas();
             Annotation.clearRegions();
         });
         

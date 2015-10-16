@@ -196,7 +196,6 @@ define([
             case 'context-node-gi':
                 if (state.get('dataset') == 0 && state.get('annotation') != 'None'){
                     $('input.gene-search-input').select2('val', targets, true);
-                    Utils.clearSelectionCanvas();
                     $('.image-dataset-icon[data-dataset="' + 1 + '"]').click();
                 }
                 break;
@@ -340,13 +339,15 @@ define([
             $('[data-simple-step]').each(function() {
                 switch ($(this).data('simple-step')) {
                 case 1:
-                    $(this).hide();
+                    if ($(this).data('simple-keep') != true) $(this).hide();
                     break;
                 case 2:
                     $(this).removeClass('hidden');
                     break;
                 }
             });
+            
+            $(e.target).addClass('hidden');
         },
         refreshNetwork: function(e) {
             location.reload();

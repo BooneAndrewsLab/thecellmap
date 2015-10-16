@@ -221,6 +221,10 @@
     width: 75px;
 }
 
+.btn-group-simple {
+    margin-left: 5px;
+}
+
 /** Draw UI **/
 .draw-ui {
     padding: 5px 5px; /* make a nice 5px gap between ui and network border */

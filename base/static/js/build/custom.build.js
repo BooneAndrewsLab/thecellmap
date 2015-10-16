@@ -8,9 +8,9 @@
         'jquery.cookie': 'libs/js.cookie',
         'underscore.strings': 'libs/underscore.string.min',
         
-        'jszip': 'libs/jszip.min',
+        'jszip': 'libs/jszip',
         'xls': 'libs/xls.min',
-        'xlsx': 'libs/xlsx.min',
+        'xlsx': 'libs/xlsx',
         
         'settingsModel': 'models/settingsModel',
         
@@ -32,7 +32,7 @@
         'load': ['jszip'],
         'select2': ['jquery'],
         'wizard': ['bootstrap'],
-        'xlsx': ['jszip', 'load'],
+        'xlsx': ['load', 'jszip'],
     },
     name: 'custom',
     out: 'custom-built.js',

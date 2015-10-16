@@ -37,16 +37,16 @@
   </div>
   
   <div class="top-right-simple hidden-sm hidden-xs">
-    <div class="btn-group-simple hidden" data-simple-step="1">
-      <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download table</button>
-      <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0"> View Network </button>
-    </div>
-    
     <div class="cutoff-bar-group hidden" data-simple-step="2">
       <div id="cutoff-bar-cor-simple" class="cutoff-bar-simple cutoff-cor" data-dataset="0" data-orientation="horizontal" data-dir="ltr"></div>
       <button id="cutoff-label-min-simple" type="button" class="btn btn-default cutoff-label cutoff-label-min" data-placement="bottom"></button>
       <div id="cutoff-bar-int-simple" class="cutoff-bar-simple cutoff-int" data-dataset="1" data-orientation="horizontal" style="display: none;"></div>
       <button id="cutoff-label-max-simple" type="button" class="btn btn-success cutoff-label cutoff-label-max" data-placement="bottom" style="display: none;">&nbsp;</button>
+    </div>
+    
+    <div class="btn-group-simple hidden" data-simple-step="1" data-simple-keep="true">
+      <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download table</button>
+      <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0"> View Network </button>
     </div>
   </div>
 {% endblock %}
