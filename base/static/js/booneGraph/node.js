@@ -300,6 +300,7 @@ define([
 //                                sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
 //                            }
                             
+                            if (state.get('selection').length > 0) state.set('preselect', state.get('selection'));
                             state.set('selection', selected);
                         }
                     }
@@ -340,7 +341,7 @@ define([
 //            if (node.type == 'pin') return;
             
             strain = Utils.getStrain(node.id);
-            node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + "") == -1); // either we manually hid the node or it's not connected to anything
+            node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + '') == -1); // either we manually hid the node or it's not connected to anything
         });
         
         if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
@@ -348,13 +349,16 @@ define([
         Settings.updateLabels();
         sigInst.draw();
         Annotation.rebuildLegend();
+        if (state.get('subnetworks')) applyNeighbourhood(1);
     }
     
     var applyNeighbourhood = function(level) {
         state.set('showRegions', false);
+        state.set('subnetworks', true);
         
         var selected = Utils.getSelectedNodes(), localSelected = {}, tmpSelected, strain;
         if (selected.length < 1) return;
+        
         _.each(selected, function(id) {
             localSelected[id] = null;
         });
