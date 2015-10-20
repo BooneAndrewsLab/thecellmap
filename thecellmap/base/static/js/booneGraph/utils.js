@@ -92,7 +92,7 @@ define([
     
     var getSelectedNodes = function(getHidden) {
         if (state.get('isInitializing')) return;
-        var selected = getSelection(), map, annotations = [], result, byAnnot = {};
+        var selected = getSelection().length > 0 ? getSelection() : state.get('preselect'), map, annotations = [], result, byAnnot = {};
         var i, j, selectedByAnnotation = {}, strain, node;
         
         result = selected.filter(function(sel) {
@@ -100,7 +100,7 @@ define([
         });
         
         if (vizdata['annotations'].get(state.get('annotation'))) {
-            map = vizdata['annotations'].get(state.get("annotation")).get('map');
+            map = vizdata['annotations'].get(state.get('annotation')).get('map');
             
             selected.forEach(function(sel) {
                 if (_str.startsWith(sel, 'annot')) {
@@ -124,7 +124,7 @@ define([
         
         vizdata['strains']['models'].forEach(function(strain) {
             if (selectedByAnnotation.hasOwnProperty(strain.get('orf'))) {
-                result.push(strain.get('id') + "");
+                result.push(strain.get('id') + '');
             }
         });
         

@@ -20,9 +20,11 @@ define([
             layoutRepulsion: 1,
             missingNodes: [],
             nodeSize: 2,
+            preselect: [],
             selection: [],
             showCircular: false,
             showRegions: true,
+            subnetworks: false,
             ui: localStorage.getItem('ui') || 'simple',
         }
     });
