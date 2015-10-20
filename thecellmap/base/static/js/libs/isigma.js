@@ -1673,15 +1673,23 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
    * @see sigma.chronos
    * @return {boolean} Returns true if all the nodes are drawn and false else.
    */
-  function task_drawNode() {
+  function task_drawNode(selected_nodes) {
     var c = graph.nodes.length;
     var i = 0;
 
     while (i++< self.p.nodesSpeed && self.currentNodeIndex < c) {
       if (!self.isOnScreen(graph.nodes[self.currentNodeIndex])) {
         self.currentNodeIndex++;
+      }else if (graph.nodes[self.currentNodeIndex]['selected']) {
+        selected_nodes.push(self.currentNodeIndex++)
       }else {
         drawNode(graph.nodes[self.currentNodeIndex++]);
+      }
+    }
+    
+    if (!self.currentNodeIndex < c) {
+      for (var i in selected_nodes) {
+        drawNode(graph.nodes[selected_nodes[i]]);
       }
     }
 
@@ -3187,7 +3195,8 @@ function Sigma(root, id) {
 
     if (n) {
       if (n > 1) {
-        while (self.plotter.task_drawNode()) {}
+        var selected_nodes = [];
+        while (self.plotter.task_drawNode(selected_nodes)) {}
       }else {
         sigma.chronos.addTask(
           self.plotter.task_drawNode,
