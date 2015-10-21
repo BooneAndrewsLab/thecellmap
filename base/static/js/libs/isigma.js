@@ -1680,7 +1680,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     while (i++< self.p.nodesSpeed && self.currentNodeIndex < c) {
       if (!self.isOnScreen(graph.nodes[self.currentNodeIndex])) {
         self.currentNodeIndex++;
-      }else if (graph.nodes[self.currentNodeIndex]['selected']) {
+      }else if (graph.nodes[self.currentNodeIndex]['selected'] && !!selected_nodes) {
         selected_nodes.push(self.currentNodeIndex++)
       }else {
         drawNode(graph.nodes[self.currentNodeIndex++]);
@@ -3194,8 +3194,8 @@ function Sigma(root, id) {
     }
 
     if (n) {
+      var selected_nodes = [];
       if (n > 1) {
-        var selected_nodes = [];
         while (self.plotter.task_drawNode(selected_nodes)) {}
       }else {
         sigma.chronos.addTask(

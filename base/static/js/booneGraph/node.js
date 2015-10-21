@@ -72,10 +72,16 @@ define([
                                         }
                                     }
                                 } else if (x.indexOf('action_loadannot') == 0) {
-                                    x = x.replace('action_loadannot', '')
+                                    x = x.replace('action_loadannot', '');
                                     result.push({
                                         text: 'Load:' + x,
                                         id: 'action_loadannot' + x
+                                    });
+                                } else if (x.indexOf('action_selectall') == 0) {
+                                    x = x.replace('action_selectall', '');
+                                    result.push({
+                                        text: 'Select all following strains',
+                                        id: 'action_selectall'
                                     });
                                 } else {
                                     strain = Utils.getStrain(x);
@@ -104,7 +110,6 @@ define([
                         separator; // the matched separator
                         
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-                        
                         if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) input += ',';
                         
                         tokenizing = true;
@@ -204,11 +209,16 @@ define([
                         }
                         
                         opts.annotations.forEach(function(annotation) {
-                            if (('load ' + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.get('annotation'))
+                            if (('load ' + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.get('annotation')) {
                                 data.results.unshift({id: 'action_loadannot ' + annotation.name, text: 'Load: ' + annotation.name});
+                            }
                         });
                         
-                        data.results = data.results.slice(0, 6);
+                        if (data.results.length > 1) {
+                            data.results.unshift({id: 'action_selectall', text: 'Select all following strains'});
+                        }
+                        
+                        data.results = data.results.slice(0, 7);
                         query.callback(data);
                     },
                     data: autocomp,
@@ -349,6 +359,7 @@ define([
         Settings.updateLabels();
         sigInst.draw();
         Annotation.rebuildLegend();
+        
         if (state.get('subnetworks')) applyNeighbourhood(1);
     }
     
@@ -356,7 +367,7 @@ define([
         state.set('showRegions', false);
         state.set('subnetworks', true);
         
-        var selected = Utils.getSelectedNodes(), localSelected = {}, tmpSelected, strain;
+        var selected = Utils.getSelectedNodes(false, true), localSelected = {}, tmpSelected, strain;
         if (selected.length < 1) return;
         
         _.each(selected, function(id) {

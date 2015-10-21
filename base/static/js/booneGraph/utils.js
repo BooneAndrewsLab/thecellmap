@@ -90,10 +90,13 @@ define([
         }
     }
     
-    var getSelectedNodes = function(getHidden) {
+    var getSelectedNodes = function(getHidden, getPrevious) {
         if (state.get('isInitializing')) return;
-        var selected = getSelection().length > 0 ? getSelection() : state.get('preselect'), map, annotations = [], result, byAnnot = {};
+        
+        var selected = getSelection(), map, annotations = [], result, byAnnot = {};
         var i, j, selectedByAnnotation = {}, strain, node;
+        
+        if (getPrevious) selected = getSelection().length > 0 ? getSelection() : state.get('preselect');
         
         result = selected.filter(function(sel) {
             return !_str.startsWith(sel, 'annot') && !_str.startsWith(sel, 'action');
