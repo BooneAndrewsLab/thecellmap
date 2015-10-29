@@ -31,7 +31,7 @@ define([
     
     var toggleLayout = function(layoutType) {
         if (((layoutType == 'annotation' || layoutType == 'force+' || layoutType == 'gi+') && state.get('annotation') == 'None') 
-                || (layoutType == 'gi' && state.get('dataset') == 0)) return;
+                || (layoutType == 'gi' && state.get('dataset') == 0) || state.get('showCircular')) return;
         
         if (Utils.countVisibleEdges() > 7000) {
             Utils.alertUser('Too many edges', 'Too many edges are visible for the layout algorithm to run efficiently.<br>Edge count: ' + Utils.countVisibleEdges());
@@ -346,6 +346,7 @@ define([
         if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
         
         var tmpN = Utils.getNode('tmp_' + node.id);
+        tmpN.selected = true;
         tmpN.hidden = tmpN._hidden = false;
         
         etmp.sort(function(e1, e2) {
