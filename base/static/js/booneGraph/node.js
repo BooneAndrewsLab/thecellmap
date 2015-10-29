@@ -45,9 +45,10 @@ define([
                         id: strain.get('id'),
                     });
                 }
+                
 //                    addAttributeLayouts();
                 
-                var tokenizing = false;
+                var tokenizing = false, selChoices;
                 $('input.gene-search-input').select2({
                     multiple: true,
                     minimumInputLength: 2,
@@ -59,7 +60,7 @@ define([
                     initSelection: function (element, callback) {
                         var id = $(element).val(), strain, result = [];
                         id.split(',').forEach(function(x) {
-                            if (x !== "") {
+                            if (x !== '') {
                                 var annot = state.get('annotation');
                                 if (x.indexOf('annot') == 0) {
                                     x = parseInt(x.replace('annot', ''));
@@ -208,10 +209,14 @@ define([
                             }
                         }
                         
-                        opts.annotations.forEach(function(annotation) {
+                        var acount = 0;
+                        $(opts.annotations).each(function(idx, annotation) {
                             if (('load ' + annotation.name.toLowerCase()).indexOf(term) != -1 && annotation.name != state.get('annotation')) {
                                 data.results.unshift({id: 'action_loadannot ' + annotation.name, text: 'Load: ' + annotation.name});
+                                acount++;
                             }
+                            
+                            if (acount > 1) return false;
                         });
                         
                         if (data.results.length > 1) {
@@ -219,12 +224,30 @@ define([
                         }
                         
                         data.results = data.results.slice(0, 7);
+                        selChoices = data.results.filter(function(r) {
+                            return (r.id + '').indexOf('action') == -1;
+                        });
+                        
                         query.callback(data);
                     },
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
-                    var selected = Utils.getSelectedNodes(true), numVisibleSelected = 0, strain;
-                    if (state.get('annotation') == 'None') Annotation.loadAnnotation('SAFE');
+                    var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
+                    var actionAnnot = state.get('annotation') == 'None', reselect, numVisibleSelected = 0, strain;
+                    
+                    for (var i in selection) {
+                        if (selection[i].indexOf('action_loadannot ') != -1) {
+                            Annotation.loadAnnotation(selection[i].replace('action_loadannot ', ''));
+                            actionAnnot = false;
+                        } else if (selection[i].indexOf('action_selectall') != -1) {
+                            selChoices = _.pluck(selChoices, 'id');
+                            $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(selChoices), true);
+                            reselect = true;
+                        }
+                    }
+                    
+                    if (reselect) return;
+                    if (actionAnnot) Annotation.loadAnnotation('SAFE');
                     
                     var moveOn = true, found = false;
                     sigInst.iterNodes(function(node) {
