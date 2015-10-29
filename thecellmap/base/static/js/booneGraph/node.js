@@ -383,7 +383,7 @@ define([
         sigInst.draw();
         Annotation.rebuildLegend();
         
-        if (state.get('subnetworks')) applyNeighbourhood(1);
+        if (state.get('dataset') == 0 && state.get('subnetworks')) applyNeighbourhood(1);
     }
     
     var applyNeighbourhood = function(level) {
