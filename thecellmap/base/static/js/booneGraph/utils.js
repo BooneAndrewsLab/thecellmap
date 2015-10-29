@@ -98,10 +98,6 @@ define([
         
         if (getPrevious) selected = getSelection().length > 0 ? getSelection() : state.get('preselect');
         
-        result = selected.filter(function(sel) {
-            return !_str.startsWith(sel, 'annot') && !_str.startsWith(sel, 'action');
-        });
-        
         if (vizdata['annotations'].get(state.get('annotation'))) {
             map = vizdata['annotations'].get(state.get('annotation')).get('map');
             
@@ -124,6 +120,10 @@ define([
                 }
             }
         }
+        
+        result = selected.filter(function(sel) {
+            return !_str.startsWith(sel, 'annot') && !_str.startsWith(sel, 'action');
+        });
         
         vizdata['strains']['models'].forEach(function(strain) {
             if (selectedByAnnotation.hasOwnProperty(strain.get('orf'))) {
@@ -414,6 +414,7 @@ define([
         getNode: getNode,
         getEdge: getEdge,
         getStrain: getStrain,
+        getSelection: getSelection,
         
         clearSelection: clearSelection,
         clearSelectionCanvas: clearSelectionCanvas,
