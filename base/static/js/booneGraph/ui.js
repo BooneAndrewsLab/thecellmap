@@ -362,21 +362,33 @@ define([
                 if (val == preVal) return;
                 
                 var nodes = sigInst._core.graph.nodes.filter(function(node) {
-                    return !(node.hidden && node._hidden);
+                    return !(node.hidden);
                 }).map(function(node) {
                     return node.id;
                 });
+                
                 var nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
                 if (val < lowVal && nodes.length <= nodeLimit) {
                     $.post('correlations/', {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
-                        for (n in data['nodes']) {
-                            var node = data['nodes'][n];
-                            var strain = Utils.getStrain(node);
+                        var strains = vizdata['strains'], annotation = vizdata['annotations'].get(state.get('annotation')), color;
+                        
+                        for (n in data['node']) {
+                            var node = data['node'][n], strain = Utils.getStrain(node);
                             if (!Utils.nodeExists(node)) {
-                                sigInst.addNode(node, {
-                                    x: (Math.random() * 100),
-                                    y: (Math.random() * 100),
-                                });
+                                var n = {}, annot = annotation.get('map')[strain.get('id')];
+                                
+                                if (annot != undefined) {
+                                    color = annotation.get('colorPalette')[annotations.get('terms')[annot[0]].idx];
+                                } else {
+                                    color = annotation.get('defaultColor');
+                                }
+                                
+                                n.label = strain.get('verboseName');
+                                n.color = color;
+                                n.size = 2;
+                                n.x = n.y = Math.random() * 100;
+                                
+                                sigInst.addNode(node, n);
                             }
                         }
                         

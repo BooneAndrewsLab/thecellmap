@@ -219,11 +219,12 @@ define([
                             if (acount > 1) return false;
                         });
                         
+                        data.results = data.results.slice(0, 6);
+                        
                         if (data.results.length > 1) {
-                            data.results.unshift({id: 'action_selectall', text: 'Select all following strains'});
+                            data.results.push({id: 'action_selectall', text: 'Select all ' + data.results.length + ' strains above'});
                         }
                         
-                        data.results = data.results.slice(0, 7);
                         selChoices = data.results.filter(function(r) {
                             return (r.id + '').indexOf('action') == -1;
                         });
@@ -377,11 +378,12 @@ define([
             node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + '') == -1); // either we manually hid the node or it's not connected to anything
         });
         
-        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
         state.set('showRegions', false);
         Settings.updateLabels();
-        sigInst.draw();
         Annotation.rebuildLegend();
+        
+        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
+        sigInst.draw();
         
         if (state.get('dataset') == 0 && state.get('subnetworks')) applyNeighbourhood(1);
     }
@@ -402,7 +404,7 @@ define([
             sigInst.iterEdges(function(edge) {
                 if ((!edge.source._hidden && !edge.target._hidden) && 
                     (localSelected.hasOwnProperty(edge.source.id) || localSelected.hasOwnProperty(edge.target.id)) &&
-                    edge.ds == state.get('dataset')) {
+                    edge.ds == state.get('dataset') && !edge.hidden) {
                     tmpSelected[edge.source.id] = null;
                     tmpSelected[edge.target.id] = null;
                 }
@@ -413,19 +415,19 @@ define([
         sigInst.iterNodes(function(node) {
 //            if (node.type == 'pin') {
 //                node.hidden = node._hidden = true;
-//                return
+//                return;
 //            }
             
             strain = Utils.getStrain(node.id);
             if (!localSelected.hasOwnProperty(strain.id)) {
-                node._hidden = node.hidden = true;
+                node.hidden = true;
             }
         });
         
         sigInst.draw();
         Settings.updateLabels();
         if (state.get('annotation') != 'None') Annotation.rebuildLegend();
-        if (Utils.countVisibleNodes() > 1) Layout.toggleLayout('force');
+        if (Utils.countVisibleNodes() > 2) Layout.toggleLayout();
     }
     
     var showNodeModal = function(id) {
