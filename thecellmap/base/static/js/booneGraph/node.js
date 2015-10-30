@@ -219,15 +219,15 @@ define([
                             if (acount > 1) return false;
                         });
                         
-                        data.results = data.results.slice(0, 6);
-                        
-                        if (data.results.length > 1) {
-                            data.results.push({id: 'action_selectall', text: 'Select all ' + data.results.length + ' strains above'});
-                        }
-                        
                         selChoices = data.results.filter(function(r) {
                             return (r.id + '').indexOf('action') == -1;
                         });
+                        
+                        data.results = data.results.slice(0, 6);
+                        
+                        if (data.results.length > 1) {
+                            data.results.push({id: 'action_selectall', text: 'Select all ' + selChoices.length + ' matched strains'});
+                        }
                         
                         query.callback(data);
                     },
