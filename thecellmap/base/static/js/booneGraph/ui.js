@@ -410,7 +410,6 @@ define([
                     }).always(function() {
                         Dataset.updateEdges(0);
                         Node.applyCutoff(val);
-                        Layout.toggleLayout();
                         state.set('cutoffCorrelation', val);
                         state.set('cutoffLow', val);
                     });
