@@ -217,26 +217,24 @@ define([
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
                 xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
+                ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
             }
             
 //            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
             regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
         }
         
-        regions.sort(function(a, b){
-            return b.l - a.l;
-        });
-        
         var ctx = $('#canvas-regions')[0].getContext('2d');
+        ctx.globalCompositeOperation = 'screen';
         
         regions.forEach(function(r){
-            var grd = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, r.l);
+            var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.8);
             grd.addColorStop(0, '#' + r.c);
             grd.addColorStop(1, 'transparent');
             
             ctx.fillStyle = grd;
             ctx.beginPath();
-            ctx.arc(r.x, r.y, r.l, 0, 2*Math.PI);
+            ctx.arc(r.x, r.y, r.l*0.8, 0, 2*Math.PI);
             ctx.fill();
             ctx.closePath();
         });
