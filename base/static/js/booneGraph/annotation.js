@@ -182,17 +182,20 @@ define([
     var clearRegions = function() {
         var canvas = $('#canvas-regions');
         if (canvas.length) {
-            ctx = canvas[0].getContext('2d');
-            ctx.clearRect(0, 0, canvas.width(), canvas.height());
+            canvas[0].getContext('2d').clearRect(0, 0, canvas.width(), canvas.height());
         }
+        
+        var mouseCanvas = $('#sigma_mouse_1');
+        mouseCanvas[0].getContext('2d').clearRect(0, 0, mouseCanvas.width(), mouseCanvas.height());
     }
     var drawRegions = function(direct) {
         clearRegions();
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
+        
         if (!$('#canvas-regions').length) {
             var canvas = $('canvas:first').clone();
             canvas.attr('id', 'canvas-regions');
-            $('#sigma_labels_1').before(canvas);
+            $('#sigma_edges_1').before(canvas);
             
             window.addEventListener('resize', function() {
                 $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
@@ -214,21 +217,57 @@ define([
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
                 xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
-                ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
             }
             
-            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
+//            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
+            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
         }
+        
+        regions.sort(function(a, b){
+            return b.l - a.l;
+        });
+        
+        var ctx = $('#canvas-regions')[0].getContext('2d');
+        
+        regions.forEach(function(r){
+            var grd = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, r.l);
+            grd.addColorStop(0, '#' + r.c);
+            grd.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(r.x, r.y, r.l, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        });
         
         regions.sort(function(a, b){
             return a.y - b.y;
         });
         
-        if (!direct) {
-            sigInst.displayRegions({regions: regions, runtime: 2});
-        } else {
-            sigInst.drawRegionsDirect({regions: regions, runtime: 2, context: direct});
-        }
+        var mouseCtx = $('#sigma_mouse_1')[0].getContext('2d');
+        var last = 0, spacing = 20;
+        
+        mouseCtx.font = 'bold 16px Arial';
+        mouseCtx.textAlign = 'center';
+        mouseCtx.lineWidth = 2;
+        
+        regions.forEach(function(r) {
+            if (r.y - last < spacing) {
+                r.y += spacing - (r.y - last);
+            }
+            
+            mouseCtx.fillStyle = '#' + r.c;
+            mouseCtx.fillText(r.n, r.x, r.y);
+            
+            last = r.y;
+        });
+        
+//        if (!direct) {
+//            sigInst.displayRegions({regions: regions, runtime: 2});
+//        } else {
+//            sigInst.drawRegionsDirect({regions: regions, runtime: 2, context: direct});
+//        }
     }
     
     var loadRegion = function(id) {

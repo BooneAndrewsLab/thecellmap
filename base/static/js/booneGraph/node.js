@@ -338,6 +338,9 @@ define([
                             state.set('selection', selected);
                         }
                     }
+                    
+                    var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
+                    $('.search-bar .select2-choices').css('max-height', Math.round(maxHeight) * 34 + 'px');
                 });
                 
                 if (callback) callback();
@@ -383,9 +386,9 @@ define([
         Annotation.rebuildLegend();
         
         if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
-        sigInst.draw();
-        
         if (state.get('dataset') == 0 && state.get('subnetworks')) applyNeighbourhood(1);
+        
+        sigInst.draw();
     }
     
     var applyNeighbourhood = function(level) {
