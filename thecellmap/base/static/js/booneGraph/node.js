@@ -340,7 +340,7 @@ define([
                     }
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
-                    $('.search-bar .select2-choices').css('max-height', Math.round(maxHeight) * 34 + 'px');
+                    $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');
                 });
                 
                 if (callback) callback();
