@@ -156,6 +156,7 @@ define([
                         }
                         
                         tokenizing = false;
+                        
                         if (original !== input) return input;
                     },
                     createSearchChoice: function(term) {
@@ -313,7 +314,7 @@ define([
                         });
                     }
                     
-                    if (!tokenizing) {
+//                    if (!tokenizing) {
                         sigInst.draw();
                         
                         if (!($(selected).not(state.get('selection')).length == 0 && $(state.get('selection')).not(selected).length == 0)) {
@@ -337,9 +338,9 @@ define([
 //                            }
                             
                             if (state.get('selection').length > 0) state.set('preselect', state.get('selection'));
-                            state.set('selection', selected);
                         }
-                    }
+                        state.set('selection', selected);
+//                    }
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
                     $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');
