@@ -111,7 +111,9 @@ define([
                         separator; // the matched separator
                         
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-                        if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) input += ',';
+                        if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) {
+                            input = input.split(/[\s,\t\n]/).join() + ',';
+                        }
                         
                         tokenizing = true;
                         while (true) {

@@ -35,7 +35,7 @@ define([
             maxEdgeSize : 1.5,
             nodesPowRatio : 1,
             edgesPowRatio : .5,
-            margin: 10,
+            margin: 25,
             arrowRatio: 4,
             safe : false,
         },
@@ -55,6 +55,7 @@ define([
             max : 1,
             filter: 'edges',
         },
+        tokenSeparators: [',', ' ', '\t', '\n'],
     };
     
     window.sliderProperties = $.extend({}, DEFAULTS.slider, module.config().slider || {});
