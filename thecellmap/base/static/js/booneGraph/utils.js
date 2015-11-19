@@ -341,8 +341,7 @@ define([
               </div>');
         
         if (!!target) {
-            $('#' + target).empty();
-            $('#' + target).append(alert);
+            $('#' + target).empty().append(alert);
         } else {
             alert.on('close.bs.alert', function() {
                 $('#panel-alerts').hide();
@@ -359,8 +358,7 @@ define([
                 });
             }
             
-            $('#panel-alerts').append(alert);
-            $('#panel-alerts').show();
+            $('#panel-alerts').append(alert).show();
         }
         
         alert.alert();
