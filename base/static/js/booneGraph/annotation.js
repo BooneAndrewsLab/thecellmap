@@ -172,7 +172,7 @@ define([
             loadRegion(id);
         }
         
-        $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
+//        $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
         $('#btn-group-annotation li').removeClass('active');
         $('#btn-group-annotation li a').each(function() {
             if ($(this).html() == id) $(this).parent().addClass('active');

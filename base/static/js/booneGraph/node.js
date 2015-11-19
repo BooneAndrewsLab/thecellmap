@@ -113,6 +113,8 @@ define([
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                         if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) {
                             input = input.split(/[\s,\t\n]/).join() + ',';
+                        } else {
+                            input = input + ',';
                         }
                         
                         tokenizing = true;
@@ -260,30 +262,21 @@ define([
                         
                         if ($.inArray(node.id + '', selected) >= 0) {
                             if (tmpNode) tmpNode.selected = true;
-                            node.selected = true;
-                            found = true;
+                            node.selected = found = true;
+                            
                             if (node.hidden) {
                                 if (!selected.hasOwnProperty(node.id)) {
                                     Utils.messageUser('Gene you\'re looking for is below current threshold.');
                                     moveOn = false;
                                 }
                             } else {
-                                numVisibleSelected++;
                                 if (tmpNode) tmpNode.forceLabel = true;
                                 node.forceLabel = true;
-//                                    node.size_mult = 2;
-//                                    node.size = node.size_init * node.size_mult;
+                                numVisibleSelected++;
                             }
                         } else {
-                            node.selected = false;
-                            node.forceLabel = false;
-                            
-                            if (tmpNode) {
-                                tmpNode.selected = false;
-                                tmpNode.forceLabel = false;
-                            }
-//                                node.size_mult = 1;
-//                                node.size = node.size_init;
+                            if (tmpNode) tmpNode.selected = tmpNode.forceLabel = false;
+                            node.selected = node.forceLabel = false;
                         }
                     });
                     
@@ -297,7 +290,7 @@ define([
                         }
                     });
                     
-                    if (missingNodes['labels'].length) {
+                    if (missingNodes['ids'].length) {
                         Utils.messageUser(missingNodes['labels'].join() + ' is below current threshold.', null, missingNodes['ids']);
                     }
                     
@@ -317,29 +310,11 @@ define([
 //                    if (!tokenizing) {
                         sigInst.draw();
                         
-                        if (!($(selected).not(state.get('selection')).length == 0 && $(state.get('selection')).not(selected).length == 0)) {
-//                            var nodes = [];
-////                            //takes difference, and only blinks new nodes
-////                            var diff = $(selected).not(state.get("selection")).get()
-////                            diff.forEach(function(n) {
-////                                var node = Utils.getNode(n);
-////                                if (node) nodes.push(node);
-////                            });
-////                            sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
-//                            
-//                            //blinks all nodes
-//                            if (!state.get('showCircular')) {
-//                                selected.forEach(function(n) {
-//                                    var node = Utils.getNode(n);
-//                                    if (node) nodes.push(node);
-//                                });
-//                                
-//                                sigInst.locateSearchedNodes({nodes: nodes, runtime: 3});
-//                            }
-                            
-                            if (state.get('selection').length > 0) state.set('preselect', state.get('selection'));
+                        if (state.get('selection').length > 0) {
+                            state.set('preselect', state.get('selection'));
+                        } else {
+                            state.set('selection', selected);
                         }
-                        state.set('selection', selected);
 //                    }
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
