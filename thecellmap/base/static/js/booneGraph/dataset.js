@@ -242,7 +242,7 @@ define([
             Annotation.rebuildLegend();
             Settings.updateLabels();
         } else if (dsid == 1) { //Interactions
-            var selected = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes();
+            var selected = Utils.getSelectedNodes();
             loadDataset(dsid, {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: selected}, function(edges) {
                 var nodes = [];
                 edges.forEach(function(e) {
@@ -272,7 +272,13 @@ define([
     
     var tmpNetworks = {before: {}, current: {}};
     var toggleDataset = function(dsid) {
-        var selection = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes();
+        var missingNodes = $(Utils.getSelection()).not(Utils.getSelectedNodes()).get();
+        if (missingNodes.length >= 1 && missingNodes.length <= 7) {
+            state.set('missingNodes', missingNodes);
+            return;
+        }
+        
+        var selection = Utils.getSelectedNodes();
         if (selection.length < 1 || selection.length > 7) return;
         
         $('.image-datasets').toggleClass('hidden');

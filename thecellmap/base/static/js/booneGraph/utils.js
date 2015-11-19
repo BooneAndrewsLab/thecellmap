@@ -354,7 +354,6 @@ define([
                     alert.alert('close'); 
                     if (!target) $('#panel-alerts').hide();
                     state.set('missingNodes', missingNodes);
-                    $('input.gene-search-input').select2('val', getSelectedNodes().concat(missingNodes), true);
                 });
             }
             

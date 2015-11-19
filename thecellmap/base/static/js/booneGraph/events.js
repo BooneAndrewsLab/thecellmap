@@ -68,7 +68,7 @@ define([
             
             state.on('change:missingNodes', function() {
                 var nodes = state.get('missingNodes');
-                if (nodes.length) {
+                if (nodes.length >= 1 && nodes.length <= 7) {
                     _.each(nodes, function(n) {
                         var strain = Utils.getStrain(n), annotation = vizdata['annotations'].get(state.get('annotation'));
                         
@@ -89,8 +89,10 @@ define([
                         };
                         
                         sigInst.addNode(node.id, node);
+                        
+                        Utils.getNode(node.id).selected = true;
                     });
-                    
+                    state.set('missingNodes', []);
                     Dataset.toggleDataset(1);
                 }
             })
@@ -131,7 +133,7 @@ define([
         },
         
         downloadNetwork: function(e) {
-            var selected = Utils.getSelectedNodes();
+            var selected = Utils.getSelection();
             switch ($(e.currentTarget).attr('id')) {
             case 'download-visible':
                 Download.downloadShownData();
