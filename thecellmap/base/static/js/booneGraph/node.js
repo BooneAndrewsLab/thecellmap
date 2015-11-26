@@ -113,7 +113,7 @@ define([
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                         if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) {
                             input = input.split(/[\s,\t\n]/).join() + ',';
-                        } else {
+                        } else if (/\D{3}\d$/i.test(input) || /\D{3}\d{3}\D$/i.test(input)) {
                             input = input + ',';
                         }
                         
