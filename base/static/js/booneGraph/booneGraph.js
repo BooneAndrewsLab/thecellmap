@@ -96,7 +96,8 @@ define([
             Utils.onNodesContext(e);
         }).bind('shiftclicknodes', function () {
             clicking.modifierKey = 'shift';
-        }).bind('upnodes', function(targets) {
+        }).bind('dblclicknodes', Utils.onNodeDblClick
+         ).bind('upnodes', function(targets) {
             if (!clicking.wasDragging) {
                 switch(clicking.modifierKey) {
                 case 'ctrl':

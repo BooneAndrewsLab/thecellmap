@@ -44,6 +44,11 @@ define([
         $('#contextmenu-container').css({ left : mouseX, top : mouseY, });
     }
     
+    var onNodeDblClick = function(targets) {
+        var strain = getStrain(targets.content[0]);
+        setTimeout(function() {open('http://www.yeastgenome.org/search?query=' + strain.get('orf'))}, 10);
+    }
+    
     var getNode = function(id) {
         return sigInst._core.graph.nodesIndex[id];
     }
@@ -406,6 +411,7 @@ define([
         nodeExists: nodeExists,
         edgeExists: edgeExists,
         onNodesContext: onNodesContext,
+        onNodeDblClick: onNodeDblClick,
         countVisibleNodes: countVisibleNodes,
         countVisibleEdges: countVisibleEdges,
         getNode: getNode,
