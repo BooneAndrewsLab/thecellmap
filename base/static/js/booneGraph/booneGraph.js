@@ -26,7 +26,6 @@ define([
         arrows: false,
         colorScheme: 'black',
         datasets: [],
-        debug: true,
         defaultNodeColor: '#E8E8E8',
         downloadLimit: 30,
         graphProperties: {
@@ -60,6 +59,7 @@ define([
     
     window.sliderProperties = $.extend({}, DEFAULTS.slider, module.config().slider || {});
     window.graphProperties = $.extend({}, DEFAULTS.graphProperties, module.config().graphProperties || {});
+    
     $.extend(opts, DEFAULTS);
     window.vizdata = {
         annotations: new AnnotationCollection(),
