@@ -141,6 +141,9 @@ define([
             case 'download-xgmml':
                 Download.downloadXGMML();
                 break;
+            case 'download-gexf':
+                Download.downloadGEXF();
+                break;
             case 'download-snapshot':
                 Download.downloadCanvasSnapshot();
                 break;

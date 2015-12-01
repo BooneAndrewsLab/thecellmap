@@ -87,6 +87,95 @@ define([
         saveAs(blob, 'network_data.tsv');
     };
     
+    var downloadGEXF = function() {
+        var v = new XMLWriter(), color;
+        v.writeStartDocument();
+        
+        v.writeStartElement('gexf');
+        v.writeAttributeString('xmlns','http://www.gexf.net/1.2draft');
+        v.writeAttributeString('version', "1.2");
+        v.writeAttributeString('xmlns:viz', "http://www.gexf.net/1.2draft/viz");
+        v.writeAttributeString('xmlns:xsi', "http://www.w3.org/2001/XMLSchema-instance");
+        v.writeAttributeString('xsi:schemaLocation', "http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd");
+        
+        v.writeStartElement('graph');
+        v.writeAttributeString('defaultedgetype', "directed");
+        v.writeAttributeString('mode', "static");
+        
+        v.writeStartElement('attributes');
+        v.writeAttributeString('class', "edge");
+        v.writeAttributeString('mode', "static");
+        v.writeStartElement('attribute');
+        v.writeAttributeString('id', "absweight");
+        v.writeAttributeString('title', "absweight");
+        v.writeAttributeString('type', "float");
+        v.writeEndElement();
+        v.writeEndElement();
+        
+        v.writeStartElement('nodes');
+        
+        Utils.iterVisibleNodes(function(node) {
+            var strain = Utils.getStrain(node.id);
+            v.writeStartElement('node');
+            v.writeAttributeString('id', node.label);
+            
+            v.writeStartElement('viz:size');
+            v.writeAttributeString('value', node.size);
+            v.writeEndElement();
+            
+            v.writeStartElement('viz:position');
+            v.writeAttributeString('x', node.x);
+            v.writeAttributeString('y', node.y);
+            v.writeEndElement();
+            
+            v.writeStartElement('viz:color');
+            color = Utils.hexToRgb(node.color);
+            v.writeAttributeString('r', color.r);
+            v.writeAttributeString('g', color.g);
+            v.writeAttributeString('b', color.b);
+            v.writeEndElement();
+            
+            v.writeEndElement(); // node
+        });
+        
+        v.writeEndElement(); // nodes
+        
+        v.writeStartElement('edges');
+        
+        Utils.iterVisibleEdges(function(edge) {
+            v.writeStartElement('edge')
+            v.writeAttributeString('source', edge.source.label);
+            v.writeAttributeString('target', edge.target.label);
+            v.writeAttributeString('weight', edge.weight);
+            
+            if (!!edge.color) {
+                v.writeStartElement('viz:color');
+                color = Utils.hexToRgb(edge.color);
+                v.writeAttributeString('r', color.r);
+                v.writeAttributeString('g', color.g);
+                v.writeAttributeString('b', color.b);
+                v.writeEndElement();
+            }
+            
+            v.writeStartElement('attvalues');
+            v.writeStartElement('attvalue');
+            v.writeAttributeString('for', 'absweight');
+            v.writeAttributeString('value', edge.absweight);
+            v.writeEndElement();
+            v.writeEndElement();
+            
+            v.writeEndElement();
+        });
+        
+        v.writeEndElement(); // edges
+        v.writeEndElement(); // graph
+        v.writeEndElement(); // gexf
+        v.writeEndDocument();
+        
+        var blob = new Blob([v.flush()], {type: 'application/gexf;charset=utf-8'});
+        saveAs(blob, 'network_data.gexf');
+    };
+    
     var downloadXGMML = function() {
         var v = new XMLWriter();
         v.writeStartDocument();
@@ -99,7 +188,7 @@ define([
         v.writeStartElement('graphics');
         v.writeStartElement('att');
         v.writeAttributeString('name', 'NETWORK_BACKGROUND_PAINT');
-        v.writeAttributeString('value', '#000000');
+        v.writeAttributeString('value', '#000000'); // TODO: FIX THIS
         v.writeAttributeString('type', 'string');
         v.writeEndElement();
         v.writeEndElement();
@@ -127,7 +216,7 @@ define([
             v.writeAttributeString('y', node.y);
             v.writeAttributeString('type', 'ELLIPSE');
             v.writeAttributeString('width', '0');
-            v.writeAttributeString('fill', '#ffffff');
+            v.writeAttributeString('fill', node.color);
             
             v.writeStartElement('att');
             v.writeAttributeString('name', 'NODE_BORDER_TRANSPARENCY');
@@ -166,5 +255,6 @@ define([
         downloadCanvasSvg: downloadCanvasSvg,
         downloadShownData: downloadShownData,
         downloadXGMML: downloadXGMML,
+        downloadGEXF: downloadGEXF
     };
 });
