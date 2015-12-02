@@ -48,7 +48,7 @@ define([
                 
 //                    addAttributeLayouts();
                 
-                var tokenizing = false, selChoices;
+                var tokenizing = false, selChoices, preSelectSize = 0;
                 $('input.gene-search-input').select2({
                     multiple: true,
                     minimumInputLength: 2,
@@ -110,11 +110,16 @@ define([
                         i, l, // looping variables
                         separator; // the matched separator
                         
+                        console.log(preSelectSize, Math.abs(preSelectSize - input.length) >= 2, preSelectSize >= 2)
+                        
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                         if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) {
                             input = input.split(/[\s,\t\n]/).join() + ',';
-                        } else if (/\D{3}\d$/i.test(input) || /\D{3}\d{3}\D$/i.test(input)) {
+                        } else if (Math.abs(preSelectSize - input.length) >= 2 && preSelectSize >= 2) {
                             input = input + ',';
+                            preSelectSize = 0;
+                        } else {
+                            preSelectSize = input.length;
                         }
                         
                         tokenizing = true;
@@ -240,6 +245,7 @@ define([
                 }).on('change', function(evt, a, b, c) {
                     var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
                     var actionAnnot = state.get('annotation') == 'None', reselect, numVisibleSelected = 0, strain;
+                    preSelectSize = 2;
                     
                     for (var i in selection) {
                         if (selection[i].indexOf('action_loadannot ') != -1) {
