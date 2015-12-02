@@ -130,6 +130,7 @@ define([
                 });
                 
                 lopts.edges = [];
+                
 //                k_combinations(sigInst._core.graph.nodes.filter(function(node) {
 //                    return !node.hidden;
 //                }), 2).forEach(function(x) {
@@ -229,7 +230,7 @@ define([
                     
                     groups[key].nodes.forEach(function(n) {
                         strain = Utils.getStrain(n.id);
-                        annot = data.get('map')[strain.orf] || [-1];
+                        annot = data.get('map')[strain.get('orf')] || [-1];
                         
                         annot.forEach(function(a) {
                             if (!annotations.hasOwnProperty(a)) {
