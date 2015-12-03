@@ -88,14 +88,19 @@ define([
             } else {
                 var color = Cookies.get(term.name);
             }
+            
 //            restrict name length, keep all annotation in one line within legend
-//            if (name.length > 30) {
-//                name = name.substring(0, 30) + "...";
+            var name = term.alias.split('/');
+//            if (name.length > 25) {
+//                name = name.substring(0, 25) + "...";
 //            }
+            
+            if (name.length > 2) name = name[0] + ', ' + name[1] + '..';
+            
             $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
                     <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
                     <td>' + term.name + '</td></td></tr>');
-            $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + term.alias + '</span></li>');
+            $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>');
             $('#list-annotation-legend .box-annotation-color').last().css("background-color", color);
         });
         
