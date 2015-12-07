@@ -188,7 +188,7 @@ define([
                 }
                 break;
             case 'force+':
-                if (state.get("annotation") == 'None') break;
+                if (state.get('annotation') == 'None') break;
                 
                 lopts.edges = [];
                 groups = {};
@@ -206,7 +206,7 @@ define([
                         if (e.source.id == n.id || e.target.id == n.id) {
                             // try excluding nodes driving this correlation
                             other = e.source.id == n.id ? e.target : e.source;
-                            tmp.push(e.weight < 0 ? "-" + other.id : other.id);
+                            tmp.push(other.id);
                         }
                     });
                     
@@ -221,7 +221,8 @@ define([
                     groups[tmpkey].nodes.push(n);
                 });
                 
-                data = vizdata['annotations'].get(state.get("annotation"));
+                data = vizdata['annotations'].get(state.get('annotation'));
+                addedEdge = []
                 
                 for (key in groups) {
                     if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
@@ -241,10 +242,11 @@ define([
                     });
                     
                     for (key in annotations) {
+                        weight = annotations[key].length * 0.05;
                         k_combinations(annotations[key], 2).forEach(function(x) {
                             lopts.edges.push({
-                                weight: .01,
-                                absweight: .01,
+                                weight: weight,
+                                absweight: weight,
                                 source: x[0],
                                 target: x[1]
                             })
