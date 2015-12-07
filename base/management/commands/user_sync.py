@@ -17,9 +17,9 @@ class Command(BaseCommand):
                 is_sync = False
                 name.append(labUser.username)
             
-            if labUser.password != siteUser.password:
-                is_sync = False
-                name.append(labUser.username)
+#             if labUser.password != siteUser.password:
+#                 is_sync = False
+#                 name.append(labUser.username)
         
         if not is_sync:
             mail_admins('Account sync error', 'Synchronization error between boonelab_management and thecellmap accounts. \n' + '\n'.join(name))
