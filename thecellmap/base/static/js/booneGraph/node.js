@@ -413,8 +413,13 @@ define([
         
         sigInst.draw();
         Settings.updateLabels();
-        if (state.get('annotation') != 'None') Annotation.rebuildLegend();
-        if (Utils.countVisibleNodes() > 2) Layout.toggleLayout();
+        
+        var layoutType = 'force';
+        if (state.get('annotation') != 'None') {
+            Annotation.rebuildLegend();
+            layoutType = 'force+';
+        }
+        if (Utils.countVisibleNodes() > 2) Layout.toggleLayout(layoutType);
     }
     
     var showNodeModal = function(id) {
