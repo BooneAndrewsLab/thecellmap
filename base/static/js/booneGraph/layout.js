@@ -41,6 +41,8 @@ define([
         if ($('#btn-layout').length != 0) ladda = Ladda.create($('#btn-layout')[0]);
         state.set('showRegions', false);
         
+        console.log(layoutType, 'stuff')
+        
         if (opts.runningLayout) {
             sigInst.stopForceLayout();
             setRunningLayout(false);
@@ -60,7 +62,6 @@ define([
                 repulsion_multiplier: $('#layout-slider-rep').val() || 1,
                 edgeFilter: function(edge) { return edge.weight > 0.2; },
             };
-            
             
             switch(layoutType || 'force') {
             case 'gi':
