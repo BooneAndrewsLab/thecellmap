@@ -41,8 +41,6 @@ define([
         if ($('#btn-layout').length != 0) ladda = Ladda.create($('#btn-layout')[0]);
         state.set('showRegions', false);
         
-        console.log(layoutType, 'stuff')
-        
         if (opts.runningLayout) {
             sigInst.stopForceLayout();
             setRunningLayout(false);
@@ -145,9 +143,10 @@ define([
                 
                 for (key in annotations) {
                     k_combinations(annotations[key], 2).forEach(function(x) {
+                        var weight = Math.floor(Math.sqrt(_.size(annotations[key]))) * 0.01; 
                         lopts.edges.push({
-                            weight: 0.01,
-                            absweight: 0.01,
+                            weight: weight,
+                            absweight: weight,
                             source: x[0],
                             target: x[1]
                         })
