@@ -8,11 +8,11 @@ import pickle
 from urllib import urlencode
 import urllib2
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
-from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
@@ -22,7 +22,6 @@ from django.views.decorators.http import require_POST, require_GET
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
-from bs4 import BeautifulSoup
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -44,6 +43,10 @@ def _serve_dataset(request, dataset=None):
 
 def about(request):
     return render(request, 'base/about.html')
+
+@login_required
+def resources(request):
+    return render(request, 'base/resources.html')
 
 @login_required
 def password_change(request):
@@ -89,8 +92,8 @@ def genes(request):
     
     return JsonResponse(genes)
 
-def custom_dataset(request, hash):
-    custom = Custom.objects.get(hash=hash)
+def custom_dataset(request, custom_hash):
+    custom = Custom.objects.get(hash=custom_hash)
     
     if custom.private and custom.user != request.user:
         return HttpResponseForbidden("Sorry the network you're trying to access is private")
@@ -102,9 +105,9 @@ def custom_dataset(request, hash):
                     'annotations': Annotation.objects.all(),
                     'can_bulk_download': False,
                     'extra': {
-                        'id': hash,
+                        'id': custom_hash,
                         'static_url': custom.static_url(),
-                        'name': hash,
+                        'name': custom_hash,
                         'type': custom.type,
                         'directed': custom.network_type == Custom.NET_DIRECTED,
                     },
@@ -116,9 +119,9 @@ def custom_dataset(request, hash):
     else:
         return render(request, 'base/network.html', {
                 'dataset': {
-                    'id': hash,
+                    'id': custom_hash,
                     'static_url': custom.static_url(),
-                    'name': hash,
+                    'name': custom_hash,
                     'type': custom.type,
                     'directed': custom.network_type == Custom.NET_DIRECTED,
                 },
@@ -310,13 +313,13 @@ def circle_pack(request):
     except:
         return HttpResponseBadRequest('Input number of nodes')
     
-    range =  os.path.join('packomania', '%i-%i' % (int(math.floor(node_num / 1000.0)) * 1000 + 1, 
+    range_str =  os.path.join('packomania', '%i-%i' % (int(math.floor(node_num / 1000.0)) * 1000 + 1, 
                                 (int(math.floor(node_num / 1000.0)) + 1) * 1000),
                                 '%i-%i' % (int(math.floor(node_num / 100.0)) * 100 + 1, 
                                 (int(math.floor(node_num / 100.0)) + 1) * 100), str(node_num) + '.json')
     
-    if os.path.exists(os.path.join(settings.STATIC_ROOT, range)):
-        return HttpResponseRedirect(os.path.join(settings.STATIC_URL, range))
+    if os.path.exists(os.path.join(settings.STATIC_ROOT, range_str)):
+        return HttpResponseRedirect(os.path.join(settings.STATIC_URL, range_str))
     else:
         return JsonResponse([])
 
@@ -336,7 +339,7 @@ def region_group(request, dataset_id, region_group_id):
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
-    for strain, degree, region, alias, color in Region.vertices.through.objects.filter(region__region_group=region_group_id).values_list('strain', 'degree', 'region', 'region__alias', 'region__color'):
+    for strain, degree, region, alias, color in Region.vertices.through.objects.filter(region__region_group=region_group_id).values_list('strain', 'degree', 'region', 'region__alias', 'region__color'):  # @UndefinedVariable
         response.setdefault(region, {})
         response[region][degree] = nodes_inv_inv[strain]
         if color not in response[region]:

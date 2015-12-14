@@ -1,0 +1,96 @@
+{% extends "_layouts/base.html" %}
+{% load staticfiles require %}
+
+{% block js %}
+{{ block.super }}
+  {% require_module 'base' %}
+{% endblock js %}
+
+{% block page_title_suffix %} - Resources{% endblock %}
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Global Genetic Interaction Dataset <small>updated December 2015</small></h1>
+        <p>
+          The global genetic interaction dataset is based on analysis of 23.4 million double mutants which identified 620,000 negative and 
+          390,000 positive genetic interactions and covers ~94% of all yeast genes as either array and/or query mutants. The global genetic 
+          interaction dataset includes three different genetic interaction maps. First, 3,534 nonessential deletion query mutants strains 
+          were screened against the deletion mutant array covering 3,897 nonessential genes to generate a nonessential x nonessential (NxN) 
+          network. Second, 1,264 TS query mutant strains representing 885 essential genes were also screened against the nonessential deletion 
+          mutant array to generate an essential x nonessential (ExN) network. Finally, 2,260 nonessential deletion mutant query strains and 
+          1,243 TS query mutant strains, corresponding to 869 essential genes, were crossed to an array of 792 TS strains, spanning 561 unique 
+          essential genes, to generate an expanded ExN network and an essential x essential (ExE) network. The data can be downloaded from the 
+          links below or browsed interactively at <a href="{% url 'home' %}">TheCellMap.org</a>. Note that we continue to map genetic interactions 
+          for remaining gene pairs not represented here and we will update the data and networks periodically as new interactions are generated
+        </p>
+      </div>
+      <div class="col-md-12">
+        <h2><a href="http://thecellmap.org/costanzo2015/data_files/Raw%20genetic%20interaction%20datasets:%20Pair-wise%20interaction%20format.zip">Raw genetic interaction datasets: Pair-wise interaction format</a><small> (472MB)</small></h2>
+        <p>This file contains complete SGA genetic interaction data for the following:</p>
+        <ul>
+            <li>A list of all query and array mutant strains represented in
+                the genetic interaction network along with their corresponding
+                fitness estimates</li>
+            <li>Nonessential x Nonessential network (NxN)</li>
+            <li>Essential x Essential network (ExE)</li>
+            <li>Nonessential x Essential network (NxE/ExN)</li>
+            <li>Genetic interactions involving DAmP alleles of essential
+                genes</li>
+            <li>Genetic interactions for HSP90 and corresponding controls</li>
+        </ul>
+    
+        <p>The interaction datasets are provided in a tab-delimited format
+            with 11 columns:</p>
+        <ul>
+            <li>Query ORF</li>
+            <li>Query gene name</li>
+            <li>Array ORF</li>
+            <li>Array gene name</li>
+            <li>Array Type (DMA or TSA) and Temperature (26&deg;C or
+                30&deg;C)</li>
+            <li>Genetic interaction score (&epsilon;)</li>
+            <li>P-value</li>
+            <li>Query single mutant fitness (SMF)</li>
+            <li>Array SMF</li>
+            <li>Double mutant fitness</li>
+            <li>Double mutant fitness standard deviation</li>
+        </ul>
+      </div>
+      <div class="col-md-12">
+        <h2><a href="http://thecellmap.org/costanzo2015/data_files/Raw%20genetic%20interaction%20datasets:%20Matrix%20format.zip">Raw genetic interaction datasets: Matrix format.zip</a><small> (29MB)</small></h2>
+        <p>This file contains complete SGA genetic interaction data matrix for the following:</p>
+        <ul>
+            <li>Nonessential x Nonessential network (NxN)</li>
+            <li>Essential x Essential network (ExE)</li>
+            <li>Combined essential and nonessential network (ExN/NxE)</li>
+        </ul>
+      </div>
+      <div class="col-md-12">
+        <h2>Genetic interaction profile similarity matrices<small> (not available yet)</small></h2>
+    
+        <p>Matrix files containing genetic interaction profile similarity
+            values (as measured by Pearson correlation) for every pair of mutant
+            strains in the dataset. Similarity values were computed for essential
+            (ExE), non-essential (NxN) and all gene pairs combined (ALL) as
+            described above (see "Constructing genetic interaction profile
+            similarity networks"). Each matrix contains 2 sets of row and column
+            headers, providing a unique allele name for every mutant strain (row
+            &amp; column header #1) as well as a systematic ORF name (row &amp;
+            column header #2).</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Follow us:</h2>
+        <a href="https://twitter.com/TheCellMap" class="twitter-follow-button" data-show-count="true" data-lang="en">Follow @TheCellMap</a>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <img alt="Terrence Donnelly CCBR logo" src="{% static 'img/ccbr_logo.jpg' %}" class="center-block img-responsive">
+      </div>
+    </div>
+  </div>
+{% endblock %}
