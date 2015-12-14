@@ -10,7 +10,7 @@ define([
     
     var Settings = Backbone.Model.extend({
         defaults: {
-            ui: localStorage.getItem('ui') || 'simple',
+            selectedUi: localStorage.getItem('selectedUi') || 'simple',
             showLabel: parseBool(localStorage.getItem('showLabel')) || true,
             showBgSvg: parseBool(localStorage.getItem('showBgSvg')) || true,
             showLegendSvg: parseBool(localStorage.getItem('showLegendSvg')) || true,
