@@ -4,7 +4,7 @@
 
 {% block meta %}
 {{ block.super }}
-  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Cache-control" content="no-store">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 {% endblock meta%}
 
@@ -75,12 +75,10 @@
 <!--[if lt IE 9]>
 <p>Sorry, we are not supporting your version of Internet Explorer. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience. 
 TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Google Chrome</a> for best performance.</p>
-<!--<![endif]-->
+<![endif]-->
 
 <div class="container-fluid"
      style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;' 
-     unselectable='on'
-     onselectstart='return false;' 
      onmousedown='return false;'>
     {% csrf_token %}
     <div id="inner-container">

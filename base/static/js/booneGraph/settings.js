@@ -32,7 +32,7 @@ define([
             e.preventDefault();
         });
         
-        $('#modal-settings #ui').on('change', function() {
+        $('#modal-settings #select-ui').on('change', function() {
             if ($(this).val() != state.get('ui')) Utils.messageUser('Change in UI will result in network being refreshed on confirm', 'alerts-panel-settings');
         });
         
