@@ -35,7 +35,7 @@ def _serve_dataset(request, dataset=None):
                 'annotations': Annotation.objects.all(),
                 'regionGroups': RegionGroup.objects.filter(dataset=dataset),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
-                'ui': request.COOKIES.get('ui') or 'simple',
+                'ui': request.COOKIES.get('selectedUi') or 'simple',
         })
         return response
     else:
@@ -112,7 +112,7 @@ def custom_dataset(request, custom_hash):
                         'directed': custom.network_type == Custom.NET_DIRECTED,
                     },
                     'regionGroups': RegionGroup.objects.filter(dataset=custom.dataset),
-                    'ui': request.COOKIES.get('ui') or 'simple',
+                    'ui': request.COOKIES.get('selectedUi') or 'simple',
               })
         else:
             return HttpResponseForbidden("Permission Required")
@@ -127,7 +127,7 @@ def custom_dataset(request, custom_hash):
                 },
                 'annotations': Annotation.objects.all(),
                 'can_bulk_download': False,
-                'ui': request.COOKIES.get('ui') or 'simple',
+                'ui': request.COOKIES.get('selectedUi') or 'simple',
           })
 
 @require_POST
