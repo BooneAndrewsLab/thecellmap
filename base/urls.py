@@ -3,7 +3,6 @@
 from django.conf.urls import url, patterns, include
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
-from rest_framework.urls import template_name
 
 
 urlpatterns = patterns('',
@@ -13,6 +12,7 @@ urlpatterns = patterns('',
 urlpatterns += patterns('base.views',
     url(r'^$', 'home', name='home'),
     url(r'^about/$', 'about', name='about'),
+    url(r'^costanzo2015/$', 'resources', name='resources'),
     url(r'^login/$', 'login', name='login'),
     url(r'^logout/$', 'logout', name='logout'),
     url(r'^password_change/$', 'password_change', name='password_change'),
