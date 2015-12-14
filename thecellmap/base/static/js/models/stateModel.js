@@ -25,7 +25,7 @@ define([
             showCircular: false,
             showRegions: true,
             subnetworks: false,
-            ui: localStorage.getItem('ui') || 'simple',
+            selectedUi: localStorage.getItem('selectedUi') || 'simple',
         }
     });
     

@@ -32,8 +32,8 @@ define([
             e.preventDefault();
         });
         
-        $('#modal-settings #select-ui').on('change', function() {
-            if ($(this).val() != state.get('ui')) Utils.messageUser('Change in UI will result in network being refreshed on confirm', 'alerts-panel-settings');
+        $('#modal-settings #selectedUi').on('change', function() {
+            if ($(this).val() != state.get('selectedUi')) Utils.messageUser('Change in UI will result in network being refreshed on confirm', 'alerts-panel-settings');
         });
         
         $('#modal-settings .modal-confirm').click(function(e) {
@@ -41,7 +41,7 @@ define([
                 var id = $(this).attr('id'), value = this.checked;
                 if (value != settings.get(id)) {
                     localStorage.setItem(id, value);
-                    settings.set(id, parseBool(value));
+                    settings.set(id, Utils.parseBool(value));
                 }
             });
             $('.settings-selects').each(function() {
@@ -55,8 +55,8 @@ define([
             e.preventDefault();
         });
         
-        settings.on('change:ui', function() {
-            Cookies.set('ui', settings.get('ui'));
+        settings.on('change:selectedUi', function() {
+            Cookies.set('selectedUi', settings.get('selectedUi'));
             location.reload();
         });
         
@@ -64,7 +64,7 @@ define([
             sigInst.mouseProperties({blockScroll: settings.get('disableScroll')});
         });
         
-        if (!Cookies.get('ui')) localStorage.setItem('ui', 'simple');
+        if (!Cookies.get('selectedUi')) localStorage.setItem('selectedUi', 'simple');
     }
     
     var updateLabels = function() {
