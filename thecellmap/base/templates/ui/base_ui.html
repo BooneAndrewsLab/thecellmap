@@ -76,7 +76,7 @@
   </div> <!-- /.modal -->
   
   <div id="contextmenu-container" class="dropdown clearfix contextmenu" style="display: none;">
-    <ul id="contextmenu" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block; position: static; margin-bottom: 5px;">
+    <ul id="contextmenu" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
       <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Node details...</a></li>
       <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li>
       <li class="divider"></li>
@@ -93,11 +93,11 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="edit-node-modal-label"></h4>
+          <h4 class="modal-title" id="edit-node-modal-label">&nbsp;</h4>
         </div>
         <div class="modal-body">
           
-          <form class="form-horizontal" role="form">
+          <form class="form-horizontal">
             <input type="hidden" id="edit-node-id">
             <div class="form-group">
               <label class="col-sm-2 control-label">ORF</label>
@@ -137,13 +137,13 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="edit-node-label-visible" class="col-sm-2 control-label">Label always visible?</label>
+              <label for="edit-node-label-force" class="col-sm-2 control-label">Label always visible?</label>
               <div class="col-sm-10">
                 <input class="form-control" id="edit-node-label-force" type="checkbox">
               </div>
             </div>
             <div class="form-group">
-              <label for="edit-node-size-multiplier" class="col-sm-2 control-label">Node size multiplier</label>
+              <label class="col-sm-2 control-label">Node size multiplier</label>
               <div class="col-sm-10">
                 <div id="style-slider-snsize"></div>
               </div>
