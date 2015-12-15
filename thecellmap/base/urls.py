@@ -24,7 +24,6 @@ sitemaps = {
     'static': StaticViewSitemap,
 }
 
-
 urlpatterns = patterns('',
     url(r'^favicon[.]ico$', RedirectView.as_view(url='/static/favicon.ico'))
 )
