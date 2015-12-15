@@ -21,7 +21,7 @@
         </div>
       </div>
       <div class="row {% if filter|length == 0 %} hidden {% endif %}">
-        <form class="navbar-form" method="post" role="form"> {% csrf_token %}
+        <form class="navbar-form" method="post"> {% csrf_token %}
           <div class="panel panel-default">
             <div class="panel-heading">
                 <select name="action" id="action">
