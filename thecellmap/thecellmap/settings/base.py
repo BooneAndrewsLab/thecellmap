@@ -43,7 +43,8 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.syndication',
     'django.contrib.staticfiles',
-
+    'django.contrib.sitemaps',
+    
     # Third-party apps, patches, fixes
     'djcelery',
 #     'debug_toolbar',

@@ -1,14 +1,46 @@
 """urlconf for the base application"""
 
 from django.conf.urls import url, patterns, include
+from django.contrib.sitemaps import GenericSitemap, Sitemap
+from django.contrib.sitemaps.views import sitemap
+from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
+
+from base.models import Dataset
+
+class StaticViewSitemap(Sitemap):
+    priority = 0.5
+    changefreq = 'daily'
+
+    def items(self):
+        return ['home', 'about', 'resources', 'tools_custom', 'tools_annotations']
+
+    def location(self, item):
+        return reverse(item)
+
+sitemaps = {
+    'network': GenericSitemap({'queryset': Dataset.objects.filter(is_published=True), 'data_field': 'date'}),
+    'static': StaticViewSitemap,
+}
 
 
 urlpatterns = patterns('',
     url(r'^favicon[.]ico$', RedirectView.as_view(url='/static/favicon.ico'))
 )
 
+urlpatterns += patterns('base.tools',
+    # annotations
+    url(r'^tools/annotations/', 'annotations', name='tools_annotations'),
+    url(r'^tools/custom/', 'custom', name='tools_custom'),
+    url(r'^tools/edit/$', 'edit', name="tools_edit"),
+    url(r'^tools/edit/(?P<id>[0-9]+)/$', 'edit_dataset', name="tools_edit_dataset"),
+)
+
+urlpatterns += patterns('base.api',
+    url(r'^api/', include('base.api.v1.urls')),
+
+)
 urlpatterns += patterns('base.views',
     url(r'^$', 'home', name='home'),
     url(r'^about/$', 'about', name='about'),
@@ -51,17 +83,7 @@ urlpatterns += patterns('base.views',
     url(r'^3D/(?P<dataset_id>\d+)/$', 'three_demension', name='three_demension'),
     url(r'^ccbr_collaboration/$', 'ccbr_collaboration', name='ccbr_collaboration'),
     url(r'^ccbr_collaboration/citations/(?P<title>.+)/$', 'publication_citations', name='publication_citations'),
+
+    url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap')
 )
 
-urlpatterns += patterns('base.tools',
-    # annotations
-    url(r'^tools/annotations/', 'annotations', name='tools_annotations'),
-    url(r'^tools/custom/', 'custom', name='tools_custom'),
-    url(r'^tools/edit/$', 'edit', name="tools_edit"),
-    url(r'^tools/edit/(?P<id>[0-9]+)/$', 'edit_dataset', name="tools_edit_dataset"),
-)
-
-urlpatterns += patterns('base.api',
-    url(r'^api/', include('base.api.v1.urls')),
-
-)

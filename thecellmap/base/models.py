@@ -4,10 +4,11 @@ import os
 
 import dbarray
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db import models
-from thecellmap import settings
 from django.http.response import Http404
-from math import degrees
+
+from thecellmap import settings
 
 
 class Gene(models.Model):
@@ -100,6 +101,9 @@ class Dataset(models.Model):
         if ds: return ds[0]
         if datasets: return datasets[0]
         raise Dataset.DoesNotExist()
+    
+    def get_absolute_url(self):
+        return reverse('dataset', kwargs={'dataset_id': self.pk})
     
     class Meta:
         ordering = ("date", )
