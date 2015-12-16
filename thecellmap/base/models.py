@@ -64,6 +64,7 @@ class Dataset(models.Model):
     description = models.TextField()
     date = models.DateField()
     verbose_name = models.CharField(max_length=64)
+    public_description = models.TextField()
     
     def __unicode__(self):
         return self.name

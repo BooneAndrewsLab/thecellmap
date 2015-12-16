@@ -6,7 +6,9 @@
   {% require_module 'base' %}
 {% endblock js %}
 
-{% block page_title_suffix %} - Resources{% endblock %}
+{% block meta_description %}{% endblock %}
+
+{% block page_title_suffix %} - Download dataset{% endblock %}
 {% block content %}
   <div class="container">
     <div class="row">
@@ -22,7 +24,10 @@
           1,243 TS query mutant strains, corresponding to 869 essential genes, were crossed to an array of 792 TS strains, spanning 561 unique 
           essential genes, to generate an expanded ExN network and an essential x essential (ExE) network. The data can be downloaded from the 
           links below or browsed interactively at <a href="{% url 'home' %}">TheCellMap.org</a>. Note that we continue to map genetic interactions 
-          for remaining gene pairs not represented here and we will update the data and networks periodically as new interactions are generated
+          for remaining gene pairs not represented here and we will update the data and networks periodically as new interactions are generated.
+        </p>
+        <p>
+          <a class="btn btn-primary" href="{% url 'home' %}" role="button">View Network</a>
         </p>
       </div>
       <div class="col-md-12">
@@ -47,8 +52,7 @@
             <li>Query gene name</li>
             <li>Array ORF</li>
             <li>Array gene name</li>
-            <li>Array Type (DMA or TSA) and Temperature (26&deg;C or
-                30&deg;C)</li>
+            <li>Array Type (DMA or TSA) and Temperature (26&deg;C or 30&deg;C)</li>
             <li>Genetic interaction score (&epsilon;)</li>
             <li>P-value</li>
             <li>Query single mutant fitness (SMF)</li>
