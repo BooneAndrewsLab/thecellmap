@@ -44,7 +44,6 @@ def _serve_dataset(request, dataset=None):
 def about(request):
     return render(request, 'base/about.html')
 
-@login_required
 def resources(request):
     return render(request, 'base/resources.html')
 
