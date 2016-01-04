@@ -194,7 +194,7 @@ define([
         mouseCanvas[0].getContext('2d').clearRect(0, 0, mouseCanvas.width(), mouseCanvas.height());
     }
     var drawRegions = function(direct) {
-        clearRegions();
+        if (!direct) clearRegions();
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
         
         if (!$('#canvas-regions').length) {
@@ -229,7 +229,7 @@ define([
             regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
         }
         
-        var ctx = $('#canvas-regions')[0].getContext('2d');
+        var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
         ctx.globalCompositeOperation = 'screen';
         
         regions.forEach(function(r){
@@ -248,7 +248,7 @@ define([
             return a.y - b.y;
         });
         
-        var mouseCtx = $('#sigma_mouse_1')[0].getContext('2d');
+        var mouseCtx = !!direct ? direct : $('#sigma_mouse_1')[0].getContext('2d');
         var last = 0, spacing = 20;
         
         mouseCtx.font = 'bold 16px Arial';
@@ -265,12 +265,6 @@ define([
             
             last = r.y;
         });
-        
-//        if (!direct) {
-//            sigInst.displayRegions({regions: regions, runtime: 2});
-//        } else {
-//            sigInst.drawRegionsDirect({regions: regions, runtime: 2, context: direct});
-//        }
     }
     
     var loadRegion = function(id) {
