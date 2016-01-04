@@ -44,28 +44,13 @@ define([
 //        }
         
         sigInst._core.plotter.switchCxt(canvas);
+        if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas);
         sigInst.draw(0,2,0,0);
         sigInst.draw(2,0,0,0);
         sigInst.draw(0,0,2,0);
+        
         sigInst._core.plotter.restoreCxt();
         sigInst.draw();
-        
-        Annotation.drawRegions(canvas);
-        
-//        var annot = state.get('annotation');
-//        if (settings['showLegendSvg'] && annot != 'None') {
-//            canvas.fillStyle = $('#canvas-background-color').val();
-//            canvas.fillRect(width, 0, width/4 + 25, height);
-//            canvas.font = "10px Arial";
-//            var x = width + 5, y = 10;
-//            for (t in vizdata[annot].terms) {
-//                var term = vizdata[annot].terms[t];
-//                canvas.fillStyle = vizdata[annot].colorPalette[term.idx];
-//                canvas.fillRect(x, y, 5, 5);
-//                canvas.fillText(term.name, x + 10, y + 5);
-//                y += 10;
-//            }
-//        }
         
         var blob = new Blob([canvas.getSerializedSvg()], {type: 'text/svg+xml;charset=utf-8'});
         saveAs(blob, filename);
