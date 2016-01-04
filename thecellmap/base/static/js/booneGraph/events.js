@@ -111,6 +111,11 @@ define([
             $('#modal-edit-node').modal({show: false});
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
+            
+            $('.btn-copy').on('click', this.showInputModal).hover(function() {
+                if (Utils.getSelection().length > 0) $('.btn-copy').find('span').toggleClass('hidden');
+            });
+            
             $('.contextmenu').mouseleave(function() { $(this).delay(500).fadeOut(500); }).mouseenter(function() { $(this).stop(true); });
             $('body').keydown(this.graphNodes);
         },
@@ -291,6 +296,25 @@ define([
         },
         toggleLegend: function(e) {
             $('#panel-legend .panel-body').toggle();
+            e.preventDefault();
+        },
+        
+        showInputModal: function(e) {
+            var selection = Utils.getSelection()
+            if (selection.length <= 0) return;
+            
+            $('#modal-copy').modal('show');
+            $('#modal-copy').on('shown.bs.modal', function() {
+                var str = '';
+                for (var s in selection) {
+                    if (s != 0) str += ', ';
+                    str += Utils.getNode(selection[s]).label;
+                }
+                $('#modal-copy input').val(str).select();
+            }).on('hide.bs.modal', function() {
+                $('#modal-copy input').val('');
+            });
+            
             e.preventDefault();
         },
         
