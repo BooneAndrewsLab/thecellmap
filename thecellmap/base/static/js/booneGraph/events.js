@@ -95,9 +95,34 @@ define([
                     state.set('missingNodes', []);
                     Dataset.toggleDataset(1);
                 }
-            })
+            });
             
-            var box = $(".content:first")[0].getBoundingClientRect();
+            state.on('change:isInitializing', function() {
+                var a = window.location.search.substr(1).split('&');
+                
+                if (a == '') return;
+                var b = {};
+                for (var i = 0; i < a.length; ++i) {
+                    var p=a[i].split('=', 2);
+                    if (p.length == 1)
+                        b[p[0]] = '';
+                    else
+                        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' ')).split(',');
+                }
+                
+                var strains = vizdata['strains'], sel = [];
+                strains.forEach(function(s) {
+                    for (var n in b['q']) {
+                        if (b['q'][n].toLowerCase() == s.get('verboseName').toLowerCase()) sel.push(s.get('id'));
+                    }
+                });
+                
+                $('input.gene-search-input').select2('val', sel, true);
+                
+                //if (b['a'].length == 1) Annotation.loadAnnotation(b['a'][0]);
+            });
+            
+            var box = $('.content:first')[0].getBoundingClientRect();
             if ($('#panel-legend').length) {
                 Drag.init(document.getElementById('legend-handle'), document.getElementById('panel-legend'), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
             }
