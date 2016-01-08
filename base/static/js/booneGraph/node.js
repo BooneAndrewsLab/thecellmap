@@ -110,8 +110,6 @@ define([
                         i, l, // looping variables
                         separator; // the matched separator
                         
-                        console.log(preSelectSize, Math.abs(preSelectSize - input.length) >= 2, preSelectSize >= 2)
-                        
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                         if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) {
                             input = input.split(/[\s,\t\n]/).join() + ',';
@@ -261,7 +259,7 @@ define([
                     if (reselect) return;
                     if (actionAnnot) Annotation.loadAnnotation('SAFE');
                     
-                    var moveOn = true, found = false;
+                    var moveOn = true, found = false, sel = '';
                     sigInst.iterNodes(function(node) {
                         if (node.id.indexOf('tmp_') != -1) return;
                         if (state.get('showCircular')) var tmpNode = Utils.getNode('tmp_' + node.id);
@@ -280,6 +278,9 @@ define([
                                 node.forceLabel = true;
                                 numVisibleSelected++;
                             }
+                            
+                            if (sel.length) sel += ',';
+                            sel += node.label.toLowerCase();
                         } else {
                             if (tmpNode) tmpNode.selected = tmpNode.forceLabel = false;
                             node.selected = node.forceLabel = false;
@@ -322,6 +323,10 @@ define([
                             state.set('selection', selected);
                         }
 //                    }
+                    
+                    var urlNew = window.location.href.substring(0, window.location.href.indexOf('/?'));
+                    if (sel.length > 1) urlNew += '/?q=' + sel;
+                    window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
                     $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');
