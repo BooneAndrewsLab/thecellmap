@@ -41,6 +41,14 @@
       </div>
     </div>
     
+    {% if user.is_authenticated %}
+    <div class="row">
+      <div class="col-md-4 col-md-offset-4">
+          <a class="btn btn-default btn-block" href="{% url 'tools_edit' %}" role="button">Edit custom uploads</a>
+      </div>
+    </div>
+    {% endif %}
+    
     <div class="wizard" id="custom-setting-wizard" data-title="Custom Upload">
       {% if user.is_authenticated %}
       <div class="wizard-card" id="settings-card" data-cardname="settings-card">

@@ -75,9 +75,6 @@
             <ul class="dropdown-menu">
               <li><a href="{% url 'tools_annotations' %}">Annotations</a></li>
               <li><a href="{% url 'tools_custom' %}">Custom Uploads</a>
-              {% if user.is_authenticated %}
-                <li><a href="{% url 'tools_edit' %}">Edit Custom Uploads</a></li>
-              {% endif %}
               <li class="divider"></li>
               <li class='disabled'><a href="#" id="tools-settings">Settings</a></li>
               {% if user.is_authenticated %}
