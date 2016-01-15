@@ -325,7 +325,7 @@ define([
 //                    }
                     
                     var urlNew = window.location.href.substring(0, window.location.href.indexOf('/?'));
-                    if (sel.length > 1) urlNew += '/?q=' + sel;
+                    if (sel.length > 1) urlNew += '/?q=' + sel + '&a=' + state.get('annotation');
                     window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
