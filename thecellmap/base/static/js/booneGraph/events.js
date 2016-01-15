@@ -117,9 +117,8 @@ define([
                     }
                 });
                 
+                if (b['a'].length == 1) Annotation.loadAnnotation(b['a'][0]);
                 $('input.gene-search-input').select2('val', sel, true);
-                
-                //if (b['a'].length == 1) Annotation.loadAnnotation(b['a'][0]);
             });
             
             var box = $('.content:first')[0].getBoundingClientRect();
