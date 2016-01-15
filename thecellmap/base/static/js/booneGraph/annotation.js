@@ -193,7 +193,7 @@ define([
         var mouseCanvas = $('#sigma_mouse_1');
         mouseCanvas[0].getContext('2d').clearRect(0, 0, mouseCanvas.width(), mouseCanvas.height());
     }
-    var drawRegions = function(direct) {
+    var drawRegions = function(direct, step) {
         if (!direct) clearRegions();
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
         
@@ -229,42 +229,46 @@ define([
             regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
         }
         
-        var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
-        ctx.globalCompositeOperation = 'screen';
-        
-        regions.forEach(function(r){
-            var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.8);
-            grd.addColorStop(0, '#' + r.c);
-            grd.addColorStop(1, 'transparent');
+        if (!direct || (!!direct && step == 1)) {
+            var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
+            ctx.globalCompositeOperation = 'screen';
             
-            ctx.fillStyle = grd;
-            ctx.beginPath();
-            ctx.arc(r.x, r.y, r.l*0.8, 0, 2*Math.PI);
-            ctx.fill();
-            ctx.closePath();
-        });
+            regions.forEach(function(r){
+                var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.8);
+                grd.addColorStop(0, '#' + r.c);
+                grd.addColorStop(1, 'transparent');
+                
+                ctx.fillStyle = grd;
+                ctx.beginPath();
+                ctx.arc(r.x, r.y, r.l*0.8, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
+            });
+        }
         
-        regions.sort(function(a, b){
-            return a.y - b.y;
-        });
-        
-        var mouseCtx = !!direct ? direct : $('#sigma_mouse_1')[0].getContext('2d');
-        var last = 0, spacing = 20;
-        
-        mouseCtx.font = 'bold 16px Arial';
-        mouseCtx.textAlign = 'center';
-        mouseCtx.lineWidth = 2;
-        
-        regions.forEach(function(r) {
-            if (r.y - last < spacing) {
-                r.y += spacing - (r.y - last);
-            }
+        if (!direct || (!!direct && step == 2)) {
+            regions.sort(function(a, b){
+                return a.y - b.y;
+            });
             
-            mouseCtx.fillStyle = '#' + r.c;
-            mouseCtx.fillText(r.n, r.x, r.y);
+            var mouseCtx = !!direct ? direct : $('#sigma_mouse_1')[0].getContext('2d');
+            var last = 0, spacing = 20;
             
-            last = r.y;
-        });
+            mouseCtx.font = 'bold 16px Arial';
+            mouseCtx.textAlign = 'center';
+            mouseCtx.lineWidth = 2;
+            
+            regions.forEach(function(r) {
+                if (r.y - last < spacing) {
+                    r.y += spacing - (r.y - last);
+                }
+                
+                mouseCtx.fillStyle = '#' + r.c;
+                mouseCtx.fillText(r.n, r.x, r.y);
+                
+                last = r.y;
+            });
+        }
     }
     
     var loadRegion = function(id) {

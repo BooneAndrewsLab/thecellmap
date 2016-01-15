@@ -44,10 +44,11 @@ define([
 //        }
         
         sigInst._core.plotter.switchCxt(canvas);
-        if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas);
+        if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas, 1);
         sigInst.draw(0,2,0,0);
         sigInst.draw(2,0,0,0);
         sigInst.draw(0,0,2,0);
+        if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas, 2);
         
         sigInst._core.plotter.restoreCxt();
         sigInst.draw();
