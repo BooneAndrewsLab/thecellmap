@@ -53,7 +53,7 @@ urlpatterns += patterns('base.views',
     url(r'^network/(?P<dataset_id>\d+)/dl/$', 'nodes_download', name='nodes_download'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/$', 'tabular', name='tabular'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/(?P<node_id>\d+)/$', 'tabular_data', name='tabular_fetch'),
-    url(r'^network/(?P<hash>.{40})/$', 'custom_dataset', name='custom_dataset'),
+    url(r'^network/(?P<custom_hash>.{40})/$', 'custom_dataset', name='custom_dataset'),
     
     # default dataset urls
     url(r'^interactions/$', 'interactions', name='interactions_default'),
