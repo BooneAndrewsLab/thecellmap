@@ -76,8 +76,10 @@ layouts in an intuitive and interactive manner.
             'static_url': "{{ extra.static_url }}/scores.json",
         },
         {% endif %}
+        {% if dataset.directed %}
+        arrows: true,
+        {% endif %}
     }
-    
   </script>
   {% require_module 'network' %}
 {% endblock js %}

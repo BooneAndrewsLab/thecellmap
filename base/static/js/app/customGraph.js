@@ -473,11 +473,11 @@ define([
         
         wizard.cards['sheet-selection'].on('validate', function(card) {
             $('alerts-panel-sheets').empty();
-            if (fileType != 'csv' && sheetMap['edges'] == null) {
-                messageUser('alerts-panel-sheets', 'Must have an <strong>edges</strong> sheet');
+            if (fileType != 'csv' && fileType != 'tsv' && fileType != 'txt' && sheetMap['edges'] == null) {
+                messageUser('alerts-panel-sheets', 'Must have an <strong>Edges</strong> sheet');
                 return false;
             }
-            if (fileType != 'csv' && isFirst) loadTable(workbook);
+            if (fileType != 'csv' && fileType != 'tsv' && fileType != 'txt' && isFirst) loadTable(workbook);
             $('.alert-danger').addClass('hidden');
             return true;
         });
@@ -485,7 +485,7 @@ define([
         wizard.cards['nodes-column'].on('validate', function(card) {
             $('alerts-panel-nodes').empty();
             if (colMap['nodes'] == null && !wizard.cards['nodes-column'].isDisabled()) {
-                messageUser('alerts-panel-nodes', 'Must have a <strong>nodes</strong> column');
+                messageUser('alerts-panel-nodes', 'Must have a <strong>Nodes</strong> column');
                 return false;
             } else if (colMap['x'] != null && colMap['y'] == null) {
                 messageUser('alerts-panel-nodes', 'Must have a <strong>Y-Coordinate</strong> column');
@@ -562,7 +562,7 @@ define([
             wizard.show();
             $('.wizard-buttons-container').addClass('hidden');
             
-            if (fileType != 'csv') {
+            if (fileType != 'csv' && fileType != 'tsv' && fileType != 'txt') {
                 setTimeout(function() {
                     reader.onload = function(e) {
                         var data = e.target.result;
@@ -605,7 +605,7 @@ define([
         
         wizard.on('submit', function(wizard) {
             var nodes = [], layout = [], dataset = [], annotations = {};
-            if (fileType != 'csv') {
+            if (fileType != 'csv' && fileType != 'tsv' && fileType != 'txt') {
                 processWorkbook(workbook, nodes, layout, dataset, annotations);
             } else {
                 processCsv(workbook, nodes, layout, dataset);
