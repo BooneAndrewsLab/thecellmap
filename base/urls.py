@@ -32,7 +32,6 @@ urlpatterns += patterns('base.tools',
     # annotations
     url(r'^tools/annotations/', 'annotations', name='tools_annotations'),
     url(r'^tools/custom/', 'custom', name='tools_custom'),
-    url(r'^tools/edit/$', 'edit', name="tools_edit"),
     url(r'^tools/edit/(?P<id>[0-9]+)/$', 'edit_dataset', name="tools_edit_dataset"),
 )
 

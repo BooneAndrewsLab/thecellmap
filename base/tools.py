@@ -100,64 +100,73 @@ def annotations(request):
 
 def custom(request):
     if request.POST:
-        if 'nodes' not in request.POST or 'layout' not in request.POST or 'dataset' not in request.POST:
+        if 'selection' in request.POST and 'action' in request.POST:
+            selection = request.POST.getlist('selection')
+            selection = Custom.objects.filter(id__in=selection)
+             
+            action = request.POST.get('action')
+            if action == 'delete':
+                selection.delete()
+            elif action == 'renew':
+                selection.update(date=datetime.now())
+        elif 'nodes' in request.POST and 'layout' in request.POST and 'dataset' in request.POST:
+            nodes = request.POST['nodes']
+            dataset = request.POST['dataset']
+            layout = request.POST['layout']
+            private = request.POST['private'].lower() == 'true'
+            type = request.POST['type']
+            network_type = request.POST['network-type']
+            scores = []
+            
+            if request.POST['overlay']:
+                try:
+                    overlay = Dataset.objects.get(pk=request.POST['overlay'])
+                except:
+                    return HttpResponseBadRequest("dataset does not exist")
+                
+                if not request.user.is_authenticated() or overlay.is_published:
+                    return HttpResponseForbidden('Permission Required')
+                
+                scores = collect_score_matrix(overlay, nodes, dataset)
+            else:
+                overlay = None
+            
+            hash = hashlib.sha1()
+            hash.update(str(time()) + nodes + layout + dataset)
+            hash = hash.hexdigest()
+            
+            if 'name' in request.POST and request.POST['name']:
+                name = request.POST['name']
+            else:
+                name = hash
+            
+            custom, _created = Custom.objects.get_or_create(
+                    user=request.user.is_authenticated() and request.user or None, 
+                    hash=hash, 
+                    private=private,
+                    name=name,
+                    dataset=overlay,
+                    type=type,
+                    network_type=network_type)
+            
+            os.makedirs(custom.path())
+            
+            with open(custom.path('nodes.json'), 'w') as fp:
+                fp.write(nodes)
+            
+            with open(custom.path('layout.json'), 'w') as fp:
+                fp.write(layout)
+            
+            with open(custom.path('correlations.json'), 'w') as fp:
+                fp.write(dataset)
+            
+            if scores:
+                with open(custom.path('scores.json'), 'w') as fp:
+                    fp.write(json.dumps(scores).replace(' ', ''))
+            
+            return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
+        else:
             return HttpResponseBadRequest('missing values')
-        
-        nodes = request.POST['nodes']
-        dataset = request.POST['dataset']
-        layout = request.POST['layout']
-        private = request.POST['private'].lower() == 'true'
-        type = request.POST['type']
-        network_type = request.POST['network-type']
-        scores = []
-        
-        if request.POST['overlay']:
-            try:
-                overlay = Dataset.objects.get(pk=request.POST['overlay'])
-            except:
-                return HttpResponseBadRequest("dataset does not exist")
-            
-            if not request.user.is_authenticated() or overlay.is_published:
-                return HttpResponseForbidden('Permission Required')
-            
-            scores = collect_score_matrix(overlay, nodes, dataset)
-        else:
-            overlay = None
-        
-        hash = hashlib.sha1()
-        hash.update(str(time()) + nodes + layout + dataset)
-        hash = hash.hexdigest()
-        
-        if 'name' in request.POST and request.POST['name']:
-            name = request.POST['name']
-        else:
-            name = hash
-        
-        custom, _created = Custom.objects.get_or_create(
-                user=request.user.is_authenticated() and request.user or None, 
-                hash=hash, 
-                private=private,
-                name=name,
-                dataset=overlay,
-                type=type,
-                network_type=network_type)
-        
-        os.makedirs(custom.path())
-        
-        with open(custom.path('nodes.json'), 'w') as fp:
-            fp.write(nodes)
-        
-        with open(custom.path('layout.json'), 'w') as fp:
-            fp.write(layout)
-        
-        with open(custom.path('correlations.json'), 'w') as fp:
-            fp.write(dataset)
-        
-        if scores:
-            with open(custom.path('scores.json'), 'w') as fp:
-                fp.write(json.dumps(scores).replace(' ', ''))
-        
-        return JsonResponse({'url': reverse('custom_dataset', args=(hash,))})
     
     datasets = []
     
@@ -165,28 +174,14 @@ def custom(request):
         if request.user.is_authenticated() or data.is_published:
             datasets.append(data)
     
+    f = '';
+    if request.user.is_authenticated():
+        f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).extra(where=["CHAR_LENGTH(name) <= 32"]).order_by("name"))
+    
     return render(request, 'base/custom.html', {
             'page_name': 'custom_upload',
             'datasets': datasets,
-        })
-
-@login_required
-def edit(request):
-    f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).extra(where=["CHAR_LENGTH(name) <= 32"]).order_by("name"))
-    
-    if request.POST:
-        selection = request.POST.getlist('selection')
-        selection = Custom.objects.filter(id__in=selection)
-        
-        action = request.POST.get('action')
-        if action == 'delete':
-            selection.delete()
-        elif action == 'renew':
-            selection.update(date=datetime.now())
-            
-    return render(request, 'base/edit.html', {
             'filter': f, 
-            'page_name': 'custom_upload',
         })
 
 @login_required

@@ -30,6 +30,71 @@
         <h1>TheCellMap.org <small>storing and visualizing genetic interactions in <i>S. cerevisiae</i></small></h1>
       </div>
     </div>
+    
+    {% if user.is_authenticated %}
+      <div class="row">
+        <form class="navbar-form" method="post"> {% csrf_token %}
+          <div class="panel panel-default">
+            <div class="panel-heading">
+                <select name="action" id="action">
+                  <option></option>
+                  <option value="delete">Delete selected datasets</option>
+                  <option value="renew">Renew for a week</option>
+                </select>
+                <button type="submit" id="sumbit-button" class="btn btn-default hidden">Submit</button>
+                
+                <span class="glyphicons glyphicons-question-sign"></span>
+                
+                <div class="pull-right">
+                  <form class="form-horizontal">
+                    <div class="form-group">
+                      <input type="file" title="Upload a custom network" data-filename-placement="inside">
+                    </div>
+                  </form>
+                </div>
+            </div>
+            <table class="table table-condensed table-striped sortable">
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="main-checkbox" style="display: inline-block;"></th>
+                  <th>Name</th>
+                  <th>Expire in</th>
+                  <th>Private</th>
+                  <th>Permanent</th>
+                  <th>Network</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for obj in filter %}
+                  <tr>
+                    <td><input class="body-checkbox" name="selection" value="{{ obj.pk }}" type="checkbox" style="display: inline-block;"></td>
+                    <td><a href="{% url 'tools_edit_dataset' obj.id %}">{{ obj.name }}</a></td>
+                    <td>{{ obj.date }}</td>
+                    <td>
+                      {% if obj.private %}
+                        <span class="glyphicon glyphicon-ok"></span>
+                      {% else %}
+                        <span class="glyphicon glyphicon-remove"></span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if obj.permanent %}
+                        <span class="glyphicon glyphicon-ok"></span>
+                      {% else %}
+                        <span class="glyphicon glyphicon-remove"></span>
+                      {% endif %}
+                    </td>
+                    <td><a href="{% url 'custom_dataset' obj.hash %}">See Network</a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+    </div>
+    
+    {% else %}
+    
     <div class="row">
       <div class="col-md-4 col-md-offset-4">
         <form>
@@ -41,12 +106,6 @@
       </div>
     </div>
     
-    {% if user.is_authenticated %}
-    <div class="row">
-      <div class="col-md-4 col-md-offset-4">
-          <a class="btn btn-default btn-block" href="{% url 'tools_edit' %}" role="button">Edit custom uploads</a>
-      </div>
-    </div>
     {% endif %}
     
     <div class="wizard" id="custom-setting-wizard" data-title="Custom Upload">
