@@ -35,7 +35,7 @@ define([
             nodesPowRatio : 1,
             edgesPowRatio : .5,
             margin: 25,
-            arrowRatio: 4,
+            arrowRatio: 10,
             safe : false,
         },
         hideLayouts: false,
@@ -60,7 +60,8 @@ define([
     window.sliderProperties = $.extend({}, DEFAULTS.slider, module.config().slider || {});
     window.graphProperties = $.extend({}, DEFAULTS.graphProperties, module.config().graphProperties || {});
     
-    $.extend(opts, DEFAULTS);
+    opts = $.extend({}, DEFAULTS, opts);
+    
     window.vizdata = {
         annotations: new AnnotationCollection(),
         strains: new StrainCollection(),
