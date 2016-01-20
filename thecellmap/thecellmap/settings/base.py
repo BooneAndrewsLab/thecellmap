@@ -253,10 +253,6 @@ REQUIRE_STANDALONE_MODULES = {
         'out': 'custom-built.js',
         'build_profile': 'build/custom.build.js',
     },
-    'edit': {
-        'out': 'edit-built.js',
-        'build_profile': 'build/edit.build.js',
-    },
     'network': {
         'out': 'network-built.js',
         'build_profile': 'build/network.build.js',

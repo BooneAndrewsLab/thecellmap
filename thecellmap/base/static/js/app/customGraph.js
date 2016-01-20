@@ -589,6 +589,20 @@ define([
             }
         });
         
+        $('#action').select2({
+            placeholder: 'Action', 
+            minimumResultsForSearch: -1,
+            width: '300px'
+        });
+        
+        $('#main-checkbox').change(function() {
+            $('.body-checkbox').prop('checked', this.checked);
+        });
+        
+        $('#action').change(function() {
+            $('#sumbit-button').removeClass('hidden');
+        });
+        
         wizard.on('submit', function(wizard) {
             var nodes = [], layout = [], dataset = [], annotations = {};
             if (fileType != 'csv') {
