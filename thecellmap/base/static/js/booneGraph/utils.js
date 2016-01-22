@@ -414,6 +414,24 @@ define([
         return bool == 'true';
     }
     
+    var updateUrl = function(type) {
+        var selection = state.get('selection'), selStr = '';
+        
+        sigInst.iterNodes(function(node) {
+            if ($.inArray(node.id + '', selection) >= 0) {
+                if (selStr.length) selStr += ',';
+                selStr += node.label.toLowerCase();
+            }
+        });
+        
+        if (selStr.length == 0) {
+            selStr = 'null';
+        }
+        
+        var urlNew = opts.url + '?q=' + selStr + '&' + 'a=' + state.get('annotation');
+        window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
+    }
+    
     return {
         iterVisibleNodes: iterVisibleNodes,
         iterVisibleEdges: iterVisibleEdges,
@@ -445,5 +463,7 @@ define([
         stripLetters: stripLetters,
         alertUser: alertUser,
         parseBool: parseBool,
+        
+        updateUrl: updateUrl,
     };
 });

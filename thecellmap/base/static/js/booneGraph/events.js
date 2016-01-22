@@ -36,28 +36,11 @@ define([
                     $(this).toggleClass(cls, !enabled);
                 });
                 
-                var selection = state.get('selection'), selStr = '';
-                
-                sigInst.iterNodes(function(node) {
-                    if ($.inArray(node.id + '', selection) >= 0) {
-                        if (selStr.length) selStr += ',';
-                        selStr += node.label.toLowerCase();
-                    }
-                });
-                
-                if (selStr.length > 1) {
-                    var url = window.location.href, query = url.substr(url.indexOf('&'), url.length);
-                    var urlNew = '/?q=' + selStr;
-                    
-                    if (!!query) urlNew += query;
-                    window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
-                }
+                Utils.updateUrl();
             });
             
             state.on('change:annotation', function() {
-                var url = window.location.href, query = url.substr(0, url.indexOf('a='));
-                var urlNew = query + 'a=' + state.get('annotation')
-                window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
+                Utils.updateUrl();
             });
             
             state.on('change:annotation change:dataset', function() {
