@@ -199,7 +199,7 @@ def edit_dataset(request, id):
                 form.save()
             elif "delete" in request.POST:
                 custom.delete()
-            return HttpResponseRedirect(reverse("tools_edit"))
+            return HttpResponseRedirect(reverse("tools_custom"))
     else:
         form = CustomForm(instance=custom)
     

@@ -55,6 +55,7 @@ define([
             filter: 'edges',
         },
         tokenSeparators: [',', ' ', '\t', '\n'],
+        url: window.location.href.substr(0, window.location.href.indexOf('?')),
     };
     
     window.sliderProperties = $.extend({}, DEFAULTS.slider, module.config().slider || {});
@@ -72,6 +73,7 @@ define([
     window.state = new StateModel();
     window.sigInst = null;
     window.mouseX = null, window.mouseY = null;
+    
     var clicking = {
         wasDragging: false,
         modifierKey: null
