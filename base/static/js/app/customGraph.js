@@ -92,8 +92,7 @@ define([
             src = getGeneObj(obj[colMap['source']], nodes, layout);
             dst = getGeneObj(obj[colMap['target']], nodes, layout);
             
-            if (colMap['weight'] == null) row[colMap['weight']] = 0.21;
-            dataset.push({s: src.id, t: dst.id, w: row[colMap['weight']] });
+            if (!isNaN(row[colMap['weight']])) dataset.push({s: src.id, t: dst.id, w: row[colMap['weight']] });
         });
     };
     
@@ -106,8 +105,7 @@ define([
                 if (idx == 0) src = gene.id;
                 else if (idx == 1) dst = gene.id;
             });
-            if (colMap['weight'] == null) row[colMap['weight']] = 0.21;
-            dataset.push({s: src, t: dst, w: row[colMap['weight']] });
+            if (!isNaN(row[colMap['weight']])) dataset.push({s: src, t: dst, w: row[colMap['weight']] });
         });
     }
     
