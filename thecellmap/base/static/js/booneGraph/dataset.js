@@ -98,7 +98,7 @@ define([
                     node._hidden = node.hidden; // Our internal way to know if user hid the node manually or not
                 });
                 
-                loadDataset(0, {}, function () {
+                loadDataset(opts.dataset || 0, {}, function () {
                     if (!!opts['extra']) loadPin();
                     updateEdges(0);
                     
@@ -173,6 +173,7 @@ define([
     var loadDataset = function(dsid, data, callback) {
         var datasetType = dsid == 0 ? 'correlations' : 'interactions';
         var method = dsid == 0 ? 'get' : 'post';
+        state.set('dataset', dsid);
         
         $.ajax({
             url: opts.urls[datasetType], 
@@ -191,7 +192,7 @@ define([
                     edge.color = edge.color || edge.c; // c == color
                     edge.size = edge.absweight;
                     
-                    if (edge.color == undefined && dsid == 1) {
+                    if (edge.color == undefined && dsid == 1 || opts.interaction_on) {
                         edge.color = edge.weight < 0. ? "red" : "green";
                         edge.size = 1;
                     }
