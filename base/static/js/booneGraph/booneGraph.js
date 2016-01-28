@@ -25,7 +25,7 @@ define([
     var DEFAULTS = {
         arrows: false,
         colorScheme: 'black',
-        datasets: [],
+        dataset: 0,
         defaultNodeColor: '#E8E8E8',
         downloadLimit: 30,
         graphProperties: {
