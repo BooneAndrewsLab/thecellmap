@@ -157,7 +157,8 @@ def custom(request):
             with open(custom.path('layout.json'), 'w') as fp:
                 fp.write(layout)
             
-            with open(custom.path('correlations.json'), 'w') as fp:
+            dfilename = 'correlations.json' if type == 'C' else 'interactions.json'
+            with open(custom.path(dfilename), 'w') as fp:
                 fp.write(dataset)
             
             if scores:

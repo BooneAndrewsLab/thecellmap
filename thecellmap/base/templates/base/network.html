@@ -53,7 +53,7 @@ layouts in an intuitive and interactive manner.
             nodes: "{{ dataset.static_url }}/nodes.json",
             layout: "{{ dataset.static_url }}/layout.json",
             correlations: "{{ dataset.static_url }}/correlations.json",
-            interactions: "interactions/",
+            interactions: {% if dataset.type == 'I' %} "{{ dataset.static_url }}/interactions.json" {% else %} "interactions/" {% endif %},
             circle: "{% url 'circle_pack' %}",
         },
         annotations: [{% for annot in annotations %}{
@@ -76,9 +76,8 @@ layouts in an intuitive and interactive manner.
             'static_url': "{{ extra.static_url }}/scores.json",
         },
         {% endif %}
-        {% if dataset.directed %}
-        arrows: true,
-        {% endif %}
+        {% if dataset.directed %} arrows: true, {% endif %}
+        {% if dataset.type == 'I'%} dataset: 1, {% endif %}
     }
   </script>
   {% require_module 'network' %}
