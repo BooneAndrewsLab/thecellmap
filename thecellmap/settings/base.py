@@ -146,6 +146,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'base.middleware.PasswordChangeMiddleware',
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = [
@@ -209,6 +210,7 @@ if ENABLED_DEBUG_TOOLBAR:
 
 # Specify a custom user model to use
 #AUTH_USER_MODEL = 'accounts.MyUser'
+AUTH_PROFILE_MODULE = 'base.UserProfile'
 
 FILE_UPLOAD_PERMISSIONS = 0664
 
