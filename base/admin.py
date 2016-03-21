@@ -41,7 +41,7 @@ class DatasetAdmin(admin.ModelAdmin):
         return ds.correlation_axis.count()
 
 class AnnotationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'alias', 'date', 'description', 'number_of_terms')
+    list_display = ('name', 'alias', 'date', 'description', 'number_of_terms', 'enabled')
     
     def number_of_terms(self, ds):
         return ds.term_set.count()

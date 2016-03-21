@@ -133,6 +133,7 @@ class Annotation(models.Model):
     date = models.DateField()
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, null=True, blank=True)
+    enabled = models.BooleanField(default=False)
     
     def __unicode__(self):
         return u'%s' % self.name
