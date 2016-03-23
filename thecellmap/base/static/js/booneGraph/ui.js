@@ -31,7 +31,10 @@ define([
         if (opts['annotations'].length > 0) {
             opts['annotations'].forEach(function(annotation) {
                 $('#btn-group-annotation').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>');
+                $('#legend-annotation-list').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>')
             });
+            $('#legend-annotation-list').append('<li class="divider"></li>')
+            $('#legend-annotation-list').append('<li><a class="load-annotation" href="#">None</a></li>')
         }
         $('#btn-group-annotation').append('<li class="divider"></li><li><a id="btn-legend" href="#">Annotation legend</a></li>');
         

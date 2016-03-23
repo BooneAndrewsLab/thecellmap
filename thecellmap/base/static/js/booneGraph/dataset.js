@@ -41,10 +41,10 @@ define([
         }
         
         if (ds == 0) {
-            $('.cutoff-label-max').hide();
+            $('.cutoff-label-max').css('visibility', 'hidden');
             $('.cutoff-label-min').removeClass('btn-danger').addClass('btn-default');
         } else {
-            $('.cutoff-label-max').show();
+            $('.cutoff-label-max').css('visibility', 'visible');
             $('.cutoff-label-min').removeClass('btn-default').addClass('btn-danger');
         }
         

@@ -73,8 +73,13 @@
     pointer-events: auto;
 }
 
-.top-left > :first-child {
+.top-left .select2-div {
     width: 389px;
+    display: inline-block;
+}
+
+.top-left .btn-group {
+    vertical-align: top;
 }
 
 /* .top-left { */
@@ -100,7 +105,6 @@
 .bottom-right {
     bottom: 5px;
     right: 5px;
-    padding: 6px 12px;
 }
 
 .middle-right {
@@ -312,4 +316,18 @@
 
 #ui-placeholder {
     display: none;
+}
+
+#list-annotation-legend {
+    font-size: 12px;
+}
+
+#panel-legend .panel-heading .dropup > a {
+    color: white;
+    font-size: 12px;
+}
+
+#screenshot-icon {
+    font-size: 34px;
+    right: 3px;
 }

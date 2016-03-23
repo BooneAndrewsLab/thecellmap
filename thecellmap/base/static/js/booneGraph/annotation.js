@@ -18,6 +18,9 @@ define([
     window.tinycolor = TinyColor;
     var applyAnnotationColors = function() {
         var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;
+        
+        $('#panel-legend .panel-body').hide();
+        
         if (!vizdata['regionGroups'].get(state.get('annotation')) || !state.get('showRegions')) {
             sigInst.iterNodes(function(n) {
                 strain = Utils.getStrain(n.id);
@@ -43,8 +46,7 @@ define([
                 n.color = opts['defaultNodeColor'];
             }).draw();
             
-            $('#panel-legend .panel-body').toggle();
-            if ($('#panel-legend .panel-body').css('display') != 'none') $('#legend-handle').dblclick();
+            $('#panel-legend').hide();
         }
     }
     
@@ -57,11 +59,13 @@ define([
     var rebuildLegend = function() {
         $('#style-annotation').empty();
         $('#list-annotation-legend').empty();
+        
+        var id = state.get('annotation'), terms = {}, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
+        
         $('#style-annotation').append('<table class="annotation-table"><thead><tr>\
               <th style="width: 1%;"></th>\
               <th>Annotation</th></tr></thead>\
           <tbody id="style-annotation-table"></tbody></table>');
-        var id = state.get('annotation'), terms = {}, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
         sigInst.iterNodes(function(node) {
 //            if (!node.hidden && node.type != 'pin') strains.push(Utils.getStrain(node.id));
             if (!node.hidden) strains.push(Utils.getStrain(node.id));
@@ -82,18 +86,23 @@ define([
         } else {
             terms[-1] = annotation.get('terms')[-1];
         }
+        
+        
+        console.log(terms, terms.length);
+        
         _.each(terms, function(term) {
+            
             if (Cookies.get(term.name) == undefined) {
                 var color = annotation.get('colorPalette')[term.idx];
             } else {
                 var color = Cookies.get(term.name);
             }
             
-//            restrict name length, keep all annotation in one line within legend
+//                restrict name length, keep all annotation in one line within legend
             var name = term.alias.split('/');
-//            if (name.length > 25) {
-//                name = name.substring(0, 25) + "...";
-//            }
+//                if (name.length > 25) {
+//                    name = name.substring(0, 25) + "...";
+//                }
             
             if (name.length > 2) name = name[0] + ', ' + name[1] + '..';
             

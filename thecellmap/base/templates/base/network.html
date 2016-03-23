@@ -112,10 +112,11 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
 
 {% block navbar_items %}
 {{ block.super }}
-<ul class="nav navbar-nav changed-network hidden">
+<ul class="nav navbar-nav hidden" data-simple-step="2">
   <li class="refresh-network"><a href="#" title="Reload this network" data-toggle="tooltip" data-placement="bottom" data-delay="500">
-    <span class="glyphicon glyphicon-refresh hidden-xs"></span>
-    <span class="visible-xs">Reload network</span>
+    Start a new search
+<!--     <span class="glyphicon glyphicon-refresh hidden-xs"></span> -->
+<!--     <span class="visible-xs">Reload network</span> -->
   </a></li>
 </ul>
 {% endblock %}

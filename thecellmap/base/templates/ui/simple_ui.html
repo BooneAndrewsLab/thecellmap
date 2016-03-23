@@ -2,33 +2,13 @@
 {% load staticfiles  %}
 
 {% block uiElements %}
-  <div class="bottom-left">
-    <div class="btn-group btn-group-datasets hidden" data-simple-step="2">
-      <div class="image-datasets" data-toggle="tooltip" title="Switch to genetic interaction network" data-placement="top" data-delay="0">
-        <label class="image-label">Switch to Genetic Interaction Network</label>
-        <img data-selection-constraint data-selection-ls="6" data-selection-gt="0" src="{% static 'images/interactions-min.jpg' %}" class="image-dataset-icon" id="image-interaction" data-dataset="1" alt="Interactions">
-      </div>
-      <div class="image-datasets hidden" data-toggle="tooltip" title="Switch to similarity network" data-placement="top" data-delay="0">
-        <label class="image-label">Switch to Similarity Network</label>
-        <img data-selection-constraint data-selection-ls="6" data-selection-gt="0" src="{% static 'images/correlations-min.jpg' %}" class="image-dataset-icon" id="image-correlation" data-dataset="0" alt="Correlations">
-      </div>
-    </div>
-  </div>
-  
   <div class="top-left hidden-sm hidden-xs">
-    <div class="btn-group hidden" data-simple-step="2">
-      <button type="button" class="btn btn-default btn-zoom-in" data-toggle="tooltip" data-placement="top" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
-        <span class="glyphicon glyphicon-zoom-in"></span>
-      </button>
-      <button type="button" class="btn btn-default btn-home" data-toggle="tooltip" data-placement="top" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui">
-        <span class="glyphicon glyphicon-record"></span>
-      </button>
-      <button type="button" class="btn btn-default btn-zoom-out" data-toggle="tooltip" data-placement="top" data-delay="200" title="Zoom out" data-container=".vizualization-ui">
-        <span class="glyphicon glyphicon-zoom-out"></span>
-      </button>
+    <div id="dataset-toggle" class="hidden" data-toggle-name="switch-dataset" data-toggle="buttons-radio" data-simple-step="2">
+        <button type="button" value="correlation" data-toggle="button" data-dataset="0" class="btn btn-primary active" data-title="Switch to profile similarity network">Profile similarity network</button>
+        <button type="button" value="interaction" data-toggle="button" data-dataset="1" class="btn btn-primary" title="Switch to genetic interaction network" data-title="Switch to genetic interaction network">Genetic interaction network</button>
     </div>
     
-    <div style="position: relative; display: inline-block; vertical-align: middle;" data-simple-step="1">
+    <div class="select2-div" data-simple-step="1">
       <div class="input-group search-bar">
         <div class="input-group-addon btn-copy">
           <span class="glyphicon glyphicon-search"></span>
@@ -39,17 +19,31 @@
     </div>
   </div>
   
-  <div class="top-right-simple hidden-sm hidden-xs">
-    <div class="cutoff-bar-group hidden" data-simple-step="2">
-      <div id="cutoff-bar-cor-simple" class="cutoff-bar-simple cutoff-cor" data-dataset="0" data-orientation="horizontal" data-dir="ltr"></div>
-      <button id="cutoff-label-min-simple" type="button" class="btn btn-default cutoff-label cutoff-label-min" data-placement="bottom"></button>
-      <div id="cutoff-bar-int-simple" class="cutoff-bar-simple cutoff-int" data-dataset="1" data-orientation="horizontal" style="display: none;"></div>
-      <button id="cutoff-label-max-simple" type="button" class="btn btn-success cutoff-label cutoff-label-max" data-placement="bottom" style="display: none;">&nbsp;</button>
-    </div>
+  <div class="middle-right hidden" data-simple-step="2">
+    <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label cutoff-label-max" style="visibility: hidden;">&nbsp;</button>
     
+    <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-orientation="vertical" data-direction="rtl"></div>
+    <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-orientation="vertical" style="display: none;"></div>
+    
+    <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"></button>
+    
+    <div class="btn-group-vertical">
+      <button type="button" class="btn btn-default btn-zoom-in" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
+        <span class="glyphicon glyphicon-zoom-in"></span>
+      </button>
+      <button type="button" class="btn btn-default btn-home" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Center view and adjust zoom" data-container=".vizualization-ui">
+        <span class="glyphicon glyphicon-record"></span>
+      </button>
+      <button type="button" class="btn btn-default btn-zoom-out" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Zoom out" data-container=".vizualization-ui">
+        <span class="glyphicon glyphicon-zoom-out"></span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="top-right-simple hidden-sm hidden-xs">
     <div class="btn-group-simple hidden" data-simple-step="1" data-simple-keep="true">
-      <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download</button>
       <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0"> View Network </button>
+      <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download</button>
     </div>
   </div>
 {% endblock %}

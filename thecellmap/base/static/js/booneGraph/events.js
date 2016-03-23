@@ -156,13 +156,13 @@ define([
             'click #tool-rotate-arbitrary': 'showRotateModal',
             'click #tool-stack': 'stackNetworks',
             'click #tool-custom-arrange': 'showDrawUI',
-            'click #btn-group-annotation .load-annotation': 'loadAnnotation',
+            'click .load-annotation': 'loadAnnotation',
             'click #btn-legend': 'showLegend',
             'dblclick #legend-handle': 'toggleLegend',
             'click .btn-home': 'graphCenter',
             'click .btn-zoom-in': 'graphZoomIn',
             'click .btn-zoom-out': 'graphZoomOut',
-            'click .image-dataset-icon': 'toggleDataset',
+            'click #dataset-toggle button': 'toggleDataset',
             
             'click #view-network-simple': 'showNetwork',
         },
@@ -325,7 +325,13 @@ define([
             e.preventDefault();
         },
         toggleLegend: function(e) {
-            $('#panel-legend .panel-body').toggle();
+            console.log((state.get('annotation') == 'None') && !$('#panel-legend .panel-body').is(":visible"), state.get('annotation') != 'None', $('#panel-legend .panel-body').is(":visible"))
+            $('#panel-legend .panel-body').toggle((state.get('annotation') != 'None') && !$('#panel-legend .panel-body').is(":visible"));
+            
+            
+//            if (state.get('annotation') != 'None') {
+//                $('#panel-legend .panel-body').toggle();
+//            }
             e.preventDefault();
         },
         
@@ -375,7 +381,16 @@ define([
         },
         
         toggleDataset: function(e) {
-            Dataset.toggleDataset($(e.target).data('dataset'));
+            var ele = $(e.target);
+            
+            ele.siblings('button').each(function() {
+                $(this).removeClass('active');
+                $(this).attr('title', $(this).data('title'));
+            });
+            ele.addClass('active');
+            ele.removeAttr('title');
+            
+            Dataset.toggleDataset(ele.data('dataset'));
             e.preventDefault();
         },
         
@@ -392,6 +407,7 @@ define([
         
         showNetwork: function(e) {
             if (Utils.getSelectedNodes().length < 0) return;
+            Annotation.loadAnnotation('None');
             $('#panel-legend').show();
             Node.applyNeighbourhood(1);
             
@@ -408,6 +424,7 @@ define([
             
             $(e.target).addClass('hidden');
         },
+        
         refreshNetwork: function(e) {
             location.reload();
             e.preventDefault();
