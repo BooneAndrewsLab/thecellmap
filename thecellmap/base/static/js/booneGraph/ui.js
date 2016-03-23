@@ -397,8 +397,6 @@ define([
                             }
                         }
                         
-                        if (missingNodes) $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(node), true);
-                        
                         for (e in data['edges']) {
                             var edge = data['edges'][e];
                             var edgeId = edge.s + '+' + edge.t, edgeReverseId = edge.t + '+' + edge.s;
@@ -418,7 +416,10 @@ define([
                         Dataset.updateEdges(0);
                         Node.applyCutoff(val);
                         
-                        if (missingNodes) Node.applyNeighbourhood(1);
+                        if (missingNodes) {
+                            $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(nodes), true);
+                            Node.applyNeighbourhood(1);
+                        }
                         
                         state.set('cutoffCorrelation', val);
                         state.set('cutoffLow', val);

@@ -77,7 +77,6 @@ define([
                 if (nodes.length) {
                     $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
                     state.set('missingNodes', []);
-                    showNetwork();
                 }
             });
             
