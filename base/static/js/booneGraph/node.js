@@ -53,7 +53,7 @@ define([
                     multiple: true,
                     minimumInputLength: 2,
                     containerCssClass: 'form-control', 
-                    placeholder: 'Start typing genes or annotations...',
+                    placeholder: 'Search TheCellMap',
                     allowClear: true,
                     width: '350px',
                     tokenSeparators: [',', ' ', '\t', '\n'],

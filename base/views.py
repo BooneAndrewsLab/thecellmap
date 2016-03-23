@@ -32,7 +32,7 @@ def _serve_dataset(request, dataset=None):
     if request.user.is_authenticated() or dataset.is_published:
         response = render(request, 'base/network.html', {
                 'dataset': dataset,
-                'annotations': Annotation.objects.all(),
+                'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
                 'regionGroups': RegionGroup.objects.filter(dataset=dataset),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
                 'ui': request.COOKIES.get('selectedUi') or 'simple',
@@ -101,7 +101,7 @@ def custom_dataset(request, custom_hash):
         if request.user.is_authenticated() or custom.dataset.is_published:
             return render(request, 'base/network.html', {
                     'dataset': custom.dataset,
-                    'annotations': Annotation.objects.all(),
+                    'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
                     'can_bulk_download': False,
                     'extra': {
                         'id': custom_hash,
@@ -124,7 +124,7 @@ def custom_dataset(request, custom_hash):
                     'type': custom.type,
                     'directed': custom.network_type == Custom.NET_DIRECTED,
                 },
-                'annotations': Annotation.objects.all(),
+                'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
                 'can_bulk_download': False,
                 'ui': request.COOKIES.get('selectedUi') or 'simple',
           })

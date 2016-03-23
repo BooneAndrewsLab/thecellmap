@@ -3,30 +3,21 @@
   {% endblock %}
   
   <div class="bottom-right" >
-    <span class="glyphicons glyphicons-cogwheels dropdown-toggle icon-button style-icon-button" data-toggle="modal" data-target="#modal-style"></span>
+    <a id="screenshot-link" href="#" class=""><span id="screenshot-icon" class="glyphicons glyphicons-camera"></span></a>
   </div>
   
   <div class="panel panel-default" id="panel-alerts"></div>
   
-  <div class="panel panel-default" id="panel-legend">
+  <div class="panel panel-primary" id="panel-legend">
     <div class="panel-heading" id="legend-handle">
-      <!-- <button type="button" class="close" id="btn-legend-close">&times;</button> -->
-      <!-- <h4 class="modal-title">Legend</h4> -->
-      
-      <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-          Dropdown
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-          <li><a href="#">Action</a></li>
-          <li><a href="#">Another action</a></li>
-          <li><a href="#">Something else here</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a href="#">Separated link</a></li>
-        </ul>
-      </div>
-      
+        <div class="dropup pull-right">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Switch <b class="caret"></b></a>
+
+            <ul id="legend-annotation-list" class="dropdown-menu" role="menu">
+            </ul>
+        </div>
+
+        <h3 class="panel-title">Annotate network</h3>
     </div>
     <div class="panel-body" id="legend-body">
       <ul id="list-annotation-legend">
