@@ -87,9 +87,6 @@ define([
             terms[-1] = annotation.get('terms')[-1];
         }
         
-        
-        console.log(terms, terms.length);
-        
         _.each(terms, function(term) {
             
             if (Cookies.get(term.name) == undefined) {

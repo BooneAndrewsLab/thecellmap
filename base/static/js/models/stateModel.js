@@ -24,6 +24,7 @@ define([
             selection: [],
             showCircular: false,
             showRegions: true,
+            step: 0,
             subnetworks: false,
             selectedUi: localStorage.getItem('selectedUi') || 'simple',
         }

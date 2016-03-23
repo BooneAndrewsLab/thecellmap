@@ -74,32 +74,10 @@ define([
             
             state.on('change:missingNodes', function() {
                 var nodes = state.get('missingNodes');
-                if (nodes.length >= 1 && nodes.length <= 7) {
-                    _.each(nodes, function(n) {
-                        var strain = Utils.getStrain(n), annotation = vizdata['annotations'].get(state.get('annotation'));
-                        
-                        var color = annotation.get('defaultColor')
-                        var annot = annotation.get('map')[strain.get('id')];
-                        if (annot != undefined) {
-                            color = annotation.get('colorPalette')[annotations.get('terms')[annot[0]].idx];
-                        }
-                        
-                        var node = {
-                            id : n,
-                            label : strain.get('verboseName'),
-                            size : 2,
-                            color : color,
-                            x : (Math.random() * 100),
-                            y : (Math.random() * 100),
-                            hidden : false,
-                        };
-                        
-                        sigInst.addNode(node.id, node);
-                        
-                        Utils.getNode(node.id).selected = true;
-                    });
+                if (nodes.length) {
+                    $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
                     state.set('missingNodes', []);
-                    Dataset.toggleDataset(1);
+                    showNetwork();
                 }
             });
             
@@ -163,6 +141,8 @@ define([
             'click .btn-zoom-in': 'graphZoomIn',
             'click .btn-zoom-out': 'graphZoomOut',
             'click #dataset-toggle button': 'toggleDataset',
+            
+            'click #screenshot-link': 'getSvgScreenshot',
             
             'click #view-network-simple': 'showNetwork',
         },
@@ -325,7 +305,6 @@ define([
             e.preventDefault();
         },
         toggleLegend: function(e) {
-            console.log((state.get('annotation') == 'None') && !$('#panel-legend .panel-body').is(":visible"), state.get('annotation') != 'None', $('#panel-legend .panel-body').is(":visible"))
             $('#panel-legend .panel-body').toggle((state.get('annotation') != 'None') && !$('#panel-legend .panel-body').is(":visible"));
             
             
@@ -405,23 +384,16 @@ define([
             e.preventDefault();
         },
         
+        getSvgScreenshot: function(e) {
+            Download.downloadCanvasSvg();
+            e.preventDefault();
+        },
+        
         showNetwork: function(e) {
             if (Utils.getSelectedNodes().length < 0) return;
             Annotation.loadAnnotation('None');
             $('#panel-legend').show();
             Node.applyNeighbourhood(1);
-            
-            $('[data-simple-step]').each(function() {
-                switch ($(this).data('simple-step')) {
-                case 1:
-                    if ($(this).data('simple-keep') != true) $(this).hide();
-                    break;
-                case 2:
-                    $(this).removeClass('hidden');
-                    break;
-                }
-            });
-            
             $(e.target).addClass('hidden');
         },
         

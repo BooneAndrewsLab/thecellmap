@@ -7,6 +7,25 @@ define([
     'packer',
     'sigma.move',
 ], function($, _, _str, Backbone) {
+    var checkSimpleStep = function() {
+        $('[data-simple-step]').each(function() {
+            if ($(this).data('simple-step') == state.get('step')) {
+                $(this).removeClass('hidden');
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+//            switch ($(this).data('simple-step')) {
+//            case 1:
+//                if ($(this).data('simple-keep') != true) $(this).hide();
+//                break;
+//            case 2:
+//                $(this).removeClass('hidden');
+//                break;
+//            }
+        });
+    }
+    
     var iterVisibleNodes = function(func, ids) {
         sigInst._core.graph.nodes.filter(function(node) {
             return !node.hidden;
@@ -362,12 +381,12 @@ define([
             });
             
             if (missingNodes) {
-                alert.append('<a href="#"> Click to display interaction data for these nodes </a>');
+                alert.append('<a href="#"> Click to extract similarity network for these nodes </a>');
                 alert.find('a').on('click', function(e) {
-                    e.preventDefault();
                     alert.alert('close'); 
                     if (!target) $('#panel-alerts').hide();
                     state.set('missingNodes', missingNodes);
+                    e.preventDefault();
                 });
             }
             
@@ -433,6 +452,8 @@ define([
     }
     
     return {
+        checkSimpleStep: checkSimpleStep,
+        
         iterVisibleNodes: iterVisibleNodes,
         iterVisibleEdges: iterVisibleEdges,
         nodeExists: nodeExists,
