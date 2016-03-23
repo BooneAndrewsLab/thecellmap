@@ -12,17 +12,9 @@ define([
             if ($(this).data('simple-step') == state.get('step')) {
                 $(this).removeClass('hidden');
                 $(this).show();
-            } else {
+            } else if ($(this).data('simple-keep') != true){
                 $(this).hide();
             }
-//            switch ($(this).data('simple-step')) {
-//            case 1:
-//                if ($(this).data('simple-keep') != true) $(this).hide();
-//                break;
-//            case 2:
-//                $(this).removeClass('hidden');
-//                break;
-//            }
         });
     }
     

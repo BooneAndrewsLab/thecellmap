@@ -299,7 +299,7 @@ define([
                         Utils.messageUser(missingNodes['labels'].join() + ' is below current threshold.', null, missingNodes['ids']);
                     }
                     
-                    if (moveOn && !state.get('isInitializing')) {
+                    if (moveOn && !state.get('isInitializing') && state.get('step') < 1) {
                         state.set('step', 1);
                         Utils.checkSimpleStep();
                     }
