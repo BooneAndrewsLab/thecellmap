@@ -290,7 +290,7 @@ define([
                         var node = Utils.getNode(n), strain = Utils.getStrain(n);
                         if (!node) {
                             missingNodes['labels'].push(strain['attributes']['verboseName']);
-                            missingNodes['ids'].push(n);
+                            missingNodes['ids'].push(strain['attributes']['id']);
                             moveOn = false;
                         }
                     });
@@ -300,16 +300,8 @@ define([
                     }
                     
                     if (moveOn && !state.get('isInitializing')) {
-                        $('[data-simple-step]').each(function() {
-                            switch ($(this).data('simple-step')) {
-                            case 0:
-                                $(this).hide();
-                                break;
-                            case 1:
-                                $(this).removeClass('hidden');
-                                break;
-                            }
-                        });
+                        state.set('step', 1);
+                        Utils.checkSimpleStep();
                     }
                     
 //                    if (!tokenizing) {
@@ -376,6 +368,9 @@ define([
     var applyNeighbourhood = function(level) {
         state.set('showRegions', false);
         state.set('subnetworks', true);
+        
+        state.set('step', 2);
+        Utils.checkSimpleStep();
         
         var selected = Utils.getSelectedNodes(false, true), localSelected = {}, tmpSelected, strain;
         if (selected.length < 1) return;

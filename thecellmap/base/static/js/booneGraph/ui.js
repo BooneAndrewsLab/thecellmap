@@ -364,19 +364,21 @@ define([
                 var val = parseFloat(slider.noUiSlider.get()), preVal = parseFloat(state.get('cutoffCorrelation')), lowVal = parseFloat(state.get('cutoffLow'));
                 if (val == preVal) return;
                 
-                var nodes = sigInst._core.graph.nodes.filter(function(node) {
+                var missingNodes = state.get('missingNodes').length > 0;
+                var nodes = missingNodes ? state.get('missingNodes') : sigInst._core.graph.nodes.filter(function(node) {
                     return !(node.hidden);
                 }).map(function(node) {
                     return node.id;
                 });
                 
                 var nodeMulti = 140, nodeLimit = Math.floor(nodeMulti * (Math.log((val-0.04)*100)/Math.log(20))) + 1;
-                if (val < lowVal && nodes.length <= nodeLimit) {
+                if ((missingNodes || val < lowVal) && nodes.length <= nodeLimit) {
                     $.post('correlations/', {csrfmiddlewaretoken: Cookies.get('csrftoken'), nodes: nodes, cutoff: val}, function(data) {
                         var strains = vizdata['strains'], annotation = vizdata['annotations'].get(state.get('annotation')), color;
+                        data['node'] = data['node'].concat(nodes)
                         
-                        for (n in data['node']) {
-                            var node = data['node'][n], strain = Utils.getStrain(node);
+                        for (var i in data['node']) {
+                            var node = data['node'][i], strain = Utils.getStrain(node);
                             if (!Utils.nodeExists(node)) {
                                 var n = {}, annot = annotation.get('map')[strain.get('id')];
                                 
@@ -394,6 +396,8 @@ define([
                                 sigInst.addNode(node, n);
                             }
                         }
+                        
+                        if (missingNodes) $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(node), true);
                         
                         for (e in data['edges']) {
                             var edge = data['edges'][e];
@@ -413,6 +417,9 @@ define([
                     }).always(function() {
                         Dataset.updateEdges(0);
                         Node.applyCutoff(val);
+                        
+                        if (missingNodes) Node.applyNeighbourhood(1);
+                        
                         state.set('cutoffCorrelation', val);
                         state.set('cutoffLow', val);
                     });
