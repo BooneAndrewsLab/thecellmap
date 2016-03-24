@@ -418,7 +418,7 @@ define([
                         
                         if (missingNodes) {
                             $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(nodes), true);
-                            Node.applyNeighbourhood(1);
+                            $('#view-network-simple').click();
                         }
                         
                         state.set('cutoffCorrelation', val);

@@ -386,10 +386,10 @@ define([
         }
         
         alert.alert();
-        setTimeout(function() { 
-            alert.alert('close'); 
-            if (!target) $('#panel-alerts').hide();
-        }, 6000);
+//        setTimeout(function() { 
+//            alert.alert('close'); 
+//            if (!target) $('#panel-alerts').hide();
+//        }, 6000);
     }
     
     var alertUser = function(title, text, preModalCallback) {
