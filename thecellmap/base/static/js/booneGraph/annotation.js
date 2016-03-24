@@ -39,7 +39,7 @@ define([
                 }
             }).draw();
             
-            if ($('#panel-legend .panel-body').css('display') == 'none') $('#legend-handle').dblclick();
+            if ($('#panel-legend .panel-body').css('display') == 'none') $('#legend-handle button.close').click();
             $('#panel-legend').show();
         } else {
             sigInst.iterNodes(function(n) {
@@ -134,6 +134,13 @@ define([
     var loadAnnotation = function(id) {
         var annotations = vizdata['annotations'];
         state.set('annotation', id);
+        
+        if (id == 'None') {
+            $("#panel-legend .collapse-button").addClass('hidden');
+        } else {
+            $("#panel-legend .collapse-button").removeClass('hidden');
+        }
+        
         if (!annotations.get(id)) {
             if (id == 'None') {
                 annotations.add(new AnnotationModel());
