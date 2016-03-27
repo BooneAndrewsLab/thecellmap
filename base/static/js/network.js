@@ -16,7 +16,7 @@ require.config({
         'canvas2Blob': 'libs/canvas-toBlob',
         'canvas2Svg': 'libs/canvas2svg',
         'combinations': 'libs/combinations',
-        'drag': 'libs/dom-drag',
+        'drag': 'libs/draggabilly.pkgd.min',
         'noUISlider': 'libs/nouislider-8.0.1.min',
         'packer': 'libs/packer.growing',
         'pickAColor': 'libs/pick-a-color',

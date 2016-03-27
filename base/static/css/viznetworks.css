@@ -90,7 +90,7 @@
 /*     margin-left: 5px; */
 /* } */
 
-.top-right {
+.top-right {right
     right: 5px;
 }
 
@@ -205,6 +205,7 @@
 }
 
 #legend-body {
+    display: none;
     max-height: 400px;
     overflow-y: auto;
 }
