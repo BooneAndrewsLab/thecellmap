@@ -104,6 +104,17 @@ define([
                 $('input.gene-search-input').select2('val', sel, true);
             });
             
+            state.on('change:step', function() {
+                $('[data-simple-step]').each(function() {
+                    if ($(this).data('simple-step') == state.get('step')) {
+                        $(this).removeClass('hidden');
+                        $(this).show();
+                    } else if ($(this).data('simple-keep') != true){
+                        $(this).hide();
+                    }
+                });
+            });
+            
             var box = $('.content:first')[0].getBoundingClientRect();
 //            if ($('#panel-legend').length) {
 //                Drag.init(document.getElementById('legend-handle'), document.getElementById('panel-legend'), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
@@ -394,7 +405,7 @@ define([
         },
         
         refreshNetwork: function(e) {
-            location.reload();
+            window.location.href = opts['urls']['home'];
             e.preventDefault();
         }
     });
