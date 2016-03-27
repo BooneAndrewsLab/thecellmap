@@ -7,17 +7,6 @@ define([
     'packer',
     'sigma.move',
 ], function($, _, _str, Backbone) {
-    var checkSimpleStep = function() {
-        $('[data-simple-step]').each(function() {
-            if ($(this).data('simple-step') == state.get('step')) {
-                $(this).removeClass('hidden');
-                $(this).show();
-            } else if ($(this).data('simple-keep') != true){
-                $(this).hide();
-            }
-        });
-    }
-    
     var iterVisibleNodes = function(func, ids) {
         sigInst._core.graph.nodes.filter(function(node) {
             return !node.hidden;
@@ -444,8 +433,6 @@ define([
     }
     
     return {
-        checkSimpleStep: checkSimpleStep,
-        
         iterVisibleNodes: iterVisibleNodes,
         iterVisibleEdges: iterVisibleEdges,
         nodeExists: nodeExists,

@@ -301,7 +301,6 @@ define([
                     
                     if (moveOn && !state.get('isInitializing') && state.get('step') < 1) {
                         state.set('step', 1);
-                        Utils.checkSimpleStep();
                     }
                     
 //                    if (!tokenizing) {
@@ -370,7 +369,6 @@ define([
         state.set('subnetworks', true);
         
         state.set('step', 2);
-        Utils.checkSimpleStep();
         
         var selected = Utils.getSelectedNodes(false, true), localSelected = {}, tmpSelected, strain;
         if (selected.length < 1) return;

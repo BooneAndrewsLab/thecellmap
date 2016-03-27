@@ -55,6 +55,7 @@ layouts in an intuitive and interactive manner.
             correlations: "{{ dataset.static_url }}/correlations.json",
             interactions: {% if dataset.type == 'I' %} "{{ dataset.static_url }}/interactions.json" {% else %} "interactions/" {% endif %},
             circle: "{% url 'circle_pack' %}",
+            home: "{% url 'home' %}",
         },
         annotations: [{% for annot in annotations %}{
             id: "{{ annot.id }}",
