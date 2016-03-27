@@ -10,12 +10,13 @@ define([
     'dataset',
     'utils',
     
+    'drag',
+    
     'jquery.cookie',
     'sigma.rotate',
     'bootstrap',
-    'drag',
 ], function($, _, Backbone, 
-    Node, Annotation, Layout, Download, Dataset, Utils) {
+    Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly) {
     
     var eventsView = Backbone.View.extend({
         initialize: function() {
@@ -115,17 +116,17 @@ define([
                 });
             });
             
-            var box = $('.content:first')[0].getBoundingClientRect();
-//            if ($('#panel-legend').length) {
-//                Drag.init(document.getElementById('legend-handle'), document.getElementById('panel-legend'), box["left"], box["right"] - 250, box["top"], box["bottom"] - 90);
-//            }
+            var draggable = new Draggabilly('#panel-legend', {
+                containment: '.vizualization-ui',
+                handle: '#legend-handle'
+            });
             
             $('.refresh-network').on('click', this.refreshNetwork);
             $('.pick-a-color').pickAColor();
             $('#canvas-background-color').change(this.updateBackgroundColor);
             $('#style-label-color').change(this.updateLabelColor);
             $('#modal-style input.pick-a-color').addClass('form-control').css({width: 'auto'});
-            $('#modal-rotation #rotate-confirm').on('click', this.rotateConfirm);
+            $('#modal-rotationDrag #rotate-confirm').on('click', this.rotateConfirm);
             $('#modal-edit-node').modal({show: false});
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
@@ -146,7 +147,7 @@ define([
             'click #tool-custom-arrange': 'showDrawUI',
             'click .load-annotation': 'loadAnnotation',
             'click #btn-legend': 'showLegend',
-            'click #legend-handle button.close': 'toggleLegend',
+            'click #legend-handle .close': 'toggleLegend',
             'click .btn-home': 'graphCenter',
             'click .btn-zoom-in': 'graphZoomIn',
             'click .btn-zoom-out': 'graphZoomOut',
@@ -260,7 +261,7 @@ define([
                 for (var i = 0; i < nodes.length; i++) {
                     selected.push(Node.getNode(nodes[i]));
                 }
-            } else {
+            } else {true
                 selected = sigInst._core.graph.nodes;
             }
             
@@ -299,7 +300,7 @@ define([
             $('.vizualization-ui').hide();
             $('#draw-ui').fadeIn(1000);
             $('#canvas-draw').fadeIn(1000);
-            
+            true
             e.preventDefault();
         },
         
@@ -315,7 +316,13 @@ define([
             e.preventDefault();
         },
         toggleLegend: function(e) {
-            $('#panel-legend .panel-body').toggle((state.get('annotation') != 'None') && !$('#panel-legend .panel-body').is(":visible"));
+            if (state.get('annotation') != 'None' && !$('#legend-body').is(":visible")) {
+                $('#legend-body').show();
+                $('#legend-handle button.close').text('+');
+            } else {
+                $('#legend-body').hide();
+                $('#legend-handle button.close').text('-');
+            }
             e.preventDefault();
         },
         
@@ -395,9 +402,8 @@ define([
         },
         
         showNetwork: function(e) {
-            console.log("SHOW NETWORK", Utils.getSelectedNodes().length);
             if (Utils.getSelectedNodes().length < 0) return;
-            Annotation.loadAnnotation('None');
+            if (state.get('annotation') == 'SAFE' && state.get('showRegions')) Annotation.loadAnnotation('None');
             
             $('#panel-legend').show();
             Node.applyNeighbourhood(1);

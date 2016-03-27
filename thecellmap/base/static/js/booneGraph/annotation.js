@@ -19,8 +19,6 @@ define([
     var applyAnnotationColors = function() {
         var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;
         
-        $('#panel-legend .panel-body').hide();
-        
         if (!vizdata['regionGroups'].get(state.get('annotation')) || !state.get('showRegions')) {
             sigInst.iterNodes(function(n) {
                 strain = Utils.getStrain(n.id);
@@ -39,7 +37,6 @@ define([
                 }
             }).draw();
             
-            if ($('#panel-legend .panel-body').css('display') == 'none') $('#legend-handle button.close').click();
             $('#panel-legend').show();
         } else {
             sigInst.iterNodes(function(n) {
@@ -48,6 +45,8 @@ define([
             
             $('#panel-legend').hide();
         }
+        
+        $('#legend-handle button.close').click();
     }
     
     var applyLegendColor = function(id, color) {
@@ -88,7 +87,6 @@ define([
         }
         
         _.each(terms, function(term) {
-            
             if (Cookies.get(term.name) == undefined) {
                 var color = annotation.get('colorPalette')[term.idx];
             } else {
@@ -134,12 +132,6 @@ define([
     var loadAnnotation = function(id) {
         var annotations = vizdata['annotations'];
         state.set('annotation', id);
-        
-        if (id == 'None') {
-            $("#panel-legend .collapse-button").addClass('hidden');
-        } else {
-            $("#panel-legend .collapse-button").removeClass('hidden');
-        }
         
         if (!annotations.get(id)) {
             if (id == 'None') {

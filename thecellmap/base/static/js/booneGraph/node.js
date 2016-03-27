@@ -242,7 +242,7 @@ define([
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
                     var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
-                    var actionAnnot = state.get('annotation') == 'None', reselect, numVisibleSelected = 0, strain;
+                    var reselect, numVisibleSelected = 0, strain;
                     preSelectSize = 2;
                     
                     for (var i in selection) {
@@ -257,7 +257,7 @@ define([
                     }
                     
                     if (reselect) return;
-                    if (actionAnnot) Annotation.loadAnnotation('SAFE');
+                    if (state.get('annotation') == 'None' && state.get('showRegions')) Annotation.loadAnnotation('SAFE');
                     
                     var moveOn = true, found = false;
                     sigInst.iterNodes(function(node) {
@@ -290,7 +290,7 @@ define([
                         var node = Utils.getNode(n), strain = Utils.getStrain(n);
                         if (!node) {
                             missingNodes['labels'].push(strain['attributes']['verboseName']);
-                            missingNodes['ids'].push(strain['attributes']['id']);
+                            missingNodes['ids'].push(strain['attributes']['id'] + '');
                             moveOn = false;
                         }
                     });
@@ -303,14 +303,13 @@ define([
                         state.set('step', 1);
                     }
                     
-//                    if (!tokenizing) {
-                        sigInst.draw();
-                        
-                        if (state.get('selection').length > 0) {
-                            state.set('preselect', state.get('selection'));
-                        }
-                        state.set('selection', selected)
-//                    }
+                    sigInst.draw();
+                    
+                    if (state.get('selection').length > 0) {
+                        state.set('preselect', state.get('selection'));
+                    }
+                    
+                    state.set('selection', $(selected).not(missingNodes['ids']).get())
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
                     $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');
