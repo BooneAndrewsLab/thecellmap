@@ -194,7 +194,7 @@ def nodes_download(request, dataset_id=None):
         if n['id'] in nodes_idx:
             labels.append(n['label'])
     
-    filename = 'tcm-%s-%s.xlsx' % ('_'.join(labels)[:(255-18)], datetime.datetime.now().strftime('%y%m%d'))
+    filename = 'tcm-%s-%s.xls' % ('_'.join(labels)[:(255-18)], datetime.datetime.now().strftime('%y%m%d'))
     
     return nodes_xls(
                  dataset, 
