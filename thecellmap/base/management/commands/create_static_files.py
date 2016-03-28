@@ -10,7 +10,7 @@ import os
 
 from django.core.management.base import CommandError
 from django.db.models import Q
-from django.db.transaction import commit_on_success
+# from django.db.transaction import commit_on_success
 from pandas.core.frame import DataFrame
 from pandas.core.index import MultiIndex
 
@@ -27,13 +27,14 @@ class Command(CellMapCommand):
     args = '<dataset name>'
     
     @print_queries
-    @commit_on_success
+#     @commit_on_success
     def handle(self, *args, **options):
         if len(args) != 1:
             raise CommandError('Must provide arguments: ' + self.args)
         
         dataset = Dataset.objects.get(name__iexact=args[0])
-        outpath = dataset.static_path()
+#         outpath = dataset.static_path()
+        outpath = '/home/matej/teststatic/'
         
 #         if os.path.exists(outpath):
 #             raise CommandError('Files already exist')

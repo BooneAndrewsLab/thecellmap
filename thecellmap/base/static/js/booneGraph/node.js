@@ -414,7 +414,6 @@ define([
     
     var showNodeModal = function(id) {
         var modal = $('#modal-edit-node'), node = Utils.getNode(id), strain = Utils.getStrain(id), data = vizdata['annotations'].get(state.get('annotation'));
-        var url = 'http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.get('orf');
         var annot, term, color;
         
         modal.find('.modal-title').html('Node details: "' + node.label + '"');
@@ -422,7 +421,6 @@ define([
         modal.find('#node-orf').html(strain.get('orf'));
         modal.find('#node-name').html(strain.get('name'));
         modal.find('#node-allele').html(strain.get('alel'));
-        modal.find('#node-sgd').html('<a href="' + url + '">' + url + '</a>');
         
         modal.find('#edit-node-id').val(id);
         modal.find('#edit-node-label').val(node.label);

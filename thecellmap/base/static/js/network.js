@@ -31,6 +31,7 @@ require.config({
         'sigma.move': 'libs/plugins/sigma.move',
         'sigma.rotate': 'libs/plugins/sigma.rotate',
         'sigma.searchlocator': 'libs/plugins/sigma.searchlocator',
+        'sigma.highlight': 'libs/plugins/sigma.highlight',
         
         'booneGraph': 'booneGraph/booneGraph',
         
@@ -74,6 +75,7 @@ require.config({
         'sigma.move': ['sigma'],
         'sigma.rotate': ['sigma'],
         'sigma.searchlocator': ['sigma'],
+        'sigma.highlight': ['sigma'],
     },
 });
 

@@ -10,13 +10,14 @@
   
   <div class="panel panel-primary" id="panel-legend">
     <div class="panel-heading" id="legend-handle">
-        <div class="dropdown">
-            <a href="#" class="dropdown-toggle panel-title" data-toggle="dropdown">Annotate network <b class="caret"></b></a>
-            <button type="button" class="close pull-right" aria-hidden="true">-</button>
-            <ul id="legend-annotation-list" class="dropdown-menu" role="menu"></ul>
-        </div>
+      <h3 class="panel-title">Legend</h3>
+      <button type="button" class="close pull-right" aria-hidden="true">+</button>
     </div>
-    <div class="panel-body" id="legend-body">
+    <div class="panel-body" id="legend-body" style="display: none;">
+<!--       <ul id="list-annotation-dubious"> -->
+<!--        <li><div class="box-annotation-color box-annotation-nondubious"></div> <span title="Dubious ORF">Verified or Uncharacterized ORF</span></li> -->
+<!--        <li><div class="box-annotation-color box-annotation-dubious"></div> <span title="Dubious ORF">Dubious ORF</span></li> -->
+<!--       </ul> -->
       <ul id="list-annotation-legend">
       </ul>
     </div>
@@ -80,13 +81,15 @@
   
   <div id="contextmenu-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
-      <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Node details...</a></li>
+      <li><a id="context-view-network" tabindex="-1" href="#"><span class="glyphicon glyphicon-pushpin"></span> View network</a></li>
       <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li>
       <li class="divider"></li>
-      <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide node</a></li>
-      <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li>
-      <li class="divider"></li>
-      <li class="disabled" data-annotation-constraint><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li>
+      <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit node attributes...</a></li>
+      <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Delete node</a></li>
+      
+<!--       <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li> -->
+<!--       <li class="divider"></li> -->
+<!--       <li class="disabled" data-annotation-constraint><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li> -->
     </ul>
   </div>
   
@@ -120,12 +123,12 @@
                 <span id="node-allele" class="form-info"></span>
               </div>
             </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label">SGD url</label>
-              <div class="col-sm-10">
-                <span id="node-sgd" class="form-info"></span>
-              </div>
-            </div>
+<!--             <div class="form-group"> -->
+<!--               <label class="col-sm-2 control-label">SGD url</label> -->
+<!--               <div class="col-sm-10"> -->
+<!--                 <span id="node-sgd" class="form-info"></span> -->
+<!--               </div> -->
+<!--             </div> -->
             
             <div class="form-group">
               <label for="edit-node-label" class="col-sm-2 control-label">Label</label>
@@ -139,14 +142,14 @@
                 <input class="form-control pick-a-color" id="edit-node-color">
               </div>
             </div>
+<!--             <div class="form-group"> -->
+<!--               <label for="edit-node-label-force" class="col-sm-2 control-label">Label always visible?</label> -->
+<!--               <div class="col-sm-10"> -->
+<!--                 <input class="form-control" id="edit-node-label-force" type="checkbox"> -->
+<!--               </div> -->
+<!--             </div> -->
             <div class="form-group">
-              <label for="edit-node-label-force" class="col-sm-2 control-label">Label always visible?</label>
-              <div class="col-sm-10">
-                <input class="form-control" id="edit-node-label-force" type="checkbox">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label">Node size multiplier</label>
+              <label class="col-sm-2 control-label">Node size</label>
               <div class="col-sm-10">
                 <div id="style-slider-snsize"></div>
               </div>

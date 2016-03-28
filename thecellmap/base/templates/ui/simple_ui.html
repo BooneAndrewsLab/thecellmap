@@ -43,6 +43,16 @@
   <div class="top-right-simple hidden-sm hidden-xs">
     <div class="btn-group-simple hidden" data-simple-step="1" data-simple-keep="true">
       <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0"> View Network </button>
+      
+      <div class="dropdown inline-button-grp" data-simple-step="2">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          Annotate network
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu btn-group-annotation" aria-labelledby="dropdownMenu1">
+        </ul>
+      </div>
+      
       <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20"> Download</button>
     </div>
   </div>

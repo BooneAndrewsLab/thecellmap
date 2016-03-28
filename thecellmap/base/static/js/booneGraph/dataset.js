@@ -82,7 +82,7 @@ define([
                             color = annotation.get('defaultColor');
                         }
                         
-                        node.label = strain.get('verboseName');
+                        node.label = strain.get('verboseName').toLowerCase();
                         node.size = 2;
                         node.color = color;
                         node.x = !isNaN(node.x) ? node.x : (Math.random() * 100);
@@ -94,7 +94,10 @@ define([
                 });
                 
                 sigInst._core.graph.nodes.forEach(function(node) {
+                    strain = strains.get(node.id);
+                    node.dubious = strain.get('isdu');
                     node.size_init = node.size;
+//                    if (node.dubious) node.label += ' - dubious';
                     node._hidden = node.hidden; // Our internal way to know if user hid the node manually or not
                 });
                 

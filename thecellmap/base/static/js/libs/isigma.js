@@ -1758,6 +1758,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
 //    var size = node.type == 'pin' ? 35 : Math.round(node['displaySize'] * 10) / 10;
     
     ctx.fillStyle = node['selected'] ? 'red' : node['color'] || self.p.defaultNodeColor;
+    ctx.strokeStyle = ctx.fillStyle;
     ctx.beginPath();
     ctx.arc(node['displayX'],
             node['displayY'],
@@ -1766,7 +1767,9 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
             Math.PI * 2,
             true);
     ctx.closePath();
-    ctx.fill();
+    
+    if (node['dubious']) ctx.stroke();
+    else ctx.fill();
     
     if (node['selected']) {
         var rsize = 35;
@@ -2119,6 +2122,8 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
 //    if (node.type == 'pin') return;
     
     var ctx = hoverCtx;
+    var label = node['label'];
+    if (node['dubious']) label += ' - dubious';
 
     var fontSize = self.p.labelSize == 'fixed' ?
                    self.p.defaultLabelSize :
@@ -2146,7 +2151,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
       ctx,
       Math.round(node['displayX'] - fontSize / 2 - 2),
       Math.round(node['displayY'] - fontSize / 2 - 2),
-      Math.round(ctx.measureText(node['label']).width +
+      Math.round(ctx.measureText(label).width +
         node['displaySize'] * 1.5 +
         fontSize / 2 + 4),
       Math.round(fontSize + 4),
@@ -2194,7 +2199,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
                     ((node['selected'] ? 'red' : node['color']) || self.p.defaultNodeColor) :
                     self.p.defaultLabelHoverColor;
     ctx.fillText(
-      node['label'],
+      label,
       Math.round(node['displayX'] + node['displaySize'] * 1.5),
       Math.round(node['displayY'] + fontSize / 2 - 3)
     );
