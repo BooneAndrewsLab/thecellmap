@@ -14,6 +14,7 @@ define([
             o: '',
             verboseName: '',
             terms: null,
+            isdu: false,
         }
     });
     

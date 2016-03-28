@@ -202,6 +202,8 @@
     display: none;
     width: 250px;
     z-index: 9999;
+    background-color: #222222;
+    color: #e8e8e8;
 }
 
 #legend-body {
@@ -210,8 +212,13 @@
     overflow-y: auto;
 }
 
-#list-annotation-legend {
+#legend-body ul {
     list-style-type: none;
+    font-size: 12px;
+}
+
+#panel-legend .panel-title {
+    display: inline;
 }
 
 .box-annotation-color {
@@ -220,6 +227,16 @@
     display: inline-block;
     margin-right: 10px;
     margin-left: -40px;
+}
+
+.box-annotation-dubious {
+    border: 1px solid #e8e8e8;
+    border-radius: 5px;
+}
+
+.box-annotation-nondubious {
+    border-radius: 5px;
+    background-color: #e8e8e8;
 }
 
 .cutoff-label-input {
@@ -319,10 +336,6 @@
     display: none;
 }
 
-#list-annotation-legend {
-    font-size: 12px;
-}
-
 #panel-legend .panel-heading .dropup > a {
     color: white;
     font-size: 12px;
@@ -331,4 +344,8 @@
 #screenshot-icon {
     font-size: 34px;
     right: 3px;
+}
+
+.inline-button-grp {
+    display: inline;
 }

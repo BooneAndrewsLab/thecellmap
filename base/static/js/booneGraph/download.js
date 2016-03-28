@@ -39,8 +39,8 @@ define([
         var filename = 'boonelab_network_' + date.getDate() + '_' + date.getHours() + '_' + date.getMinutes() + '_' + date.getSeconds() + '.svg';
         
 //        if (settings['showBgSvg']) {
-//            canvas.fillStyle = $('#canvas-background-color').val();
-//            canvas.fillRect(0, 0, settings['showLegendSvg'] ? width * 1.25 : width, height);
+            canvas.fillStyle = $('#canvas-background-color').val();
+            canvas.fillRect(0, 0, settings['showLegendSvg'] ? width * 1.25 : width, height);
 //        }
         
         sigInst._core.plotter.switchCxt(canvas);

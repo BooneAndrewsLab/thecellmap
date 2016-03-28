@@ -6,14 +6,16 @@ define([
     'jquery.cookie',
     'tinyColor',
     'utils',
+    'layout',
     
     'annotationModel',
     'regionGroupModel',
     
     'pickAColor',
     'sigma.drawregions',
+    'sigma.highlight'
 ], function($, _, Backbone, Cookies, TinyColor,
-    Utils,
+    Utils, Layout,
     AnnotationModel, RegionGroupModel) {
     window.tinycolor = TinyColor;
     var applyAnnotationColors = function() {
@@ -46,7 +48,8 @@ define([
             $('#panel-legend').hide();
         }
         
-        $('#legend-handle button.close').click();
+        if (!$('#legend-body').is(":visible") || state.get('annotation') == 'None')
+            $('#legend-handle button.close').click();
     }
     
     var applyLegendColor = function(id, color) {
@@ -93,6 +96,9 @@ define([
                 var color = Cookies.get(term.name);
             }
             
+            if (term.name == 'Unannotated') return;
+            else if (term.name == 'Multi-function' && id == 'SAFE') return;
+            
 //                restrict name length, keep all annotation in one line within legend
             var name = term.alias.split('/');
 //                if (name.length > 25) {
@@ -126,6 +132,47 @@ define([
             $('#panel-annotation-' + term.id + ' .panel-heading').css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
             applyAnnotationColors();
             applyLegendColor(term.idx, color);
+        });
+        
+        $("#list-annotation-legend li").hover(function() {
+            var termIdx = $(this).find('div').data('idx');
+            var data = vizdata['annotations'].get(state.get('annotation'));
+            var nodes = [];
+            
+            Utils.iterVisibleNodes(function(n) {
+                strain = Utils.getStrain(n.id);
+                if (!strain) return;
+                
+                annot = data.get('map')[strain.get('orf')];
+                
+                if (annot != undefined) {
+                    annot.forEach(function(a) {
+//                        console.log(data.get('terms')[a].idx, termIdx);
+                        if (data.get('terms')[a].idx == termIdx) {
+                            nodes.push(n.id);
+                            return;
+                        }
+                    });
+                }
+                
+                
+//                console.log(strain.get('orf'), data.get('terms')[])
+                
+//                if (annot != undefined) {
+//                    if (annot.length == 1) {
+//                        n.color = Cookies.get(data.get('terms')[annot[0]].name) == undefined ? 
+//                                data.get('colorPalette')[data.get('terms')[annot[0]].idx] : Cookies.get(data.get('terms')[annot[0]].name);
+//                    } else {
+//                        n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
+//                    }
+//                } else {
+//                    n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
+//                }
+            });
+            
+            sigInst.highlightNodes(nodes);
+        }, function() {
+            sigInst.unhighlightNodes();
         });
     }
     
@@ -181,6 +228,8 @@ define([
             rebuildLegend();
             loadRegion(id);
         }
+        
+        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
         
 //        $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
         $('#btn-group-annotation li').removeClass('active');

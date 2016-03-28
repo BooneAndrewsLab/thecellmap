@@ -30,11 +30,10 @@ define([
         
         if (opts['annotations'].length > 0) {
             opts['annotations'].forEach(function(annotation) {
-                $('#btn-group-annotation').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>');
-                $('#legend-annotation-list').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>')
+                $('.btn-group-annotation').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>');
             });
-            $('#legend-annotation-list').append('<li class="divider"></li>')
-            $('#legend-annotation-list').append('<li><a class="load-annotation" href="#">None</a></li>')
+            $('.btn-group-annotation').append('<li class="divider"></li>')
+            $('.btn-group-annotation').append('<li><a class="load-annotation" href="#">None</a></li>')
         }
         $('#btn-group-annotation').append('<li class="divider"></li><li><a id="btn-legend" href="#">Annotation legend</a></li>');
         
@@ -45,8 +44,7 @@ define([
         $('#edit-node-modal').appendTo('body');
         $('#modal-rotation').appendTo('body');
         
-        $('#panel-legend').css('top', '105px');
-        $('#panel-legend').css('left', '20px');
+        $('#panel-legend').css({'top': '39px', 'left': '0px'});
         $('#panel-alerts').hide();
         
         $(opts['rootElement']).append('<canvas id="canvas-draw" width="' + $('canvas:first').width() + 'px" height="' + $('canvas:first').height() + 'px" style="display: none;"></canvas>');

@@ -343,7 +343,7 @@ define([
         
         sigInst.graphProperties({margin: 75});
         
-        var node = Utils.getNode(nid), groups = {}, draw = [], addedNode = false;
+        var node = Utils.getNode(nid), groups = {'-': [], '+': []}, draw = [], addedNode = false;
         var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden && !e.hidden;});
         
         if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
@@ -352,14 +352,19 @@ define([
         tmpN.selected = true;
         tmpN.hidden = tmpN._hidden = false;
         
+        // sort edges ascending
+//        etmp.sort(function(e1, e2) {
+//            return e1.weight - e2.weight;
+//        });
+        
         etmp.sort(function(e1, e2) {
-            if (e1.weight < e2.weight) return -1;
-            if (e1.weight > e2.weight) return 1;
-            return 0;
+            return e1.color.attr - e2.color.attr;
         });
         
+        // split up positive/negative edges to the original and temporary node
+        var tmpkey, outNode;
         etmp.forEach(function(e) {
-            var tmpkey = '+', outNode;
+            tmpkey = '+';
             if (Utils.stripLetters(e.source.id) == node.id) {
                 outNode = e.target;
             } else if (Utils.stripLetters(e.target.id) == node.id) {
@@ -377,18 +382,20 @@ define([
                 }
             }
             
-            if (!groups.hasOwnProperty(tmpkey)) groups[tmpkey] = [];
             groups[tmpkey].push(outNode);
         });
         
+        // sort positive interactions descending
         if (groups.hasOwnProperty('+')) groups['+'] = groups['+'].reverse();
         
         var size = 2;
+        // section the groups into layers
         for (var s in groups) {
             var numNodes = groups[s].length;
             var pass = true;
             var layers = [[]], l = 0;
             
+            // iter nodes in a pos/neg group
             for (var n in groups[s]) {
                 var count = (l + 2) * 10;
                 layers[l].push(groups[s][n]);

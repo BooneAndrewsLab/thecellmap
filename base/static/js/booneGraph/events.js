@@ -122,7 +122,7 @@ define([
             });
             
             $('.refresh-network').on('click', this.refreshNetwork);
-            $('.pick-a-color').pickAColor();
+            $('.pick-a-color').pickAColor({showHexInput: false});
             $('#canvas-background-color').change(this.updateBackgroundColor);
             $('#style-label-color').change(this.updateLabelColor);
             $('#modal-style input.pick-a-color').addClass('form-control').css({width: 'auto'});
@@ -224,6 +224,10 @@ define([
             case 'context-edit-node':
                 Node.showNodeModal(targets[0]);
                 break;
+            case 'context-view-network':
+                var node = Utils.getNode(targets[0]), strain = Utils.getStrain(node.id);
+                window.open('?q=' + node.label,'_blank');
+                break;
             case 'context-node-gi':
                 if (state.get('dataset') == 0 && state.get('annotation') != 'None'){
                     $('input.gene-search-input').select2('val', targets, true);
@@ -316,12 +320,12 @@ define([
             e.preventDefault();
         },
         toggleLegend: function(e) {
-            if (state.get('annotation') != 'None' && !$('#legend-body').is(":visible")) {
+            if (!$('#legend-body').is(":visible") && state.get('annotation') != 'None') {
                 $('#legend-body').show();
-                $('#legend-handle button.close').text('+');
+                $('#legend-handle button.close').text('-');
             } else {
                 $('#legend-body').hide();
-                $('#legend-handle button.close').text('-');
+                $('#legend-handle button.close').text('+');
             }
             e.preventDefault();
         },
