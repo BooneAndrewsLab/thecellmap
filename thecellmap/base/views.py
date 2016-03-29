@@ -39,6 +39,7 @@ def _serve_dataset(request, dataset=None):
         })
         return response
     else:
+        return login(request)
         return HttpResponseForbidden("Permission Required")
 
 def about(request):
