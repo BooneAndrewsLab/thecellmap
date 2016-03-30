@@ -357,10 +357,6 @@ define([
 //            return e1.weight - e2.weight;
 //        });
         
-        etmp.sort(function(e1, e2) {
-            return e1.color.attr - e2.color.attr;
-        });
-        
         // split up positive/negative edges to the original and temporary node
         var tmpkey, outNode;
         etmp.forEach(function(e) {
@@ -388,6 +384,19 @@ define([
         // sort positive interactions descending
         if (groups.hasOwnProperty('+')) groups['+'] = groups['+'].reverse();
         
+        // sort the edges for each spoke in order of annotation
+        for (var i in groups) {
+            groups[i].sort(function(a, b) {
+                var diff = parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
+                if (diff == 0) {
+                    if (a.label.toLowerCase() < b.label.toLowerCase()) return -1;
+                    if (a.label.toLowerCase() > b.label.toLowerCase()) return 1;
+                    return 0;
+                }
+                return diff;
+            });
+        }
+        
         var size = 2;
         // section the groups into layers
         for (var s in groups) {
@@ -411,20 +420,6 @@ define([
                 }
             }
             groups[s] = layers;
-        }
-        
-        for (var i in groups) {
-            for (var j in groups[i]) {
-                groups[i][j].sort(function(a, b) {
-                    var diff = parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
-                    if (diff == 0) {
-                        if (a.label.toLowerCase() < b.label.toLowerCase()) return -1;
-                        if (a.label.toLowerCase() > b.label.toLowerCase()) return 1;
-                        return 0;
-                    }
-                    return diff;
-                });
-            }
         }
         
         var radius = 200;
