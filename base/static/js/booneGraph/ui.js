@@ -491,6 +491,7 @@ define([
                         
                         if (e.which == 13) {
                             $('.cutoff-bar[data-dataset=\"' + dataset + '\"], .cutoff-bar-simple[data-dataset=\"' + dataset + '\"]')[0].noUiSlider.set(cutoff);
+                            label.popover('hide');
                         }
                     }
                 }).focus();

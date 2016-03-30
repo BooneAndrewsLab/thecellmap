@@ -206,6 +206,11 @@
     color: #e8e8e8;
 }
 
+#panel-legend button.close {
+    color: white;
+    opacity: 0.8
+}
+
 #legend-body {
     display: none;
     max-height: 400px;
