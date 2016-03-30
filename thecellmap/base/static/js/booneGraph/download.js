@@ -35,13 +35,12 @@ define([
     
     var downloadCanvasSvg = function() {
         var width = $('canvas:first').width(), height = $('canvas:first').height(), date = new Date();
-        var canvas = new C2S(width * 1.25, height);
+        var canvas = new C2S(width, height);
         var filename = 'boonelab_network_' + date.getDate() + '_' + date.getHours() + '_' + date.getMinutes() + '_' + date.getSeconds() + '.svg';
         
-//        if (settings['showBgSvg']) {
-            canvas.fillStyle = $('#canvas-background-color').val();
-            canvas.fillRect(0, 0, settings['showLegendSvg'] ? width * 1.25 : width, height);
-//        }
+        canvas.fillStyle = "#" + $('#canvas-background-color').val();
+        canvas.fillRect(0, 0, width, height);
+//        canvas.fillRect(0, 0, settings['showLegendSvg'] ? width * 1.25 : width, height);
         
         sigInst._core.plotter.switchCxt(canvas);
         if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas, 1);
@@ -53,7 +52,8 @@ define([
         sigInst._core.plotter.restoreCxt();
         sigInst.draw();
         
-        var blob = new Blob([canvas.getSerializedSvg()], {type: 'text/svg+xml;charset=utf-8'});
+        var blob = new Blob([canvas.getSerializedSvg()], {type: 'application/octet-stream'});
+//        var blob = new Blob([canvas.getSerializedSvg()], {type: 'text/svg+xml;charset=utf-8'});
         saveAs(blob, filename);
     };
     

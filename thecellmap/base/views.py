@@ -40,7 +40,7 @@ def _serve_dataset(request, dataset=None):
         return response
     else:
         return login(request)
-        return HttpResponseForbidden("Permission Required")
+#         return HttpResponseForbidden("Permission Required")
 
 def about(request):
     return render(request, 'base/about.html')
