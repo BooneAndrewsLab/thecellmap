@@ -146,8 +146,6 @@ define([
                         }
                     });
                 }
-                
-                
 //                console.log(strain.get('orf'), data.get('terms')[])
                 
 //                if (annot != undefined) {
