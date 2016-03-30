@@ -106,7 +106,7 @@ define([
                 case 'ctrl':
                     break;
                 case 'shift':
-                    $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(targets.content), true);
+                    $('input.gene-search-input').select2('val', Utils.getSelection().concat(targets.content), true);
                     break;
                 default:
                     $('input.gene-search-input').select2('val', targets.content, true);

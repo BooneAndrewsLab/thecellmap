@@ -357,6 +357,8 @@ define([
         if (!!target) {
             $('#' + target).empty().append(alert);
         } else {
+            $('#panel-alerts').empty();
+            
             alert.on('close.bs.alert', function() {
                 $('#panel-alerts').hide();
             });
@@ -428,7 +430,8 @@ define([
             selStr = 'null';
         }
         
-        var urlNew = opts.url + '?q=' + selStr + '&' + 'a=' + state.get('annotation');
+//        var urlNew = opts.url + '?q=' + selStr + '&' + 'a=' + state.get('annotation');
+        var urlNew = opts.url + '?q=' + selStr;
         window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
     }
     

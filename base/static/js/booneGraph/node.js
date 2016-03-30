@@ -244,7 +244,6 @@ define([
                     var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
                     var reselect, numVisibleSelected = 0, strain, actualSelection;
                     preSelectSize = 2;
-                    console.log(selected, selection);
                     
                     for (var i in selection) {
                         if (selection[i].indexOf('action_loadannot ') != -1) {
@@ -315,7 +314,7 @@ define([
                         Annotation.loadAnnotation('SAFE');
                     }
                     
-                    state.set('selection', actualSelection)
+                    state.set('selection', actualSelection);
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
                     $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');

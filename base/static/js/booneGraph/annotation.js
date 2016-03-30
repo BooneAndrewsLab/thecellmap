@@ -75,44 +75,36 @@ define([
         if (strains.length) {
             _.each(strains, function(s) {
                 mapStrain = annotation.get('map')[(s.get('orf'))];
-                if (mapStrain) {
-                    if (mapStrain.length == 1) {
-                        terms[mapStrain[0]] = annotation.get('terms')[mapStrain[0]];
-                    } else {
-                        terms[-2] = annotation.get('terms')[-2];
-                    }
-                } else {
-                    terms[-1] = annotation.get('terms')[-1];
+                if (mapStrain && mapStrain.length == 1) {
+                    terms[mapStrain[0]] = annotation.get('terms')[mapStrain[0]];
                 }
             });
-        } else {
-            terms[-1] = annotation.get('terms')[-1];
         }
-        
-        _.each(terms, function(term) {
-            if (Cookies.get(term.name) == undefined) {
-                var color = annotation.get('colorPalette')[term.idx];
-            } else {
-                var color = Cookies.get(term.name);
-            }
-            
-            if (term.name == 'Unannotated') return;
-            else if (term.name == 'Multi-function' && id == 'SAFE') return;
-            
-//                restrict name length, keep all annotation in one line within legend
-            var name = term.alias.split('/');
-//                if (name.length > 25) {
-//                    name = name.substring(0, 25) + "...";
-//                }
-            
-            if (name.length > 2) name = name[0] + ', ' + name[1] + '..';
-            
-            $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
-                    <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
-                    <td>' + term.name + '</td></td></tr>');
-            $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>');
-            $('#list-annotation-legend .box-annotation-color').last().css("background-color", color);
-        });
+        if (_.size(terms)) {
+            _.each(terms, function(term) {
+                if (Cookies.get(term.name) == undefined) {
+                    var color = annotation.get('colorPalette')[term.idx];
+                } else {
+                    var color = Cookies.get(term.name);
+                }
+                
+//                    restrict name length, keep all annotation in one line within legend
+                var name = term.alias.split('/');
+//                    if (name.length > 25) {
+//                        name = name.substring(0, 25) + "...";
+//                    }
+                
+                if (name.length > 2) name = name[0] + ', ' + name[1] + '..';
+                
+                $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
+                        <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
+                        <td>' + term.name + '</td></td></tr>');
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>');
+                $('#list-annotation-legend .box-annotation-color').last().css("background-color", color);
+            });
+        } else {
+            $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx="-1"></div><span title="No annotations">No annotations for current network</span></li>');
+        }
         
         $('#style-annotation-table .pick-a-color').pickAColor({showHexInput: false, showSavedColors: false});
         $("#style-annotation-table .pick-a-color").on('change', function() {
