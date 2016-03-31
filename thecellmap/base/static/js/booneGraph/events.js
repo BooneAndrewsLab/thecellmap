@@ -26,15 +26,23 @@ define([
             }
             
             state.on('change:selection', function() {
+                var enabled, cls, size = Utils.getSelectedNodes().length;
+                console.log('fooooo', size);
+                
                 $('[data-selection-constraint]').each(function() {
-                    var enabled = true, size = Utils.getSelectedNodes().length, cls = $(this).data('selection-class') || 'disabled';
+                    enabled = true;
+                    cls = $(this).data('selection-class') || 'disabled';
+                    
                     if ($(this).data('selection-gt') != undefined) {
                         enabled &= size > $(this).data('selection-gt');
                     }
                     if ($(this).data('selection-lt') != undefined) {
                         enabled &= size < $(this).data('selection-lt');
                     }
-                    $(this).toggleClass(cls, !enabled);
+                    
+                    console.log(cls, !enabled, $(this).data('selection-gt'), $(this).data('selection-lt'));
+                    
+                    $(this).prop(cls, !enabled);
                 });
                 
                 Utils.updateUrl();

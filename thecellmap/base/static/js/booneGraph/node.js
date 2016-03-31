@@ -270,7 +270,6 @@ define([
                             if (node.hidden) {
                                 if (!selected.hasOwnProperty(node.id)) {
                                     Utils.messageUser('Gene you\'re looking for is below current threshold.');
-                                    moveOn = false;
                                 }
                             } else {
                                 if (tmpNode) tmpNode.forceLabel = true;
@@ -290,16 +289,11 @@ define([
                         if (!node) {
                             missingNodes['labels'].push(strain['attributes']['verboseName']);
                             missingNodes['ids'].push(strain['attributes']['id'] + '');
-                            moveOn = false;
                         }
                     });
                     
                     if (missingNodes['ids'].length) {
                         Utils.messageUser(missingNodes['labels'].join() + ' is below current threshold.', null, missingNodes['ids']);
-                    }
-                    
-                    if (moveOn && !state.get('isInitializing') && state.get('step') < 1) {
-                        state.set('step', 1);
                     }
                     
                     sigInst.draw();
@@ -315,6 +309,10 @@ define([
                     }
                     
                     state.set('selection', actualSelection);
+                    
+                    if (!!actualSelection.length && !state.get('isInitializing') && state.get('step') < 1) {
+                        state.set('step', 1);
+                    }
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
                     $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');
