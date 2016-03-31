@@ -32,7 +32,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
             context.clearRect(0, 0, $(document).width(), $(document).height());
         }
         
-        context.strokeStyle = '#222222';
+        context.strokeStyle = '#000000';
         
         self.m.nodes.forEach(function(n) {
             if (!n.hidden && !n._hidden) {
@@ -56,7 +56,7 @@ sigma.searchlocator.SearchLocator = function(graph, instance, properties) {
                 context.stroke();
                 
                 context.beginPath();
-                context.fillStyle = '#222222';
+                context.fillStyle = '#000000';
                 context.arc(n.displayX, n.displayY - 2/3 * size - distance, 2/15 * size, 0, 2 * Math.PI);
                 context.fill();
             }

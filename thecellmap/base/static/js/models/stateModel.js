@@ -5,7 +5,7 @@ define([
     var State = Backbone.Model.extend({
         defaults: {
             annotation: 'None',
-            background: '222222',
+            background: '000000',
             cutoffCorrelation: 0.20,
             cutoffInteraction: [-0.08, 0.08],
             cutoffLow: 0.20,

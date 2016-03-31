@@ -564,7 +564,7 @@ define([
             for (slider in styleSliders) {
                 $('#style-slider-' + slider).val($('#style-slider-' + slider).attr('data-slider-default'), true);
             }
-            $('#canvas-background-color').val('222222').change();
+            $('#canvas-background-color').val('000000').change();
             
             var annotation = vizdata['annotations'].get(state.get('annotation')), strain, annot;
             var terms = annotation.get('terms');

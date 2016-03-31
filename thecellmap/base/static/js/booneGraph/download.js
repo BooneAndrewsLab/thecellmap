@@ -52,14 +52,12 @@ define([
         sigInst._core.plotter.restoreCxt();
         sigInst.draw();
         
-        try {
-            var blob = new Blob([canvas.getSerializedSvg()], {type: 'application/octet-stream'});
-//          var blob = new Blob([canvas.getSerializedSvg()], {type: 'text/svg+xml;charset=utf-8'});
-            saveAs(blob, filename);
-        } catch(err) {
+        var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        if (isSafari) {
             var w = window.open();
-            var base = '<html><body><img src="data:image/svg+xml;base64,';
-            w.document.write(base + btoa(canvas.getSerializedSvg()) + '"></body></html>');
+            w.document.write('<html><body><img src="data:image/svg+xml;base64,' + btoa(canvas.getSerializedSvg()) + '"></body></html>');
+        } else {
+            saveAs(new Blob([canvas.getSerializedSvg()], {type: 'application/octet-stream'}), filename);
         }
     };
     

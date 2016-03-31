@@ -223,7 +223,7 @@ define([
         three['scene'] = new THREE.Scene();
         three['renderer'] = new THREE.WebGLRenderer({antialias: true, alpha: true});
         three['renderer'].setSize(rootElement.width(), rootElement.height());
-        three['renderer'].setClearColor(0x222222, 1);
+        three['renderer'].setClearColor(0x000000, 1);
         rootElement.append(three['renderer'].domElement);
         three['renderer'].domElement.id = 'scene';
         
