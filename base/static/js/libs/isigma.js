@@ -1786,7 +1786,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
         ctx.stroke();
         
         ctx.beginPath();
-        ctx.fillStyle = '#222222';
+        ctx.fillStyle = '#000000';
         ctx.arc(node.displayX, node.displayY - 2/3 * rsize, 2/15 * rsize, 0, 2 * Math.PI);
         ctx.fill();
     }

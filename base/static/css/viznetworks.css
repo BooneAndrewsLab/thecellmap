@@ -39,7 +39,7 @@
 }
 
 .sigma-expand {
-    background: #222222;
+    background: #000000;
     border-radius: 8px;
     height: 100%;
 }
@@ -202,7 +202,7 @@
     display: none;
     width: 250px;
     z-index: 9999;
-    background-color: #222222;
+    background-color: #000000;
     color: #e8e8e8;
 }
 
