@@ -108,7 +108,8 @@ define([
                         token, // token
                         index, // position at which the separator was found
                         i, l, // looping variables
-                        separator; // the matched separator
+                        separator,
+                        wasTokenizing = false; // the matched separator
                         
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
                         if (input.split(/[\s,\t\n]/).length > 1 && !/[\s,\t\n]/.test(input.slice(-1))) {
@@ -152,6 +153,7 @@ define([
                                             }
                                             
                                             if (!dupe) {
+                                                wasTokenizing = true;
                                                 selectCallback(token);
                                             }
                                         }
@@ -161,6 +163,8 @@ define([
                         }
                         
                         tokenizing = false;
+                        if (wasTokenizing)
+                            $('input.gene-search-input').trigger('change');
                         
                         if (original !== input) return input;
                     },
@@ -242,6 +246,8 @@ define([
                     },
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
+                    if (tokenizing) return;
+                    console.log('change');
                     var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
                     var reselect, numVisibleSelected = 0, strain, actualSelection;
                     preSelectSize = 2;
