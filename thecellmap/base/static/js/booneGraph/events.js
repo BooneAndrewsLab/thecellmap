@@ -174,7 +174,7 @@ define([
             'click .btn-home': 'graphCenter',
             'click .btn-zoom-in': 'graphZoomIn',
             'click .btn-zoom-out': 'graphZoomOut',
-            'click #dataset-toggle button': 'toggleDataset',
+            'click #dataset-toggle': 'toggleDataset',
             
             'click #screenshot-link': 'getSvgScreenshot',
             
@@ -220,6 +220,7 @@ define([
         
         nodeContext: function(e) {
             var targets = state.get('hoveredTargets');
+            console.log(targets)
             switch ($(e.target).attr('id')) {
             case 'context-dl':
                 var node = Utils.getNode(targets[0]), strain = Utils.getStrain(node.id);
@@ -243,6 +244,10 @@ define([
                     node.forceLabel = !node.forceLabel;
                 });
                 sigInst.draw();
+                break;
+            case 'context-sgd':
+                console.log("CLICK")
+                Utils.onNodeDblClick(targets);
                 break;
             case 'context-edit-node':
                 Node.showNodeModal(targets[0]);
@@ -399,16 +404,7 @@ define([
         },
         
         toggleDataset: function(e) {
-            var ele = $(e.target);
-            
-            ele.siblings('button').each(function() {
-                $(this).removeClass('active');
-                $(this).attr('title', $(this).data('title'));
-            });
-            ele.addClass('active');
-            ele.removeAttr('title');
-            
-            Dataset.toggleDataset(ele.data('dataset'));
+            Dataset.toggleDataset($(e.target).data('dataset'));
             e.preventDefault();
         },
         

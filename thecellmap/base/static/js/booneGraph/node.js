@@ -227,8 +227,9 @@ define([
                             if (acount > 1) return false;
                         });
                         
+                        var currentSel = state.get('selection');
                         selChoices = data.results.filter(function(r) {
-                            return (r.id + '').indexOf('action') == -1;
+                            return (r.id + '').indexOf('action') == -1 && currentSel.indexOf(r.id + '') == -1;
                         });
                         
                         data.results = data.results.slice(0, 6);
