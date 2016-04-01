@@ -27,7 +27,6 @@ define([
             
             state.on('change:selection', function() {
                 var enabled, cls, size = Utils.getSelectedNodes().length;
-                console.log('fooooo', size);
                 
                 $('[data-selection-constraint]').each(function() {
                     enabled = true;
@@ -40,9 +39,13 @@ define([
                         enabled &= size < $(this).data('selection-lt');
                     }
                     
-                    console.log(cls, !enabled, $(this).data('selection-gt'), $(this).data('selection-lt'));
-                    
                     $(this).prop(cls, !enabled);
+                    
+                    if (!enabled) {
+                        $(this).attr('title', $(this).data('selection-disabled-title'));
+                    } else {
+                        $(this).removeAttr('title');
+                    }
                 });
                 
                 Utils.updateUrl();
@@ -113,13 +116,25 @@ define([
                 $('input.gene-search-input').select2('val', sel, true);
             });
             
+            // TODO if simple ui
             state.on('change:step', function() {
                 $('[data-simple-step]').each(function() {
-                    if ($(this).data('simple-step') == state.get('step')) {
-                        $(this).removeClass('hidden');
-                        $(this).show();
-                    } else if ($(this).data('simple-keep') != true){
-                        $(this).hide();
+                    var action = $(this).data('simple-action') || 'hidden';
+                    
+                    if (action == 'hidden') {
+                        if ($(this).data('simple-step') == state.get('step')) {
+                            $(this).removeClass('hidden');
+                            $(this).show();
+                        } else if ($(this).data('simple-keep') != true){
+                            $(this).hide();
+                        }
+                    } else if (action == 'disabled') {
+                        if ($(this).data('simple-step') == state.get('step')) {
+//                            $(this).removeClass('hidden');
+                            $(this).attr('disabled', false);
+                        } else if ($(this).data('simple-keep') != true){
+                            $(this).attr('disabled', true);
+                        }
                     }
                 });
             });

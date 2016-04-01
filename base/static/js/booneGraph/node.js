@@ -296,7 +296,7 @@ define([
                         Utils.messageUser(missingNodes['labels'].join() + ' is below current threshold.', null, missingNodes['ids']);
                     }
                     
-                    sigInst.draw();
+                    sigInst.draw(1, -1, 1);
                     
                     if (state.get('selection').length > 0) {
                         state.set('preselect', state.get('selection'));
