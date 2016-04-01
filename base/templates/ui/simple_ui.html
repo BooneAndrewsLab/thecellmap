@@ -3,9 +3,18 @@
 
 {% block uiElements %}
   <div class="top-left hidden-sm hidden-xs">
-    <div id="dataset-toggle" class="hidden" data-toggle-name="switch-dataset" data-toggle="buttons-radio" data-simple-step="2">
+    <!-- <div id="dataset-toggle" class="hidden" data-toggle-name="switch-dataset" data-toggle="buttons-radio" data-simple-step="2">
         <button type="button" value="correlation" data-toggle="button" data-dataset="0" class="btn btn-primary active" data-title="Switch to profile similarity network">Profile similarity network</button>
-        <button type="button" value="interaction" data-toggle="button" data-dataset="1" class="btn btn-primary" title="Switch to genetic interaction network" data-title="Switch to genetic interaction network">Genetic interaction network</button>
+        <button type="button" value="interaction" data-toggle="button" data-dataset="1" class="btn btn-primary" data-title="Switch to genetic interaction network">Genetic interaction network</button>
+    </div> -->
+    
+    <div class="btn-group hidden" id="dataset-toggle" data-toggle-name="switch-dataset" data-simple-step="2" data-toggle="buttons">
+      <label class="btn btn-primary active" value="correlation" data-dataset="0" data-title="Switch to profile similarity network" >
+        <input type="radio" autocomplete="off" checked> Profile similarity network
+      </label>
+      <label class="btn btn-primary" value="interaction" data-dataset="1" data-title="Switch to genetic interaction network">
+        <input type="radio" autocomplete="off"> Genetic interaction network
+      </label>
     </div>
     
     <div class="select2-div" data-simple-step="1">
