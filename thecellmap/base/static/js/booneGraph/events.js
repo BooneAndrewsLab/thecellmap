@@ -131,9 +131,9 @@ define([
                     } else if (action == 'disabled') {
                         if ($(this).data('simple-step') == state.get('step')) {
 //                            $(this).removeClass('hidden');
-                            $(this).attr('disabled', false);
+                            $(this).removeClass('disabled');
                         } else if ($(this).data('simple-keep') != true){
-                            $(this).attr('disabled', true);
+                            $(this).addClass('disabled');
                         }
                     }
                 });
@@ -153,10 +153,6 @@ define([
             $('#modal-edit-node').modal({show: false});
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
-            
-            $('.btn-copy').on('click', this.showInputModal).hover(function() {
-                if (Utils.getSelection().length > 0) $('.btn-copy').find('span').toggleClass('hidden');
-            });
             
             $('.contextmenu').mouseleave(function() { $(this).delay(500).fadeOut(500); }).mouseenter(function() { $(this).stop(true); });
             $('body').keydown(this.graphNodes);
@@ -220,7 +216,6 @@ define([
         
         nodeContext: function(e) {
             var targets = state.get('hoveredTargets');
-            console.log(targets)
             switch ($(e.target).attr('id')) {
             case 'context-dl':
                 var node = Utils.getNode(targets[0]), strain = Utils.getStrain(node.id);
@@ -228,14 +223,11 @@ define([
                 break
             case 'context-hide':
                 var selected = Utils.getSelectedNodes();
-                targets.forEach(function(node) {
-                    if (selected.indexOf(node) != -1) {
-                        selected.splice(selected.indexOf(node), 1);
-                        $('input.gene-search-input').select2('val', selected, true);
-                    }
+                selected.forEach(function(node) {
                     node = Utils.getNode(node);
                     node.hidden = node._hidden = true;
                 });
+                $('input.gene-search-input').select2('val', [], true);
                 sigInst.draw();
                 break
             case 'context-label-toggle':
@@ -246,21 +238,40 @@ define([
                 sigInst.draw();
                 break;
             case 'context-sgd':
-                console.log("CLICK")
                 Utils.onNodeDblClick(targets);
                 break;
             case 'context-edit-node':
                 Node.showNodeModal(targets[0]);
                 break;
             case 'context-view-network':
-                var node = Utils.getNode(targets[0]), strain = Utils.getStrain(node.id);
-                window.open('?q=' + node.label,'_blank');
+                var labels = '', sels = Utils.getSelectedNodes(true);
+                for (var i in sels) {
+                    var node = Utils.getNode(sels[i]);
+                    labels += node.label + ',';
+                }
+                window.open('?q=' + labels.slice(0, -1),'_blank');
                 break;
             case 'context-node-gi':
                 if (state.get('dataset') == 0 && state.get('annotation') != 'None'){
                     $('input.gene-search-input').select2('val', targets, true);
                     $('.image-dataset-icon[data-dataset="' + 1 + '"]').click();
                 }
+                break;
+            case 'context-copy':
+                var selection = Utils.getSelection()
+                if (selection.length <= 0) return;
+                
+                $('#modal-copy').modal('show');
+                $('#modal-copy').on('shown.bs.modal', function() {
+                    var str = '';
+                    for (var s in selection) {
+                        if (s != 0) str += ', ';
+                        str += Utils.getNode(selection[s]).label;
+                    }
+                    $('#modal-copy input').val(str).select();
+                }).on('hide.bs.modal', function() {
+                    $('#modal-copy input').val('');
+                });
                 break;
             }
             
@@ -355,25 +366,6 @@ define([
                 $('#legend-body').hide();
                 $('#legend-handle button.close').text('+');
             }
-            e.preventDefault();
-        },
-        
-        showInputModal: function(e) {
-            var selection = Utils.getSelection()
-            if (selection.length <= 0) return;
-            
-            $('#modal-copy').modal('show');
-            $('#modal-copy').on('shown.bs.modal', function() {
-                var str = '';
-                for (var s in selection) {
-                    if (s != 0) str += ', ';
-                    str += Utils.getNode(selection[s]).label;
-                }
-                $('#modal-copy input').val(str).select();
-            }).on('hide.bs.modal', function() {
-                $('#modal-copy input').val('');
-            });
-            
             e.preventDefault();
         },
         
