@@ -232,7 +232,7 @@ define([
         state.set('dataset', dsid);
         state.set('showRegions', false);
         $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
-        
+
         if (dsid == 0) { // Correlations
             state.set('showCircular', false);
             for (var i = sigInst._core.graph.edges.length - 1; i > 0; i--) {
@@ -274,50 +274,29 @@ define([
         }
     }
     
-    var tmpNetworks = {before: {}, current: {}};
+    var tmpNetworks = {before: [], current: []};
     var toggleDataset = function(dsid) {
-        var missingNodes = $(Utils.getSelection()).not(Utils.getSelectedNodes()).get();
-        if (missingNodes.length >= 1 && missingNodes.length <= 7) {
-            state.set('missingNodes', missingNodes);
-            return;
-        }
-        
         var selection = Utils.getSelectedNodes();
-        if (selection.length < 1 || selection.length > 7) return;
+        if (selection.length < 1 || selection.length > 7 || state.get('dataset') == dsid) return;
         
-        $('.image-datasets').toggleClass('hidden');
+        if (dsid == 0) tmpNetworks['before'] = tmpNetworks['current'];
         
-        tmpNetworks['before'] = $.extend({}, tmpNetworks['current']);
         var ntmp = sigInst._core.graph.nodes.filter(function(node) {
             return !node.hidden && !node._hidden;
         });
         
-        tmpNetworks['current'] = {};
+        tmpNetworks['current'] = [];
         for (var n in ntmp) {
-            var node = ntmp[n];
-            tmpNetworks['current'][node.id] = {x: node.x, y: node.y};
+            tmpNetworks['current'].push(ntmp[n].id);
         }
-        tmpNetworks['current']['showRegions'] = state.get('showRegions');
         
         if (dsid == 0) {
-            if (!$.isEmptyObject(tmpNetworks['before'])) {
-                sigInst.iterNodes(function(node) {
-                    if (tmpNetworks['before'][node.id]) {
-                        node.x = tmpNetworks['before'][node.id].x;
-                        node.y = tmpNetworks['before'][node.id].y;
-                        node.hidden = node._hidden = false;
-                    } else {
-                        node.hidden = node._hidden = true;
-                    }
-                });
-                state.set('showRegions', tmpNetworks['before']['showRegions']);
-            }
-            
-            switchDataset(dsid);
-            Annotation.drawRegions();
-        } else {
-            switchDataset(dsid);
+            sigInst.iterNodes(function(node) {
+                node.hidden = node._hidden = tmpNetworks['before'].indexOf(node.id) == -1;
+            });
         }
+        
+        switchDataset(dsid);
     }
     
     return {
