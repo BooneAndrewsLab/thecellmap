@@ -1957,10 +1957,11 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
                      self.p.labelSizeRatio * node['displaySize'];
 
       ctx.font = self.p.fontStyle + fontSize + 'px ' + self.p.font;
-
+      
       ctx.fillStyle = self.p.labelColor == 'node' ?
                       (node['color'] || self.p.defaultNodeColor) :
                       self.p.defaultLabelColor;
+      
       ctx.fillText(
         node['label'],
         Math.round(node['displayX'] + node['displaySize'] * 1.5),
@@ -3237,7 +3238,7 @@ function Sigma(root, id) {
       }
     }
 
-    if (e) {
+    if (e>0) {
       if (e > 1) {
         while (self.plotter.task_drawEdge()) {}
       }else {
