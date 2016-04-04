@@ -2671,7 +2671,7 @@ function Sigma(root, id) {
     lastEdgeLabels: 2,
     drawHoverNodes: true,
     drawActiveNodes: true,
-    drawHoverEdges: true
+    drawHoverEdges: true,
   };
 
   /**
@@ -2948,7 +2948,7 @@ function Sigma(root, id) {
               self.mousecaptor.startY, 
               self.mousecaptor.mouseX - self.mousecaptor.startX, 
               self.mousecaptor.mouseY - self.mousecaptor.startY);
-    } else if (eventType == 'downnodes') {
+    } else if (eventType == 'downnodes' && self.mousecaptor.p.allowNodeDrag) {
       var targetedNode = self.graph.nodesIndex[targeted[0]];
       targetedNode['dragging'] = true;
       draggedNode = true;
@@ -3437,7 +3437,8 @@ function MouseCaptor(dom) {
     directZooming: false,
     blockScroll: true,
     inertia: 1.1,
-    mouseEnabled: true
+    mouseEnabled: true,
+    allowNodeDrag: true
   };
 
   var oldMouseX = 0;
