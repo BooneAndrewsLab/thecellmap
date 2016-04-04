@@ -116,8 +116,11 @@ define([
                 $('input.gene-search-input').select2('val', sel, true);
             });
             
-            // TODO if simple ui
             state.on('change:step', function() {
+                if (state.get('step') > 1) {
+                    sigInst.mouseProperties({allowNodeDrag: true});
+                }
+                
                 $('[data-simple-step]').each(function() {
                     var action = $(this).data('simple-action') || 'hidden';
                     

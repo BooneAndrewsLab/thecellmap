@@ -93,6 +93,7 @@ define([
             drawHoverEdges: false,
             maxRatio : 64,
             blockScroll: settings.get('disableScroll') || false,
+            allowNodeDrag: false,
         }).bind('rightclicknodes', Utils.onNodesContext
          ).bind('ctrlclicknodes', function (e) {
             clicking.modifierKey = 'ctrl';
@@ -135,7 +136,9 @@ define([
             }
         }).bind('selectionStart', function() {
         }).bind('downnodes', function(selection) {
-            Annotation.clearRegions();
+            if (sigInst.mouseProperties('allowNodeDrag')) {
+                Annotation.clearRegions();
+            }
         });
         
         UI.initUI();
