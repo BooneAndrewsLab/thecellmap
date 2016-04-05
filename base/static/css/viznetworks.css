@@ -355,3 +355,9 @@
 .inline-button-grp {
     display: inline;
 }
+
+.bs-colorpicker .input-group-addon {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: auto;
+}

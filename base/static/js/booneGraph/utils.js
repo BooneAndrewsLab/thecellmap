@@ -364,7 +364,8 @@ define([
             });
             
             if (missingNodes) {
-                alert.append('<a href="#"> Click to extract similarity network for these nodes </a>');
+                
+                alert.append('<a href="#"> Click here to extract the similarity network for the selected gene(s) at a lower PCC threshold</a>');
                 alert.find('a').on('click', function(e) {
                     alert.alert('close'); 
                     if (!target) $('#panel-alerts').hide();
