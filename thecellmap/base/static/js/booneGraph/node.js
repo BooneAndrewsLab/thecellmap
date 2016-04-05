@@ -14,37 +14,40 @@ define([
     'sigma.searchlocator',
 ], function($, _, _str, Backbone, StrainModel, 
     Annotation, Layout, Settings, Utils) {
+    
     var initSelect2 = function (callback) {
         $.ajax({
             url : opts.urls['nodes'],
             dataType : 'json',
             success : function(data) {
-                var strains = vizdata['strains'], nodes = data['nodes'], annotations = vizdata['annotations'];
-                _.each(nodes, function(node) {
-                    strains.add(new StrainModel(node));
-                });
+                var strains = vizdata['strains'], nodes = data['nodes'], annotations = vizdata['annotations'], i;
                 
-                var autocomp = [], strain, tokens;
-                for (var i in nodes) {
-                    strain = Utils.getStrain(nodes[i].id);
-                    strain.set('o', strain.get('orf').toLowerCase());
-                    tokens = [strain.get('o')];
-                    strain.set('n', strain.get('name') && strain.get('name').toLowerCase());
-                    if (!!strain.get('n')) tokens.push(strain.get('n'));
-                    strain.set('a', strain.get('alel') && strain.get('alel').toLowerCase());
-                    if (!!strain.get('a')) tokens.push(strain.get('a'));
+                var autocomp = [], tokens, node;
+                autocomp.length = nodes.length;
+                for (i in nodes) {
+                    node = nodes[i];
                     
-                    strain.set('verboseName', strain.get('label') || strain.get('alel') || strain.get('name') || strain.get('orf'));
-                    strain.set('terms', strain.get('terms') || tokens);
+                    node['o'] = node.orf.toLowerCase();
+                    node['n'] = node.name && node.name.toLowerCase();
+                    node['a'] = node.alel && node.alel.toLowerCase();
+                    node['verboseName'] = node.label || node.alel || node.name || node.orf;
                     
-                    vizdata.index[strain.get('id')] = i;
+                    tokens = [node.o];
+                    if (!!node.n) tokens.push(node.n);
+                    if (!!node.a) tokens.push(node.a);
                     
-                    autocomp.push({
-                        value: strain.get('verboseName'),
-                        tokens: strain.get('terms'),
-                        id: strain.get('id'),
-                    });
+                    node['terms'] = tokens;
+                    
+                    vizdata.index[node.id] = i;
+                    
+                    autocomp[i] = {
+                        value: node.verboseName,
+                        tokens: node.terms,
+                        id: node.id,
+                    };
                 }
+                
+                strains.reset(nodes);
                 
 //                    addAttributeLayouts();
                 
@@ -247,7 +250,7 @@ define([
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
                     if (tokenizing) return;
-                    console.log('change');
+//                    console.log('change');
                     var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
                     var reselect, numVisibleSelected = 0, strain, actualSelection;
                     preSelectSize = 2;
@@ -300,7 +303,8 @@ define([
                     });
                     
                     if (missingNodes['ids'].length) {
-                        Utils.messageUser(missingNodes['labels'].join() + ' is below current threshold.', null, missingNodes['ids']);
+                        Utils.messageUser('Genetic interaction profile similarities for "' + missingNodes['labels'].join() + '" do ' +
+                                'not exceed the default Pearson correlation coefficient (PCC) threshold.', null, missingNodes['ids']);
                     }
                     
                     sigInst.draw(1, -1, 1);
@@ -434,7 +438,8 @@ define([
         
         modal.find('#edit-node-id').val(id);
         modal.find('#edit-node-label').val(node.label);
-        modal.find('#edit-node-color').val(node.color).focus().blur().change();
+        modal.find('#edit-node-color').parent().colorpicker('setValue', node.color);
+//        modal.find('#edit-node-color').val(node.color).focus().blur().change();
         modal.find('#edit-node-label-force').prop('checked', !!node.forceLabel);
         modal.find('#edit-node-size-multiplier').val(node.size_mult || 1);
         
@@ -446,10 +451,14 @@ define([
         if (annot.length > 1) {
             term = terms['-2'];
             $('#node-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
-                    <td><input class="form-control pick-a-color annotation-color" value="' + colorPalette[term.idx] + '"></td>\
+                    <td><div class="input-group bs-colorpicker annotation-color">\
+                        <input type="hidden" value="' + colorPalette[term.idx] + '" class="form-control" />\
+                        <span class="input-group-addon"><i></i></span>\
+                    </div></td>\
                     <td>' + term.name + '</td>\
                     <td><input type="radio" name="dominant"></td></tr>');
         }
+        
         
         annot.forEach(function(a) {
             if (terms.hasOwnProperty(a)) {
@@ -458,37 +467,33 @@ define([
             }
             
             $('#node-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
-                    <td><input class="form-control pick-a-color annotation-color" value="' + color + '"></td>\
+                    <td><div class="input-group bs-colorpicker annotation-color">\
+                        <input type="hidden" value="' + color + '" class="form-control" />\
+                        <span class="input-group-addon"><i></i></span>\
+                    </div></td>\
                     <td>' + term.name + '</td>\
                     <td><input type="radio" name="dominant"></td></tr>');
         });
         
-//        var attributes = strain['attributes'];
-//        
-//        console.log(attributes)
-//        
-//        $('#attribute-head').empty();
-//        $('#attribute-body').empty();
-//        
-//        if (attributes != undefined || attributes != null) {
-//            $('#attribute-head').append('<tr><th>Attribute</th><th style="width: 25%;">Attribute Details</th></tr>');
-//            for (var attr in attributes) {
-//                $('#attribute-body').append('<tr class="attribute-row">\
-//                    <td>' + attr + '</td>\
-//                    <td>' + attributes[attr] + '</td></tr>');
-//            }
-//        }
-        $('#node-annotation-table .pick-a-color[value="' + node.color + '"]').closest('tr').find('input[type="radio"]').prop('checked', true);
-        $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false}).on("change", function() {
+        $('#node-annotation-table input[value="' + node.color + '"]').closest('tr').find('input[type="radio"]').prop('checked', true);
+        
+        $('#node-annotation-table .bs-colorpicker').colorpicker().on('changeColor', function(e){
             if ($(this).closest('tr').find('input[name=dominant]').prop('checked')) {
-                modal.find('#edit-node-color').val($(this).val()).focus().blur().change();
+                modal.find('#edit-node-color').parent().colorpicker('setValue', e.color.toHex());
             }
         });
         
+//        $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false}).on("change", function() {
+//            if ($(this).closest('tr').find('input[name=dominant]').prop('checked')) {
+//                modal.find('#edit-node-color').parent().colorpicker('setValue', $(this).val());
+////                modal.find('#edit-node-color').val($(this).val()).focus().blur().change();
+//            }
+//        });
+        
         $('#node-annotation-table input[name=dominant]').change(function() {
-            modal.find('#edit-node-color').val(
-                    $('#node-annotation-table input[name=dominant]:checked').closest('tr').find('.pick-a-color').val()
-                ).focus().blur().change();
+            modal.find('#edit-node-color').parent().colorpicker(
+                    'setValue', 
+                    $('#node-annotation-table input[name=dominant]:checked').closest('tr').find('.bs-colorpicker').colorpicker('getValue'));
         });
         
         modal.modal('show');
@@ -498,12 +503,13 @@ define([
         var modal = $('#modal-edit-node');
         var node = Utils.getNode(parseInt(modal.find('#edit-node-id').val())), colorsChanged = false;
         node.label = modal.find('#edit-node-label').val();
-        node.color = '#' + modal.find('#edit-node-color').val().toUpperCase();
+        node.color = modal.find('#edit-node-color').parent().colorpicker('getValue').toUpperCase();
         node.forceLabel = modal.find('#edit-node-label-force').prop('checked');
         node.size_mult = parseInt(modal.find('#style-slider-snsize')[0].noUiSlider.get());
         node.size = node.size_init * node.size_mult;
         modal.find('.annotation-color').each(function() {
-            var color = '#' + $(this).val().toUpperCase(), annotation = vizdata['annotations'].get(state.get('annotation'));
+            var color = $(this).colorpicker('getValue'), annotation = vizdata['annotations'].get(state.get('annotation'));
+            console.log(color);
             if (annotation.get('colorPalette')[$(this).closest('tr').data('term')] != color) {
                 annotation.get('colorPalette')[$(this).closest('tr').data('term')] = color;
                 colorsChanged = true;

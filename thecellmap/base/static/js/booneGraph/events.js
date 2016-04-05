@@ -11,12 +11,13 @@ define([
     'utils',
     
     'drag',
+    'bootstrap.colorpicker',
     
     'jquery.cookie',
     'sigma.rotate',
     'bootstrap',
 ], function($, _, Backbone, 
-    Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly) {
+    Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly, Colorpicker) {
     
     var eventsView = Backbone.View.extend({
         initialize: function() {
@@ -148,9 +149,13 @@ define([
             });
             
             $('.refresh-network').on('click', this.refreshNetwork);
-            $('.pick-a-color').pickAColor({showHexInput: false});
-            $('#canvas-background-color').change(this.updateBackgroundColor);
-            $('#style-label-color').change(this.updateLabelColor);
+            
+            $('.bs-colorpicker').colorpicker();
+//            $('.pick-a-color').pickAColor({showHexInput: false});
+            
+            $('#canvas-background-color').parent().on('changeColor', this.updateBackgroundColor);
+            $('#style-label-color').parent().on('changeColor', this.updateLabelColor);
+            
             $('#modal-style input.pick-a-color').addClass('form-control').css({width: 'auto'});
             $('#modal-rotationDrag #rotate-confirm').on('click', this.rotateConfirm);
             $('#modal-edit-node').modal({show: false});
@@ -404,13 +409,13 @@ define([
         },
         
         updateBackgroundColor: function(e) {
-            state.set('background', $(e.target).val());
-            $(opts['rootElement']).css('background-color', '#' + state.get('background'));
+            state.set('background', e.color.toHex());
+            $(opts['rootElement']).css('background-color', e.color.toHex());
             e.preventDefault();
         },
         updateLabelColor: function(e) {
-            state.set('labelColor', $(e.target).val());
-            sigInst.drawingProperties({defaultLabelColor: '#' + state.get('labelColor')}).draw(-1, -1, 1);
+            state.set('labelColor', e.color.toHex());
+            sigInst.drawingProperties({defaultLabelColor: e.color.toHex()}).draw(-1, -1, 1);
             e.preventDefault();
         },
         
