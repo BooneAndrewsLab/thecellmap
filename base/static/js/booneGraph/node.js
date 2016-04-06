@@ -307,7 +307,8 @@ define([
                                 'not exceed the default Pearson correlation coefficient (PCC) threshold.', null, missingNodes['ids']);
                     }
                     
-                    sigInst.draw(1, -1, 1);
+//                    sigInst.draw(1, -1, 1); // TODO: fix this to redraw only nodes, there is a bug where the edges would disappear
+                    sigInst.draw();
                     
                     if (state.get('selection').length > 0) {
                         state.set('preselect', state.get('selection'));

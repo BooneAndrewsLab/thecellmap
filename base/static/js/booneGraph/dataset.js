@@ -22,7 +22,7 @@ define([
             edge.hidden = (ds == 0) ? edge.ds != ds : 
                 (edge.ds != ds) || (selected.indexOf(edge.source.id) == -1 && selected.indexOf(edge.target.id) == -1);
         });
-//        sigInst.draw(); // Unnecessary draw here
+        sigInst.draw();
     }
     
     var updateLabels = function(ds) {
