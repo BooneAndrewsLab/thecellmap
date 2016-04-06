@@ -459,7 +459,6 @@ define([
                     <td><input type="radio" name="dominant"></td></tr>');
         }
         
-        
         annot.forEach(function(a) {
             if (terms.hasOwnProperty(a)) {
                 term = terms[a];
