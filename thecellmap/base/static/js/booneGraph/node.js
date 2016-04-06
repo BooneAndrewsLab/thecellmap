@@ -483,13 +483,6 @@ define([
             }
         });
         
-//        $('#node-annotation-table .pick-a-color').pickAColor({showHexInput: false}).on("change", function() {
-//            if ($(this).closest('tr').find('input[name=dominant]').prop('checked')) {
-//                modal.find('#edit-node-color').parent().colorpicker('setValue', $(this).val());
-////                modal.find('#edit-node-color').val($(this).val()).focus().blur().change();
-//            }
-//        });
-        
         $('#node-annotation-table input[name=dominant]').change(function() {
             modal.find('#edit-node-color').parent().colorpicker(
                     'setValue', 

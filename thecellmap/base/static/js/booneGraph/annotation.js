@@ -4,20 +4,15 @@ define([
     'backbone',
     
     'jquery.cookie',
-    'tinyColor',
     'utils',
     'layout',
     
     'annotationModel',
     'regionGroupModel',
     
-    'pickAColor',
     'sigma.drawregions',
     'sigma.highlight'
-], function($, _, Backbone, Cookies, TinyColor,
-    Utils, Layout,
-    AnnotationModel, RegionGroupModel) {
-    window.tinycolor = TinyColor;
+], function($, _, Backbone, Cookies, Utils, Layout, AnnotationModel, RegionGroupModel) {
     var applyAnnotationColors = function() {
         var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;
         
@@ -53,7 +48,7 @@ define([
     }
     
     var applyLegendColor = function(id, color) {
-        $('.legend-box').each(function(){
+        $('.box-annotation-color').each(function(){
             if (id == $(this).data("idx")) $(this).css("background-color", color);
         });
     }
@@ -97,8 +92,12 @@ define([
                 if (name.length > 2) name = name[0] + ', ' + name[1] + '..';
                 
                 $('#style-annotation-table').append('<tr class="annotation-row" data-term="' + term.idx + '">\
-                        <td><input class="form-control pick-a-color annotation-color" value="' + color + '">\
+                        <td><div class="input-group bs-colorpicker annotation-color">\
+                            <input type="hidden" value="' + color + '" class="form-control" />\
+                            <span class="input-group-addon"><i></i></span>\
+                        </div></td>\
                         <td>' + term.name + '</td></td></tr>');
+                
                 $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>');
                 $('#list-annotation-legend .box-annotation-color').last().css("background-color", color);
             });
@@ -106,9 +105,8 @@ define([
             $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx="-1"></div><span title="No annotations">No annotations for current network</span></li>');
         }
         
-        $('#style-annotation-table .pick-a-color').pickAColor({showHexInput: false, showSavedColors: false});
-        $("#style-annotation-table .pick-a-color").on('change', function() {
-            var term, color = '#' + $(this).val(), a = $(this).closest("tr").data("term");
+        $('#style-annotation-table .bs-colorpicker').colorpicker().on('hidePicker', function(e){
+            var term, color = e.color.toHex(), a = $(this).closest("tr").data("term");
             for (n in terms) {
                 term = annotation.get('terms')[n];
                 if (terms[n].idx == a) break;
@@ -118,10 +116,11 @@ define([
             } else {
                 annotation.get('colorPalette')[term.idx] = color;
             }
-            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
-            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
-            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
+            
+//            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-webkit-linear-gradient(left, #f5f5f5, ' + color + ' 50%)');
+//            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-moz-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+//            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', '-o-linear-gradient(right, #f5f5f5, ' + color + ' 50%)');
+//            $('#panel-annotation-' + term.id + ' .panel-heading').css('background', 'linear-gradient(to right, #f5f5f5, ' + color + ' 50%)');
             applyAnnotationColors();
             applyLegendColor(term.idx, color);
         });

@@ -19,10 +19,8 @@ require.config({
         'drag': 'libs/draggabilly.pkgd.min',
         'noUISlider': 'libs/nouislider-8.0.1.min',
         'packer': 'libs/packer.growing',
-        'pickAColor': 'libs/pick-a-color',
         'select2': 'libs/select2',
         'sigma': 'libs/isigma',
-        'tinyColor': 'libs/tinycolor-min',
         'xmlWriter': 'libs/XMLWriter-1.0.0-min',
         'bootstrap.colorpicker': 'libs/bootstrap-colorpicker',
         
@@ -65,8 +63,6 @@ require.config({
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-        
-        'pickAColor': ['jquery', 'tinyColor'],
         
         'underscore.strings': ['underscore'],
         

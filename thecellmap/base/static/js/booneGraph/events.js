@@ -151,12 +151,10 @@ define([
             $('.refresh-network').on('click', this.refreshNetwork);
             
             $('.bs-colorpicker').colorpicker();
-//            $('.pick-a-color').pickAColor({showHexInput: false});
             
             $('#canvas-background-color').parent().on('changeColor', this.updateBackgroundColor);
             $('#style-label-color').parent().on('changeColor', this.updateLabelColor);
             
-            $('#modal-style input.pick-a-color').addClass('form-control').css({width: 'auto'});
             $('#modal-rotationDrag #rotate-confirm').on('click', this.rotateConfirm);
             $('#modal-edit-node').modal({show: false});
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
