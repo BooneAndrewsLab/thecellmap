@@ -49,7 +49,7 @@ define([
         ele.css('display', 'block');
         
         Node.applyCutoff(cutoffs, true);
-        sigInst.draw();
+//        sigInst.draw(); // Unnecessary draw here, applycutoff already calls it
     }
     
     var loadLayout = function() {
