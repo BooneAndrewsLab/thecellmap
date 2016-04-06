@@ -19,14 +19,10 @@ define([
     var updateEdges = function(ds) {
         var selected = state.get('missingNodes').length ? state.get('missingNodes') : Utils.getSelectedNodes() || [];
         sigInst._core.graph.edges.forEach(function(edge) {
-            if (!edge.hasOwnProperty('ds')) {
-                edge.ds = ds;
-                edge.absweight = Math.abs(edge.weight);
-            }
             edge.hidden = (ds == 0) ? edge.ds != ds : 
                 (edge.ds != ds) || (selected.indexOf(edge.source.id) == -1 && selected.indexOf(edge.target.id) == -1);
         });
-        sigInst.draw();
+//        sigInst.draw(); // Unnecessary draw here
     }
     
     var updateLabels = function(ds) {
@@ -185,37 +181,46 @@ define([
             data: data,
             success: function(data) {
                 edges = data.edges;
+                var e, edge;
                 
-                edges.forEach(function(edge) {
+                for (e in edges) {
+                    edge = edges[e];
                     edge.source = edge.source || edge.s; // s == source
                     edge.target = edge.target || edge.t; // t == target
                     edge.weight = edge.weight || edge.w; // w == weight
                     edge.id = edge.source + '+' + edge.target; // We can ommit ids, can be auto generated here
-                    edge.absweight = Math.abs(edge.weight);
-                    edge.color = edge.color || edge.c; // c == color
-                    edge.size = edge.absweight;
+                    edge.size = Math.abs(edge.weight);
                     
-                    if (edge.color == undefined && dsid == 1 || opts.interaction_on) {
+                    if (!!edge.c) { // color defined
+                        edge.color = edge.c;
+                    } else if (dsid == 1 || opts.interaction_on) {
                         edge.color = edge.weight < 0. ? "red" : "green";
                         edge.size = 1;
                     }
                     
-                    switch (edge.color) {
-                    case "w": edge.color = 'white'; break;
-                    case "b": edge.color = 'blue'; break;
-                    case "r": edge.color = 'red'; break;
-                    }
+//                    edge.color = edge.color || edge.c; // c == color
+//                    
+//                    if (edge.color == undefined && dsid == 1 || opts.interaction_on) {
+//                        edge.color = edge.weight < 0. ? "red" : "green";
+//                        edge.size = 1;
+//                    }
+//                    
+//                    edge.absweight = Math.abs(edge.weight);
+//                    
+//                    switch (edge.color) {
+//                    case "w": edge.color = 'white'; break;
+//                    case "b": edge.color = 'blue'; break;
+//                    case "r": edge.color = 'red'; break;
+//                    }
+//                    
+//                    if (edge.color == undefined) delete edge.color;
                     
-                    if (edge.color == undefined) delete edge.color;
-                    
-                    edge.label = edge.weight; // Sets the thickness of the edge
-                });
-                
-                edges.forEach(function(edge){
                     if (!!sigInst._core.graph.nodesIndex[edge.source] && !!sigInst._core.graph.nodesIndex[edge.target] && !sigInst._core.graph.edgesIndex[edge.id]) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
+                        sigInst._core.graph.edgesIndex[edge.id].ds = dsid;
+                        sigInst._core.graph.edgesIndex[edge.id].absweight = edge.size;
                     }
-                });
+                }
             },
         }).always(function() {
             if (callback) {
