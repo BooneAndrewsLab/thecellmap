@@ -157,6 +157,7 @@ define([
             
             $('#modal-rotationDrag #rotate-confirm').on('click', this.rotateConfirm);
             $('#modal-edit-node').modal({show: false});
+//            $("#modal-search").modal({show: false});
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
             
@@ -181,6 +182,8 @@ define([
             'click #screenshot-link': 'getSvgScreenshot',
             
             'click #view-network-simple': 'showNetwork',
+            
+            'click .btn-show-search': 'smallDeviceSearch',
         },
         
         downloadNetwork: function(e) {
@@ -434,6 +437,14 @@ define([
         refreshNetwork: function(e) {
             window.location.href = opts['urls']['home'];
             e.preventDefault();
+        },
+        
+        smallDeviceSearch: function(e) {
+            $('.search-bar');
+            $('#modal-search').modal('show');
+            $('#modal-search').on('hide.bs.modal', function() {
+                
+            });
         }
     });
     
