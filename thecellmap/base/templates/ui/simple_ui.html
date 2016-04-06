@@ -2,24 +2,24 @@
 {% load staticfiles  %}
 
 {% block uiElements %}
-  <div class="top-left hidden-sm hidden-xs">
-    <!-- <div id="dataset-toggle" class="hidden" data-toggle-name="switch-dataset" data-toggle="buttons-radio" data-simple-step="2">
-        <button type="button" value="correlation" data-toggle="button" data-dataset="0" class="btn btn-primary active" data-title="Switch to profile similarity network">Profile similarity network</button>
-        <button type="button" value="interaction" data-toggle="button" data-dataset="1" class="btn btn-primary" data-title="Switch to genetic interaction network">Genetic interaction network</button>
-    </div> -->
-    
+  <div class="top-left">
     <div class="btn-group hidden" id="dataset-toggle" data-toggle-name="switch-dataset" data-simple-step="2" data-toggle="buttons">
-      <label class="btn btn-primary active" value="correlation" data-dataset="0" data-title="Switch to profile similarity network" >
+      <label class="btn btn-primary active" data-dataset="0" data-title="Switch to profile similarity network" >
         <input type="radio" autocomplete="off" checked> Profile similarity network
       </label>
-      <label class="btn btn-primary" value="interaction" data-dataset="1" data-title="Switch to genetic interaction network">
+      <label class="btn btn-primary" data-dataset="1" data-title="Switch to genetic interaction network">
         <input type="radio" autocomplete="off"> Genetic interaction network
       </label>
     </div>
     
     <div class="select2-div" data-simple-step="1">
-      <div class="input-group search-bar">
+      <div class="input-group search-bar hidden-sm hidden-xs">
         <input class="gene-search-input form-control" type="hidden">
+      </div>
+      <div class="visible-sm-block visible-xs-block">
+        <button type="button" class="btn btn-default btn-show-search">
+            <span class="glyphicon glyphicon-search"></span>
+        </button>
       </div>
     </div>
   </div>
@@ -58,6 +58,22 @@
       
       <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20" data-selection-disabled-title="Please select up to 20 nodes"> Extract Subnetwork </button>
       <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20" data-selection-disabled-title="Please select up to 20 nodes" data-toggle="tooltip" data-placement="bottom"> Download</button>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="modal-search" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" id="search-modal-label">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Search </h4>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}

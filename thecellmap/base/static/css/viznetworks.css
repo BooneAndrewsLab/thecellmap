@@ -73,14 +73,14 @@
     pointer-events: auto;
 }
 
-.top-left .select2-div {
-    width: 350px;
-    display: inline-block;
-}
+/* .top-left .select2-div { */
+/*     width: 350px; */
+/*     display: inline-block; */
+/* } */
 
-.top-left .btn-group {
-    vertical-align: top;
-}
+/* .top-left .btn-group { */
+/*     vertical-align: top; */
+/* } */
 
 /* .top-left { */
 /*     display: table; */

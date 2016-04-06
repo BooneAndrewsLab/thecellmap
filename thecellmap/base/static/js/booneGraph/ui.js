@@ -43,6 +43,7 @@ define([
         $('#contnodeextmenu-edge-container').appendTo('body');
         $('#edit-node-modal').appendTo('body');
         $('#modal-rotation').appendTo('body');
+        $('#modal-search').appendTo('body');
         
         $('#panel-legend').css({'top': '39px', 'left': '0px'});
         $('#panel-alerts').hide();
@@ -402,7 +403,8 @@ define([
                                 sigInst.addEdge(edgeId, edge.s, edge.t, edge);
                                 
                                 var addedEdge = Utils.getEdge(edgeId), source = Utils.getNode(edge.s), target = Utils.getNode(edge.t);
-                                addedEdge.weight = addedEdge.size = Math.abs(edge.w);
+                                addedEdge.absweight = addedEdge.weight = addedEdge.size = Math.abs(edge.w);
+                                addedEdge.ds = state.get('dataset');
                                 
                                 source.hidden = source._hidden = false;
                                 target.hidden = target._hidden = false;
