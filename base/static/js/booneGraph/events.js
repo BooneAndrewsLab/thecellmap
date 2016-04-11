@@ -211,8 +211,7 @@ define([
                 break;
             case 'download-selected-simple':
             case 'download-selected':
-                if (selected.length > 0 && selected.length < 20)
-                    window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                if (selected.length > 0 && selected.length < 20) window.location.href = 'dl/?' + $.param({'n': selected}, true);
                 break;
             case 'download-dataset':
                 if (opts.canBulkDownload) {
@@ -227,8 +226,9 @@ define([
             var targets = state.get('hoveredTargets');
             switch ($(e.target).attr('id')) {
             case 'context-dl':
-                var node = Utils.getNode(targets[0]), strain = Utils.getStrain(node.id);
-                window.location.href = 'dl/?n=' + node.id;
+                var selected = Utils.getSelection();
+                if (selected.length > 0 && selected.length < 20) window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                break;
                 break
             case 'context-hide':
                 var selected = Utils.getSelectedNodes();
