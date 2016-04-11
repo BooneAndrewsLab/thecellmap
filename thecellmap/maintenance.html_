@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+       More info: h5bp.com/i/378 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>TheCellMap down for maintenance</title>
+  <meta name="description" content="TheCellMap.org down for maintenance">
+  <meta name="author" content="">
+
+  <!-- Mobile viewport optimized: h5bp.com/viewport -->
+  <meta name="viewport" content="width=device-width">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" />
+  <style type="text/css">
+      body {
+        padding-top: 50px;
+        padding-bottom: 20px;
+      }
+      
+      body.nohead {
+        padding-top: 0;
+      }
+    </style>
+</head>
+<body class="">
+  <header>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">TheCellMap</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <div class="content" role="main">
+   <div class="container">
+     <div class="row">
+       <div class="col-md-12">
+         <h1>TheCellMap.org is down for maintenance</h1>
+         <p>
+           Please check again soon.
+         </p>
+       </div>
+     </div>
+   </div>
+  </div>
+  
+  <footer>
+    <div class="container">
+      <hr>
+      <p>&copy; <a href="http://boonelab.ccbr.utoronto.ca">Boone Lab</a> 2016</p>
+    </div>
+  </footer>
+  
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</body>
+</html>
