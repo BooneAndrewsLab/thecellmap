@@ -305,6 +305,8 @@ define([
                     if (missingNodes['ids'].length) {
                         Utils.messageUser('Genetic interaction profile similarities for "' + missingNodes['labels'].join() + '" do ' +
                                 'not exceed the default Pearson correlation coefficient (PCC) threshold.', null, missingNodes['ids']);
+                    } else {
+                        $('#panel-alerts').hide();
                     }
                     
 //                    sigInst.draw(1, -1, 1); // TODO: fix this to redraw only nodes, there is a bug where the edges would disappear

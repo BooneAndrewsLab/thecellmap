@@ -2,6 +2,9 @@ sigma.publicPrototype.highlightNodes = function(nodes) {
     var neighbors = {};
     var greyColor = '#333';
     var inst = this;
+    
+    console.log(nodes.length)
+    
     inst.iterEdges(function(e) {
         if (e.hidden || (nodes.indexOf(e.source.id) < 0 && nodes.indexOf(e.target.id) < 0)) {
             if (!e.attr['grey']) {
@@ -17,7 +20,7 @@ sigma.publicPrototype.highlightNodes = function(nodes) {
             neighbors[e.target.id] = 1;
         }
     }).iterNodes(function(n) {
-        if (!neighbors[n.id]) {
+        if (nodes.indexOf(n.id) == -1) {
             if (!n.attr['grey']) {
                 n.attr['true_color'] = n.color;
                 n.color = greyColor;
@@ -29,6 +32,18 @@ sigma.publicPrototype.highlightNodes = function(nodes) {
             n.forceLabel = n.attr['grey'] ? false : true;
             n.attr['grey'] = 0;
         }
+//        if (!neighbors[n.id]) {
+//            if (!n.attr['grey']) {
+//                n.attr['true_color'] = n.color;
+//                n.color = greyColor;
+//                n.attr['grey'] = 1;
+//                n.forceLabel = false;
+//            }
+//        } else {
+//            n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
+//            n.forceLabel = n.attr['grey'] ? false : true;
+//            n.attr['grey'] = 0;
+//        }
     }).draw(2, 2, 2);
 }
 

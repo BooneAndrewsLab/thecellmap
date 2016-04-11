@@ -145,20 +145,7 @@ define([
                         }
                     });
                 }
-//                console.log(strain.get('orf'), data.get('terms')[])
-                
-//                if (annot != undefined) {
-//                    if (annot.length == 1) {
-//                        n.color = Cookies.get(data.get('terms')[annot[0]].name) == undefined ? 
-//                                data.get('colorPalette')[data.get('terms')[annot[0]].idx] : Cookies.get(data.get('terms')[annot[0]].name);
-//                    } else {
-//                        n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
-//                    }
-//                } else {
-//                    n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
-//                }
             });
-            
             sigInst.highlightNodes(nodes);
         }, function() {
             sigInst.unhighlightNodes();
