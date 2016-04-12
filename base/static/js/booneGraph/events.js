@@ -157,7 +157,13 @@ define([
             
             $('#modal-rotationDrag #rotate-confirm').on('click', this.rotateConfirm);
             $('#modal-edit-node').modal({show: false});
-//            $("#modal-search").modal({show: false});
+            
+            $('#modal-search').modal({show: false}).on('hide.bs.modal', function() {
+                $('.search-bar').appendTo('.select2-div').addClass('hidden-xs');
+            }).on('show.bs.modal', function() {
+                $('.search-bar').appendTo('#modal-search .modal-body').removeClass('hidden-xs');
+            });
+            
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
             
@@ -182,8 +188,6 @@ define([
             'click #screenshot-link': 'getSvgScreenshot',
             
             'click #view-network-simple': 'showNetwork',
-            
-            'click .btn-show-search': 'smallDeviceSearch',
         },
         
         downloadNetwork: function(e) {
@@ -440,11 +444,7 @@ define([
         },
         
         smallDeviceSearch: function(e) {
-            $('.search-bar');
             $('#modal-search').modal('show');
-            $('#modal-search').on('hide.bs.modal', function() {
-                
-            });
         }
     });
     

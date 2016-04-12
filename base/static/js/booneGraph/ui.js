@@ -43,15 +43,22 @@ define([
         $('#contnodeextmenu-edge-container').appendTo('body');
         $('#edit-node-modal').appendTo('body');
         $('#modal-rotation').appendTo('body');
-        $('#modal-search').appendTo('body');
+        $('#modal-search').appendTo('#ui');
         
         $('#panel-legend').css({'top': '39px', 'left': '0px'});
         $('#panel-alerts').hide();
         
         $(opts['rootElement']).append('<canvas id="canvas-draw" width="' + $('canvas:first').width() + 'px" height="' + $('canvas:first').height() + 'px" style="display: none;"></canvas>');
         window.addEventListener('resize', function() {
-            $('#canvas-draw').attr('width', $('canvas:first').width());
-            $('#canvas-draw').attr('height', $('canvas:first').height());
+            var w = $('#network-container')[0].offsetWidth, h = $('#network-container')[0].offsetHeight;
+            $('#canvas-draw').attr('width', w + 'px');
+            $('#canvas-draw').attr('height', h + 'px');
+            
+            if (!!$('#canvas-regions').length) {
+                $('#canvas-regions').attr('width', w + 'px');
+                $('#canvas-regions').attr('height', h + 'px');
+                Annotation.drawRegions();
+            }
         });
     }
     

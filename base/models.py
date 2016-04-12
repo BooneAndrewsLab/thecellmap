@@ -24,6 +24,12 @@ class Gene(models.Model):
     sorting_value = models.IntegerField()
     description = models.TextField()
     
+    CHROMOSOME_CODE = {
+        '2-micron': -2
+    }
+    
+    CCODE_INV = {v: k for k, v in CHROMOSOME_CODE.items()}
+    
     def as_object(self):
         return {'id':self.id, 'orf': self.orf, 'name': self.name, 'aliases': self.aliases}
     
