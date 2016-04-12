@@ -3,8 +3,6 @@ sigma.publicPrototype.highlightNodes = function(nodes) {
     var greyColor = '#333';
     var inst = this;
     
-    console.log(nodes.length)
-    
     inst.iterEdges(function(e) {
         if (e.hidden || (nodes.indexOf(e.source.id) < 0 && nodes.indexOf(e.target.id) < 0)) {
             if (!e.attr['grey']) {

@@ -40,6 +40,7 @@ define([
         $('.changed-network').hide().removeClass('hidden');
         $('#modal-style').appendTo('body');
         $('#contextmenu-container').appendTo('body');
+        $('#contextmenu-graph-container').appendTo('body');
         $('#contnodeextmenu-edge-container').appendTo('body');
         $('#edit-node-modal').appendTo('body');
         $('#modal-rotation').appendTo('body');

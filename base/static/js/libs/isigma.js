@@ -2922,6 +2922,12 @@ function Sigma(root, id) {
               eventType,
               targeted
             );
+    } else {
+      eventType = (e['type'] == 'dblclick') ? 'dblclickgraph' : 'rightclickgraph';
+      self.dispatch(
+              eventType,
+              targeted
+            );
     }
     
   }).bind('move', function(e) {
@@ -4084,7 +4090,7 @@ function SigmaPublic(sigmaInstance) {
   };
 
   // Events
-  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop startmovingnodes stopmovingnodes movingnodes', function(e) {
+  s.bind('downnodes upnodes downedges upedges downgraph upgraph ctrlclicknodes shiftclicknodes rightclicknodes dblclicknodes ctrlclickedges rightclickedges dblclickedges nodesoffscreen nodesonscreen draggedNode selectionStart selectionStop startmovingnodes stopmovingnodes movingnodes dblclickgraph rightclickgraph', function(e) {
     // console.log(e.type, e.content);
     self.dispatch(e.type, e.content);
   });

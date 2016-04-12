@@ -223,6 +223,8 @@ define([
         var mouseCanvas = $('#sigma_mouse_1');
         mouseCanvas[0].getContext('2d').clearRect(0, 0, mouseCanvas.width(), mouseCanvas.height());
     }
+    
+    //step used to draw the regions in multiple steps so that the regions are under the nodes and the labels are over the nodes 
     var drawRegions = function(direct, step) {
         if (!direct) clearRegions();
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
@@ -259,7 +261,7 @@ define([
             regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
         }
         
-        if (!direct || (!!direct && step == 1)) {
+        if ((!direct || (!!direct && step == 1)) && state.get('showAnnotColors')) {
             var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
             ctx.globalCompositeOperation = 'screen';
             
@@ -276,7 +278,7 @@ define([
             });
         }
         
-        if ((!direct || (!!direct && step == 2)) && window.innerWidth >= 768) { // 768 is small in bootstrap terms 
+        if ((!direct || (!!direct && step == 2)) && window.innerWidth >= 768 && state.get('showAnnotLabels')) { // 768 is small in bootstrap terms 
             regions.sort(function(a, b){
                 return a.y - b.y;
             });

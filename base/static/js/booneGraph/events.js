@@ -166,9 +166,13 @@ define([
             
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
+            $('#contextmenu-graph a').on('click', this.graphContext);
             
             $('.contextmenu').mouseleave(function() { $(this).delay(500).fadeOut(500); }).mouseenter(function() { $(this).stop(true); });
             $('body').keydown(this.graphNodes);
+            $('body').keyup(function(e){
+                if (e.keyCode == 8 && state.get('step') > 1) window.location.href = opts['urls']['home'];
+            });
         },
         events: {
             'click #btn-group-download a, #btn-view-tabular, #download-selected-simple': 'downloadNetwork',
@@ -226,16 +230,41 @@ define([
             e.preventDefault();
         },
         
+        graphContext: function(e) {
+            switch ($(e.target).attr('id')) {
+            case 'context-toggle-nlabel':
+                var bool = state.get('showNodeLabels'), val = bool ? 0 : 24;
+                state.set('showNodeLabels', !bool);
+                sigInst.drawingProperties({labelThreshold: val}).draw(-1, -1, 1);
+                break;
+            case 'context-toggle-alabel':
+                state.set('showAnnotLabels', !state.get('showAnnotLabels'));
+                Annotation.drawRegions();
+                break;
+            case 'context-toggle-acolor':
+                state.set('showAnnotColors', !state.get('showAnnotColors'));
+                Annotation.drawRegions();
+                break;
+            case 'context-tour':
+            case 'context-styles':
+                $('#modal-style').modal('show');
+                break;
+            }
+        },
+        
         nodeContext: function(e) {
-            var targets = state.get('hoveredTargets');
+            var targets = state.get('hoveredTargets'), node = Utils.getNode(targets[0]);
             switch ($(e.target).attr('id')) {
             case 'context-dl':
-                var selected = Utils.getSelection();
-                if (selected.length > 0 && selected.length < 20) window.location.href = 'dl/?' + $.param({'n': selected}, true);
-                break;
+                if (!node.selected) {
+                    window.location.href = 'dl/?n=' + node.id;
+                } else {
+                    var selected = Utils.getSelection();
+                    if (selected.length > 0 && selected.length < 20) window.location.href = 'dl/?' + $.param({'n': selected}, true);
+                }
                 break
             case 'context-hide':
-                var selected = Utils.getSelectedNodes();
+                var selected = !node.selected ? targets : Utils.getSelectedNodes();
                 selected.forEach(function(node) {
                     node = Utils.getNode(node);
                     node.hidden = node._hidden = true;
@@ -257,7 +286,7 @@ define([
                 Node.showNodeModal(targets[0]);
                 break;
             case 'context-view-network':
-                var labels = '', sels = Utils.getSelectedNodes(true);
+                var labels = '', sels = !node.selected ? targets : Utils.getSelectedNodes(true);
                 for (var i in sels) {
                     var node = Utils.getNode(sels[i]);
                     labels += node.label + ',';
@@ -409,6 +438,7 @@ define([
         },
         
         toggleDataset: function(e) {
+            if (opts.runningLayout) return false;
             Dataset.toggleDataset($(e.target).data('dataset'));
             e.preventDefault();
         },
