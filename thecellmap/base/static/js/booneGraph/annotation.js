@@ -232,11 +232,11 @@ define([
             canvas.attr('id', 'canvas-regions');
             $('#sigma_edges_1').before(canvas);
             
-            window.addEventListener('resize', function() {
-                $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
-                $('#canvas-regions').attr('height', $('.sigma_edges_canvas').height());
-                drawRegions();
-            });
+//            window.addEventListener('resize', function() {
+//                $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
+//                $('#canvas-regions').attr('height', $('.sigma_edges_canvas').height());
+//                drawRegions();
+//            });
         }
         
         var regions = [];
@@ -276,7 +276,7 @@ define([
             });
         }
         
-        if (!direct || (!!direct && step == 2)) {
+        if ((!direct || (!!direct && step == 2)) && window.innerWidth >= 768) { // 768 is small in bootstrap terms 
             regions.sort(function(a, b){
                 return a.y - b.y;
             });

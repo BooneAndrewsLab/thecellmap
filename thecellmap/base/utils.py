@@ -258,23 +258,28 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 1, 0, 'Downloaded on', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self._write_cell(sheet['sheet'], 2, 0, 'Content', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (Scores) and similarity of genetic interaction profiles (Correlations) for genes %s' % content)
+        self._write_cell(sheet['sheet'], 2, 1, 'This file contains two types of data for the gene(s) of interest:')
+
+        self._write_cell(sheet['sheet'], 3, 1, 'GI profile sim.', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 3, 2, 'Provides a ranked list of genes whose genetic interaction profile most closely resembles the genetic interaction profile of the gene(s) of interest.')
+        self._write_cell(sheet['sheet'], 4, 1, 'GI scores', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 4, 2, 'Lists the direct negative and positive interactions for the gene(s) of interest.')
+#         
+        self._write_cell(sheet['sheet'], 6, 0, 'Legend:', style=STYLE_BOLD)
         
-        self._write_cell(sheet['sheet'], 4, 0, 'Legend:', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 7, 0, 'A', style=STYLE_COR_SIGNIFICANT)
+        self._write_cell(sheet['sheet'], 7, 1, 'Genetic Interaction Profiles similar to gene of interest (Pearson Correlation Coefficient > 0.2)')
+        self._write_cell(sheet['sheet'], 8, 0, 'B', style=STYLE_NEG_STRINGENT)
+        self._write_cell(sheet['sheet'], 8, 1, 'Significant negative genetic interactions (stringent cutoff: score < -0.12, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 9, 0, 'C', style=STYLE_NEG_SIGNIFICANT)
+        self._write_cell(sheet['sheet'], 9, 1, 'Significant negative genetic interactions (intermediate cutoff: score < -0.08, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 10, 0, 'D', style=STYLE_POS_STRINGENT)
+        self._write_cell(sheet['sheet'], 10, 1, 'Significant positive genetic interactions (stringent cutoff: score > 0.16, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 11, 0, 'E', style=STYLE_POS_SIGNIFICANT)
+        self._write_cell(sheet['sheet'], 11, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
         
-        self._write_cell(sheet['sheet'], 5, 0, 'A', style=STYLE_COR_SIGNIFICANT)
-        self._write_cell(sheet['sheet'], 5, 1, 'Significant correlations (Pearson correlation coefficients > 0.2)')
-        self._write_cell(sheet['sheet'], 6, 0, 'B', style=STYLE_NEG_STRINGENT)
-        self._write_cell(sheet['sheet'], 6, 1, 'Significant negative genetic interactions (stringent cutoff: score < -0.12, p-value < 0.05)')
-        self._write_cell(sheet['sheet'], 7, 0, 'C', style=STYLE_NEG_SIGNIFICANT)
-        self._write_cell(sheet['sheet'], 7, 1, 'Significant negative genetic interactions (intermediate cutoff: score < -0.08, p-value < 0.05)')
-        self._write_cell(sheet['sheet'], 8, 0, 'D', style=STYLE_POS_STRINGENT)
-        self._write_cell(sheet['sheet'], 8, 1, 'Significant positive genetic interactions (stringent cutoff: score > 0.16, p-value < 0.05)')
-        self._write_cell(sheet['sheet'], 9, 0, 'E', style=STYLE_POS_SIGNIFICANT)
-        self._write_cell(sheet['sheet'], 9, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
-        
-        self._write_cell(sheet['sheet'], 11, 0, 'Notes:', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 12, 0, 'These are unpublished data. Please contact Michael Costanzo (michael.costanzo@utoronto.ca) for questions regarding citation policy.')
+#         self._write_cell(sheet['sheet'], 11, 0, 'Notes:', style=STYLE_BOLD)
+#         self._write_cell(sheet['sheet'], 12, 0, 'These are unpublished data. Please contact Michael Costanzo (michael.costanzo@utoronto.ca) for questions regarding citation policy.')
     
     def save(self, seek=None):
         self._save()

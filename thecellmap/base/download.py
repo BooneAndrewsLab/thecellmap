@@ -5,20 +5,18 @@ Created on Jan 13, 2014
 '''
 import cPickle
 import json
-import math
 import os
 
+from django.core.paginator import Paginator
+from django.utils.datastructures import SortedDict
 from numpy.ma import corrcoef
+from pandas.core.frame import DataFrame
+from pandas.core.series import Series
 
 from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
-from django.core.paginator import Paginator
-from django.utils.datastructures import SortedDict
 import numpy as np
-from pandas.core.frame import DataFrame
-from pandas.core.series import Series
-from scipy.stats import pearsonr
 
 
 ONLY = (
@@ -147,6 +145,8 @@ def collect_score_matrix(ds, nodes, data):
     for s in Strain.objects.all().select_related('gene'):
         smap[s.label()] = s
         smap[s.pk] = s
+        smap[s.gene.orf] = s
+        smap[s.gene.name] = s
     
     with open(ds.static_path('nodes_inv.pickle')) as fp:
         nodes_inv = cPickle.load(fp)
@@ -163,7 +163,7 @@ def collect_score_matrix(ds, nodes, data):
     for e in data:
         if 'label' in nmap[e['t']] and nmap[e['t']]['label'] in smap:
             targets.append(smap[nmap[e['t']]['label']].id)
-            weights.append(e['w'])
+            weights.append(float(e['w']))
     
     df = DataFrame.from_csv(os.path.join(ds.static_path(), 'scores_matrix.csv'))
     new_row = Series(weights, targets, dtype=np.float64)
@@ -171,15 +171,10 @@ def collect_score_matrix(ds, nodes, data):
     
     new_row = new_row.groupby(lambda x: x).mean()
     
-    print 'newrow', new_row.shape
-    
     df = df.reindex(columns=set(df.columns).intersection(new_row.index))
-    print 'intersect df', df.shape
     new_row = new_row.reindex(index=df.columns)
-    print 'intersect new_row', new_row.shape
     
     mask_new_row = ~np.isnan(new_row.values)
-    print 'new_row mask', np.sum(mask_new_row)
     
     results = []
     fubar = []
@@ -187,6 +182,8 @@ def collect_score_matrix(ds, nodes, data):
         new_mask = ~np.isnan(row.values)
         
         mask = mask_new_row & new_mask
+        if not np.sum(mask): continue
+        
         corr = corrcoef(new_row[mask], row[mask])[0, 1]
         
         results.append({'s': source, 't': idx, 'w': corr})
@@ -195,8 +192,10 @@ def collect_score_matrix(ds, nodes, data):
         if corr < 0:
             continue
     
-    for w,x,s,ss in sorted(fubar, reverse=True):
-        print '\t'.join(map(str, (w,x.gene, x.allele, x.boonelab_id,s,ss)))
+    print sorted(fubar, reverse=True)[:5]
+    
+#     for w,x,s,ss in sorted(fubar, reverse=True):
+#         print '\t'.join(map(str, (w,x.gene, x.allele, x.boonelab_id,s,ss)))
     
     return results
 
@@ -249,10 +248,10 @@ def nodes_xls(ds, nodes, filename):
     
     def write_sheet(strain, correlations, scores):
         instructions_content.append(strain.basic_id())
-        output.add_sheet('%s correlations' % strain.basic_id(), ['ORF', 'Allele', 'Correlation'])
+        output.add_sheet('%s GI profile sim.' % strain.basic_id(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
             output.write_correlation_row(strainB + (correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
-        output.add_sheet('%s scores' % strain.basic_id(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
+        output.add_sheet('%s GI scores' % strain.basic_id(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
         for strainB, pval, score in scores[scores.score <= 0].sort('score').itertuples(index=False):
             output.write_score_row_neg(strainB + (score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
         output.reset_row(1)
