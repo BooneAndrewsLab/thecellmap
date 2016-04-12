@@ -139,7 +139,7 @@ define([
             if (sigInst.mouseProperties('allowNodeDrag')) {
                 Annotation.clearRegions();
             }
-        });
+        }).bind('rightclickgraph', Utils.onGraphContext);
         
         UI.initUI();
         Node.initSelect2(function() {

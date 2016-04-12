@@ -13,6 +13,7 @@ define([
     var ladda;
     var setRunningLayout = function(bool) {
         opts.runningLayout = bool;
+        $('#dataset-toggle').children().attr('disabled', bool);
         if ($('#btn-layout').length == 0) return;
         
         var button = $('#btn-layout');

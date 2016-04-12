@@ -38,6 +38,11 @@ define([
         }).length;
     }
     
+    var onGraphContext = function() {
+        $('#contextmenu-graph-container').show().delay(2000).hide(200);
+        $('#contextmenu-graph-container').css({ left : mouseX, top : mouseY, });
+    }
+    
     var onNodesContext = function(targets) {
         state.set('hoveredTargets', targets.content);
         $('#contextmenu-container').show().delay(2000).hide(200);
@@ -441,6 +446,7 @@ define([
         iterVisibleEdges: iterVisibleEdges,
         nodeExists: nodeExists,
         edgeExists: edgeExists,
+        onGraphContext: onGraphContext,
         onNodesContext: onNodesContext,
         onNodeDblClick: onNodeDblClick,
         countVisibleNodes: countVisibleNodes,
