@@ -340,13 +340,18 @@ define([
     var applyCutoff = function(cutoff) {
         var isArray = $.isArray(cutoff), selected = Utils.getSelectedNodes(), strain;
         
+        if (isArray) {
+            state.set('cutoffInteraction', cutoff);
+        } else {
+            state.set('cutoffCorrelation', cutoff);
+        }
+        
         sigInst.iterNodes(function(node) {
             node.visibleDegree = node.degree;
         }).iterEdges(function(edge) {
             var showCircular = state.get('showCircular');
             
             if (isArray) {
-                state.set('cutoffInteraction', cutoff);
                 if (edge.id.indexOf('tmp') != -1 && showCircular) {
                     edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]);
                 } else if (edge.id.indexOf('tmp') == -1 && showCircular && edge._hidden) {
@@ -355,7 +360,6 @@ define([
                     edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]) || edge.ds != state.get('dataset');
                 }
             } else {
-                state.set('cutoffCorrelation', cutoff);
                 edge.hidden = Math.abs(edge.weight) < cutoff || edge.ds != state.get('dataset');
             }
             
@@ -364,8 +368,6 @@ define([
                 edge.target.visibleDegree--;
             }
         }).iterNodes(function(node) {
-//            if (node.type == 'pin') return;
-            
             strain = Utils.getStrain(node.id);
             node.hidden = ((node._hidden || node.visibleDegree <= 0) && selected.indexOf(strain.get('id') + '') == -1); // either we manually hid the node or it's not connected to anything
         });

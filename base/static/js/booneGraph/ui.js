@@ -24,6 +24,7 @@ define([
                 $('.vizualization-ui').css('width', parent.innerWidth());
             }).resize();
         });
+        $("#yeastmine-post").appendTo('body');
         $('#ui-placeholder').remove();
         
         $('#btn-group-layout').toggleClass('hidden', true);
@@ -421,6 +422,7 @@ define([
                         
                         sigInst.draw();
                     }).always(function() {
+                        if (state.get('annotation') == 'SAFE' && state.get('showRegions')) Annotation.loadAnnotation('None');
                         Dataset.updateEdges(0);
                         Node.applyCutoff(val);
                         

@@ -84,6 +84,7 @@ define([
             defaultLabelSize: state.get('labelSize'),
             defaultLabelHoverColor: '#000',
             labelThreshold: state.get('labelThreshold'),
+            edgeLabelThreshold: Number.MAX_VALUE,
             font: 'Arial',
             edgeColor : 'white',
             defaultLabelColor : '#' + state.get('labelColor'),

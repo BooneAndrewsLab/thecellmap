@@ -101,9 +101,11 @@
   
   <div id="contextmenu-graph-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu-graph" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
-      <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-toggle-nlabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-pushpin"></span> Toggle node labels</a></li>
-      <li><a id="context-toggle-alabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Toggle annotation labels</a></li>
-      <li><a id="context-toggle-acolor" tabindex="-1" href="#"><span class="glyphicons glyphicons-link"></span> Toggle annotation colors</a></li>
+      <li><a id="context-yeastmine" tabindex="-1" href="#"><span class="glyphicons glyphicons-link"></span> Analyze visible network in Yeastmine</a></li>
+      <li class="divider"></li>
+      <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-toggle-nlabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle node labels</a></li>
+      <li><a id="context-toggle-alabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle annotation labels</a></li>
+      <li><a id="context-toggle-acolor" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle annotation colors</a></li>
       <li class="divider"></li>
       <li><a id="context-tour" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Re-enable tour</a></li>
       <li><a id="context-styles" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Styles options</a></li>
@@ -301,3 +303,9 @@
     </div>
   </div>
 </div>
+
+<form id="yeastmine-post" action="http://yeastmine.yeastgenome.org/yeastmine/buildBag.do" method="post" target="_blank">
+    <input type="hidden" name="type" value="Gene">
+    <input type="hidden" name="extraFieldValue" value="S. cerevisiae">
+    <input type="hidden" name="text">
+</form>
