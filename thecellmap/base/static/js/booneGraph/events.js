@@ -29,6 +29,8 @@ define([
             state.on('change:selection', function() {
                 var enabled, cls, size = Utils.getSelectedNodes().length;
                 
+                $('#dataset-toggle label').attr('disabled', size == 0);
+                
                 $('[data-selection-constraint]').each(function() {
                     enabled = true;
                     cls = $(this).data('selection-class') || 'disabled';
@@ -246,9 +248,28 @@ define([
                 Annotation.drawRegions();
                 break;
             case 'context-tour':
+                break
             case 'context-styles':
                 $('#modal-style').modal('show');
                 break;
+            case 'context-yeastmine':
+                var orfs = {}, strain, form;
+                Utils.iterVisibleNodes(function(n) {
+                    strain = Utils.getStrain(n.id);
+                    orfs[strain.get('orf')] = null;
+                });
+                
+                form = $('#yeastmine-post');
+                form.find('input[name=text]').attr('value', Object.keys(orfs).join('\n'));
+                setTimeout(function(){form.submit();}, 100);
+                
+                
+//                http://yeastmine.yeastgenome.org/yeastmine/buildBag.do
+//                    type=Gene
+//                    extraFieldValue=S.+cerevisiae
+//                    text=
+                
+                break
             }
         },
         
@@ -438,7 +459,7 @@ define([
         },
         
         toggleDataset: function(e) {
-            if (opts.runningLayout) return false;
+            if (opts.runningLayout || Utils.getSelectedNodes() == 0) return false;
             Dataset.toggleDataset($(e.target).data('dataset'));
             e.preventDefault();
         },

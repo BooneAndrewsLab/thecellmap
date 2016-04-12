@@ -240,10 +240,11 @@ define([
 
         if (dsid == 0) { // Correlations
             state.set('showCircular', false);
-            for (var i = sigInst._core.graph.edges.length - 1; i > 0; i--) {
-                if (sigInst._core.graph.edges[i]['ds'] == 1) sigInst.dropEdge(sigInst._core.graph.edges[i]['id']);
-            }
-            sigInst.graphProperties({margin: graphProperties['margin']}).draw(-1, -1, 1);
+            // TODO: test this a bit more
+//            for (var i = sigInst._core.graph.edges.length - 1; i > 0; i--) {
+//                if (sigInst._core.graph.edges[i]['ds'] == 1) sigInst.dropEdge(sigInst._core.graph.edges[i]['id']);
+//            }
+            sigInst.graphProperties({margin: graphProperties['margin']}); //.draw(-1, -1, 1);
             
             updateEdges(dsid);
             updateLabels(dsid);
