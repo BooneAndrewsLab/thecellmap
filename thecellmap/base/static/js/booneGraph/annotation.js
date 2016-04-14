@@ -34,7 +34,7 @@ define([
                 }
             }).draw();
             
-            $('#panel-legend').show();
+            $('#panel-legend').toggle(state.get('annotation') != 'None');
         } else {
             sigInst.iterNodes(function(n) {
                 n.color = opts['defaultNodeColor'];
@@ -155,6 +155,8 @@ define([
     var loadAnnotation = function(id) {
         var annotations = vizdata['annotations'];
         state.set('annotation', id);
+        
+        $('#panel-legend').toggle(id != 'None');
         
         if (!annotations.get(id)) {
             if (id == 'None') {

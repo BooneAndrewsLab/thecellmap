@@ -484,7 +484,6 @@ define([
             if (Utils.getSelectedNodes().length < 0) return;
             if (state.get('annotation') == 'SAFE' && state.get('showRegions')) Annotation.loadAnnotation('None');
             
-            $('#panel-legend').show();
             Node.applyNeighbourhood(1);
             $(e.target).addClass('hidden');
         },
