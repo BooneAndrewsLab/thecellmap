@@ -1,13 +1,13 @@
 """urlconf for the base application"""
 
-from base.models import Dataset
-import base.password_sync
 from django.conf.urls import url, patterns, include
 from django.contrib.sitemaps import GenericSitemap, Sitemap
 from django.contrib.sitemaps.views import sitemap
 from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
+
+from base.models import Dataset
 
 
 class StaticViewSitemap(Sitemap):
