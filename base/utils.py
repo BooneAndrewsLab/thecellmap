@@ -46,6 +46,7 @@ STYLE_POS_STRINGENT = '+str'
 STYLE_POS_SIGNIFICANT = '+sig'
 STYLE_COR_SIGNIFICANT = 'cor'
 STYLE_BOLD = 'bold'
+STYLE_WRAP = 'wrap'
 
 STYLES = {
     STYLE_NEG_STRINGENT: ('red_stringent', 'FFBF0000'),
@@ -68,6 +69,7 @@ for typ in STYLES.keys():
     STYLES[typ] = (get_xlwt_style(xc), xxc)
 
 STYLES[STYLE_BOLD] = (xlwt.easyxf("font: bold on;"), STYLE_BOLD)
+STYLES[STYLE_WRAP] = (xlwt.easyxf("align: wrap on, vert centre;"), STYLE_WRAP)
 
 INSTRUCTIONS = 'instructions'
 
@@ -258,12 +260,27 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 1, 0, 'Downloaded on', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self._write_cell(sheet['sheet'], 2, 0, 'Content', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 2, 1, 'This file contains two types of data for the gene(s) of interest:')
+        self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (GI Scores) and similarity of genetic interaction profile similarity (Profile Sim.) for genes %s' % (content, ))
+        
+        self._write_cell(sheet['sheet'], 3, 0, 'Description', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 4, 1, 'The SGA score measures the extent to which a double mutant colony size deviates from the colony size expected from combining two mutations together. '
+'The SGA score measures the extent to which a double mutant colony size deviates from the colony size expected from combining two mutations together. '
+'The tab labeled "GI Scores" includes negative (putative synthetic sick/lethal) and positive interactions (potential epistatic or suppression interactions) involving the gene(s) of interest. ' 
+'The magnitude of the SGA score is indicative of the strength of interaction. '
+'Based on statistical analysis, we determined default cutoffs for the quantitative genetic interactions. ' 
+'The intermediate cutoff consists of a combination of p-value<0.05 and SGA score >|0.08|. ' 
+'A more stringent threshold on negative interactions (p-value<0.05 and SGA score <-0.12) and positive interactions (p-value<0.05 and SGA score>0.16) are also indicated. '
+'Note that none of these interactions are confirmed and are likely to include some false positives. ' 
+'Thus, additional tests (e.g. random spore or tetrad analysis for negative interactions) should be performed prior to follow-up experiments. '
+'Genes that share similar patterns of genetic interactions often belong to the same protein complex or biological pathway. '
+'Thus, comparison of genetic interaction patterns/profiles is a powerful way to define gene function. '
+'The attached spreadsheet includes a second tab "GI Profile Sim." which consists of a ranked list of genes whose genetic interaction patterns most closely resemble the gene of interest. ' 
+'Genetic profile similarity is based on Pearson correlation.', style=STYLE_WRAP)
 
-        self._write_cell(sheet['sheet'], 3, 1, 'GI profile sim.', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 3, 2, 'Provides a ranked list of genes whose genetic interaction profile most closely resembles the genetic interaction profile of the gene(s) of interest.')
-        self._write_cell(sheet['sheet'], 4, 1, 'GI scores', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 4, 2, 'Lists the direct negative and positive interactions for the gene(s) of interest.')
+#         self._write_cell(sheet['sheet'], 3, 1, 'GI profile sim.', style=STYLE_BOLD)
+#         self._write_cell(sheet['sheet'], 3, 2, 'Provides a ranked list of genes whose genetic interaction profile most closely resembles the genetic interaction profile of the gene(s) of interest.')
+#         self._write_cell(sheet['sheet'], 4, 1, 'GI scores', style=STYLE_BOLD)
+#         self._write_cell(sheet['sheet'], 4, 2, 'Lists the direct negative and positive interactions for the gene(s) of interest.')
 #         
         self._write_cell(sheet['sheet'], 6, 0, 'Legend:', style=STYLE_BOLD)
         
@@ -277,6 +294,9 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 10, 1, 'Significant positive genetic interactions (stringent cutoff: score > 0.16, p-value < 0.05)')
         self._write_cell(sheet['sheet'], 11, 0, 'E', style=STYLE_POS_SIGNIFICANT)
         self._write_cell(sheet['sheet'], 11, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
+        
+        sheet['sheet'].col(1).width = 24000
+        sheet['sheet'].row(4).height = 4000
         
 #         self._write_cell(sheet['sheet'], 11, 0, 'Notes:', style=STYLE_BOLD)
 #         self._write_cell(sheet['sheet'], 12, 0, 'These are unpublished data. Please contact Michael Costanzo (michael.costanzo@utoronto.ca) for questions regarding citation policy.')
