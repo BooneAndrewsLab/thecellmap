@@ -248,10 +248,10 @@ def nodes_xls(ds, nodes, filename):
     
     def write_sheet(strain, correlations, scores):
         instructions_content.append(strain.basic_id())
-        output.add_sheet('%s GI profile sim.' % strain.basic_id(), ['ORF', 'Allele', 'Correlation'])
+        output.add_sheet('%s GI profile sim.' % strain.label(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
             output.write_correlation_row(strainB + (correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
-        output.add_sheet('%s GI scores' % strain.basic_id(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
+        output.add_sheet('%s GI scores' % strain.label(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
         for strainB, pval, score in scores[scores.score <= 0].sort('score').itertuples(index=False):
             output.write_score_row_neg(strainB + (score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
         output.reset_row(1)

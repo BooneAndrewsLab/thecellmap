@@ -51,7 +51,7 @@ require([
                                 Download <span class="caret"></span> \
                               </a> \
                               <ul class="dropdown-menu download-data"> \
-                                <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Current gene</a></li> \
+                                <li><a href="#" data-downloadtype="node" data-node="' + node_id + '">Selected gene</a></li> \
                               </ul> \
                             </li> \
                           </ul> \
@@ -205,7 +205,7 @@ require([
                 multiple: true,
                 minimumInputLength: 2,
                 containerCssClass: 'form-control', 
-                placeholder: 'Start typing genes or annotations...',
+                placeholder: 'Add more genes...',
                 allowClear: true,
                 width: '350px',
                 tokenSeparators: [",", " ", "\t", "\n"],
