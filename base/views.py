@@ -84,7 +84,7 @@ def dataset(request, dataset_id):
     return _serve_dataset(request, dataset_id)
 
 def load_test(request):
-    return _serve_dataset(request)
+    return _serve_dataset(request, override_auth=True)
 
 def genes(request):
     genes = [g.as_object() for g in Gene.objects.all()]
