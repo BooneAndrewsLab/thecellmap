@@ -2,17 +2,13 @@
 {% load staticfiles require %}
 {% block page_title_suffix %}{% if not dataset.is_default %} - {{ dataset.verbose_name }}{% endif %}{% endblock %}
 
-{% block meta_description %}{% if request.path == "/" %}
+{% block meta_description %}{% spaceless %}{% if request.path == "/" %}
 Providing access to quantitative genomic data is key to ensure large-scale data validation and promote new discoveries.
 TheCellMap.org serves as the central repository for quantitative genetic interaction data for Saccharomyces cerevisiae
 produced by systematic Synthetic Genetic Array (SGA) experiments in the Boone/Andrews labs. We provide a set of basic
 tools for analyzing genetic interaction data and allow a user to easily visualize, explore and functionally annotate
 genetic interactions as well as extract and re-organize sub-networks using data-driven or annotation-driven network
-layouts in an intuitive and interactive manner.
-{% else %}
-{{ dataset.public_description }}
-{% endif %}
-{% endblock %}
+layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_description }}{% endif %}{% endspaceless %}{% endblock %}
 
 {% block meta %}
 {{ block.super }}
