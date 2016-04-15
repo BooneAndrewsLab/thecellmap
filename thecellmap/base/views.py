@@ -26,10 +26,10 @@ from base.utils import print_queries, is_integer, JsonResponse
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
 
-def _serve_dataset(request, dataset=None):
+def _serve_dataset(request, dataset=None, override_auth=False):
     dataset = Dataset.pk_or_default(dataset, request.user)
     
-    if request.user.is_authenticated() or dataset.is_published:
+    if override_auth or request.user.is_authenticated() or dataset.is_published:
         response = render(request, 'base/network.html', {
                 'dataset': dataset,
                 'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
@@ -82,6 +82,9 @@ def home(request):
 
 def dataset(request, dataset_id):
     return _serve_dataset(request, dataset_id)
+
+def load_test(request):
+    return _serve_dataset(request)
 
 def genes(request):
     genes = [g.as_object() for g in Gene.objects.all()]

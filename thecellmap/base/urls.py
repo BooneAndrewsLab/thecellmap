@@ -83,6 +83,8 @@ urlpatterns += patterns('base.views',
     url(r'^ccbr_collaboration/$', 'ccbr_collaboration', name='ccbr_collaboration'),
     url(r'^ccbr_collaboration/citations/(?P<title>.+)/$', 'publication_citations', name='publication_citations'),
 
-    url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap')
+    url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+
+    url(r'^load_test/$', 'load_test', name='load_test'),
 )
 
