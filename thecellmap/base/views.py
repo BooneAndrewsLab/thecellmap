@@ -55,6 +55,8 @@ def password_change(request):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             form.save()
+            request.user.last_login = datetime.datetime.now()
+            request.user.save(update_fields=['last_login'])
             return HttpResponseRedirect(request.GET.get('next', '/'))
     return render(request, 'base/generic_form.html', {
                 'form': form,
@@ -66,7 +68,11 @@ def login(request):
     if request.POST:
         form = AuthenticationForm(request, request.POST)
         if form.is_valid():
+            first_time = form.get_user().last_login is None
             django_login(request, form.get_user())
+            if first_time:
+                request.user.last_login = None
+                request.user.save(update_fields=['last_login'])
             return HttpResponseRedirect(request.GET.get('next', '/'))
     return render(request, 'base/generic_form.html', {
                 'form': form,
