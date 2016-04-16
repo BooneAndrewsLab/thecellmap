@@ -36,10 +36,10 @@ urlpatterns += patterns('base.tools',
     url(r'^tools/edit/(?P<id>[0-9]+)/$', 'edit_dataset', name="tools_edit_dataset"),
 )
 
-urlpatterns += patterns('base.api',
-    url(r'^api/', include('base.api.v1.urls')),
-
-)
+# urlpatterns += patterns('base.api',
+#     url(r'^api/', include('base.api.v1.urls')),
+# 
+# )
 urlpatterns += patterns('base.views',
     url(r'^$', 'home', name='home'),
     url(r'^about/$', 'about', name='about'),
@@ -71,7 +71,7 @@ urlpatterns += patterns('base.views',
     url(r'^genes/$', 'genes', name='genes'),
     
     # contact
-    url(r'^contact/', include('contact_form.urls')),
+#     url(r'^contact/', include('contact_form.urls')),
     
     url(r'^circlepack/$', 'circle_pack', name='circle_pack'),
     url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),

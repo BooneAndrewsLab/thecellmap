@@ -6,8 +6,8 @@ import dbarray
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import signals
 from django.http.response import Http404
+
 from thecellmap import settings
 
 
@@ -223,9 +223,9 @@ class Vertex(models.Model):
         unique_together = (('region', 'degree'), ('region', 'strain'), )
         ordering = ('region', 'degree', )
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, related_name='profile')
-    force_password_change = models.BooleanField(default=False)
+# class UserProfile(models.Model):
+#     user = models.OneToOneField(User, related_name='profile')
+#     force_password_change = models.BooleanField(default=False)
 
 Dataset.correlation_axis.through._meta.verbose_name = 'Correlations axis'
 Dataset.correlation_axis.through._meta.verbose_name_plural = 'Correlations axes'

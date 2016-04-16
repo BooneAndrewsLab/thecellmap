@@ -40,14 +40,14 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.admin',
-    'django.contrib.humanize',
-    'django.contrib.syndication',
+#     'django.contrib.humanize',
+#     'django.contrib.syndication',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
     
     # Third-party apps, patches, fixes
-    'djcelery',
-#     'debug_toolbar',
+#     'djcelery',
+    'debug_toolbar',
     'compressor',
 
     # Application base, containing global templates.
@@ -55,9 +55,9 @@ INSTALLED_APPS = (
 
     # Local apps, referenced via appname
     'crispy_forms',
-    'contact_form',
-    'rest_framework',
-    'rest_framework_swagger',
+#     'contact_form',
+#     'rest_framework',
+#     'rest_framework_swagger',
     
     'require'
 )
@@ -85,6 +85,9 @@ SESSION_COOKIE_HTTPONLY = True
 
 # Set this to true if you are using https
 SESSION_COOKIE_SECURE = False
+
+# Store session data in cache for less db hits
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.example.com/media/"
@@ -114,7 +117,7 @@ STATICFILES_DIRS = (
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = False
 
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale
@@ -153,32 +156,30 @@ MIDDLEWARE_CLASSES = [
     'htmlmin.middleware.MarkRequestMiddleware',
 ]
 
-TEMPLATE_CONTEXT_PROCESSORS = [
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.media',
-    'django.core.context_processors.request',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.static',
-    'django.core.context_processors.csrf',
-    'django.core.context_processors.tz',
-    'django.contrib.messages.context_processors.messages',
-    'base.context_processors.datasets'
-]
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or
-    # "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_ROOT, 'templates'),
-)
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [os.path.join(PROJECT_ROOT, 'templates'),],
+    'OPTIONS': {
+        'loaders': [
+            ('django.template.loaders.cached.Loader', [
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+            ]),
+        ],
+        'context_processors': [
+            'django.contrib.auth.context_processors.auth',
+            'django.template.context_processors.debug',
+            'django.template.context_processors.media',
+            'django.template.context_processors.request',
+            'django.template.context_processors.i18n',
+            'django.template.context_processors.static',
+            'django.template.context_processors.csrf',
+            'django.template.context_processors.tz',
+            'django.contrib.messages.context_processors.messages',
+#             'base.context_processors.datasets'
+        ],
+    },
+}]
 
 ENABLED_DEBUG_TOOLBAR = False
 
