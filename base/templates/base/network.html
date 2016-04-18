@@ -1,5 +1,5 @@
 {% extends "_layouts/base.html" %}
-{% load staticfiles require %}
+{% load staticfiles require compress %}
 {% block page_title_suffix %}{% if not dataset.is_default %} - {{ dataset.verbose_name }}{% endif %}{% endblock %}
 
 {% block meta_description %}{% spaceless %}{% if request.path == "/" %}
@@ -31,6 +31,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
 
 {% block js %}
 {{ block.super }}
+  {% compress js %}
   <script type='text/javascript'>
     function getCookie(cname) {
         var name = cname + '=';
@@ -78,6 +79,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
         {% if dataset.type == 'I'%} dataset: 1, {% endif %}
     }
   </script>
+  {% endcompress %}
   {% require_module 'network' %}
 {% endblock js %}
 
