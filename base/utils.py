@@ -18,7 +18,6 @@ from types import NoneType
 from django.core.files.temp import NamedTemporaryFile
 from django.core.management.base import BaseCommand, CommandError
 from django.http.response import HttpResponse
-from django.utils.datastructures import SortedDict
 import openpyxl
 # from openpyxl.styles.fills import Fill
 from xlwt import Style
@@ -167,7 +166,8 @@ class GenericXlsWriter():
     def __init__(self, fd):
         self.fd = fd
         self.workbook = self._create_wb()
-        self.sheets = SortedDict()
+        self.sheets = {}
+        self.sheet_ord = []
         self.active_sheet = None
     
     def _format_sheet_name(self, name):
@@ -190,6 +190,7 @@ class GenericXlsWriter():
         
         # TODO: name length fix and give warning as return value
         self.sheets[name] = {'sheet': self._add_sheet(name), 'row': 0}
+        self.sheet_ord.append(name)
         self.active_sheet = name
         
         if headers:
@@ -315,7 +316,7 @@ class GenericXlsWriter():
         return response
     
     def sheets(self):
-        return self.sheets.keys()
+        return self.sheet_ord
 
 class XlsWriter(GenericXlsWriter):
     mime = 'application/vnd.ms-excel'

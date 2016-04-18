@@ -6,7 +6,6 @@ Created on Dec 16, 2013
 from optparse import make_option
 
 from django.core.management.base import CommandError, BaseCommand
-from django.db.transaction import commit_on_success
 from pandas.core.frame import DataFrame
 
 from base.models import Annotation, Term
@@ -23,7 +22,6 @@ class Command(CellMapCommand):
             help='Date of this annotation creation'),
         )
     
-    @commit_on_success
     def handle(self, *args, **options):
         if len(args) != 1:
             raise CommandError('Must provide arguments: ' + self.args)

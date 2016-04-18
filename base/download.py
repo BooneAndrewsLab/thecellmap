@@ -8,7 +8,6 @@ import json
 import os
 
 from django.core.paginator import Paginator
-from django.utils.datastructures import SortedDict
 from numpy.ma import corrcoef
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
@@ -264,7 +263,7 @@ def nodes_xls(ds, nodes, filename):
     return output
 
 def nodes_data(ds, nodes):
-    data = SortedDict()
+    data = {}
     
     _collect_data(ds, nodes, lambda x, y, z: data.setdefault(x, {'correlations': y, 'scores': z}))
     
