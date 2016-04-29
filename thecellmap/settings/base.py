@@ -215,7 +215,7 @@ if ENABLED_DEBUG_TOOLBAR:
 
 # Specify a custom user model to use
 #AUTH_USER_MODEL = 'accounts.MyUser'
-AUTH_PROFILE_MODULE = 'base.UserProfile'
+# AUTH_PROFILE_MODULE = 'base.UserProfile'
 
 FILE_UPLOAD_PERMISSIONS = 0664
 
