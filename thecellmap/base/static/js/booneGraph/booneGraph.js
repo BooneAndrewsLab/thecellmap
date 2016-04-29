@@ -96,13 +96,16 @@ define([
             blockScroll: settings.get('disableScroll') || false,
             allowNodeDrag: false,
         }).bind('rightclicknodes', Utils.onNodesContext
-         ).bind('ctrlclicknodes', function (e) {
+         ).bind('ctrlclicknodes', function(e) {
             clicking.modifierKey = 'ctrl';
             Utils.onNodesContext(e);
-        }).bind('shiftclicknodes', function () {
+        }).bind('shiftclicknodes', function() {
             clicking.modifierKey = 'shift';
         }).bind('dblclicknodes', Utils.onNodeDblClick
-         ).bind('upnodes', function(targets) {
+         ).bind('dblclickgraph', function() {
+             var position = sigInst.position(), m = sigInst.getMouse();
+             sigInst._core.mousecaptor.interpolate(m.mouseX, m.mouseY, position.ratio * 2);
+         }).bind('upnodes', function(targets) {
             if (!clicking.wasDragging) {
                 switch(clicking.modifierKey) {
                 case 'ctrl':

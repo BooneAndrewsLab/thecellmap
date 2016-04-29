@@ -2,7 +2,7 @@ define([
     'jquery',
     'underscore',
     'backbone',
-], function($, _, Backbone, Utils) {
+], function($, _, Backbone) {
     var parseBool = function(bool) {
         if (typeof bool == 'boolean') return bool;
         return bool == 'true';
@@ -10,15 +10,16 @@ define([
     
     var Settings = Backbone.Model.extend({
         defaults: {
+            enableIntro: localStorage.getItem('enableIntro') ? parseBool(localStorage.getItem('enableIntro')) : true,
             selectedUi: localStorage.getItem('selectedUi') || 'simple',
-            showLabel: parseBool(localStorage.getItem('showLabel')) || true,
-            showBgSvg: parseBool(localStorage.getItem('showBgSvg')) || true,
-            showLegendSvg: parseBool(localStorage.getItem('showLegendSvg')) || true,
-            disableScroll: parseBool(localStorage.getItem('disableScroll')) || false,
+            showLabel: localStorage.getItem('showLabel') ? parseBool(localStorage.getItem('showLabel')) : true,
+            showBgSvg: localStorage.getItem('showBgSvg') ? parseBool(localStorage.getItem('showBgSvg')) : true,
+            showLegendSvg: localStorage.getItem('showLegendSvg') ? parseBool(localStorage.getItem('showLegendSvg')) : true,
+            disableScroll: localStorage.getItem('disableScroll') ? parseBool(localStorage.getItem('disableScroll')) : false,
             
-            isPrivate: parseBool(localStorage.getItem('isPrivate')) || false,
+            isPrivate: localStorage.getItem('isPrivate') ? parseBool(localStorage.getItem('isPrivate')) : false,
             
-            autoRemove: parseBool(localStorage.getItem('autoRemove')) || false,
+            autoRemove: localStorage.getItem('autoRemove') ? parseBool(localStorage.getItem('autoRemove')) : false,
             downloadType: localStorage.getItem('downloadType') || "xls",
         }
     });

@@ -27,6 +27,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
   <link href="{% static 'css/select2.css' %}" rel="stylesheet">
   <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet">
   <link href="{% static 'css/bootstrap-colorpicker.css' %}" rel="stylesheet">
+  <link href="{% static 'css/introjs.min.css' %}" rel="stylesheet">
 {% endblock css %}
 
 {% block js %}
@@ -102,11 +103,11 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
 </div>
 
 <div id='ui-placeholder' >
-  {% if ui == 'advance' %} 
+  <!-- {% if ui == 'advance' %} 
     {% include 'ui/ui.html' %}
-  {% else %}
+  {% else %} -->
     {% include 'ui/simple_ui.html' %}
-  {% endif %}
+<!--   {% endif %} -->
 </div>
 {% endblock content %}
 

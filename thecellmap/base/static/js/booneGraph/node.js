@@ -30,6 +30,7 @@ define([
                     node['o'] = node.orf.toLowerCase();
                     node['n'] = node.name && node.name.toLowerCase();
                     node['a'] = node.alel && node.alel.toLowerCase();
+                    node['aliases'] = node.aliases;
                     node['verboseName'] = node.label || node.alel || node.name || node.orf;
                     
                     tokens = [node.o];
@@ -37,12 +38,16 @@ define([
                     if (!!node.a) tokens.push(node.a);
                     
                     node['terms'] = tokens;
-                    
                     vizdata.index[node.id] = i;
+                    
+                    var tokens = node.terms;
+                    for (a in node.aliases) {
+                        if (node.aliases[a].length) tokens.push(node.aliases[a]);
+                    }
                     
                     autocomp[i] = {
                         value: node.verboseName,
-                        tokens: node.terms,
+                        tokens: tokens,
                         id: node.id,
                     };
                 }
@@ -205,7 +210,8 @@ define([
                             } else {
                                 for (var x in node.tokens) {
                                     if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
-                                        data.results.push({id: node.id, text: node.value });
+                                        var text = node.value.toLowerCase().indexOf(node.tokens[x].toLowerCase()) != -1 ? node.value : node.value + '  -  ' + node.tokens[x]
+                                        data.results.push({id: node.id, text: text});
                                         break;
                                     }
                                 }

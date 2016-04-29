@@ -3,7 +3,8 @@
 
 {% block uiElements %}
   <div class="top-left">
-    <div class="btn-group hidden" id="dataset-toggle" data-toggle-name="switch-dataset" data-simple-step="2" data-toggle="buttons">
+    <div class="btn-group hidden" id="dataset-toggle" data-toggle-name="switch-dataset" data-simple-step="2" data-toggle="buttons"
+     data-intro="The type of network can be toggled here." data-step="5">
       <label class="btn btn-primary active" data-dataset="0" data-title="Switch to profile similarity network" >
         <input type="radio" data-dataset="0" name="selectedDataset" autocomplete="off" checked> Profile similarity network
       </label>
@@ -12,7 +13,7 @@
       </label>
     </div>
     
-    <div class="select2-div" data-simple-step="1">
+    <div class="select2-div" data-simple-step="1" data-intro="This is the search bar." data-step="1">
       <div class="input-group search-bar hidden-xs">
         <input class="gene-search-input form-control" type="hidden">
       </div>
@@ -27,12 +28,15 @@
   <div class="middle-right hidden" data-simple-step="2">
     <button id="cutoff-label-max" type="button" class="btn btn-success cutoff-label cutoff-label-max" style="visibility: hidden;">&nbsp;</button>
     
-    <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-orientation="vertical" data-direction="rtl"></div>
-    <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-orientation="vertical" style="display: none;"></div>
+    <div id="cutoff-bar-cor" class="cutoff-bar cutoff-cor" data-dataset="0" data-orientation="vertical" data-direction="rtl"
+     data-intro="The cutoff bar controls the minium edge correlation shown on the network." data-step="3" data-position="left"></div>
+    <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-orientation="vertical" style="display: none;"
+     data-intro="This cutoff bar controls the edge cutoffs for the genetic interaction network." data-step="6" data-position="left"></div>
     
-    <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"></button>
+    <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"
+     data-hint="The cutoff can also be manually inputed." data-position="left"></button>
     
-    <div class="btn-group-vertical">
+    <div class="btn-group-vertical" data-hint="These buttons controls the network display." data-position="left">
       <button type="button" class="btn btn-default btn-zoom-in" data-toggle="tooltip" data-placement="bottom" data-delay="200" title="Zoom in" data-container=".vizualization-ui">
         <span class="glyphicon glyphicon-zoom-in"></span>
       </button>
@@ -46,7 +50,7 @@
   </div>
   
   <div class="top-right-simple">
-    <div class="btn-group-simple hidden" data-simple-step="1" data-simple-keep="true">
+    <div class="btn-group-simple hidden" data-simple-step="1" data-simple-keep="true" data-intro="Annotations can be loaded using this button." data-step="4">
       <div class="dropdown inline-button-grp" data-simple-step="2">
         <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
           Annotate network
@@ -56,9 +60,15 @@
         </ul>
       </div>
       
-      <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20" data-selection-disabled-title="Please select up to 20 nodes"> Extract Subnetwork </button>
-      <button id="btn-view-tabular" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20" data-selection-disabled-title="Please select up to 20 nodes" data-toggle="tooltip" data-placement="bottom"> View as table</button>
-      <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="20" data-selection-disabled-title="Please select up to 20 nodes" data-toggle="tooltip" data-placement="bottom"> Download</button>
+      <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
+       data-selection-disabled-title="Please select up to 30 nodes"
+       data-intro="The Extracts Subnetworks button displays the sub-network for the selected nodes." data-step="2"> Extract Subnetwork </button>
+      <button id="btn-view-tabular" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
+       data-selection-disabled-title="Please select up to 30 nodes" data-toggle="tooltip" data-placement="bottom"
+       data-hint="View network as a table" data-hintposition="bottom-middle" data-position="bottom-middle-aligned"> View as table</button>
+      <button id="download-selected-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" 
+       data-selection-lt="30" data-selection-disabled-title="Please select up to 30 nodes" data-toggle="tooltip" data-placement="bottom"
+       data-hint="Download dataset" data-hintposition="bottom-middle" data-position="bottom-right-aligned"> Download</button>
     </div>
   </div>
   

@@ -12,7 +12,9 @@ define([
     'node',
     
     'noUISlider',
-], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node, nouislider
+    'intro',
+    'select2'
+], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node, nouislider, introJs
     ) {
     
     var buildUI = function() {
@@ -602,11 +604,50 @@ define([
         buildSliders();
     }
     
+    var showIntro = function() {
+        if (!settings.get('enableIntro')) return;
+        
+        var intro = introJs().setOptions({
+            'disableInteraction': true,
+            'keyboardNavigation': false,
+            'showBullets': false,
+        });
+        
+        intro.start().onbeforechange(function(e) {
+            var step = $(e).data('step');
+            switch(step) {
+            case 2:
+                $('input.gene-search-input').select2('val', [181], true);
+                break;
+            case 3:
+                $('#view-network-simple').click();
+                break;
+            case 4:
+                $('.cutoff-cor')[0].noUiSlider.set(0.25);
+                break;
+            case 5:
+                Annotation.loadAnnotation('SAFE');
+                break;
+            case 6:
+                Dataset.switchCutoffBars(1);
+                $('#dataset-toggle label').find('[data-dataset=1]').click();
+                break;
+            }
+        }).oncomplete(function(e) {
+            intro.addHints();
+            localStorage.setItem('enableIntro', false);
+        }).onafterchange(function(e) {
+            if ($(e).data('step') == 3) {
+                $('.introjs-nextbutton').addClass('disabled');
+            }
+        });
+    }
+    
     var showUI = function() {
         setTimeout(function() {
             $('.changed-network').fadeIn(2000);
-            $('#ui').fadeIn(1000);
         }, 1000);
+        $('#ui').fadeIn(1000, showIntro);
     }
     
     return {

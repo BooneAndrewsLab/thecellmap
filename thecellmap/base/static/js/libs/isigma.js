@@ -3480,6 +3480,7 @@ function MouseCaptor(dom) {
 
   this.isMouseDown = false;
   this.isShiftMouseDown = false;
+  this.isDblClick = false;
 
   /**
    * Extract the local X position from a mouse event.
@@ -3575,6 +3576,7 @@ function MouseCaptor(dom) {
         event.returnValue = false;
       }
     }
+    if (self.isDblClick) self.isDblClick = false;
   };
 
   /**
@@ -3595,6 +3597,7 @@ function MouseCaptor(dom) {
     var timeMouseDown = Date.now();
     if (timeMouseDown - oldTimeMouseDown < doubleClickLatency) {
       self.dispatch('dblclick');
+      self.isDblClick = true;
     } else {
       oldTimeMouseDown = timeMouseDown;
     }
@@ -3693,7 +3696,7 @@ function MouseCaptor(dom) {
    * Stops computing the scene position.
    */
   function stopDrag() {
-    if (oldStageX != self.stageX || oldStageY != self.stageY) {
+    if ((oldStageX != self.stageX || oldStageY != self.stageY) && !self.isDblClick) {
       startInterpolate(
         self.stageX + self.p.inertia * (self.stageX - lastStageX2),
         self.stageY + self.p.inertia * (self.stageY - lastStageY2)
@@ -3733,6 +3736,7 @@ function MouseCaptor(dom) {
     if (self.isMouseDown) {
       return;
     }
+    console.log("CALLED")
 
     window.clearInterval(self.interpolationID);
     isZooming = ratio != undefined;

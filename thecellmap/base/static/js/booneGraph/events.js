@@ -101,22 +101,15 @@ define([
                 if (a == '') return;
                 var b = {};
                 for (var i = 0; i < a.length; ++i) {
-                    var p=a[i].split('=', 2);
-                    if (p.length == 1)
+                    var p = a[i].split('=', 2);
+                    if (p.length == 1) {
                         b[p[0]] = '';
-                    else
-                        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' ')).split(',');
-                }
-                
-                var strains = vizdata['strains'], sel = [];
-                strains.forEach(function(s) {
-                    for (var n in b['q']) {
-                        if (b['q'][n].toLowerCase() == s.get('verboseName').toLowerCase()) sel.push(s.get('id'));
+                    } else {
+                        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' ').replace('null', '')).split(',');
                     }
-                });
-                
-                if (b['a'] && b['a'].length == 1) Annotation.loadAnnotation(b['a'][0]);
-                $('input.gene-search-input').select2('val', sel, true);
+                }
+                if (b['q'].length == 1) b['q'].push('');
+                $('input.gene-search-input').select2('search', b['q'], true);
             });
             
             state.on('change:step', function() {

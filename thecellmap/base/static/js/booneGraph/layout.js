@@ -14,20 +14,29 @@ define([
     var setRunningLayout = function(bool) {
         opts.runningLayout = bool;
         $('#dataset-toggle').children().attr('disabled', bool);
-        if ($('#btn-layout').length == 0) return;
         
-        var button = $('#btn-layout');
-        button.toggleClass('btn-primary', !bool);
-        button.toggleClass('btn-danger', bool);
-        
-        if (!bool) {
-            ladda.stop();
-            button.siblings('.dropdown-toggle').removeClass('disabled');
+        if (bool) {
+//            $('.introjs-nextbutton').addClass('disabled');
         } else {
-            button.siblings('.dropdown-toggle').addClass('disabled');
-            ladda.start();
-            button.removeAttr("disabled");
+            $('.introjs-nextbutton').removeClass('disabled');
         }
+        
+//        For advanced UI, enable/disable the spinner on button
+//        if ($('#btn-layout').length == 0) return;
+//        
+//        var button = $('#btn-layout');
+//        button.toggleClass('btn-primary', !bool);
+//        button.toggleClass('btn-danger', bool);
+//        
+//        if (!bool) {
+//            ladda.stop();
+//            button.siblings('.dropdown-toggle').removeClass('disabled');
+//            console.log($('.introjs-nextbutton'))
+//        } else {
+//            button.siblings('.dropdown-toggle').addClass('disabled');
+//            ladda.start();
+//            button.removeAttr("disabled");
+//        }
     }
     
     var toggleLayout = function(layoutType) {

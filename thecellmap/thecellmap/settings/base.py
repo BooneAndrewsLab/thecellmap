@@ -161,10 +161,10 @@ TEMPLATES = [{
     'DIRS': [os.path.join(PROJECT_ROOT, 'templates'),],
     'OPTIONS': {
         'loaders': [
-            ('django.template.loaders.cached.Loader', [
+#             ('django.template.loaders.cached.Loader', [
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
-            ]),
+#             ]),
         ],
         'context_processors': [
             'django.contrib.auth.context_processors.auth',

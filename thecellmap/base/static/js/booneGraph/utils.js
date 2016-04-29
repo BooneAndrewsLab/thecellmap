@@ -432,9 +432,7 @@ define([
             }
         });
         
-        if (selStr.length == 0) {
-            selStr = 'null';
-        }
+        if (!selStr.length) selStr = 'null';
         
 //        var urlNew = opts.url + '?q=' + selStr + '&' + 'a=' + state.get('annotation');
         var urlNew = opts.url + '?q=' + selStr;

@@ -365,3 +365,7 @@
 #modal-search .search-bar, #modal-search .gene-search-input, #modal-search .select2-input {
     width: 100%!important;
 }
+
+.introjs-prevbutton {
+    display: none!important;
+}

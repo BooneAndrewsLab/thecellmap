@@ -25,21 +25,16 @@ define([
         sigInst.draw();
     }
     
-    var updateLabels = function(ds) {
+    var switchCutoffBars = function(ds) {
         var ele = $('.cutoff-bar-simple[data-dataset=\"' + ds + '\"], .cutoff-bar[data-dataset=\"' + ds + '\"]');
-        var cutoffs = ds == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction');
         
         if (ds == 0) {
             $('.cutoff-label-min').html(state.get('cutoffCorrelation'));
-        } else {
-            $('.cutoff-label-max').html(state.get('cutoffInteraction')[1]);
-            $('.cutoff-label-min').html(state.get('cutoffInteraction')[0]);
-        }
-        
-        if (ds == 0) {
             $('.cutoff-label-max').css('visibility', 'hidden');
             $('.cutoff-label-min').removeClass('btn-danger').addClass('btn-default');
         } else {
+            $('.cutoff-label-max').html(state.get('cutoffInteraction')[1]);
+            $('.cutoff-label-min').html(state.get('cutoffInteraction')[0]);
             $('.cutoff-label-max').css('visibility', 'visible');
             $('.cutoff-label-min').removeClass('btn-default').addClass('btn-danger');
         }
@@ -47,7 +42,11 @@ define([
         $('.cutoff-bar-simple').css('display', 'none');
         $('.cutoff-bar').css('display', 'none');
         ele.css('display', 'block');
-        
+    }
+    
+    var updateLabels = function(ds) {
+        switchCutoffBars(ds);
+        var cutoffs = ds == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction');
         Node.applyCutoff(cutoffs, true);
 //        sigInst.draw(); // Unnecessary draw here, applycutoff already calls it
     }
@@ -284,17 +283,14 @@ define([
     var toggleDataset = function(dsid) {
         var selection = Utils.getSelectedNodes();
         if (selection.length < 1 || selection.length > 7 || state.get('dataset') == dsid) return;
-        
         if (dsid == 0) tmpNetworks['before'] = tmpNetworks['current'];
         
-        var ntmp = sigInst._core.graph.nodes.filter(function(node) {
-            return !node.hidden && !node._hidden;
-        });
-        
         tmpNetworks['current'] = [];
-        for (var n in ntmp) {
-            tmpNetworks['current'].push(ntmp[n].id);
-        }
+        sigInst._core.graph.nodes.filter(function(node) {
+            if (!node.hidden && !node._hidden) {
+                tmpNetworks['current'].push(node.id)
+            };
+        });
         
         if (dsid == 0) {
             sigInst.iterNodes(function(node) {
@@ -307,6 +303,7 @@ define([
     
     return {
         updateEdges: updateEdges,
+        switchCutoffBars: switchCutoffBars,
         loadLayout: loadLayout,
         toggleDataset: toggleDataset,
         switchDataset: switchDataset,

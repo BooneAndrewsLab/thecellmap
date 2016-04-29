@@ -23,6 +23,7 @@ require.config({
         'sigma': 'libs/isigma',
         'xmlWriter': 'libs/XMLWriter-1.0.0-min',
         'bootstrap.colorpicker': 'libs/bootstrap-colorpicker',
+        'intro': 'libs/intro.min',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
         'sigma.pinlayout': 'libs/plugins/sigma.pinlayout',

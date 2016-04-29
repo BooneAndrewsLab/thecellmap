@@ -156,7 +156,7 @@ define([
         var annotations = vizdata['annotations'];
         state.set('annotation', id);
         
-        $('#panel-legend').toggle(id != 'None');
+        $('#panel-legend').toggle(id != 'None' && !state.get('showRegions'));
         
         if (!annotations.get(id)) {
             if (id == 'None') {
