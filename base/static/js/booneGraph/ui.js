@@ -634,7 +634,9 @@ define([
                 break;
             }
         }).oncomplete(function(e) {
-            intro.addHints();
+//            intro.addHints();
+            localStorage.setItem('enableIntro', false);
+        }).onexit(function(e) {
             localStorage.setItem('enableIntro', false);
         }).onafterchange(function(e) {
             if ($(e).data('step') == 3) {
