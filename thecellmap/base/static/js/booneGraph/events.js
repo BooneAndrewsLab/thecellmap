@@ -104,12 +104,15 @@ define([
                     var p = a[i].split('=', 2);
                     if (p.length == 1) {
                         b[p[0]] = '';
-                    } else {
-                        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' ').replace('null', '')).split(',');
+                    } else if (p[1].indexOf('null') == -1){
+                        b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' ')).split(',');
                     }
                 }
-                if (b['q'].length == 1) b['q'].push('');
-                $('input.gene-search-input').select2('search', b['q'], true);
+                
+                if (b['q']) {
+                    if (b['q'].length == 1) b['q'].push('');
+                    $('input.gene-search-input').select2('search', b['q'], true);
+                }
             });
             
             state.on('change:step', function() {
