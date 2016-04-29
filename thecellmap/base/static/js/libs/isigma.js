@@ -3736,7 +3736,6 @@ function MouseCaptor(dom) {
     if (self.isMouseDown) {
       return;
     }
-    console.log("CALLED")
 
     window.clearInterval(self.interpolationID);
     isZooming = ratio != undefined;

@@ -73,24 +73,7 @@
     pointer-events: auto;
 }
 
-/* .top-left .select2-div { */
-/*     width: 350px; */
-/*     display: inline-block; */
-/* } */
-
-/* .top-left .btn-group { */
-/*     vertical-align: top; */
-/* } */
-
-/* .top-left { */
-/*     display: table; */
-/* } */
-
-/* .top-left > :last-child { */
-/*     margin-left: 5px; */
-/* } */
-
-.top-right {right
+.top-right {
     right: 5px;
 }
 
@@ -190,10 +173,6 @@
     padding-left: 2px;
 }
 
-#search-bar .input-group-btn {
-    width: auto;
-}
-
 #modal-style .pick-a-color-markup .input-group-btn {
     width: 100%!important;
 }
@@ -247,10 +226,6 @@
 
 .cutoff-label-input {
     width: 75px;
-}
-
-.btn-group-simple {
-    margin-left: 5px;
 }
 
 /** Draw UI **/
