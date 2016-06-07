@@ -60,7 +60,7 @@ def collect_scores(ds, nodes):
     arrays = [nodes_inv_inv[strain] for strain, in ds.arrays.through.objects.filter(dataset=ds).order_by('id').values_list('strain_id')]
     queries = [nodes_inv_inv[strain] for strain, in ds.queries.through.objects.filter(dataset=ds).order_by('id').values_list('strain_id')]
     
-    scores = []
+    scores = None
     
     nodes = set(map(int, nodes))
     
@@ -68,6 +68,7 @@ def collect_scores(ds, nodes):
         node = int(node)
         strains = nodes_inv[node]
         
+        node_scores = []
         for typ, scrs, pvals in ds.data.filter(strain__in=strains).values_list('type', 'scores', 'pvalues'):
             if typ == StrainData.TYPE_QUERY:
                 scores_axis = arrays
@@ -75,12 +76,17 @@ def collect_scores(ds, nodes):
                 scores_axis = queries
             
             dat = filter(lambda x: ((not np.isnan(x[2])) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals))
-            scores.extend(dat)
-    
-    scores = map(lambda x: tuple(sorted(x[:2])) + x[2:3], scores)
-    scores = DataFrame.from_records(scores, columns=['source', 'target', 'score']).groupby(['source', 'target']).agg({'score': np.mean}).reset_index()
-    
-    return scores[scores.score.abs() > 0.08]
+            node_scores.extend(dat)
+        
+        node_scores = DataFrame.from_records(node_scores, columns=['source', 'target', 'score', 'pval']).sort(['target', 'pval'])
+        node_scores = node_scores.groupby('target').filter(lambda x: len(x) < 2 or not operator.xor(*(x.score < 0))).groupby('target').first().reset_index()
+        
+        if scores is None:
+            scores = node_scores
+        else:
+            scores = scores.append(node_scores, ignore_index=True)
+        
+    return scores.sort('score').reindex(columns=['source', 'target', 'score'])
 
 @print_queries
 def collect_correlations(ds, nodes, cutoff):
