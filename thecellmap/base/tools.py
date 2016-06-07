@@ -1,7 +1,7 @@
 from datetime import datetime
 import hashlib
+import json
 import os
-import pickle
 from time import time
 
 from django.contrib.auth.decorators import login_required
@@ -15,11 +15,11 @@ from django.http.response import HttpResponseBadRequest, HttpResponseRedirect, \
     HttpResponseForbidden
 from django.shortcuts import render
 
+from base.download import collect_score_matrix
 from base.filter import CustomFilter
 from base.models import Annotation, Term, Custom, Strain, Gene, Dataset
 from base.utils import gene_map, write_excel_file, JsonResponse
-from base.download import collect_score_matrix
-import json
+
 
 ### FORMS ###
 class AnnotationsForm(Form):

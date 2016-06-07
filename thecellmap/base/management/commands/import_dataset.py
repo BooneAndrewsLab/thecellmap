@@ -8,7 +8,7 @@ from optparse import make_option
 import re
 
 from django.core.management.base import CommandError, BaseCommand
-from django.db.transaction import commit_on_success
+from django.db.transaction import atomic
 from pandas.core.frame import DataFrame
 from pandas.core.index import MultiIndex
 from pandas.io.parsers import read_table
@@ -49,7 +49,7 @@ class Command(CellMapCommand):
     seen_strains = set()
     parsed_scores = False
     
-    @commit_on_success
+    @atomic
     def handle(self, *args, **options):
         if len(args) != 3:
             raise CommandError('Must provide arguments: ' + self.args)
@@ -70,7 +70,7 @@ class Command(CellMapCommand):
         self.seen_strains.update(self.old_strains.keys())
         
         scores = self.parse_scores(self.get_fd(release_file))
-        correlations = self.parse_correlations(correlations_file)
+        correlations = self.parse_correlations_matrix(correlations_file)
         
         ds = Dataset.objects.create(
             name=dataset_name,
@@ -115,6 +115,27 @@ class Command(CellMapCommand):
         
         if is_default:
             Dataset.objects.exclude(pk=ds.pk).update(is_default=True)
+    
+    def parse_correlations_matrix(self, path):
+        print 'Parsing correlations'
+        corr = read_table(
+                        path, 
+                        sep='\t', 
+                        header=0,
+                        index_col=0
+                    )
+        
+        if corr.shape[0] != corr.shape[1]:
+            raise CommandError('Correlation matrix not symmetric')
+        
+        if list(corr.index) != list(corr.columns):
+            raise CommandError('Correlation matrix axes not identical')
+        
+        newindex = [self.check_strain(x) for x in corr.index]
+        corr.index = newindex
+        corr.columns = newindex
+        
+        return corr
     
     def parse_correlations(self, path):
         print 'Parsing correlations'
@@ -171,7 +192,7 @@ class Command(CellMapCommand):
                         sep='\t', 
                         header=0, 
                         names=['qorf', 'aorf', 'score', 'pval'],
-                        usecols=[0, 1, 2, 3],
+                        usecols=[0, 2, 5, 6],
                     )
         
         """ TODO: TEMPORARY CODE """
@@ -211,7 +232,7 @@ class Command(CellMapCommand):
         cnt = group.count()
         
         mask = np.zeros(len(indices), np.bool)
-        for dup in (cnt[cnt.strain > 1]).index:
+        for dup in (cnt[cnt['id'] > 1]).index:
             print "Dropping duplicate", dup
             mask |= indices.strain == dup
         
