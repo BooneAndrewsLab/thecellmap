@@ -180,7 +180,7 @@ define([
             data: data,
             success: function(data) {
                 edges = data.edges;
-                var e, edge;
+                var e, edge, node, annotation = vizdata['annotations'].get(state.get('annotation'));
                 
                 for (e in edges) {
                     edge = edges[e];
@@ -197,22 +197,43 @@ define([
                         edge.size = .5;
                     }
                     
-//                    edge.color = edge.color || edge.c; // c == color
-//                    
-//                    if (edge.color == undefined && dsid == 1 || opts.interaction_on) {
-//                        edge.color = edge.weight < 0. ? "red" : "green";
-//                        edge.size = 1;
-//                    }
-//                    
-//                    edge.absweight = Math.abs(edge.weight);
-//                    
-//                    switch (edge.color) {
-//                    case "w": edge.color = 'white'; break;
-//                    case "b": edge.color = 'blue'; break;
-//                    case "r": edge.color = 'red'; break;
-//                    }
-//                    
-//                    if (edge.color == undefined) delete edge.color;
+                    if (dsid == 1) {
+                        // TODO: make this more efficient
+                        node = edge.source, strain = Utils.getStrain(node);
+                        if (!Utils.nodeExists(node)) {
+                            var n = {}, annot = annotation.get('map')[strain.get('id')];
+                            
+                            if (annot != undefined) {
+                                var color = annotation.get('colorPalette')[annotations.get('terms')[annot[0]].idx];
+                            } else {
+                                color = annotation.get('defaultColor');
+                            }
+                            
+                            n.label = strain.get('verboseName');
+                            n.color = color;
+                            n.size = 2;
+                            n.x = n.y = Math.random() * 100;
+                            
+                            sigInst.addNode(node, n);
+                        }
+                        node = edge.target, strain = Utils.getStrain(node);
+                        if (!Utils.nodeExists(node)) {
+                            var n = {}, annot = annotation.get('map')[strain.get('id')];
+                            
+                            if (annot != undefined) {
+                                var color = annotation.get('colorPalette')[annotations.get('terms')[annot[0]].idx];
+                            } else {
+                                color = annotation.get('defaultColor');
+                            }
+                            
+                            n.label = strain.get('verboseName');
+                            n.color = color;
+                            n.size = 2;
+                            n.x = n.y = Math.random() * 100;
+                            
+                            sigInst.addNode(node, n);
+                        }
+                    }
                     
                     if (!!sigInst._core.graph.nodesIndex[edge.source] && !!sigInst._core.graph.nodesIndex[edge.target] && !sigInst._core.graph.edgesIndex[edge.id]) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
