@@ -33,11 +33,11 @@ class Command(CellMapCommand):
             raise CommandError('Must provide arguments: ' + self.args)
         
         dataset = Dataset.objects.get(name__iexact=args[0])
-#         outpath = dataset.static_path()
-        outpath = '/home/matej/teststatic/'
+        outpath = dataset.static_path()
+#         outpath = '/home/matej/teststatic/'
         
-#         if os.path.exists(outpath):
-#             raise CommandError('Files already exist')
+        if os.path.exists(outpath):
+            raise CommandError('Files already exist')
         
         if not os.path.exists(outpath): # TODO: REMOVE THIS
             os.makedirs(outpath)

@@ -5,6 +5,7 @@ Created on Jan 13, 2014
 '''
 import cPickle
 import json
+import operator
 import os
 
 from django.core.paginator import Paginator
@@ -231,7 +232,8 @@ def _collect_data(ds, nodes, callback, defer_data=False):
         correlations = correlations.groupby('strainB').mean().reset_index() # .drop((s.gene.orf, s.gene.name, s.allele))
         correlations = correlations.dropna().sort('correlation', ascending=False)
         
-        scores = scores.dropna().groupby('target').agg({'score': np.mean, 'pval': np.max}).reset_index()
+        scores = scores[scores.pval < 0.05].sort(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
+        scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not operator.xor(*(x.score < 0))).groupby('target').first().reset_index()
         
         callback(s, correlations, scores)
 
@@ -251,10 +253,10 @@ def nodes_xls(ds, nodes, filename):
         for strainB, correlation in correlations.itertuples(index=False):
             output.write_correlation_row(strainB + (correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
         output.add_sheet('%s GI scores' % strain.label(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
-        for strainB, pval, score in scores[scores.score <= 0].sort('score').itertuples(index=False):
+        for strainB, pval, score in scores[(scores.score <= 0) & (scores.pval < 0.05)].sort('score').itertuples(index=False):
             output.write_score_row_neg(strainB + (score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
         output.reset_row(1)
-        for strainB, pval, score in scores[scores.score > 0].sort('score', ascending=False).itertuples(index=False):
+        for strainB, pval, score in scores[(scores.score > 0) & (scores.pval < 0.05)].sort('score', ascending=False).itertuples(index=False):
             output.write_score_row_pos(strainB + (score, pval), style=(score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None)
     
     _collect_data(ds, nodes, write_sheet)
@@ -264,7 +266,6 @@ def nodes_xls(ds, nodes, filename):
 
 def nodes_data(ds, nodes):
     data = {}
-    
     _collect_data(ds, nodes, lambda x, y, z: data.setdefault(x, {'correlations': y, 'scores': z}))
     
     return data
