@@ -18,6 +18,7 @@ from django.http.response import HttpResponseRedirect, Http404, HttpResponseForb
 from django.shortcuts import render
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.cache import never_cache
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
@@ -63,7 +64,7 @@ def password_change(request):
                 'suffix': 'Change password'
         })
 
-def login(request):
+def login(request, next='/'):
     form = AuthenticationForm(request)
     if request.POST:
         form = AuthenticationForm(request, request.POST)
@@ -73,12 +74,13 @@ def login(request):
             if first_time:
                 request.user.last_login = None
                 request.user.save(update_fields=['last_login'])
-            return HttpResponseRedirect(request.GET.get('next', '/'))
+            return HttpResponseRedirect(request.GET.get('next', next))
     return render(request, 'base/generic_form.html', {
                 'form': form,
                 'suffix': 'Login'
         })
 
+@never_cache
 def logout(request):
     django_logout(request)
     return render(request, 'base/logout.html')
@@ -190,7 +192,7 @@ def correlations(request, dataset_id=None):
 def nodes_download(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     nodes = filter(is_integer, request.GET.getlist('n'))
-    
+
     if not nodes:
         return HttpResponseRedirect(dataset.static_url('dataset.txt'))
     
@@ -205,25 +207,29 @@ def nodes_download(request, dataset_id=None):
             labels.append(n['label'])
     
     filename = 'tcm-%s-%s.xls' % ('_'.join(labels)[:(255-18)], datetime.datetime.now().strftime('%y%m%d'))
-    
-    return nodes_xls(
+    response = nodes_xls(
                  dataset, 
                  nodes, 
                  filename
         ).as_response()
+    if len(labels) == 1:
+        response.set_cookie('_'.join(labels)[:(255-18)], "true")
+    else:
+        response.set_cookie('fileDownload', "true")
+    return response
 
 def tabular(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     nodes = filter(is_integer, request.GET.getlist('n'))
     
-    if not nodes:
-        raise Http404('No nodes selected')
-    
-    return render(request, 'base/tabular.html', {
+    if request.user.is_authenticated() or dataset.is_published:
+        return render(request, 'base/tabular.html', {
             'dataset': dataset,
             'strains': list(strains_for_nodes(dataset, nodes)),
             'nodes_url': dataset.static_url('nodes.json'),
-      })
+            })
+    else:
+        return login(request, "?"+request.META['QUERY_STRING'])
 
 def three_demension(request, dataset_id):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
