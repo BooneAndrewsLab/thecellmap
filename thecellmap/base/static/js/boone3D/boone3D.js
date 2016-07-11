@@ -4,7 +4,7 @@ define([
     'backbone',
     
     'build',
-    
+    'leapControls',
     'utils',
     'three',
     'stats',
@@ -146,14 +146,14 @@ define([
         init();
         animate();
         
-//        window.controller = Leap.loop({enableGestures: true}, function(frame) {
-//            if (!state['isInitializing']) {
-//                render();
-//                
-//                LeapControls.update(frame);
-//                three['stats'].update();
-//            }
-//        });
+        window.controller = Leap.loop({enableGestures: true}, function(frame) {
+            if (!state['isInitializing']) {
+                render();
+                
+                LeapControls.update(frame);
+                three['stats'].update();
+            }
+        });
     };
     
     var checkHover = function() {
