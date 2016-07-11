@@ -45,7 +45,7 @@ def strains_for_nodes(ds, nodes):
     
     for node in nodes:
         strain = Strain.objects.get(pk=nodes_inv[int(node)][0])
-        yield node, strain
+        yield node, strain, strain.label()
 
 @print_queries
 def collect_scores(ds, nodes):

@@ -4,6 +4,7 @@
 
 {% block page_title_suffix %} - Tabular view{% endblock %}
 
+
 {% block css %}
 {{ block.super }}
   <link href="{% static 'css/glyphicons.css' %}" rel="stylesheet">
@@ -11,21 +12,14 @@
   <link href="{% static 'css/select2-bootstrap.css' %}" rel="stylesheet">
   <link href="{% static 'css/select2.css' %}" rel="stylesheet">
   <link href="{% static 'css/tabdrop.css' %}" rel="stylesheet">
+  <link href="{% static 'css/jquery.mmenu.all.css' %}" rel="stylesheet">
+  <link href="{% static 'css/ladda-themeless.min.css' %}" rel="stylesheet">
+
+  
   <style>
     html {
-        overflow-y: scroll; 
-    }
-  
-    .tab-content {
-        padding-top: 15px;
-    }
-    
-    #spinner {
-        display: none;
-    }
-    
-    .table-empty {
-        text-align: center;
+     overflow-y: -moz-scrollbars-vertical;
+     overflow-y: scroll;
     }
     
     table tbody tr td:first-child {
@@ -35,64 +29,324 @@
     
     table tbody tr td:first-child:hover {
         color: #444;
-    }
     
-    #search-bar {
-        padding: 20px;
-    }
-    
-    #search-bar span {
-        top: 0px;
-    }
-  </style>
-{% endblock css %}
+    } 
 
+   .mm-menu {
+        z-index: 20;
+   }
+   .mm-menu.mm-offcanvas {
+        z-index:20;
+   }
+   #tabPage {
+        padding-top: 20px;
+   }
+   
+   .btn.downloadable.list-strains{
+        float: right;
+        margin-top: -1px;
+        margin-right: -11px;
+   }
+   
+   .btn.downloadable.btn-xs{
+        float:right;
+   }
+   #input-row .select2-input{
+        width:100%!important;
+   
+   }
+   #search-bar{
+        width:100%}
+   .select2-search-field{
+        width:100%
+   }
+   .select2-container-multi .select2-choices{
+        border-radius: 4px;
+   }
+   #main-row{
+        padding-top:20px;
+   }
+   .btn[disabled]{
+        opacity: 1;
+   }
+   .dlAllIconM{
+        float: right;
+   }
+   .btn.dlall{
+        border-color:#dddddd;
+   }
+   .dlAllIconL{
+        float: right;
+        margin-right: -6px;
+        margin-top: 1px;
+    }
+   .btn.pull-left {
+        margin-right: 9px;
+        border-radius: 10px;
+        width: 17px;
+        height: 16px;
+        margin-left: -10px;
+        margin-top:2px;
+        
+   }
+   .glyphicon.glyphicon-remove{
+        top: -1px;
+        left: -3px;
+   }
+   .btn-danger {
+        color: rgba(255, 14, 14, 0.54);
+        background-color: rgba(217, 83, 79, 0);
+        border-color: rgba(212, 63, 58, 0);
+   }
+   .btn-warning{
+        color: rgba(85, 85, 85, 0.7);
+        background-color: rgba(234, 255, 71, 0);
+        border-color: rgba(238, 162, 54, 0);
+    }
+    .round{
+        border-radius: 4px;
+    }
+    .btn.list-group-item.mmenu-dl{
+        background-color: rgba(255, 255, 255, 0);
+        border: 1px solid rgba(7, 7, 7, 0);
+    }
+    .tab-fade{
+        opacity:0;
+    }
+    .tab-sfade{
+        opacity:0;
+    }.table-fade{
+        opacity:0;
+    }
+   </style>
+{% endblock css %}
 {% block js %}
 {{ block.super }}
-  <script type='text/javascript'>
+<script type='text/javascript'>
     window.opts = {
         nodesUrl: '{{ nodes_url }}',
         numStrains: {{ strains|length }},
     }
-  </script>
-  {% require_module 'tabular' %}
+</script>
+{% require_module 'tabular' %}
 {% endblock js %}
-
+{% block mmenu %}
+{% endblock %}
 {% block content %}
-<div class="container">
-  <div class="row">
-    <div id="search-bar" class="input-group">
-      <span class="input-group-addon glyphicon glyphicon-search"></span>
-      <input class="gene-search-input form-control">
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-offset-2 col-md-10">
-      <ul class="nav nav-pills" id="strain-tabs">
-        {% for node, strain in strains %}
-        <li{% if forloop.first %} class="active"{% endif %}><a href="#tab{{ node }}" data-toggle="tab">{{ strain.basic_id }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-  <div class="tab-content" id="strain-tabs-content">
-    {% for node, strain in strains %}
-    <div class="tab-pane{% if forloop.first %} active{% endif %}" id="tab{{ node }}" data-node="{{ node }}"></div>
-    {% endfor %}
-  </div>
-</div>
+<div class="container" id="tabPage">
+    
+<!-- Slide open menu for strains (opens from left) -->
 
-<div id="spinner">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="bubblingG center-block">
-          <span id="bubblingG_1"></span>
-          <span id="bubblingG_2"></span>
-          <span id="bubblingG_3"></span>
-        </div>
+    <nav id="mmenu" class="hidden">
+        <ul  id="strain-tabs">
+            <li id='download-all'>
+                <button class="btn ladda-button list-group-item mmenu-dl" data-style="slide-down" data-spinner-color="#222">
+                    <span class="ladda-label">
+                        <span class="dlAllIconM glyphicon glyphicon-download-alt"></span>
+                        Download All
+                    </span>
+                </button>
+                
+            <li>            
+            {% for node, strain, label in strains %}
+            <li{% if forloop.first %} class="active mm-selected"{% endif %} id ="strain-tab{{ node }}">
+                <a class="strain-links" href="#tab{{ node }}" data-toggle="tab" title= '{{ strain.label }}'>
+                    <button class="btn btn-xs btn-danger pull-left" >
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                    <button class="btn downloadable btn-xs ladda-button" data-node="{{ node }}" data-style="slide-down" data-spinner-color="#222">
+                        <span class="ladda-label">
+                            <span class="glyphicon glyphicon-download-alt"></span>
+                        </span>
+                    </button>
+                    {{ strain.basic_id }} 
+                </a>
+           </li> 
+           {% endfor %}
+           
+       </ul>
+    </nav>
+     
+<!-- Slide open menu for table selection (opens from right)      -->
+    <nav id="mmenuT" class="hidden">
+        <ul id="table-list"> 
+            <li class="active">
+                <a href="#" data-target=".tab-pane.correlations"data-toggle="tab" title="">
+                    Correlations
+                </a>
+            </li> 
+            <li>
+                <a href="#" data-target=".tab-pane.negative" data-toggle="tab" title="">
+                    Negative Interactions
+                </a>
+            </li> 
+            <li>
+                <a href="#" data-target=".tab-pane.positive" data-toggle="tab" title="">
+                    Positive Interactions
+                </a>
+            </li> 
+       </ul> 
+    </nav> 
+    
+<!-- Search bar -->
+    <div class="tab-sfade">
+      <div class="row" id="input-row">
+          <div class='col-sm-offset-3 col-sm-6'>
+              <div id="search-bar" class="input-group center">
+                  <input class="gene-search-input form-control" aria-describedby="basic-addon1">
+              </div>
+          </div>
       </div>
     </div>
+
+<!-- Row containing the main page objects (strains, table, table selectors) -->
+    <div class='row' id='main-row'>
+
+<!-- strain list -->
+        
+        <div class="col-sm-3 hidden-xs tabs-hidden hidden tab-fade">
+          <div class='left list-group' id="strain-tabs-large">
+                <button class="removeable btn dlall btn-warning ladda-button list-group-item hidden" data-style="slide-down"data-spinner-color="#222">
+                    
+                    <span class='ladda-label'>
+                        <span class="dlAllIconL glyphicon glyphicon-download-alt"></span>
+                        Download All
+                    </span>
+                </button>
+                {% for node, strain, label in strains %}
+                    <a {% if forloop.first %} class="list-group-item active round"{% endif %} class='list-group-item round' href="#tab{{ node }}" data-toggle="tab" title= '{{ strain.label }}'>
+                        {{ strain.label }}
+                        <button class="btn btn-xs btn-danger pull-left" >
+                            <span class="glyphicon glyphicon-remove"></span>
+                        </button>
+                        <button class="btn downloadable btn-warning list-strains ladda-button btn-xs" data-node="{{ node }}" data-style="slide-down"data-spinner-color="#222"> 
+                            <span class='ladda-label'>
+                                <span class="glyphicon glyphicon-download-alt"></span>
+                            </span>
+                        </button>
+                    </a>
+                {% endfor %}
+            </div>
+         </div>
+         
+<!-- tables (location where table html is appended >> actual tables are at the bottom of this html)-->
+        <div class="col-sm-6 col-xs-12">
+            <div class="alert alert-warning fade in hidden">
+                No strains selected. Select more strains by using the searchbar above.
+            </div>
+            <div class="tab-content" id="strain-tabs-content">
+                {% for node, strain, label in strains %}
+                    <div class="tab-pane{% if forloop.first %} active{% endif %}" id="tab{{ node }}" data-node="{{ node }}" data-label="{{ label }}"></div>
+                {% endfor %}
+            </div>
+        </div>
+        
+<!-- table selector list -->
+        <div class="col-sm-3 hidden-xs tab-fade">
+            <div class="removeable right list-group hidden">
+                <a class="list-group-item active" href="#" data-target=".tab-pane.correlations" data-toggle="tab" title="">Correlations</a>
+                <a class="list-group-item" href="#" data-target=".tab-pane.negative" data-toggle="tab" title="">Negative Interactions</a>
+                <a class="list-group-item" href="#" data-target=".tab-pane.positive" data-toggle="tab" title="">Positive Interactions</a>
+            </div> 
+        </div>
+        
+    </div>
+
 </div>
+  
+<div class="master center hidden Ctables table-fade" id="tables">
+    <div class="tab-content">
+
+        <div class="tab-pane correlations" id="">   <!-- Correlations Tab Pane-->
+            <div class="center" id ="correlationsTable">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title"></h3></div>    <!-- Correlations-->
+                    <div class="panel-body">
+                        <table class="table table-condensed table-striped sortable">    <!--Table-->
+                            <thead>
+                                <tr>    <!--Column Names-->
+                                    <th>ORF</th>
+                                    <th>Allele</th>
+                                    <th data-mainsort="true">Correlation</th>
+                               </tr>
+                            </thead>
+                            <tbody></tbody>    <!--Entries-->
+                        </table>
+                        <div class="row">   <!--Load More Button -->
+                            <button class="btn btn-primary load-more col-xs-3 col-xs-offset-4 ladda-button" data-style="slide-up" data-ds="c" data-cutoff="1">
+                                <span class="ladda-label"> Load All </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    <!-- End of Correlation Tab Pane -->
+
+        <div class="tab-pane negative" id="">    <!-- Negative Interactions Tab Pane-->
+            <div class="row mainTable">
+                <div class="centre" id="giTableNegative">
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"></h3>
+                        </div>    <!--Negative Ineractions-->
+                        <div class="panel-body">
+                            <table class="table table-condensed table-striped score-neg sortable">    <!-- Table -->
+                                <thead>
+                                    <tr>    <!--Column Names-->
+                                        <th>ORF</th>
+                                        <th>Allele</th>
+                                        <th>Score</th>
+                                    <th data-defaultsort="disabled">p-value</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>    <!--Entries-->
+                            </table>
+                            <div class="row">    <!--Load More Button-->
+                                <button class="btn btn-primary load-more col-xs-3 col-xs-offset-4 ladda-button" data-style="slide-up" data-ds="s" data-cutoff="-1">
+                                    <span class="ladda-label"> Load All </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    <!--End Negative Interactions Tab Pane-->
+
+         <div class="tab-pane positive" id="">    <!-- Positive Interactions Tab Pane-->
+            <div class="row mainTable">
+                <div class="centre" id="giTablePositive">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"></h3>
+                        </div>    <!--Positive Ineractions-->
+                        <div class="panel-body">
+                            <table class="table table-condensed table-striped score-pos sortable">    <!-- Table -->
+                                <thead>
+                                    <tr>    <!--Column Names-->
+                                        <th>ORF</th>
+                                        <th>Allele</th>
+                                        <th>Score</th>
+                                        <th data-defaultsort="disabled">p-value</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>    <!--Entries-->
+                            </table>
+                            <div class="row">    <!--Load More Button-->
+                                <button class="btn btn-primary load-more col-xs-3 col-xs-offset-4 ladda-button" data-style="slide-up" data-ds="s" data-cutoff="1">
+                                    <span class="ladda-label"> Load All </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    <!--End Positive Interactions Tab Pane-->
+         </div>
+       
+     </div>
+</div>
+
+
+
 {% endblock content %}
 
 {% block footer %}{% endblock footer %}
