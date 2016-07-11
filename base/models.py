@@ -155,6 +155,7 @@ class Term(models.Model):
     color = models.CharField(max_length=6)
     
     genes = models.ManyToManyField(Gene)
+    strains = models.ManyToManyField(Strain)
     
     def __unicode__(self):
         return u'%s' % self.name

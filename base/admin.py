@@ -8,7 +8,6 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 
 from base.models import Gene, Strain, StrainData, Dataset, Annotation, Term, Custom, RegionGroup, Region
-from _csv import list_dialects
 
 
 class GeneAdmin(admin.ModelAdmin):
@@ -47,13 +46,16 @@ class AnnotationAdmin(admin.ModelAdmin):
         return ds.term_set.count()
 
 class TermAdmin(admin.ModelAdmin):
-    list_display = ('annotation', 'name', 'alias', 'term_color', 'number_of_genes')
-    exclude = ('genes', )
+    list_display = ('annotation', 'name', 'alias', 'term_color', 'number_of_genes', 'number_of_strains')
+    exclude = ('genes', 'strains')
     list_filter = ('annotation', )
     search_fields = ('name', )
     
     def number_of_genes(self, ds):
         return ds.genes.count()
+    
+    def number_of_strains(self, ds):
+        return ds.strains.count()
     
     def term_color(self, term):
         return mark_safe('<span style="color: #%s; font-weight: bold;">%s</span>' % (term.color, term.color))
