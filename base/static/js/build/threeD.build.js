@@ -13,7 +13,8 @@
         'mouse': 'boone3D/mouseControls',
         'utils': 'boone3D/utils',
         
-        //'leapControls': 'boone3D/leapControls',
+        'leap': 'libs/leap-0.6.4.min',
+        'leapControls': 'boone3D/leapControls',
     },
     shim: {
         'backbone' : ['jquery', 'underscore'],
