@@ -45,7 +45,7 @@ class Command(CellMapCommand):
         nodes = {}
         nodes_map = {}
         nodes_inverse_map = {}
-        for id, orf, name, allele, strain_id in Strain.objects.filter(
+        for id, orf, name, aliases, featurequal, allele, strain_id in Strain.objects.filter(
                     Q(as_query=dataset) |
                     Q(as_array=dataset) |
                     Q(as_correlation=dataset)).distinct(
@@ -53,6 +53,8 @@ class Command(CellMapCommand):
                     'id',
                     'gene__orf',
                     'gene__name',
+                    'gene__aliases',
+                    'gene__feature_qualifier',
                     'allele',
                     'boonelab_id',
                 ):
@@ -66,6 +68,8 @@ class Command(CellMapCommand):
                         'name': name,
                         'alel': allele,
                         'label': label,
+                        'aliases': aliases,
+                        'isdu': featurequal == 'Dubious'
                     }
             
             nodes_map[id] = nodes[label]['id']
