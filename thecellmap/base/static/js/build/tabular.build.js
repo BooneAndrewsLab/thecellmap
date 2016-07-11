@@ -9,7 +9,8 @@
         'hammer':'libs/hammer.min',
         'spinner': 'libs/spin',
         'ladda': 'libs/ladda',
-        'spin': 'libs/ladda-spin'
+        'spin': 'libs/ladda-spin',
+        'filedownload': 'libs/jquery.fileDownload'
     },
     shim: {
         'bootstrap': ['jquery'],
@@ -18,6 +19,7 @@
         'bootstrap-tabdrop': ['bootstrap'],
         'mmenu':['jquery'],
         'ladda':['spin'],
+        'filedownload': ['jquery'],
     },
     name: 'tabular',
     out: 'tabular-built.js'
