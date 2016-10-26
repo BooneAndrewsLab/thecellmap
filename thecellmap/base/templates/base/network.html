@@ -66,6 +66,8 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
             name: "{{ r.name }}",
             url: "{% url 'region_group' dataset.id r.id %}",
         }, {% endfor %}],
+        default_annotation: "{{ dataset.default_annotation }}",
+        dataset_id: "{{ dataset.pk }}",
         canBulkDownload: {% if can_bulk_download %}true{% else %}false{% endif %},
         {% if debug %}
           debug: true,

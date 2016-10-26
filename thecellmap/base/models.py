@@ -27,11 +27,15 @@ class Gene(models.Model):
     CHROMOSOME_CODE = {
         '2-micron': -2
     }
+    MAGIC = '$DOTA2$'
     
     CCODE_INV = {v: k for k, v in CHROMOSOME_CODE.items()}
     
     def as_object(self):
         return {'id':self.id, 'orf': self.orf, 'name': self.name, 'aliases': self.aliases}
+    
+    def aliases_encoded(self, replacement=MAGIC):
+        return [a.replace(' ', replacement) for a in self.aliases]
     
     def __unicode__(self):
         return ('%s (%s)' % (self.orf, self.name or '')).replace(' ()', '')
@@ -60,6 +64,36 @@ class Strain(models.Model):
         suffix = 'damp' in self.boonelab_id.lower() and '_damp' or ''
         return self.allele or (self.gene.name and (self.gene.name + suffix)) or (self.gene.orf + suffix)
 
+class Annotation(models.Model):
+    name = models.CharField(max_length=64)
+    alias = models.CharField(max_length=64, null=True)
+    date = models.DateField()
+    description = models.TextField(blank=True)
+    user = models.ForeignKey(User, null=True, blank=True)
+    enabled = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return u'%s' % self.name
+    
+    class Meta:
+        unique_together = (('name', 'date'), )
+
+class Term(models.Model):
+    annotation = models.ForeignKey(Annotation)
+    name = models.CharField(max_length=128)
+    alias = models.CharField(max_length=128)
+    source = models.CharField(max_length=32)
+    color = models.CharField(max_length=6)
+    
+    genes = models.ManyToManyField(Gene)
+    strains = models.ManyToManyField(Strain)
+    
+    def __unicode__(self):
+        return u'%s' % self.name
+    
+    class Meta:
+        unique_together = (('annotation', 'name', 'source'), )
+
 class Dataset(models.Model):
     name = models.CharField(max_length=64, unique=True)
     queries = models.ManyToManyField(Strain, related_name='as_query')
@@ -71,6 +105,7 @@ class Dataset(models.Model):
     date = models.DateField()
     verbose_name = models.CharField(max_length=64)
     public_description = models.TextField()
+    default_annotation = models.ForeignKey(Annotation)
     
     def __unicode__(self):
         return self.name
@@ -132,36 +167,6 @@ class StrainData(models.Model):
     
     def __unicode__(self):
         return '%s @ %s' % (self.strain, self.dataset)
-
-class Annotation(models.Model):
-    name = models.CharField(max_length=64)
-    alias = models.CharField(max_length=64, null=True)
-    date = models.DateField()
-    description = models.TextField(blank=True)
-    user = models.ForeignKey(User, null=True, blank=True)
-    enabled = models.BooleanField(default=False)
-    
-    def __unicode__(self):
-        return u'%s' % self.name
-    
-    class Meta:
-        unique_together = (('name', 'date'), )
-
-class Term(models.Model):
-    annotation = models.ForeignKey(Annotation)
-    name = models.CharField(max_length=128)
-    alias = models.CharField(max_length=128)
-    source = models.CharField(max_length=32)
-    color = models.CharField(max_length=6)
-    
-    genes = models.ManyToManyField(Gene)
-    strains = models.ManyToManyField(Strain)
-    
-    def __unicode__(self):
-        return u'%s' % self.name
-    
-    class Meta:
-        unique_together = (('annotation', 'name', 'source'), )
 
 class Custom(models.Model):
     TYPE_INTERACTION = 'I'

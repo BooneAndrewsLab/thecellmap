@@ -17,11 +17,16 @@ define([
         var data = vizdata['annotations'].get(state.get('annotation')), strain, annot;
         
         if (!vizdata['regionGroups'].get(state.get('annotation')) || !state.get('showRegions')) {
+            // Annotation is loaded and we have to paint individual nodes (subnetwork/network has changed)
             sigInst.iterNodes(function(n) {
-                strain = Utils.getStrain(n.id);
-                if (!strain) return;
+                if (Object.keys(data.get('smap')).length == 0) {
+                    strain = Utils.getStrain(n.id);
+                    if (!strain) return;
+                    annot = data.get('map')[strain.get('orf')];
+                } else {
+                    annot = data.get('smap')[n.id];
+                }
                 
-                annot = data.get('map')[strain.get('orf')];
                 if (annot != undefined) {
                     if (annot.length == 1) {
                         n.color = Cookies.get(data.get('terms')[annot[0]].name) == undefined ? 
@@ -36,6 +41,7 @@ define([
             
             $('#panel-legend').toggle(state.get('annotation') != 'None');
         } else {
+            // We're looking at the global network so we need to show regions and leave default node colors
             sigInst.iterNodes(function(n) {
                 n.color = opts['defaultNodeColor'];
             }).draw();
@@ -166,6 +172,9 @@ define([
                     if (annotation['name'] === id) {
                         $.ajax({
                             url : annotation['url'],
+                            data : {
+                                ds: opts.dataset_id,
+                            },
                             dataType : 'json',
                             success : function(data) {
                                 var addedAnnot = data;
