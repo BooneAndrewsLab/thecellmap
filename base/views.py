@@ -326,7 +326,7 @@ def annotation(request, annotation_id):
         if term_id not in response['terms']:
             response['terms'][term_id] = {'name': term, 'color': color, 'alias': alias}
     
-    if 'ds' in request.GET:
+    if 'ds' in request.GET and request.GET.get('ds'):
         dataset = Dataset.objects.get(pk=request.GET.get('ds'))
         with open(dataset.static_path('nodes_inv.pickle')) as fp:
             nodes_inv = pickle.load(fp)
