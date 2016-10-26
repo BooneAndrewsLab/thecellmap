@@ -17,6 +17,7 @@ from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
 import numpy as np
+from django.contrib import messages
 
 
 ONLY = (
@@ -39,13 +40,21 @@ def format_allele_col(orf, name, strainid, allele):
     
     return allele_col
 
-def strains_for_nodes(ds, nodes):
+def strains_for_nodes(request, ds, nodes):
     with open(ds.static_path('nodes_inv.pickle')) as fp:
         nodes_inv = cPickle.load(fp)
     
+    msg = []
     for node in nodes:
+        if not node.isdigit():
+            msg.append(node)
+            continue
+        
         strain = Strain.objects.get(pk=nodes_inv[int(node)][0])
         yield node, strain, strain.label()
+    
+    if msg:
+        messages.warning(request, "One or more queried gene id's are malformed. If you pasted this url manually please make sure you pasted the correct text")
 
 @print_queries
 def collect_scores(ds, nodes):
@@ -122,7 +131,8 @@ def collect_correlations(ds, nodes, cutoff):
     
     scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation'])
     if 0 in scores.shape: # empty table
-        print nodes, cutoff
+        return DataFrame(None, columns=['source', 'target', 'correlation']), set()
+    
     scores = scores.groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
     
     piv = scores.pivot('source', 'target', 'correlation')
@@ -138,7 +148,6 @@ def collect_correlations(ds, nodes, cutoff):
     new_nodes = set([s for s in axis if s not in nodes_idx])
     
     return piv, new_nodes
-
 
 def collect_score_matrix(ds, nodes, data):
     data = json.loads(data)['edges']

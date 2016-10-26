@@ -64,8 +64,11 @@ def password_change(request):
                 'suffix': 'Change password'
         })
 
-def login(request, next='/'):
+def login(request, nxt='/'):
     form = AuthenticationForm(request)
+    
+    for x in request.META:
+        print x, request.META[x]
     if request.POST:
         form = AuthenticationForm(request, request.POST)
         if form.is_valid():
@@ -74,7 +77,9 @@ def login(request, next='/'):
             if first_time:
                 request.user.last_login = None
                 request.user.save(update_fields=['last_login'])
-            return HttpResponseRedirect(request.GET.get('next', next))
+                
+            return HttpResponseRedirect(request.META['PATH_INFO'] + (request.META['QUERY_STRING'] and ('?%s' % request.META['QUERY_STRING']) or ''))
+#             return HttpResponseRedirect(request.GET.get('next', nxt))
     return render(request, 'base/generic_form.html', {
                 'form': form,
                 'suffix': 'Login'
@@ -223,9 +228,11 @@ def tabular(request, dataset_id=None):
     nodes = filter(is_integer, request.GET.getlist('n'))
     
     if request.user.is_authenticated() or dataset.is_published:
+        strains = list(strains_for_nodes(request, dataset, nodes))
+        
         return render(request, 'base/tabular.html', {
             'dataset': dataset,
-            'strains': list(strains_for_nodes(dataset, nodes)),
+            'strains': strains,
             'nodes_url': dataset.static_url('nodes.json'),
             })
     else:
@@ -312,13 +319,32 @@ def _tabular_more_correlations(request, correlations):
 
 @print_queries
 def annotation(request, annotation_id):
-    response = {'terms': {}, 'map': {}}
+    response = {'terms': {}, 'map': {}, 'smap': {}}
     
     for orf, term_id, term, color, alias in Term.genes.through.objects.filter(term__annotation=annotation_id).values_list('gene__orf', 'term_id', 'term__name', 'term__color', 'term__alias'):  # @UndefinedVariable
         response['map'].setdefault(orf, []).append(term_id)
         if term_id not in response['terms']:
             response['terms'][term_id] = {'name': term, 'color': color, 'alias': alias}
     
+    if 'ds' in request.GET:
+        dataset = Dataset.objects.get(pk=request.GET.get('ds'))
+        with open(dataset.static_path('nodes_inv.pickle')) as fp:
+            nodes_inv = pickle.load(fp)
+        
+        nodes_inv_inv = {}
+        for nid, sids in nodes_inv.iteritems():
+            for sid in sids:
+                nodes_inv_inv[sid] = nid
+        
+        for strain_id, term_id, term, color, alias in Term.strains.through.objects.filter(term__annotation=annotation_id).values_list('strain_id', 'term_id', 'term__name', 'term__color', 'term__alias'):  # @UndefinedVariable
+            if strain_id in nodes_inv_inv:
+                response['smap'].setdefault(nodes_inv_inv[strain_id], set()).add(term_id)
+            if term_id not in response['terms']:
+                response['terms'][term_id] = {'name': term, 'color': color, 'alias': alias}
+        
+        for k in response['smap']:
+            response['smap'][k] = list(response['smap'][k])
+        
     return JsonResponse(response)
 
 @require_GET

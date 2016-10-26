@@ -325,7 +325,7 @@ define([
                     actualSelection = $(selected).not(missingNodes['ids']).get();
                     
                     if (state.get('annotation') == 'None' && state.get('showRegions') && actualSelection.length > 0) {
-                        Annotation.loadAnnotation('SAFE');
+                        Annotation.loadAnnotation(opts.default_annotation);
                     }
                     
                     state.set('selection', actualSelection);

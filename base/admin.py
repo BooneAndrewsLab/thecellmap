@@ -27,7 +27,7 @@ class StrainDataAdmin(admin.ModelAdmin):
     raw_id_fields = ('strain', )
 
 class DatasetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'verbose_name', 'is_default', 'is_published', 'number_of_queries', 'number_of_arrays', 'number_of_correlations', 'description')
+    list_display = ('name', 'verbose_name', 'is_default', 'is_published', 'number_of_queries', 'number_of_arrays', 'number_of_correlations', 'description', 'default_annotation')
     exclude = ('queries', 'arrays', 'correlation_axis')
     
     def number_of_queries(self, ds):

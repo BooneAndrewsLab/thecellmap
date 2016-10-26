@@ -1,7 +1,7 @@
 import json
 import pickle
 
-from base.models import Dataset, Strain
+from base.models import Dataset, Strain, Gene
 from base.utils import CellMapCommand
 from base.utils import print_queries
 
@@ -31,7 +31,7 @@ class Command(CellMapCommand):
             node["orf"] = gene.orf
             suffix = 'damp' in s.boonelab_id.lower() and '_damp' or ''
             node["label"] = s.allele or (gene.name and (gene.name + suffix)) or (gene.orf + suffix)
-            node['aliases'] = gene.aliases
+            node['aliases'] = gene.aliases_encoded()
             node['isdu'] = gene.feature_qualifier == 'Dubious'
          
         for node in nodespickle:
@@ -51,4 +51,4 @@ class Command(CellMapCommand):
     
     def _dump_clean_json(self, obj, f):
         with open(f, 'wb') as out:
-            out.write(json.dumps(obj).replace(' ', ''))
+            out.write(json.dumps(obj).replace(' ', '').replace(Gene.MAGIC, ' '))
