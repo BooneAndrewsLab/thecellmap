@@ -23,10 +23,12 @@ sigma.publicPrototype.highlightNodes = function(nodes) {
                 n.attr['true_color'] = n.color;
                 n.color = greyColor;
                 n.attr['grey'] = 1;
+                n.attr['forcedLabel'] = n.forceLabel;
                 n.forceLabel = false;
             }
         } else {
             n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
+            n.attr['forcedLabel'] = n.forceLabel;
             n.forceLabel = n.attr['grey'] ? false : true;
             n.attr['grey'] = 0;
         }
@@ -52,7 +54,7 @@ sigma.publicPrototype.unhighlightNodes = function() {
         e.attr['grey'] = 0;
     }).iterNodes(function(n) {
         n.color = n.attr['grey'] ? n.attr['true_color'] : n.color;
-        n.forceLabel = true;
+        n.forceLabel = n.attr['forcedLabel'];
         n.attr['grey'] = 0;
     }).draw(2, 2, 2);
 }
