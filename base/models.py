@@ -218,6 +218,10 @@ class Region(models.Model):
     region_group = models.ForeignKey(RegionGroup, related_name='regions')
     color = models.CharField(max_length=6)
     
+    x = models.FloatField(blank=True, null=True)
+    y = models.FloatField(blank=True, null=True)
+    r = models.FloatField(blank=True, null=True)
+    
     vertices = models.ManyToManyField(Strain, through='Vertex')
 
 class Vertex(models.Model):

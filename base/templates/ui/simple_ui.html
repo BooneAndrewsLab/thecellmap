@@ -2,7 +2,7 @@
 {% load staticfiles  %}
 
 {% block uiElements %}
-  <div class="top-left">
+  <div class="top-left clearfix">
     <div class="btn-group hidden" id="dataset-toggle" data-toggle-name="switch-dataset" data-simple-step="2" data-toggle="buttons"
      data-intro="The type of network can be toggled here." data-step="5">
       <label class="btn btn-primary active" data-dataset="0" data-title="Switch to profile similarity network" >
@@ -13,7 +13,7 @@
       </label>
     </div>
     
-    <div class="select2-div" data-simple-step="1" data-intro="This is the search bar." data-step="1">
+    <div class="select2-div pull-left" data-simple-step="1" data-intro="This is the search bar." data-step="1">
       <div class="input-group search-bar hidden-xs">
         <input class="gene-search-input form-control" type="hidden">
       </div>
@@ -23,6 +23,10 @@
         </button>
       </div>
     </div>
+    
+    <button id="view-network-simple" type="button" class="btn btn-primary pull-left hidden" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
+     data-selection-disabled-title="Please select up to 30 nodes"
+     data-intro="The Extracts Subnetworks button displays the sub-network for the selected nodes." data-simple-step="1" data-step="2"> Extract Subnetwork </button>
   </div>
   
   <div class="middle-right hidden" data-simple-step="2">
@@ -60,9 +64,6 @@
         </ul>
       </div>
       
-      <button id="view-network-simple" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
-       data-selection-disabled-title="Please select up to 30 nodes"
-       data-intro="The Extracts Subnetworks button displays the sub-network for the selected nodes." data-step="2"> Extract Subnetwork </button>
       <button id="btn-view-tabular" type="button" class="btn btn-primary" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
        data-selection-disabled-title="Please select up to 30 nodes" data-toggle="tooltip" data-placement="bottom"
        data-hint="View network as a table" data-hintposition="bottom-middle" data-position="bottom-middle-aligned"> View as table</button>

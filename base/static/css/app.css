@@ -7,6 +7,16 @@
 
    ========================================================================== */
 a.disabled {
-    pointer-events: none;
-    color: gray !important;
+	pointer-events: none;
+	color: gray !important;
+}
+
+header > .alert {
+	position: fixed;
+	top: 0px;
+	left: 0;
+	right: 0;
+	z-index: 2000;
+	visibility: visible;
+	opacity: 1;
 }
