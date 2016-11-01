@@ -73,6 +73,10 @@
     pointer-events: auto;
 }
 
+.top-left > * {
+    margin-right: 5px;
+}
+
 .top-right {
     right: 5px;
 }

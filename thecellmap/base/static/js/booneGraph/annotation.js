@@ -71,11 +71,16 @@ define([
           <tbody id="style-annotation-table"></tbody></table>');
         sigInst.iterNodes(function(node) {
 //            if (!node.hidden && node.type != 'pin') strains.push(Utils.getStrain(node.id));
-            if (!node.hidden) strains.push(Utils.getStrain(node.id));
+            if (!node.hidden) strains.push({strain: Utils.getStrain(node.id), node: node});
         });
         if (strains.length) {
             _.each(strains, function(s) {
-                mapStrain = annotation.get('map')[(s.get('orf'))];
+                if (Object.keys(annotation.get('smap')).length == 0) {
+                    mapStrain = annotation.get('map')[s.strain.get('orf')];
+                } else {
+                    mapStrain = annotation.get('smap')[s.node.id];
+                }
+                
                 if (mapStrain && mapStrain.length == 1) {
                     terms[mapStrain[0]] = annotation.get('terms')[mapStrain[0]];
                 }
@@ -137,10 +142,18 @@ define([
             var nodes = [];
             
             Utils.iterVisibleNodes(function(n) {
-                strain = Utils.getStrain(n.id);
-                if (!strain) return;
+                if (Object.keys(data.get('smap')).length == 0) {
+                    strain = Utils.getStrain(n.id);
+                    if (!strain) return;
+                    annot = data.get('map')[strain.get('orf')];
+                } else {
+                    annot = data.get('smap')[n.id];
+                }
                 
-                annot = data.get('map')[strain.get('orf')];
+//                strain = Utils.getStrain(n.id);
+//                if (!strain) return;
+                
+//                annot = data.get('map')[strain.get('orf')];
                 
                 if (annot != undefined) {
                     annot.forEach(function(a) {
@@ -240,10 +253,13 @@ define([
         if (!direct) clearRegions();
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
         
-        if (!$('#canvas-regions').length) {
-            var canvas = $('canvas:first').clone();
+        var ratio = sigInst.position()['ratio'];
+        var canvas = $('#canvas-regions');
+        
+        if (!canvas.length) {
+            canvas = $('canvas:first').clone();
             canvas.attr('id', 'canvas-regions');
-            $('#sigma_edges_1').before(canvas);
+//            $('#sigma_nodes_1').before(canvas);
             
 //            window.addEventListener('resize', function() {
 //                $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
@@ -252,34 +268,52 @@ define([
 //            });
         }
         
+        if (ratio == 1) {
+            $('#sigma_nodes_1').after(canvas);
+        } else {
+            $('#sigma_nodes_1').before(canvas);
+        }
+        
         var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
         
-        for (r in regionGroup.get('regions')) {
-            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
-            var n1, n2,
-                xmm = [nodes[0].displayX, nodes[0].displayX],
-                ymm = [nodes[0].displayY, nodes[0].displayY];
-            
-            nodes.push(nodes[0]);
-            for (var i = 0; i < nodes.length - 1; i++) {
-                n1 = nodes[i], n2 = nodes[i + 1];
-                xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
-                ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
+        // Old way
+        if (regionGroup.get('locations')[0]['x'] == undefined) {
+            for (r in regionGroup.get('regions')) {
+                var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
+                var n1, n2,
+                    xmm = [nodes[0].displayX, nodes[0].displayX],
+                    ymm = [nodes[0].displayY, nodes[0].displayY];
+                
+                nodes.push(nodes[0]);
+                for (var i = 0; i < nodes.length - 1; i++) {
+                    n1 = nodes[i], n2 = nodes[i + 1];
+                    xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
+                    ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
+                }
+                
+//                regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
+                regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
             }
-            
-//            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
-            regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
+        } else {
+            for (loc in regionGroup.get('locations')) {
+                l = regionGroup.get('locations')[loc];
+                regions.push({c: l.color, n: l.name, x: l.x, y: l.y, l: l.r});
+            }
         }
         
+        /**
+         * Draw clouds
+         */
         if ((!direct || (!!direct && step == 1)) && state.get('showAnnotColors')) {
             var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
             ctx.globalCompositeOperation = 'screen';
             
             regions.forEach(function(r){
-                var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.8);
-                grd.addColorStop(0, '#' + r.c);
-                grd.addColorStop(1, 'transparent');
+                var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.7);
+                grd.addColorStop(0, Utils.hexToStringRgba(r.c, ratio == 1 ? 0.3 : 0.6));
+                grd.addColorStop(1, Utils.hexToStringRgba(r.c, 0.01)); //'transparent');
+                console.log()
                 
                 ctx.fillStyle = grd;
                 ctx.beginPath();
@@ -289,27 +323,59 @@ define([
             });
         }
         
+        /**
+         * Draw text
+         */
         if ((!direct || (!!direct && step == 2)) && window.innerWidth >= 768 && state.get('showAnnotLabels')) { // 768 is small in bootstrap terms 
             regions.sort(function(a, b){
                 return a.y - b.y;
             });
             
-            var mouseCtx = !!direct ? direct : $('#sigma_mouse_1')[0].getContext('2d');
-            var last = 0, spacing = 20;
+            var mouseCtx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
+            var text_height = 20 * (1 + ((ratio - 1) * .5));
+            var th2 = text_height / 2, bb1, bb2;
+            var r1, r2, moved = true, iter = 0;
             
-            mouseCtx.font = 'bold 16px Arial';
+            mouseCtx.font = 'bold ' + text_height + 'px Arial';
             mouseCtx.textAlign = 'center';
-            mouseCtx.lineWidth = 2;
+            mouseCtx.textBaseline = "middle";
+            mouseCtx.lineWidth = .4;
+            
+            var getBbox = function(r) {
+                text_width = mouseCtx.measureText(r.n).width;
+                tw2 = text_width / 2;
+                return {
+                    x: r.x,
+                    y: r.y,
+                    rx: text_width / 2,
+                    ry: th2,
+                }
+            };
+            
+            while (moved && iter++ < 10) { // move names until no collisions, fail-safe kicks in at 10th iteration
+                moved = false;
+                for (i = 0; i < regions.length; i++) {
+                    for (j = i + 1; j < regions.length; j++) {
+                        r1 = regions[i], r2 = regions[j];
+                        bb1 = getBbox(r1), bb2 = getBbox(r2);
+                        
+                        Dy = ((bb2.y - bb1.y) - (bb1.ry + bb2.ry));
+                        Dx = ((bb2.x - bb1.x) - (bb1.rx + bb2.rx));
+                        
+                        if (Dy < 0 && Dx < 0) { // We got collision
+                            r1.y += Dy/2 - 5;
+                            r2.y -= Dy/2 - 5;
+                            moved = true;
+                        }
+                    }
+                }
+            }
             
             regions.forEach(function(r) {
-                if (r.y - last < spacing) {
-                    r.y += spacing - (r.y - last);
-                }
-                
                 mouseCtx.fillStyle = '#' + r.c;
                 mouseCtx.fillText(r.n, r.x, r.y);
-                
-                last = r.y;
+                mouseCtx.strokeStyle = Utils.shadeBlendConvert(-.6, '#' + r.c);
+                mouseCtx.strokeText(r.n, r.x, r.y);
             });
         }
     }
@@ -331,6 +397,7 @@ define([
                                 colorPalette: [], 
                                 regions: [],
                                 names: [],
+                                locations: [],
                             };
                             
                             for (r in data) {
@@ -343,6 +410,7 @@ define([
                                 addedGroup['colorPalette'].push(data[r]['color']);
                                 addedGroup['names'].push(data[r]['name'])
                                 addedGroup['regions'].push(nodes);
+                                addedGroup['locations'].push(data[r]);
                             }
                             
                             regionGroups.add(new RegionGroupModel(addedGroup));

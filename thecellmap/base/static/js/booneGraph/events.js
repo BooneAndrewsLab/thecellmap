@@ -478,7 +478,7 @@ define([
         
         showNetwork: function(e) {
             if (Utils.getSelectedNodes().length < 0) return;
-            if (state.get('annotation') == 'SAFE' && state.get('showRegions')) Annotation.loadAnnotation('None');
+            if (state.get('showRegions')) Annotation.loadAnnotation('None'); // state.get('annotation') == 'SAFE' && 
             
             sigInst.graphProperties({maxEdgeSize: 4});
             state.set('edgeWidth', 4);

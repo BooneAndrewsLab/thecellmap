@@ -7,6 +7,7 @@ define([
             id: 'None',
             regions: [],
             colorPalette: [],
+            locations: [],
         }
     });
     
