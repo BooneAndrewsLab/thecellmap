@@ -88,7 +88,8 @@ class RegionGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'alias', 'description', 'date')
 
 class RegionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'alias', 'region_group', 'region_color')
+    list_display = ('name', 'alias', 'label_anchor', 'label_align', 'region_group', 'region_color')
+    list_filter = ('region_group', )
     
     def region_color(self, region):
         return mark_safe('<span style="color: #%s; font-weight: bold;">%s</span>' % (region.color, region.color))

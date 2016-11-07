@@ -99,6 +99,8 @@ def collect_scores(ds, nodes):
 
 @print_queries
 def collect_correlations(ds, nodes, cutoff):
+    nodes = map(int, nodes)
+    
     with open(ds.static_path('nodes_inv.pickle')) as fp:
         nodes_inv = cPickle.load(fp)
     
@@ -107,47 +109,23 @@ def collect_correlations(ds, nodes, cutoff):
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
+    strains = set()
+    for n in nodes:
+        for s in nodes_inv[n]:
+            strains.add(s)
+    
     axis = [nodes_inv_inv[strain] for strain, in ds.correlation_axis.through.objects.filter(dataset=ds).order_by('id').values_list('strain_id')]
     
-    scores = []
-    strains = []
+    correlations = DataFrame()
+    for s in strains:
+        data = ds.data.get(strain=s)
+        correlations = correlations.append(DataFrame({'source': nodes_inv_inv[s], 'target': axis, 'corr': data.correlations}))
     
-    nodes_idx = set(map(int, nodes))
-    nodes = list(nodes_idx)
+    correlations = correlations.groupby(('source', 'target')).mean().reset_index()
+    correlations = correlations.dropna().sort('corr', ascending=False)
+    correlations = correlations[correlations['corr'] > cutoff]
     
-    for node in nodes:
-        node = int(node)
-        strains.extend(nodes_inv[node])
-    
-    p = Paginator(strains, 100)
-    
-    for i in p.page_range:
-        for corr, strain in ds.data.filter(strain__in=p.page(i).object_list, correlations__isnull=False).values_list('correlations', 'strain'):
-            dat = filter(
-                    lambda x: not np.isnan(x[2]) and x[2] >= cutoff and x[2] <= 0.2, 
-                    zip([nodes_inv_inv[strain]]*len(axis), axis, corr)
-                )
-            scores.extend(dat)
-    
-    scores = DataFrame.from_records(scores, columns=['source', 'target', 'correlation'])
-    if 0 in scores.shape: # empty table
-        return DataFrame(None, columns=['source', 'target', 'correlation']), set()
-    
-    scores = scores.groupby(['source', 'target']).agg({'correlation': np.mean}).reset_index()
-    
-    piv = scores.pivot('source', 'target', 'correlation')
-    
-    a = set(piv.index)
-    b = set(piv.columns)
-    axis = a.union(b)
-    piv = piv.reindex(axis, axis)
-    
-    piv.values[np.tril_indices_from(piv)] = np.nan
-    piv = piv.stack().reset_index()
-    
-    new_nodes = set([s for s in axis if s not in nodes_idx])
-    
-    return piv, new_nodes
+    return correlations, correlations['target'].unique()
 
 def collect_score_matrix(ds, nodes, data):
     data = json.loads(data)['edges']
@@ -250,7 +228,7 @@ def _collect_data(ds, nodes, callback, defer_data=False):
         scores = scores[scores.pval < 0.05].sort(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
         scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not operator.xor(*(x.score < 0))).groupby('target').first().reset_index()
         
-        callback(s, correlations, scores)
+        callback(s, node, correlations, scores)
 
 def nodes_xls(ds, nodes, filename):
     output = write_excel_file(filename)
@@ -262,7 +240,7 @@ def nodes_xls(ds, nodes, filename):
     
     instructions_content = []
     
-    def write_sheet(strain, correlations, scores):
+    def write_sheet(strain, node, correlations, scores):
         instructions_content.append(strain.basic_id())
         output.add_sheet('%s GI profile sim.' % strain.label(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
@@ -281,6 +259,6 @@ def nodes_xls(ds, nodes, filename):
 
 def nodes_data(ds, nodes):
     data = {}
-    _collect_data(ds, nodes, lambda x, y, z: data.setdefault(x, {'correlations': y, 'scores': z}))
+    _collect_data(ds, nodes, lambda x, _, y, z: data.setdefault(x, {'correlations': y, 'scores': z}))
     
     return data

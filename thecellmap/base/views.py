@@ -16,9 +16,9 @@ from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST, require_GET
-from django.views.decorators.cache import never_cache
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
@@ -67,8 +67,6 @@ def password_change(request):
 def login(request, nxt='/'):
     form = AuthenticationForm(request)
     
-    for x in request.META:
-        print x, request.META[x]
     if request.POST:
         form = AuthenticationForm(request, request.POST)
         if form.is_valid():
@@ -181,7 +179,6 @@ def correlations(request, dataset_id=None):
         raise Http404('Cutoff is not a number')
     
     response = []
-    
     data, new_nodes = collect_correlations(Dataset.pk_or_default(dataset_id, request.user), nodes, cutoff)
     for s, t, w in data.itertuples(index=False):
         response.append({
@@ -380,13 +377,22 @@ def region_group(request, dataset_id, region_group_id):
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
-    for strain, degree, region, alias, color in Region.vertices.through.objects.filter(region__region_group=region_group_id).values_list('strain', 'degree', 'region', 'region__alias', 'region__color'):  # @UndefinedVariable
+    for strain, degree, region, alias, color, anchor, align in Region.vertices.through.objects.filter( # @UndefinedVariable
+                    region__region_group=region_group_id
+                ).values_list(
+                    'strain', 
+                    'degree', 
+                    'region', 
+                    'region__alias', 
+                    'region__color',
+                    'region__label_anchor',
+                    'region__label_align'):
         response.setdefault(region, {})
         response[region][degree] = nodes_inv_inv[strain]
-        if color not in response[region]:
-            response[region]['color'] = color
-        if alias not in response[region]:
-            response[region]['name'] = alias
+        response[region]['color'] = color
+        response[region]['name'] = alias.split('$NEWLINE$')
+        if anchor and align:
+            response[region]['label'] = {'anchor': nodes_inv_inv[anchor], 'align': align}
     
     return JsonResponse(response)
 

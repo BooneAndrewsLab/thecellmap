@@ -1931,7 +1931,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
         ctx.beginPath();
         ctx.moveTo(sourceCoordinates[0], sourceCoordinates[1]);
         ctx.lineTo(targetCoordinates[0], targetCoordinates[1]);
-
+        ctx.closePath();
         ctx.stroke();
         break;
     }
