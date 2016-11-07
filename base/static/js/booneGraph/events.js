@@ -90,6 +90,9 @@ define([
             state.on('change:missingNodes', function() {
                 var nodes = state.get('missingNodes');
                 if (nodes.length) {
+                    // TODO, add nodes to the network, approx their location
+//                    $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
+//                    Dataset.addMissing(nodes);
                     $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
                     state.set('missingNodes', []);
                 }
@@ -242,6 +245,9 @@ define([
             case 'context-toggle-acolor':
                 state.set('showAnnotColors', !state.get('showAnnotColors'));
                 Annotation.drawRegions();
+                break;
+            case 'context-svg':
+                Download.downloadCanvasSvg();
                 break;
             case 'context-tour':
                 break

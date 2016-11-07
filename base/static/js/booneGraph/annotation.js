@@ -268,38 +268,37 @@ define([
 //            });
         }
         
-        if (ratio == 1) {
-            $('#sigma_nodes_1').after(canvas);
-        } else {
-            $('#sigma_nodes_1').before(canvas);
-        }
+        $('#sigma_nodes_1').before(canvas);
+//        if (ratio == 1) {
+//            $('#sigma_nodes_1').after(canvas);
+//        } else {
+//            $('#sigma_nodes_1').before(canvas);
+//        }
         
         var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
         
-        // Old way
-        if (regionGroup.get('locations')[0]['x'] == undefined) {
-            for (r in regionGroup.get('regions')) {
-                var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
-                var n1, n2,
-                    xmm = [nodes[0].displayX, nodes[0].displayX],
-                    ymm = [nodes[0].displayY, nodes[0].displayY];
-                
-                nodes.push(nodes[0]);
-                for (var i = 0; i < nodes.length - 1; i++) {
-                    n1 = nodes[i], n2 = nodes[i + 1];
-                    xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
-                    ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
-                }
-                
-//                regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), nodes: nodes});
-                regions.push({c: color, n: name, x: xmm[0] + ((xmm[1] - xmm[0]) / 2), y: ymm[0] + ((ymm[1] - ymm[0]) / 2), l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0]))});
+        for (r in regionGroup.get('regions')) {
+            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
+            var n1, n2,
+                xmm = [nodes[0].displayX, nodes[0].displayX],
+                ymm = [nodes[0].displayY, nodes[0].displayY];
+            
+            nodes.push(nodes[0]);
+            for (var i = 0; i < nodes.length - 1; i++) {
+                n1 = nodes[i], n2 = nodes[i + 1];
+                xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
+                ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
             }
-        } else {
-            for (loc in regionGroup.get('locations')) {
-                l = regionGroup.get('locations')[loc];
-                regions.push({c: l.color, n: l.name, x: l.x, y: l.y, l: l.r});
-            }
+            
+            regions.push({
+                c: color, 
+                n: name, 
+                x: xmm[0] + ((xmm[1] - xmm[0]) / 2), 
+                y: ymm[0] + ((ymm[1] - ymm[0]) / 2), 
+                l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0])), 
+                label: regionGroup.get('locations')[r],
+            });
         }
         
         /**
@@ -311,7 +310,7 @@ define([
             
             regions.forEach(function(r){
                 var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.7);
-                grd.addColorStop(0, Utils.hexToStringRgba(r.c, ratio == 1 ? 0.3 : 0.6));
+                grd.addColorStop(0, Utils.hexToStringRgba(r.c, ratio == 1 ? 0.5 : 0.6));
                 grd.addColorStop(1, Utils.hexToStringRgba(r.c, 0.01)); //'transparent');
                 console.log()
                 
@@ -331,10 +330,11 @@ define([
                 return a.y - b.y;
             });
             
-            var mouseCtx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
-            var text_height = 20 * (1 + ((ratio - 1) * .5));
+            var mouseCtx = !!direct ? direct : $('#sigma_mouse_1')[0].getContext('2d');
+            var text_height = 16 * (1 + ((ratio - 1) * .5));
             var th2 = text_height / 2, bb1, bb2;
             var r1, r2, moved = true, iter = 0;
+            var lx, ly, lines, line, l;
             
             mouseCtx.font = 'bold ' + text_height + 'px Arial';
             mouseCtx.textAlign = 'center';
@@ -342,14 +342,39 @@ define([
             mouseCtx.lineWidth = .4;
             
             var getBbox = function(r) {
-                text_width = mouseCtx.measureText(r.n).width;
-                tw2 = text_width / 2;
-                return {
-                    x: r.x,
-                    y: r.y,
-                    rx: text_width / 2,
-                    ry: th2,
+                text_width = 0;
+                for (l in r.n) {
+                    text_width = Math.max(text_width, mouseCtx.measureText(r.n[l]).width);
                 }
+//                text_width = mouseCtx.measureText(r.n).width;
+                
+                res = {
+                    rx: text_width / 2,
+                    ry: th2 * r.n.length,
+                }
+                
+                if (!$.isEmptyObject(r.label)) {
+                    res.fixed = true;
+                    
+                    switch (r.label.align) {
+                    case 'left':
+                        r.x = r.label.anchor.displayX + res.rx;
+                        r.y = r.label.anchor.displayY;
+                        break;
+                    case 'right':
+                        r.x = r.label.anchor.displayX - res.rx;
+                        r.y = r.label.anchor.displayY;
+                        break;
+                    case 'middle':
+                        r.x = r.label.anchor.displayX;
+                        r.y = r.label.anchor.displayY;
+                        break;
+                    }
+                }
+                
+                res.x = r.x;
+                res.y = r.y;
+                return res
             };
             
             while (moved && iter++ < 10) { // move names until no collisions, fail-safe kicks in at 10th iteration
@@ -363,8 +388,8 @@ define([
                         Dx = ((bb2.x - bb1.x) - (bb1.rx + bb2.rx));
                         
                         if (Dy < 0 && Dx < 0) { // We got collision
-                            r1.y += Dy/2 - 5;
-                            r2.y -= Dy/2 - 5;
+                            if (!!bb1.fixed) r1.y += Dy/2 - 5;
+                            if (!!bb2.fixed) r2.y -= Dy/2 - 5;
                             moved = true;
                         }
                     }
@@ -373,9 +398,14 @@ define([
             
             regions.forEach(function(r) {
                 mouseCtx.fillStyle = '#' + r.c;
-                mouseCtx.fillText(r.n, r.x, r.y);
                 mouseCtx.strokeStyle = Utils.shadeBlendConvert(-.6, '#' + r.c);
-                mouseCtx.strokeText(r.n, r.x, r.y);
+                
+                // Multi line label
+                for (l = 0; l < r.n.length; l++) {
+                    line = r.n[l];
+                    mouseCtx.fillText(line, r.x, r.y + (l * text_height));
+                    mouseCtx.strokeText(line, r.x, r.y + (l * text_height));
+                }
             });
         }
     }
@@ -410,7 +440,13 @@ define([
                                 addedGroup['colorPalette'].push(data[r]['color']);
                                 addedGroup['names'].push(data[r]['name'])
                                 addedGroup['regions'].push(nodes);
-                                addedGroup['locations'].push(data[r]);
+                                
+                                if (!!data[r]['label']) {
+                                    data[r]['label']['anchor'] = Utils.getNode(data[r]['label']['anchor']);
+                                    addedGroup['locations'].push(data[r]['label']);
+                                } else {
+                                    addedGroup['locations'].push({});
+                                }
                             }
                             
                             regionGroups.add(new RegionGroupModel(addedGroup));

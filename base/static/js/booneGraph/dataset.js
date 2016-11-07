@@ -168,6 +168,33 @@ define([
         });
     }
     
+    var addMissing = function(nodes) {
+        $.post('correlations/', {
+                    csrfmiddlewaretoken: Cookies.get('csrftoken'), 
+                    nodes: nodes, 
+                    cutoff: 0.1
+            }, function(data) {
+                var added = false, num_nodes = 0;
+                var pin_node;
+                
+                data['edges'].sort(function(a, b){ return b.w-a.w; }).forEach(function(e) {
+                    strain = Utils.getStrain(e.t);
+                    pin_node = Utils.getNode(e.t);
+                    if (!!pin_node && num_nodes < 5) {
+                        pin_node.type = 'pin';
+                        pin_node.color = 'red';
+                        num_nodes++;
+                        console.log(pin_node.label, e.w, pin_node.x, pin_node.y);
+                    }
+                });
+                
+                $('input.gene-search-input').select2('val', nodes, true);
+                sigInst.draw();
+                
+//                sigInst.startPinLayout();
+            });
+    }
+    
     var loadDataset = function(dsid, data, callback) {
         var datasetType = dsid == 0 ? 'correlations' : 'interactions';
         var method = dsid == 0 ? 'get' : 'post';
@@ -188,8 +215,8 @@ define([
                     edge.target = edge.target || edge.t; // t == target
                     edge.weight = edge.weight || edge.w; // w == weight
                     edge.id = edge.source + '+' + edge.target; // We can ommit ids, can be auto generated here
-                    edge.size = Math.abs(edge.weight);
-                    
+                    edge.size = Math.abs(edge.weight) * 10;
+//                    console.log(edge.size);
                     if (!!edge.c) { // color defined
                         edge.color = edge.c;
                     } else if (dsid == 1 || opts.interaction_on) {
@@ -328,5 +355,6 @@ define([
         loadLayout: loadLayout,
         toggleDataset: toggleDataset,
         switchDataset: switchDataset,
+        addMissing: addMissing,
     };
 });

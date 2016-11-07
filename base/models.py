@@ -218,9 +218,9 @@ class Region(models.Model):
     region_group = models.ForeignKey(RegionGroup, related_name='regions')
     color = models.CharField(max_length=6)
     
-    x = models.FloatField(blank=True, null=True)
-    y = models.FloatField(blank=True, null=True)
-    r = models.FloatField(blank=True, null=True)
+    # label
+    label_anchor = models.IntegerField(null=True, blank=True, help_text='Strain id to use as an anchor for this regions\' label')
+    label_align = models.CharField(blank=True, max_length=12, help_text='Alignment of this label')
     
     vertices = models.ManyToManyField(Strain, through='Vertex')
 
