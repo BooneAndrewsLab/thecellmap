@@ -398,7 +398,7 @@ define([
             
             regions.forEach(function(r) {
                 mouseCtx.fillStyle = '#' + r.c;
-                mouseCtx.strokeStyle = Utils.shadeBlendConvert(-.6, '#' + r.c);
+                mouseCtx.strokeStyle = 'white'; //Utils.shadeBlendConvert(-.6, '#' + r.c);
                 
                 // Multi line label
                 for (l = 0; l < r.n.length; l++) {
