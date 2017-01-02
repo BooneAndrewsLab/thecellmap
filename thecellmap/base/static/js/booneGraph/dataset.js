@@ -220,8 +220,8 @@ define([
                     if (!!edge.c) { // color defined
                         edge.color = edge.c;
                     } else if (dsid == 1 || opts.interaction_on) {
-                        edge.color = edge.weight < 0. ? "red" : "green";
-                        edge.size = .5;
+                        edge.color = edge.weight < 0. ? "blue" : "yellow";
+//                        edge.size = .5;
                     }
                     
                     if (dsid == 1) {
