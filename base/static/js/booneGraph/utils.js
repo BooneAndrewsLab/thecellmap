@@ -51,7 +51,7 @@ define([
     
     var onNodeDblClick = function(targets) {
         var strain = getStrain(targets[0] || targets.content[0]);
-        setTimeout(function() {open('http://www.yeastgenome.org/search?query=' + strain.get('orf'))}, 150);
+        setTimeout(function() {open('http://www.yeastgenome.org/search?is_quick=true&q=' + strain.get('orf'))}, 150);
     }
     
     var getNode = function(id) {
