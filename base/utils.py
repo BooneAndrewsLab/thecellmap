@@ -17,18 +17,17 @@ from types import NoneType
 
 from django.core.files.temp import NamedTemporaryFile
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from django.http.response import HttpResponse
 import openpyxl
-# from openpyxl.styles.fills import Fill
+import xlrd
+from xlrd.biffh import XLRDError
 from xlwt import Style
 import xlwt
 
 from base.models import Gene
 import numpy as np
 from thecellmap import settings
-from xlrd.biffh import XLRDError
-import xlrd
-from django.db import transaction
 
 
 RE_ORF = re.compile("^Y[A-P][LR]\d{3}[CW](\-[A-Z])?$")
@@ -48,11 +47,11 @@ STYLE_BOLD = 'bold'
 STYLE_WRAP = 'wrap'
 
 STYLES = {
-    STYLE_NEG_STRINGENT: ('red_stringent', 'FFBF0000'),
-    STYLE_NEG_SIGNIFICANT: ('red_lenient', 'FFFF0000'),
-    STYLE_POS_STRINGENT: ('green_stringent', 'FF00BF00'),
-    STYLE_POS_SIGNIFICANT: ('green_lenient', 'FF00FF00'),
-    STYLE_COR_SIGNIFICANT: ('correlation', 'FFFFCC99'),
+    STYLE_NEG_STRINGENT: ('red_stringent', 'FF0000BF'),
+    STYLE_NEG_SIGNIFICANT: ('red_lenient', 'FF0000FF'),
+    STYLE_POS_STRINGENT: ('green_stringent', 'FFBFBF00'),
+    STYLE_POS_SIGNIFICANT: ('green_lenient', 'FFFFFF00'),
+    STYLE_COR_SIGNIFICANT: ('correlation', 'FFFFCC00'),
 }
 
 def get_xlwt_style(color):
@@ -323,10 +322,10 @@ class XlsWriter(GenericXlsWriter):
     
     def _create_wb(self):
         wb = xlwt.Workbook()
-        wb.set_colour_RGB(0x21, 204, 51, 51)
-        wb.set_colour_RGB(0x22, 255, 153, 153)
-        wb.set_colour_RGB(0x23, 0, 153, 51)
-        wb.set_colour_RGB(0x24, 153, 204, 153)
+        wb.set_colour_RGB(0x21, 51, 51, 204)
+        wb.set_colour_RGB(0x22, 153, 153, 255)
+        wb.set_colour_RGB(0x23, 153, 153, 0)
+        wb.set_colour_RGB(0x24, 204, 204, 153)
         wb.set_colour_RGB(0x25, 255, 204, 153)
         return wb
     
