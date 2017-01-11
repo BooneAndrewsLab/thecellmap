@@ -322,10 +322,10 @@ class XlsWriter(GenericXlsWriter):
     
     def _create_wb(self):
         wb = xlwt.Workbook()
-        wb.set_colour_RGB(0x21, 51, 51, 204)
-        wb.set_colour_RGB(0x22, 153, 153, 255)
-        wb.set_colour_RGB(0x23, 153, 153, 0)
-        wb.set_colour_RGB(0x24, 204, 204, 153)
+        wb.set_colour_RGB(0x21, 0, 101, 204)
+        wb.set_colour_RGB(0x22, 0, 118, 239)
+        wb.set_colour_RGB(0x23, 205, 164, 0)
+        wb.set_colour_RGB(0x24, 255, 204, 0)
         wb.set_colour_RGB(0x25, 255, 204, 153)
         return wb
     

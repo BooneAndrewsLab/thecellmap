@@ -348,3 +348,27 @@
 .introjs-prevbutton {
     display: none!important;
 }
+
+.btn-gi-pos {
+    color: #000;
+    background-color: #ffcc00;
+    border-color: #f2c200;
+}
+
+.btn-gi-pos:hover {
+    color: #000;
+    background-color: #cda400;
+    border-color: #bf9900;
+}
+
+.btn-gi-neg {
+    color: #fff;
+    background-color: #0076ef;
+    border-color: #0070e3;
+}
+
+.btn-gi-neg:hover {
+    color: #fff;
+    background-color: #0065cc;
+    border-color: #005ebf;
+}

@@ -31,12 +31,12 @@ define([
         if (ds == 0) {
             $('.cutoff-label-min').html(state.get('cutoffCorrelation'));
             $('.cutoff-label-max').css('visibility', 'hidden');
-            $('.cutoff-label-min').removeClass('btn-danger').addClass('btn-default');
+            $('.cutoff-label-min').removeClass('btn-gi-neg').addClass('btn-default');
         } else {
             $('.cutoff-label-max').html(state.get('cutoffInteraction')[1]);
             $('.cutoff-label-min').html(state.get('cutoffInteraction')[0]);
             $('.cutoff-label-max').css('visibility', 'visible');
-            $('.cutoff-label-min').removeClass('btn-default').addClass('btn-danger');
+            $('.cutoff-label-min').removeClass('btn-default').addClass('btn-gi-neg');
         }
         
         $('.cutoff-bar-simple').css('display', 'none');
@@ -220,7 +220,7 @@ define([
                     if (!!edge.c) { // color defined
                         edge.color = edge.c;
                     } else if (dsid == 1 || opts.interaction_on) {
-                        edge.color = edge.weight < 0. ? "blue" : "yellow";
+                        edge.color = edge.weight < 0. ? "rgb(0,118,239)" : "rgb(255,204,0)";
 //                        edge.size = .5;
                     }
                     
