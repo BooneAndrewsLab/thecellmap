@@ -12,12 +12,13 @@ define([
     
     'drag',
     'bootstrap.colorpicker',
+    'clipboard',
     
     'jquery.cookie',
     'sigma.rotate',
     'bootstrap',
 ], function($, _, Backbone, 
-    Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly, Colorpicker) {
+    Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly, Colorpicker, Clipboard) {
     
     var eventsView = Backbone.View.extend({
         initialize: function() {
@@ -149,6 +150,17 @@ define([
                 handle: '#legend-handle'
             });
             
+            var clipboard = new Clipboard('.btn-clipboard');
+            clipboard.on('success', function(e) {
+                $('#node-selected-list').tooltip({title: 'Copied!', trigger: 'manual', placement: 'bottom'});
+                $('#node-selected-list').tooltip('show');
+            });
+
+            clipboard.on('error', function(e) {
+                $('#node-selected-list').tooltip({title: 'Copy failed, press Ctrl+c', trigger: 'manual', placement: 'bottom'});
+                $('#node-selected-list').tooltip('show');
+            });
+            
             $('.refresh-network').on('click', this.refreshNetwork);
             
             $('.bs-colorpicker').colorpicker();
@@ -163,6 +175,23 @@ define([
                 $('.search-bar').appendTo('.select2-div').addClass('hidden-xs');
             }).on('show.bs.modal', function() {
                 $('.search-bar').appendTo('#modal-search .modal-body').removeClass('hidden-xs');
+            });
+            
+            $('#modal-copy').on('show.bs.modal', function() {
+                var selection = Utils.getSelection()
+                if (selection.length <= 0) return;
+                
+                var str = '';
+                for (var s in selection) {
+                    if (s != 0) str += ', ';
+                    str += Utils.getNode(selection[s]).label;
+                }
+                $('#modal-copy input').val(str);
+            }).on('shown.bs.modal', function() {
+                $('#modal-copy input').select();
+            }).on('hide.bs.modal', function() {
+                $('#modal-copy input').val('');
+                $('#node-selected-list').tooltip('destroy');
             });
             
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
@@ -233,6 +262,9 @@ define([
         
         graphContext: function(e) {
             switch ($(e.target).attr('id')) {
+            case 'context-copy':
+                $('#modal-copy').modal('show');
+                break
             case 'context-toggle-nlabel':
                 var bool = state.get('showNodeLabels'), val = bool ? 0 : 24;
                 state.set('showNodeLabels', !bool);
@@ -250,6 +282,7 @@ define([
                 Download.downloadCanvasSvg();
                 break;
             case 'context-tour':
+                localStorage.setItem('enableIntro', true);
                 break
             case 'context-styles':
                 $('#modal-style').modal('show');
@@ -323,20 +356,7 @@ define([
                 }
                 break;
             case 'context-copy':
-                var selection = Utils.getSelection()
-                if (selection.length <= 0) return;
-                
                 $('#modal-copy').modal('show');
-                $('#modal-copy').on('shown.bs.modal', function() {
-                    var str = '';
-                    for (var s in selection) {
-                        if (s != 0) str += ', ';
-                        str += Utils.getNode(selection[s]).label;
-                    }
-                    $('#modal-copy input').val(str).select();
-                }).on('hide.bs.modal', function() {
-                    $('#modal-copy input').val('');
-                });
                 break;
             }
             

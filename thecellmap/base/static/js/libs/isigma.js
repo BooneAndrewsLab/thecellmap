@@ -1544,7 +1544,9 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     borderSize: 0,
     nodeBorderColor: 'node',
     defaultNodeBorderColor: '#fff',
-
+    
+    drawSelectedPin: true,
+    
     // --------
     // PROCESS:
     // --------
@@ -1771,7 +1773,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     if (node['dubious']) ctx.stroke();
     else ctx.fill();
     
-    if (node['selected']) {
+    if (self.p.drawSelectedPin && node['selected']) {
         var rsize = 35;
         ctx.beginPath();
         
@@ -1950,8 +1952,14 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
 //    if (node.type == 'pin') return;
     
     var ctx = labelsCtx;
-
-    if ((node['displaySize'] >= self.p.labelThreshold || node['forceLabel']) && !node['hideLabel']) {
+    
+    // Draw labels if:
+    // 1. we're zoomed in far enough OR
+    // 2. label is forced and node is not selected OR
+    // 3. label is forced and node is selected and drawPin is enabled
+    if ((node['displaySize'] >= self.p.labelThreshold || 
+            (node['forceLabel'] && !node['selected']) || 
+            (node['forceLabel'] && node['selected'] && self.p.drawSelectedPin)) && !node['hideLabel']) {
       var fontSize = self.p.labelSize == 'fixed' ?
                      self.p.defaultLabelSize :
                      self.p.labelSizeRatio * node['displaySize'];

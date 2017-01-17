@@ -71,7 +71,9 @@ define([
                         strain = {};
                     } else {
                         annot = annotation.get('map')[strain.get('id')];
-                        if (annot != undefined) {
+                        if (!!node.c) {
+                            color = node.c;
+                        } else if (annot != undefined) {
                             color = annotation.get('colorPalette')[annotations.get('terms')[annot[0]].idx];
                         } else {
                             color = annotation.get('defaultColor');
