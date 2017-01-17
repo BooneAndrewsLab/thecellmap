@@ -101,6 +101,7 @@
   
   <div id="contextmenu-graph-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu-graph" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
+      <li><a id="context-copy" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Copy selected nodes</a></li>
       <li><a id="context-yeastmine" tabindex="-1" href="#"><span class="glyphicons glyphicons-link"></span> Analyze visible network in Yeastmine</a></li>
       <li><a id="context-svg" tabindex="-1" href="#"><span class="glyphicons glyphicons-camera"></span> Take a snapshot</a></li>
       <li class="divider"></li>
@@ -250,10 +251,11 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <input type="text" class="form-control">
+            <input type="text" class="form-control" id="node-selected-list">
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-success btn-clipboard" data-clipboard-target="#node-selected-list">Copy</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>

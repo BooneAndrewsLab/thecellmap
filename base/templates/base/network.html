@@ -50,7 +50,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
     window.opts = {
         urls: {
             nodes: "{{ dataset.static_url }}/nodes.json",
-            layout: "{{ dataset.static_url }}/layout.json",
+            layout: "{{ dataset.static_url }}/{{ layout }}",
             correlations: "{{ dataset.static_url }}/correlations.json",
             interactions: {% if dataset.type == 'I' %} "{{ dataset.static_url }}/interactions.json" {% else %} "interactions/" {% endif %},
             circle: "{% url 'circle_pack' %}",
@@ -92,9 +92,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
 TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Google Chrome</a> for best performance.</p>
 <![endif]-->
 
-<div class="container-fluid"
-     style='-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;' 
-     onmousedown='return false;'>
+<div class="container-fluid">
     {% csrf_token %}
     <div id="inner-container">
       <div id="sigma-parent" class="sigma-parent">

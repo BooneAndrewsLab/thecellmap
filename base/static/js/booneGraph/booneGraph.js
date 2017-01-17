@@ -106,7 +106,6 @@ define([
              var position = sigInst.position(), m = sigInst.getMouse();
              sigInst._core.mousecaptor.interpolate(m.mouseX, m.mouseY, position.ratio * 2);
          }).bind('upnodes', function(targets) {
-            
             for (var i in targets.content) {
                 var n = targets.content[i];
                 console.log(n, Utils.getStrain(n).get('label'), Utils.getStrain(n));

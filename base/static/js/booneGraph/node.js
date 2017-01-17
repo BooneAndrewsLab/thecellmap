@@ -315,14 +315,16 @@ define([
                         $('#panel-alerts').hide();
                     }
                     
+                    actualSelection = $(selected).not(missingNodes['ids']).get();
+                    
+                    sigInst.drawingProperties({drawSelectedPin: actualSelection.length < 10});
+                    
 //                    sigInst.draw(1, -1, 1); // TODO: fix this to redraw only nodes, there is a bug where the edges would disappear
                     sigInst.draw();
                     
                     if (state.get('selection').length > 0) {
                         state.set('preselect', state.get('selection'));
                     }
-                    
-                    actualSelection = $(selected).not(missingNodes['ids']).get();
                     
                     if (state.get('annotation') == 'None' && state.get('showRegions') && actualSelection.length > 0) {
                         Annotation.loadAnnotation(opts.default_annotation);

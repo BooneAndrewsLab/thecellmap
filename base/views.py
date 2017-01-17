@@ -32,6 +32,7 @@ def _serve_dataset(request, dataset=None, override_auth=False):
     
     if override_auth or request.user.is_authenticated() or dataset.is_published:
         response = render(request, 'base/network.html', {
+                'layout': request.GET.get('l', 'layout.json'),
                 'dataset': dataset,
                 'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
                 'regionGroups': RegionGroup.objects.filter(dataset=dataset),

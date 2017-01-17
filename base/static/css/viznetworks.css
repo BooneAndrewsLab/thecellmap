@@ -81,8 +81,9 @@
     right: 5px;
 }
 
-.top-right > * {
-    display: inline-block !important;
+.top-right-simple > * {
+    margin-left: 5px;
+/* 	display: inline-block !important; */
 }
 
 .bottom-left {
