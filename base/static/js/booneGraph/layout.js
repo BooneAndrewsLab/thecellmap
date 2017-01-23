@@ -6,6 +6,7 @@ define([
     
     'utils',
     
+    'graham_scan',
     'combinations',
     'spin',
     'sigma.forcelayout',
@@ -59,8 +60,58 @@ define([
             
             lopts = {
                 callback: function(n) {
-                        if (Object.keys(n).length - 1 > 1) Utils.stackNetworks();
-                        Utils.graphCenter();
+//                        if (Object.keys(n).length - 1 > 1)
+//                            Utils.stackNetworks();
+                        
+                        var convexHull = new ConvexHullGrahamScan();
+                        var xmax, xmin, ymax, ymin;
+                        
+                        sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;}).forEach(function(n){
+                            convexHull.addPoint(n.x, n.y);
+                            xmax = !xmax ? n.x : Math.max(xmax, n.x);
+                            xmin = !xmin ? n.x : Math.min(xmin, n.x);
+                            ymax = !ymax ? n.y : Math.max(ymax, n.y);
+                            ymin = !ymin ? n.y : Math.min(ymin, n.y);
+                        });
+                        
+                        
+                        var hullPoints = convexHull.getHull();
+                        hullPoints.push(hullPoints[0]);
+                        var minh = Number.MAX_VALUE, mindeg;
+                        var cx = xmin + ((xmax - xmin) / 2);
+                        var cy = ymin + ((ymax - ymin) / 2);
+                        
+                        for (var i = 1; i < hullPoints.length; i++) {
+                            var p1 = hullPoints[i-1];
+                            var p2 = hullPoints[i];
+                            
+                            var rad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                            var deg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+                            
+                            var tmplx = null, tmphx = null;
+                            
+                            var rotated = [];
+                            sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;}).forEach(function(n) {
+                                rotated.push({
+                                    x: (n.x - cx) * Math.cos(rad) - (n.y - cy) * Math.sin(rad) + cx,
+                                    y: (n.y - cy) * Math.cos(rad) + (n.x - cx) * Math.sin(rad) + cy
+                                })
+                            });
+                            
+                            bbox = Utils.boundingBox(rotated);
+                            if (bbox.h < minh) {
+                                minh = bbox.h;
+                                mindeg = deg;
+                            }
+                        }
+                        
+                        if (mindeg > 90) mindeg = mindeg - 180;
+                        else if (mindeg < -90) mindeg = mindeg + 180;
+                        
+                        sigInst.rotateNodes({degrees: mindeg, callback: function(){
+                            Utils.graphCenter();
+                        }});
+                        
                         setRunningLayout(false);
                     },
                 progress_callback: function(p) {
@@ -69,36 +120,42 @@ define([
                 attraction_multiplier: $('#layout-slider-att').val() || 50,
                 repulsion_multiplier: $('#layout-slider-rep').val() || 1,
                 edgeFilter: function(edge) { return edge.weight > 0.2; },
+                groups: {}
             };
+            console.log('Starting layout', layoutType);
             
             switch(layoutType || 'force') {
             case 'gi':
                 lopts.edges = [];
-                groups = {};
+                var groups = {}, common = {};
                 var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.hidden && !e.source.hidden && !e.target.hidden;});
                 var ntmp = sigInst._core.graph.nodes.filter(function(n) {return !n.hidden;});
                 var other, weight;
                 
-                etmp.forEach(function(e) {
-                    lopts.edges.push(e);
-                });
-                
                 ntmp.forEach(function(n) {
-                    var tmp = [], tmpkey;
+                    var tmp = [], repTmp = [], tmpkey, repKey;
                     etmp.forEach(function(e) {
                         if (e.source.id == n.id || e.target.id == n.id) {
                             // try excluding nodes driving this correlation
                             other = e.source.id == n.id ? e.target : e.source;
                             tmp.push(e.weight < 0 ? "-" + other.id : other.id);
+                            repTmp.push(other.id);
                         }
                     });
                     
                     if (tmp.length > 6) return;
+                    if (tmp.length > 1) {
+                        common[n.id] = null; // this is a node in common to more than one hub
+                    }
                     
                     tmp = tmp.sort();
+                    repTmp = repTmp.sort();
+                    
                     tmpkey = tmp.join();
+                    repKey = repTmp.join();
+                    
                     if (!groups.hasOwnProperty(tmpkey)) {
-                        groups[tmpkey] = {nodes: [], keylen: tmp.length};
+                        groups[tmpkey] = {nodes: [], keylen: tmp.length, key: repKey};
                     }
                     
                     if (tmpkey != '') {
@@ -108,10 +165,24 @@ define([
                     }
                 });
                 
+                etmp.forEach(function(e) {
+                    // Reduce edge weight for edges connecting nodes to multiple hubs
+                    if (common.hasOwnProperty(e.source.id) || common.hasOwnProperty(e.target.id)) {
+                        lopts.edges.push({
+                            weight: 0.10,
+                            absweight: 0.10,
+                            source: e.source,
+                            target: e.target
+                        });
+                    } else {
+                        lopts.edges.push(e);
+                    }
+                });
+                
+                // Add attraction within groups
                 for (key in groups) {
                     if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
                     weight = groups[key].keylen * 0.01 - Math.min(groups[key]['nodes'].length * 0.00001, 0.009);
-                    
                     k_combinations(groups[key].nodes, 2).forEach(function(x) {
                         lopts.edges.push({
                             weight: weight,
@@ -121,6 +192,9 @@ define([
                         })
                     });
                 }
+                
+                lopts['groups'] = groups; // for stacking shared groups
+                
                 break;
             case 'annotation':
                 annotations = {};

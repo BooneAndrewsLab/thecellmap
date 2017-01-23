@@ -25,6 +25,7 @@ require.config({
         'bootstrap.colorpicker': 'libs/bootstrap-colorpicker',
         'intro': 'libs/intro.min',
         'clipboard': 'libs/clipboard.min',
+        'graham_scan': 'libs/graham_scan.min',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
         'sigma.pinlayout': 'libs/plugins/sigma.pinlayout',
