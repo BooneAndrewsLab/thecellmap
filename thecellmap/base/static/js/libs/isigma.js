@@ -485,6 +485,7 @@ function Graph() {
     edgesPowRatio: 0,
     safe: true,
     margin: 10,
+    marginRatio: 1.2,
     // Increasing / decreasing the following parameter will respectively make
     // arrows bigger / smaller relatively to their edges.
     arrowRatio: 3
@@ -945,6 +946,11 @@ function Graph() {
     xMin -= margin;
     yMax += margin;
     yMin -= margin;
+    
+    xMax *= self.p.marginRatio;
+    xMin *= self.p.marginRatio;
+    yMax *= self.p.marginRatio;
+    yMin *= self.p.marginRatio;
 
     scale = self.p.scalingMode == 'outside' ?
             Math.max(w / Math.max(xMax - xMin, 1),
@@ -1082,6 +1088,11 @@ function Graph() {
       xMin -= margin;
       yMax += margin;
       yMin -= margin;
+
+      xMax *= self.p.marginRatio;
+      xMin *= self.p.marginRatio;
+      yMax *= self.p.marginRatio;
+      yMin *= self.p.marginRatio;
 
       scale = self.p.scalingMode == 'outside' ?
               Math.max(w / Math.max(xMax - xMin, 1),

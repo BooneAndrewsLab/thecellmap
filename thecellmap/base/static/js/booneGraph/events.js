@@ -92,8 +92,8 @@ define([
                 var nodes = state.get('missingNodes');
                 if (nodes.length) {
                     // TODO, add nodes to the network, approx their location
-//                    $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
-//                    Dataset.addMissing(nodes);
+// $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
+// Dataset.addMissing(nodes);
                     $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(0.1);
                     state.set('missingNodes', []);
                 }
@@ -136,7 +136,7 @@ define([
                         }
                     } else if (action == 'disabled') {
                         if ($(this).data('simple-step') == state.get('step')) {
-//                            $(this).removeClass('hidden');
+// $(this).removeClass('hidden');
                             $(this).removeClass('disabled');
                         } else if ($(this).data('simple-keep') != true){
                             $(this).addClass('disabled');
@@ -299,10 +299,10 @@ define([
                 setTimeout(function(){form.submit();}, 100);
                 
                 
-//                http://yeastmine.yeastgenome.org/yeastmine/buildBag.do
-//                    type=Gene
-//                    extraFieldValue=S.+cerevisiae
-//                    text=
+// http://yeastmine.yeastgenome.org/yeastmine/buildBag.do
+// type=Gene
+// extraFieldValue=S.+cerevisiae
+// text=
                 
                 break
             }
@@ -504,7 +504,10 @@ define([
         
         showNetwork: function(e) {
             if (Utils.getSelectedNodes().length < 0) return;
-            if (state.get('showRegions')) Annotation.loadAnnotation('None'); // state.get('annotation') == 'SAFE' && 
+            if (state.get('showRegions')) Annotation.loadAnnotation('None'); // state.get('annotation')
+                                                                                // ==
+                                                                                // 'SAFE'
+                                                                                // &&
             
             sigInst.graphProperties({maxEdgeSize: 4});
             state.set('edgeWidth', 4);

@@ -7,7 +7,7 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
     var inst = instance;
     this.graph = graph;
 
-    var EPSILON = 0.000001; // 0.000001
+    var EPSILON = 0.000000000000001; // 0.000001
     var attraction_constant;
     var repulsion_constant;
     var forceConstant;
@@ -205,7 +205,6 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         nodes.forEach(function(node) {
             delta_length = Math.max(EPSILON, Math.sqrt(node.layout.offset_x * node.layout.offset_x
                     + node.layout.offset_y * node.layout.offset_y));
-
             node.layout.tmp_pos_x += (node.layout.offset_x / delta_length) * Math.min(delta_length, temperature);
             node.layout.tmp_pos_y += (node.layout.offset_y / delta_length) * Math.min(delta_length, temperature);
 
@@ -214,7 +213,6 @@ sigma.forcelayout.ForceLayout = function(graph, instance, properties) {
         });
         
         // calculate if expanding or contracting
-        new_box = self.calc_bound_box();
         
         if (layout_iterations >= 42) temperature *= (1 - ((layout_iterations - 42) / (3 * p.max_iterations))) ;
         layout_iterations++;

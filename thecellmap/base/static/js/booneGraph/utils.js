@@ -465,6 +465,23 @@ define([
         else return "#"+(0x100000000+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)*0x1000000+r((t[0]-f[0])*p+f[0])*0x10000+r((t[1]-f[1])*p+f[1])*0x100+r((t[2]-f[2])*p+f[2])).toString(16).slice(f[3]>-1||t[3]>-1?1:3);
     }
     
+    var boundingBox = function(nodes) {
+        var xmax, xmin, ymax, ymin, box = {};
+        nodes.forEach(function(n) {
+            xmax = !xmax ? n.x : Math.max(xmax, n.x);
+            xmin = !xmin ? n.x : Math.min(xmin, n.x);
+            ymax = !ymax ? n.y : Math.max(ymax, n.y);
+            ymin = !ymin ? n.y : Math.min(ymin, n.y);
+        });
+        box.w = Math.abs(xmax - xmin);
+        box.h = Math.abs(ymax - ymin);
+        box.xmax = xmax;
+        box.xmin = xmin;
+        box.ymax = ymax;
+        box.ymin = ymin;
+        return box;
+    };
+    
     return {
         iterVisibleNodes: iterVisibleNodes,
         iterVisibleEdges: iterVisibleEdges,
@@ -499,6 +516,7 @@ define([
         stripLetters: stripLetters,
         alertUser: alertUser,
         parseBool: parseBool,
+        boundingBox: boundingBox,
         
         updateUrl: updateUrl,
     };
