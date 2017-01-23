@@ -75,23 +75,25 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Advanced<b class="caret"></b></a>
             <ul class="dropdown-menu">
-              <li><a href="{% url 'tools_annotations' %}">Annotations</a></li>
-              <li><a href="{% url 'tools_custom' %}">Custom Uploads</a>
-              <li class="divider"></li>
+<!--               <li><a href="{% url 'tools_annotations' %}">Annotations</a></li> -->
+<!--               <li><a href="{% url 'tools_custom' %}">Custom Uploads</a> -->
+<!--               <li class="divider"></li> -->
               <li class='disabled'><a href="#" id="tools-settings">Settings</a></li>
               <li><a href="#" data-toggle="modal" data-target="#modal-style">Style</a></li>
+              <li class="divider"></li>
               {% if user.is_authenticated %}
-                {% if user.is_superuser %}
-                  <li><a href="{% url 'admin:index' %}">Admin</a></li>
-                {% endif %}
-                <li><a href="{% url 'password_change' %}">Change password</a></li>
+                <li><a href="{% url 'password_change' %}">Change Password</a></li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
               {% else %}
                 <li><a href="{% url 'login' %}{% if 'logout' not in request.path %}?next={{ request.path }}{% endif %}">Login</a></li>
               {% endif %}
+              {% if user.is_superuser %}
+                <li class="divider"></li>
+                <li><a href="{% url 'admin:index' %}">Admin</a></li>
+              {% endif %}
             </ul>
           </li>
-          <li><a href="{% url 'resources' %}">Download dataset</a></li>
+          <li><a href="{% url 'resources' %}">Download Dataset</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
           </ul>
         </div>

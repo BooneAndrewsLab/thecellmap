@@ -25,7 +25,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="modal-style-label">Network style</h4>
+          <h4 class="modal-title" id="modal-style-label">Network Style</h4>
         </div>
         <div class="modal-body">
           <ul id="style-tabs" class="nav nav-pills nav-justified">
@@ -37,16 +37,16 @@
           <div class="tab-content">
             <div class="tab-pane fade in active" id="style-node">
               <ul class="list-group">
-                <li class="list-group-item">Node size:
+                <li class="list-group-item">Node Size:
                   <div id="style-slider-nsize"></div>
                 </li>
-                <li class="list-group-item">Label size:
+                <li class="list-group-item">Label Size:
                   <div id="style-slider-lsize"></div>
                 </li>
-                <li class="list-group-item">Label threshold:
+                <li class="list-group-item">Label Threshold:
                   <div id="style-slider-lthresh"></div>
                 </li>
-                <li class="list-group-item">Label color:
+                <li class="list-group-item">Label Color:
                     <div class="input-group bs-colorpicker">
                         <input id="style-label-color" type="hidden" value="#ffffff" class="form-control" />
                         <span class="input-group-addon"><i></i></span>
@@ -56,14 +56,14 @@
             </div>
             <div class="tab-pane fade" id="style-edge">
               <ul class="list-group">
-                <li class="list-group-item">Edge width:
+                <li class="list-group-item">Edge Width:
                   <div id="style-slider-esize"></div>
                 </li>
               </ul>
             </div>
             <div class="tab-pane fade" id="style-general">
               <ul class="list-group">
-                <li class="list-group-item">Background color: 
+                <li class="list-group-item">Background Color: 
                     <div class="input-group bs-colorpicker">
                         <input id="canvas-background-color" type="hidden" name="background-color" value="#000000" class="form-control" />
                         <span class="input-group-addon"><i></i></span>
@@ -77,7 +77,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button id="btn-style-default" type="button" class="btn btn-primary">Revert to defaults</button>
+          <button id="btn-style-default" type="button" class="btn btn-primary">Revert to Defaults</button>
         </div>
       </div> <!-- /.modal-content -->
     </div> <!-- /.modal-dialog -->
@@ -85,13 +85,13 @@
   
   <div id="contextmenu-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
-      <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-view-network" tabindex="-1" href="#"><span class="glyphicon glyphicon-pushpin"></span> View network</a></li>
-      <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download interactions</a></li>
+      <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-view-network" tabindex="-1" href="#"><span class="glyphicon glyphicon-pushpin"></span> View Network</a></li>
+      <li><a id="context-dl" tabindex="-1" href="#"><span class="glyphicon glyphicon-download"></span> Download Interactions</a></li>
       <li><a id="context-sgd" tabindex="-1" href="#"><span class="glyphicons glyphicons-link"></span> Go to SGD</a></li>
-      <li><a id="context-copy" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Copy selected nodes</a></li>
+      <li><a id="context-copy" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Copy Selected Nodes</a></li>
       <li class="divider"></li>
-      <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit node attributes...</a></li>
-      <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Delete node</a></li>
+      <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit Node Attributes...</a></li>
+      <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Delete Node</a></li>
       
 <!--       <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li> -->
 <!--       <li class="divider"></li> -->
@@ -101,16 +101,16 @@
   
   <div id="contextmenu-graph-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu-graph" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
-      <li><a id="context-copy" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Copy selected nodes</a></li>
-      <li><a id="context-yeastmine" tabindex="-1" href="#"><span class="glyphicons glyphicons-link"></span> Analyze visible network in Yeastmine</a></li>
-      <li><a id="context-svg" tabindex="-1" href="#"><span class="glyphicons glyphicons-camera"></span> Take a snapshot</a></li>
+      <li><a id="context-copy" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Copy Selected Nodes</a></li>
+      <li><a id="context-yeastmine" tabindex="-1" href="#"><span class="glyphicons glyphicons-link"></span> Analyze Visible Network in Yeastmine</a></li>
+      <li><a id="context-svg" tabindex="-1" href="#"><span class="glyphicons glyphicons-camera"></span> Take a Snapshot</a></li>
       <li class="divider"></li>
-      <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-toggle-nlabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide/show node labels</a></li>
-      <li><a id="context-toggle-alabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide/show annotation labels</a></li>
-      <li><a id="context-toggle-acolor" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide/show annotation colors</a></li>
+      <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-toggle-nlabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide/Show Node Labels</a></li>
+      <li><a id="context-toggle-alabel" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide/Show Annotation Labels</a></li>
+      <li><a id="context-toggle-acolor" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Hide/Show Annotation Colors</a></li>
       <li class="divider"></li>
-      <li><a id="context-tour" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Re-enable tour</a></li>
-      <li><a id="context-styles" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Styles options</a></li>
+      <li><a id="context-tour" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Re-Enable Tour</a></li>
+      <li><a id="context-styles" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Style Options</a></li>
     </ul>
   </div>
   
@@ -174,7 +174,7 @@
 <!--               </div> -->
 <!--             </div> -->
             <div class="form-group">
-              <label class="col-sm-2 control-label">Node size</label>
+              <label class="col-sm-2 control-label">Node Size</label>
               <div class="col-sm-10">
                 <div id="style-slider-snsize"></div>
               </div>
@@ -247,7 +247,7 @@
       <div class="modal-content">
         <div class="modal-header" id="copy-modal-label">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Copy selected nodes </h4>
+          <h4 class="modal-title">Copy Selected Nodes </h4>
         </div>
         <div class="modal-body">
           <div class="form-group">

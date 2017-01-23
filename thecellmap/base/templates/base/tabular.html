@@ -206,6 +206,7 @@
         
         <div class="col-sm-3 hidden-xs tabs-hidden hidden tab-fade">
           <div class='left list-group' id="strain-tabs-large">
+                <a class="list-group-item nav-header disabled"><strong>Selected Genes</strong></a>
                 <button class="removeable btn dlall btn-warning ladda-button list-group-item hidden" data-style="slide-down"data-spinner-color="#222">
                     
                     <span class='ladda-label'>
@@ -244,6 +245,7 @@
 <!-- table selector list -->
         <div class="col-sm-3 hidden-xs tab-fade">
             <div class="removeable right list-group hidden">
+                <a class="list-group-item nav-header disabled"><strong>Data Type</strong></a>
                 <a class="list-group-item active" href="#" data-target=".tab-pane.correlations" data-toggle="tab" title="">Profile Similarities</a>
                 <a class="list-group-item" href="#" data-target=".tab-pane.negative" data-toggle="tab" title="">Negative Interactions</a>
                 <a class="list-group-item" href="#" data-target=".tab-pane.positive" data-toggle="tab" title="">Positive Interactions</a>
@@ -267,7 +269,7 @@
                                 <tr>    <!--Column Names-->
                                     <th>ORF</th>
                                     <th>Allele</th>
-                                    <th data-mainsort="true">Correlation</th>
+                                    <th data-mainsort="true">Profile Similarity (PCC)</th>
                                </tr>
                             </thead>
                             <tbody></tbody>    <!--Entries-->
