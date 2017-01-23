@@ -59,7 +59,7 @@ define([
             url: opts.urls['layout'], 
             dataType : 'json',
             success: function(data) {
-                var strain, annot, color;
+                var strain, annot, color, numNodes = 0;
                 nodes = data.nodes || [];
                 edges = data.edges || [];
                 var xmax, xmin, ymax, ymin;
@@ -87,8 +87,12 @@ define([
                         
                         if (strain.color != undefined) node.color = strain.color;
                         sigInst.addNode(node.id, node);
+                        numNodes++;
                     }
                 });
+                
+                console.log("Added", numNodes, "nodes");
+                console.log("Network reports", sigInst._core.graph.nodes.length, "nodes");
                 
                 sigInst._core.graph.nodes.forEach(function(node) {
                     strain = strains.get(node.id);
@@ -209,7 +213,7 @@ define([
             data: data,
             success: function(data) {
                 edges = data.edges;
-                var e, edge, node, annotation = vizdata['annotations'].get(state.get('annotation'));
+                var e, edge, node, annotation = vizdata['annotations'].get(state.get('annotation')), numEdges = 0;
                 
                 for (e in edges) {
                     edge = edges[e];
@@ -266,10 +270,14 @@ define([
                     
                     if (!!sigInst._core.graph.nodesIndex[edge.source] && !!sigInst._core.graph.nodesIndex[edge.target] && !sigInst._core.graph.edgesIndex[edge.id]) {
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
+                        numEdges++;
                         sigInst._core.graph.edgesIndex[edge.id].ds = dsid;
                         sigInst._core.graph.edgesIndex[edge.id].absweight = edge.size;
                     }
                 }
+                
+                console.log("Added", numEdges, "edges");
+                console.log("Network reports", sigInst._core.graph.edges.length, "edges");
             },
         }).always(function() {
             if (callback) {
