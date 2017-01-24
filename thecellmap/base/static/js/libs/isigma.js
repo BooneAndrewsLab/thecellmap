@@ -485,7 +485,7 @@ function Graph() {
     edgesPowRatio: 0,
     safe: true,
     margin: 10,
-    marginRatio: 1.2,
+    marginRatio: 1.,
     // Increasing / decreasing the following parameter will respectively make
     // arrows bigger / smaller relatively to their edges.
     arrowRatio: 3
