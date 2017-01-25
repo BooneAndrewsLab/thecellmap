@@ -7,9 +7,9 @@ define([
             id: 'None',
             map: {},
             smap: {},
-            defaultColor : '#E8E8E8',
+            defaultColor : '#ffffff',
             terms: {"-1": {id: -1, idx: 0, name: 'Unannotated', orig_name: 'Unannotated', alias: 'Unannotated'}},
-            colorPalette: ['#E8E8E8'],
+            colorPalette: ['#ffffff'],
         }
     });
     

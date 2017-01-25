@@ -359,7 +359,7 @@ define([
     }
     
     var messageUser = function(text, target, missingNodes) {
-        var alert = $('<div class="alert alert-warning fade in"> \
+        var alert = $('<div class="alert alert-danger fade in"> \
                 <button class="close" aria-hidden="true" data-dismiss="alert" type="button">x</button> \
                 ' + text + ' \
               </div>');
@@ -374,7 +374,7 @@ define([
             });
             
             if (missingNodes) {
-                alert.append('<a href="#"> Click here to extract the similarity network for the selected gene(s) at a lower PCC threshold</a>');
+                alert.append('<br><a href="#"> Click here to extract the similarity network for the selected gene(s) at a lower PCC threshold</a>');
                 alert.find('a').on('click', function(e) {
                     alert.alert('close'); 
                     if (!target) $('#panel-alerts').hide();

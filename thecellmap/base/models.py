@@ -23,6 +23,7 @@ class Gene(models.Model):
     stop = models.IntegerField(help_text='Stop coordinate')
     sorting_value = models.IntegerField()
     description = models.TextField()
+    neighbor_effect = models.BooleanField(default=False)
     
     CHROMOSOME_CODE = {
         '2-micron': -2

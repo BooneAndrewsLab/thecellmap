@@ -235,9 +235,9 @@ require([
                 $('.tab-pane[data-node="'+node_id+'"] .Ctables .correlations').attr('id',"c" + node_id);
                 $('.tab-pane[data-node="'+node_id+'"] .Ctables .negative').attr('id',"s" + node_id);
                 $('.tab-pane[data-node="'+node_id+'"] .Ctables .positive').attr('id',"q" + node_id);
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .correlations .panel-title').append(target.data('label')+': Profile Similarity')
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .negative .panel-title').append(target.data('label')+': Negative Genetic Interactions')
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .positive .panel-title').append(target.data('label')+': Positive Genetic Interactions')
+                $('.tab-pane[data-node="'+node_id+'"] .Ctables .correlations .panel-title').append(target.data('label')+': Profile Similarities')
+                $('.tab-pane[data-node="'+node_id+'"] .Ctables .negative .panel-title').append(target.data('label')+': Negative Interactions')
+                $('.tab-pane[data-node="'+node_id+'"] .Ctables .positive .panel-title').append(target.data('label')+': Positive Interactions')
                 //fill tabels with entries up to cut off point
                 add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
                 add_to_table($('#q' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
