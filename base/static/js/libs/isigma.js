@@ -1974,8 +1974,14 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
       var fontSize = self.p.labelSize == 'fixed' ?
                      self.p.defaultLabelSize :
                      self.p.labelSizeRatio * node['displaySize'];
-
-      ctx.font = self.p.fontStyle + fontSize + 'px ' + self.p.font;
+      var fontStyle = self.p.fontStyle;
+      
+      if (node['selected']) {
+          fontSize *= 1.;
+          fontStyle = 'bold';
+      }
+      
+      ctx.font = fontStyle + ' ' + fontSize + 'px ' + self.p.font;
       
       ctx.fillStyle = self.p.labelColor == 'node' ?
                       (node['color'] || self.p.defaultNodeColor) :
@@ -2148,8 +2154,13 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     var fontSize = self.p.labelSize == 'fixed' ?
                    self.p.defaultLabelSize :
                    self.p.labelSizeRatio * node['displaySize'];
-
-    ctx.font = (self.p.hoverFontStyle || self.p.fontStyle || '') + ' ' +
+    var fontStyle = self.p.hoverFontStyle || self.p.fontStyle || '';
+    if (node['selected']) {
+        fontSize *= 1.;
+        fontStyle = 'bold';
+    }
+    console.log(fontSize);
+    ctx.font = fontStyle + ' ' +
                fontSize + 'px ' +
                (self.p.hoverFont || self.p.font || '');
 

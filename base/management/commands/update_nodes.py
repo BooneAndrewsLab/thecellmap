@@ -33,6 +33,7 @@ class Command(CellMapCommand):
             node["label"] = s.allele or (gene.name and (gene.name + suffix)) or (gene.orf + suffix)
             node['aliases'] = gene.aliases_encoded()
             node['isdu'] = gene.feature_qualifier == 'Dubious'
+            node['isnf'] = gene.neighbor_effect
          
         for node in nodespickle:
             s = strainmap[nodesmap[node["id"]][0]]
@@ -45,6 +46,7 @@ class Command(CellMapCommand):
             node["label"] = s.allele or (gene.name and (gene.name + suffix)) or (gene.orf + suffix)
             node['aliases'] = gene.aliases
             node['isdu'] = gene.feature_qualifier == 'Dubious'
+            node['isnf'] = gene.neighbor_effect
          
         self._dump_clean_json(nodesjson, ds.static_path('nodes.json'))
         pickle.dump(nodespickle, open(ds.static_path('nodes.pickle'), 'w'))

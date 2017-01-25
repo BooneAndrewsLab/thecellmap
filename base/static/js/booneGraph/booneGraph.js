@@ -26,7 +26,7 @@ define([
         arrows: false,
         colorScheme: 'black',
         dataset: 0,
-        defaultNodeColor: '#E8E8E8',
+        defaultNodeColor: '#ffffff',
         downloadLimit: 30,
         graphProperties: {
             type: 'network',
@@ -44,7 +44,7 @@ define([
         layoutAlgo: ['fl'],
         layoutButtonHide: true,
         modifiedCallback: null,
-        multifunctionNodeColor: '#E8E8E8',
+        multifunctionNodeColor: '#ffffff',
         rootElement: '#network-container',
         runningLayout: null,
         slider: {

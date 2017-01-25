@@ -97,6 +97,11 @@ define([
                 sigInst._core.graph.nodes.forEach(function(node) {
                     strain = strains.get(node.id);
                     node.dubious = strain.get('isdu');
+                    node.neighbor = strain.get('isnf');
+                    if (node.neighbor) {
+                        node.color = '#c0c0c0';
+                    }
+                    
                     node.size_init = node.size;
 //                    if (node.dubious) node.label += ' - dubious';
                     node._hidden = node.hidden; // Our internal way to know if user hid the node manually or not
@@ -242,7 +247,7 @@ define([
                                 color = annotation.get('defaultColor');
                             }
                             
-                            n.label = strain.get('verboseName');
+                            n.label = strain.get('verboseName').toLowerCase();
                             n.color = color;
                             n.size = 2;
                             n.x = n.y = Math.random() * 100;
@@ -259,7 +264,7 @@ define([
                                 color = annotation.get('defaultColor');
                             }
                             
-                            n.label = strain.get('verboseName');
+                            n.label = strain.get('verboseName').toLowerCase();
                             n.color = color;
                             n.size = 2;
                             n.x = n.y = Math.random() * 100;

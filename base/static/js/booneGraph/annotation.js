@@ -35,7 +35,11 @@ define([
                         n.color = data.get('colorPalette')[data.get('terms')['-2'].idx];
                     }
                 } else {
-                    n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
+                    if (n.neighbor) {
+                        n.color = '#c0c0c0';
+                    } else {
+                        n.color = data.get('colorPalette')[data.get('terms')['-1'].idx];
+                    }
                 }
             }).draw();
             
@@ -43,7 +47,11 @@ define([
         } else {
             // We're looking at the global network so we need to show regions and leave default node colors
             sigInst.iterNodes(function(n) {
-                n.color = opts['defaultNodeColor'];
+                if (n.neighbor) {
+                    n.color = '#c0c0c0';
+                } else {
+                    n.color = opts['defaultNodeColor'];
+                }
             }).draw();
             
             $('#panel-legend').hide();
@@ -448,7 +456,7 @@ define([
                                     addedGroup['locations'].push({});
                                 }
                             }
-                            
+                            console.log("HERRRREEEE");
                             regionGroups.add(new RegionGroupModel(addedGroup));
                             drawRegions();
                         },
