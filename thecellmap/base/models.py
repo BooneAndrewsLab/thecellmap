@@ -39,6 +39,7 @@ class Gene(models.Model):
     def aliases_encoded(self, replacement=MAGIC):
         return [a.replace(' ', replacement) for a in self.aliases]
     
+    @property
     def closest_neighbors(self):
         genes = Gene.objects.filter(chromosome=self.chromosome).exclude(pk=self.pk).extra(
                 select={"diff": "abs(sorting_value - %d)" % (self.sorting_value, )}).order_by("diff")

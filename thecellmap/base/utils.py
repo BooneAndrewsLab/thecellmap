@@ -37,12 +37,14 @@ xlwt.add_palette_colour("red_lenient", 0x22)
 xlwt.add_palette_colour("green_stringent", 0x23)
 xlwt.add_palette_colour("green_lenient", 0x24)
 xlwt.add_palette_colour("correlation", 0x25)
+xlwt.add_palette_colour("neighbor", 0x26)
 
 STYLE_NEG_STRINGENT = '-str'
 STYLE_NEG_SIGNIFICANT = '-sig'
 STYLE_POS_STRINGENT = '+str'
 STYLE_POS_SIGNIFICANT = '+sig'
 STYLE_COR_SIGNIFICANT = 'cor'
+STYLE_NEIGHBOR = 'nei'
 STYLE_BOLD = 'bold'
 STYLE_WRAP = 'wrap'
 
@@ -52,6 +54,7 @@ STYLES = {
     STYLE_POS_STRINGENT: ('green_stringent', 'FFBFBF00'),
     STYLE_POS_SIGNIFICANT: ('green_lenient', 'FFFFFF00'),
     STYLE_COR_SIGNIFICANT: ('correlation', 'FFFFCC00'),
+    STYLE_NEIGHBOR: ('neighbor', 'FFB0B0B0'),
 }
 
 def get_xlwt_style(color):
@@ -294,6 +297,8 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 10, 1, 'Significant positive genetic interactions (stringent cutoff: score > 0.16, p-value < 0.05)')
         self._write_cell(sheet['sheet'], 11, 0, 'E', style=STYLE_POS_SIGNIFICANT)
         self._write_cell(sheet['sheet'], 11, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
+        self._write_cell(sheet['sheet'], 12, 0, 'F', style=STYLE_NEIGHBOR)
+        self._write_cell(sheet['sheet'], 12, 1, 'Genes located immediately adjacent to the selected gene')
         
         sheet['sheet'].col(1).width = 24000
         sheet['sheet'].row(4).height = 4000
@@ -327,6 +332,7 @@ class XlsWriter(GenericXlsWriter):
         wb.set_colour_RGB(0x23, 205, 164, 0)
         wb.set_colour_RGB(0x24, 255, 204, 0)
         wb.set_colour_RGB(0x25, 255, 204, 153)
+        wb.set_colour_RGB(0x26, 176, 176, 176)
         return wb
     
     def _add_sheet(self, name):
