@@ -6,7 +6,6 @@ import dbarray
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import F, FloatField
 from django.http.response import Http404
 
 from thecellmap import settings
@@ -39,11 +38,22 @@ class Gene(models.Model):
     def aliases_encoded(self, replacement=MAGIC):
         return [a.replace(' ', replacement) for a in self.aliases]
     
-    @property
-    def closest_neighbors(self):
-        genes = Gene.objects.filter(chromosome=self.chromosome).exclude(pk=self.pk).extra(
-                select={"diff": "abs(sorting_value - %d)" % (self.sorting_value, )}).order_by("diff")
-        return genes[:2]
+    def closest_neighbors(self, dataset):
+        genes = Gene.objects.filter(chromosome=self.chromosome, strain__as_correlation=dataset).exclude(pk=self.pk).distinct()
+        agg = []
+        
+        a1, a2 = sorted((self.start, self.stop))
+        for g in genes:
+            b1, b2 = sorted((g.start, g.stop))
+            if a1 < b1:
+                distance = max(0, b1 - a2);
+            else:
+                distance = max(0, a1 - b2);
+            
+            agg.append((distance, g))
+        
+        print(sorted(agg)[:2])
+        return [g for _, g in sorted(agg)[:2]]
     
     def __unicode__(self):
         return ('%s (%s)' % (self.orf, self.name or '')).replace(' ()', '')

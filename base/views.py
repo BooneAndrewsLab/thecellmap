@@ -263,7 +263,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
         nodes_inv = cPickle.load(fp)
     
     gene = Gene.objects.distinct().get(strain__in=nodes_inv[int(node_id)])
-    neighbors = gene.closest_neighbors
+    neighbors = gene.closest_neighbors(dataset)
     
     data = nodes_data(dataset, [node_id])
     response = {

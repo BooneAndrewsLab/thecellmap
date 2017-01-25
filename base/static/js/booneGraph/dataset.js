@@ -226,7 +226,8 @@ define([
                     edge.target = edge.target || edge.t; // t == target
                     edge.weight = edge.weight || edge.w; // w == weight
                     edge.id = edge.source + '+' + edge.target; // We can ommit ids, can be auto generated here
-                    edge.size = Math.abs(edge.weight) * 10;
+//                    edge.size = Math.abs(edge.weight) * 10;
+                    edge.size = .01;
 //                    console.log(edge.size);
                     if (!!edge.c) { // color defined
                         edge.color = edge.c;

@@ -31,7 +31,7 @@ define([
         graphProperties: {
             type: 'network',
             minEdgeSize : 0,
-            maxEdgeSize : 1,
+            maxEdgeSize : .4,
             nodesPowRatio : 1,
             edgesPowRatio : .5,
             margin: 25,

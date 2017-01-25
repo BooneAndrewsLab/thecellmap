@@ -456,7 +456,6 @@ define([
                                     addedGroup['locations'].push({});
                                 }
                             }
-                            console.log("HERRRREEEE");
                             regionGroups.add(new RegionGroupModel(addedGroup));
                             drawRegions();
                         },

@@ -240,7 +240,7 @@ def nodes_xls(ds, nodes, filename):
     instructions_content = []
     
     def write_sheet(strain, node, correlations, scores):
-        neighbors = [n.orf for n in strain.gene.closest_neighbors]
+        neighbors = [n.orf for n in strain.gene.closest_neighbors(ds)]
         instructions_content.append(strain.basic_id())
         output.add_sheet('%s GI profile sim.' % strain.label(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
