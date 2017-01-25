@@ -49,7 +49,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
     
     window.opts = {
         urls: {
-            nodes: "{{ dataset.static_url }}/nodes.json",
+            nodes: "{{ dataset.static_url }}/nodes.json?v=170124",
             layout: "{{ dataset.static_url }}/{{ layout }}?v=170123",
             correlations: "{{ dataset.static_url }}/correlations.json",
             interactions: {% if dataset.type == 'I' %} "{{ dataset.static_url }}/interactions.json" {% else %} "interactions/" {% endif %},
