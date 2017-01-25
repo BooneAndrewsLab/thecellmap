@@ -509,8 +509,8 @@ define([
                                                                                 // 'SAFE'
                                                                                 // &&
             
-            sigInst.graphProperties({maxEdgeSize: 4});
-            state.set('edgeWidth', 4);
+            sigInst.graphProperties({maxEdgeSize: 1});
+//            state.set('edgeWidth', 4);
             
             Node.applyNeighbourhood(1);
             $(e.target).addClass('hidden');

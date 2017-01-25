@@ -2159,7 +2159,6 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
         fontSize *= 1.;
         fontStyle = 'bold';
     }
-    console.log(fontSize);
     ctx.font = fontStyle + ' ' +
                fontSize + 'px ' +
                (self.p.hoverFont || self.p.font || '');
