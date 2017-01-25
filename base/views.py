@@ -1,5 +1,6 @@
 """ Views for the base application """
 
+import cPickle
 import datetime
 import json
 import math
@@ -258,8 +259,20 @@ def tabular_data(request, dataset_id=None, node_id=None):
     if not node_id: raise Http404('Node ID is required')
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     
+    with open(dataset.static_path('nodes_inv.pickle')) as fp:
+        nodes_inv = cPickle.load(fp)
+    
+    gene = Gene.objects.distinct().get(strain__in=nodes_inv[int(node_id)])
+    neighbors = gene.closest_neighbors()
+    
     data = nodes_data(dataset, [node_id])
-    response = {'correlations': [], 'scores_pos': [], 'scores_neg': []}
+    response = {
+        'correlations': [], 
+        'scores_pos': [], 
+        'scores_neg': [], 
+        'neighbor_effect': gene.neighbor_effect, 
+        'neighbors': [n.orf for n in neighbors]
+    }
     data = data[data.keys()[0]]
     c = data['correlations']
     s = data['scores']
