@@ -8,7 +8,7 @@ import json
 import operator
 import os
 
-from django.core.paginator import Paginator
+from django.contrib import messages
 from numpy.ma import corrcoef
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
@@ -17,7 +17,6 @@ from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
 import numpy as np
-from django.contrib import messages
 
 
 ONLY = (

@@ -29,6 +29,7 @@ require([
     //selection node array keeps track of already selected strains, prevents users from selecting duplicates
     var selectionNode = [];
     $('.tab-pane[data-node]').each(function(){selectionNode.push($(this).data('node'))});
+    var nodeNeighbors = {};
 
     //download function, for single strain and download all
     var downloading = function(e){
@@ -181,7 +182,7 @@ require([
         };
 
     //adds entries to the table up to the cut off value, keeps track of the cut off value for the load more button
-    var add_to_table = function(tbody, data, val_idx) {
+    var add_to_table = function(tbody, data, val_idx, node_id) {
       if (data.length == 0) return;
       var row, ele = tbody.find('.row-more');
       var ctf =  data[0][val_idx] < 0 ? -1 : 1;
@@ -192,7 +193,11 @@ require([
               row += '<td data-value="' + val + '">' + val + '</td>';
           });
           ctf = func(line[val_idx], ctf);
-          tbody.append('<tr>' + row + '</tr>');
+          if (nodeNeighbors[node_id].indexOf(line[0]) != -1) {
+              tbody.append('<tr class="nf">' + row + '</tr>');
+          } else {
+              tbody.append('<tr>' + row + '</tr>');
+          }
       });
       var location = tbody.parent().parent()
       location.find('.load-more').data('cutoff', ctf);
@@ -231,17 +236,32 @@ require([
             $.get(node_id + '/', function(d) {
                 //generate all three tables for the strain upon loading (tables contain no entries at this point)
                 // set up table for current strain by editing the html
+                var tableSelect = '.tab-pane[data-node="'+node_id+'"] .Ctables ';
                 $('.master').clone().removeClass('master hidden').appendTo(target);
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .correlations').attr('id',"c" + node_id);
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .negative').attr('id',"s" + node_id);
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .positive').attr('id',"q" + node_id);
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .correlations .panel-title').append(target.data('label')+': Profile Similarities')
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .negative .panel-title').append(target.data('label')+': Negative Interactions')
-                $('.tab-pane[data-node="'+node_id+'"] .Ctables .positive .panel-title').append(target.data('label')+': Positive Interactions')
+                $(tableSelect + '.correlations').attr('id',"c" + node_id);
+                $(tableSelect + '.negative').attr('id',"s" + node_id);
+                $(tableSelect + '.positive').attr('id',"q" + node_id);
+                $(tableSelect + '.correlations .panel-title').append(target.data('label') + ': Profile Similarities');
+                $(tableSelect + '.negative .panel-title').append(target.data('label') + ': Negative Interactions');
+                $(tableSelect + '.positive .panel-title').append(target.data('label') + ': Positive Interactions');
+                
+                if (!!d.neighbor_effect) {
+                    var msg = "Genetic interaction profile may have a modest neighbor effect"; 
+                    $(tableSelect + '.correlations .panel').removeClass('panel-default').addClass('panel-danger');
+                    $(tableSelect + '.negative .panel').removeClass('panel-default').addClass('panel-danger');
+                    $(tableSelect + '.positive .panel').removeClass('panel-default').addClass('panel-danger');
+                    
+                    $(tableSelect + '.correlations .panel-heading').append('<small>' + msg + '</small>');
+                    $(tableSelect + '.negative .panel-heading').append('<small>' + msg + '</small>');
+                    $(tableSelect + '.positive .panel-heading').append('<small>' + msg + '</small>');
+                }
+                
+                nodeNeighbors[node_id] = d.neighbors;
+                
                 //fill tabels with entries up to cut off point
-                add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2);
-                add_to_table($('#q' + node_id + ' .score-pos tbody'), d.scores_pos, 2);
-                add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2);
+                add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2, node_id);
+                add_to_table($('#q' + node_id + ' .score-pos tbody'), d.scores_pos, 2, node_id);
+                add_to_table($('#s' + node_id + ' .score-neg tbody'), d.scores_neg, 2, node_id);
                 //sets the table when the stain first loads to match the current selected table
                 target.find($(".right.list-group a.active").data('target')).addClass('active');
                 //signals end of loading for tables
@@ -266,7 +286,7 @@ require([
                         var id = parseInt(clicked.closest('.tab-pane[data-node]').data('node'));
                         var location = clicked.closest('.panel-body');
                         $.get(id + "/", data, function(d) {
-                            add_to_table(location.find('tbody'), d, 2);
+                            add_to_table(location.find('tbody'), d, 2, id);
                             clicked.remove();
                             update_links();
                         });
