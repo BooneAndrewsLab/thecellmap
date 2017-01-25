@@ -15,7 +15,7 @@ from pandas.core.series import Series
 
 from base.models import StrainData, Strain
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
-    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries
+    STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries, STYLE_NEIGHBOR
 import numpy as np
 
 
@@ -240,16 +240,26 @@ def nodes_xls(ds, nodes, filename):
     instructions_content = []
     
     def write_sheet(strain, node, correlations, scores):
+        neighbors = [n.orf for n in strain.gene.closest_neighbors]
         instructions_content.append(strain.basic_id())
         output.add_sheet('%s GI profile sim.' % strain.label(), ['ORF', 'Allele', 'Correlation'])
         for strainB, correlation in correlations.itertuples(index=False):
-            output.write_correlation_row(strainB + (correlation, ), style=correlation >= .2 and STYLE_COR_SIGNIFICANT)
+            style = correlation >= .2 and STYLE_COR_SIGNIFICANT
+            if strainB[0] in neighbors:
+                style = STYLE_NEIGHBOR
+            output.write_correlation_row(strainB + (correlation, ), style=style)
         output.add_sheet('%s GI scores' % strain.label(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
         for strainB, pval, score in scores[(scores.score <= 0) & (scores.pval < 0.05)].sort('score').itertuples(index=False):
-            output.write_score_row_neg(strainB + (score, pval), style=(score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None)
+            style = (score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None
+            if strainB[0] in neighbors:
+                style = STYLE_NEIGHBOR
+            output.write_score_row_neg(strainB + (score, pval), style=style)
         output.reset_row(1)
         for strainB, pval, score in scores[(scores.score > 0) & (scores.pval < 0.05)].sort('score', ascending=False).itertuples(index=False):
-            output.write_score_row_pos(strainB + (score, pval), style=(score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None)
+            style = (score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None
+            if strainB[0] in neighbors:
+                style = STYLE_NEIGHBOR
+            output.write_score_row_pos(strainB + (score, pval), style=style)
     
     _collect_data(ds, nodes, write_sheet)
     
