@@ -261,6 +261,42 @@
       </div>
     </div>
   </div>
+  
+  <div class="modal fade" id="modal-custom-annotation" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Upload cutom annotations</h4>
+        </div>
+        <div class="modal-body">
+          <p>
+           Please upload na Excel&reg; spreadsheet with your custom gene annotations in a
+           <em>gene -> term</em> pair format. If a gene belongs to more than one term use multiple lines.
+          </p>
+          <p>
+           Only the first sheet in the uploaded file is used and it <strong>must</strong> have a header
+           row and two columns (both required):
+          </p>
+          <dl class="dl-horizontal">
+            <dt>ORF</dt><dd>Gene's systematic name (ie: YNL271C).</dd>
+            <dt>Annotation</dt><dd>Annotation text.</dd>
+          </dl>
+        
+          <div class="form-group">
+            <label class="btn btn-default btn-file">
+                Browse <input type="file" class="form-control" id="custom-annot-file" style="display: none;">
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button id="custom-annot-submit" type="button" class="btn btn-success" data-dismiss="modal">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 </div>
 
 <div class="vizualization-ui" id="draw-ui" style="display: none;">
