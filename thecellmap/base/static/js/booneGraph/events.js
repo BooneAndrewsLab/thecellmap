@@ -14,7 +14,7 @@ define([
     'bootstrap.colorpicker',
     'clipboard',
     'xls',
-    'xlsx',
+//    'xlsx',
     
     'jquery.cookie',
     'sigma.rotate',
