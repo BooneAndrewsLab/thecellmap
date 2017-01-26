@@ -28,7 +28,7 @@
         'graham_scan': 'libs/graham_scan.min',
         'jszip': 'libs/jszip',
         'xls': 'libs/xls.min',
-        'xlsx': 'libs/xlsx',
+        'xlsx': 'libs/xlsx.full.min',
         'load': 'app/load',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
