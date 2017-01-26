@@ -348,15 +348,98 @@ define([
         return result ? "rgba(" + parseInt(result[1], 16) + ", " + parseInt(result[2], 16) + ", " + parseInt(result[3], 16) + ", " + alpha + ")": null;
     }
     
+    /**
+     * HSV to RGB color conversion
+     *
+     * H runs from 0 to 360 degrees
+     * S and V run from 0 to 100
+     * 
+     * Ported from the excellent java algorithm by Eugene Vishnevsky at:
+     * http://www.cs.rit.edu/~ncs/color/t_convert.html
+     */
+    var hsvToRgb = function (h, s, v) {
+        var r, g, b;
+        var i;
+        var f, p, q, t;
+        
+        // Make sure our arguments stay in-range
+        h = Math.max(0, Math.min(360, h));
+        s = Math.max(0, Math.min(100, s));
+        v = Math.max(0, Math.min(100, v));
+        
+        // We accept saturation and value arguments from 0 to 100 because that's
+        // how Photoshop represents those values. Internally, however, the
+        // saturation and value are calculated from a range of 0 to 1. We make
+        // That conversion here.
+        s /= 100;
+        v /= 100;
+        
+        if(s == 0) {
+            // Achromatic (grey)
+            r = g = b = v;
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+        
+        h /= 60; // sector 0 to 5
+        i = Math.floor(h);
+        f = h - i; // factorial part of h
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+
+        switch(i) {
+            case 0:
+                r = v;
+                g = t;
+                b = p;
+                break;
+                
+            case 1:
+                r = q;
+                g = v;
+                b = p;
+                break;
+                
+            case 2:
+                r = p;
+                g = v;
+                b = t;
+                break;
+                
+            case 3:
+                r = p;
+                g = q;
+                b = v;
+                break;
+                
+            case 4:
+                r = t;
+                g = p;
+                b = v;
+                break;
+                
+            default: // case 5:
+                r = v;
+                g = p;
+                b = q;
+        }
+        
+        return '#' + (
+                ("0" + Math.round(r * 255).toString(16)).slice(-2) +
+                ("0" + Math.round(g * 255).toString(16)).slice(-2) +
+                ("0" + Math.round(b * 255).toString(16)).slice(-2)
+        ).toUpperCase();
+    };
+    
     var stripLetters = function(s) {
         return s.match(/\d/g).join('');
-    }
+    };
     
     var cleanUpNodes = function() {
         sigInst.iterNodes(function(node) {
             if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
         });
-    }
+    };
     
     var messageUser = function(text, target, missingNodes) {
         var alert = $('<div class="alert alert-danger fade in"> \
@@ -391,7 +474,7 @@ define([
 //            alert.alert('close'); 
 //            if (!target) $('#panel-alerts').hide();
 //        }, 6000);
-    }
+    };
     
     var alertUser = function(title, text, preModalCallback) {
         $('body').append(
@@ -419,12 +502,12 @@ define([
         $('#modal-alert').modal().on('hidden.bs.modal', function () {
             $(this).remove();
         });
-    }
+    };
     
     var parseBool = function(bool) {
         if (typeof bool == 'boolean') return bool;
         return bool == 'true';
-    }
+    };
     
     var updateUrl = function(type) {
         var selection = state.get('selection'), selStr = '';
@@ -441,7 +524,7 @@ define([
 //        var urlNew = opts.url + '?q=' + selStr + '&' + 'a=' + state.get('annotation');
         var urlNew = opts.url + '?q=' + selStr;
         window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
-    }
+    };
     
     var sbcRip = function(d){
         var l=d.length,RGB=new Object(),i=parseInt;
@@ -455,7 +538,7 @@ define([
             d=i(d.slice(1),16),RGB[0]=d>>16&255,RGB[1]=d>>8&255,RGB[2]=d&255,RGB[3]=l==9||l==5?r(((d>>24&255)/255)*10000)/10000:-1;
         }
         return RGB;
-    }
+    };
     
     var shadeBlendConvert = function(p, from, to) {
         if(typeof(p)!="number"||p<-1||p>1||typeof(from)!="string"||(from[0]!='r'&&from[0]!='#')||(typeof(to)!="string"&&typeof(to)!="undefined"))return null; //ErrorCheck
@@ -463,7 +546,7 @@ define([
         if(!f||!t)return null; //ErrorCheck
         if(h)return "rgb("+r((t[0]-f[0])*p+f[0])+","+r((t[1]-f[1])*p+f[1])+","+r((t[2]-f[2])*p+f[2])+(f[3]<0&&t[3]<0?")":","+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*10000)/10000:t[3]<0?f[3]:t[3])+")");
         else return "#"+(0x100000000+(f[3]>-1&&t[3]>-1?r(((t[3]-f[3])*p+f[3])*255):t[3]>-1?r(t[3]*255):f[3]>-1?r(f[3]*255):255)*0x1000000+r((t[0]-f[0])*p+f[0])*0x10000+r((t[1]-f[1])*p+f[1])*0x100+r((t[2]-f[2])*p+f[2])).toString(16).slice(f[3]>-1||t[3]>-1?1:3);
-    }
+    };
     
     var boundingBox = function(nodes) {
         var xmax, xmin, ymax, ymin, box = {};
@@ -480,6 +563,36 @@ define([
         box.ymax = ymax;
         box.ymin = ymin;
         return box;
+    };
+    
+    var sheet_to_array = function(reader, sheet) {
+        var out = [], txt = "", qreg = /"/g;
+        if(sheet == null || sheet["!ref"] == null) return "";
+        var r = reader.utils.decode_range(sheet["!ref"]);
+        var row, rr = "", cols = [];
+        var i = 0, cc = 0, val;
+        var R = 0, C = 0;
+        for(C = r.s.c; C <= r.e.c; ++C) cols[C] = reader.utils.encode_col(C);
+        for(R = r.s.r; R <= r.e.r; ++R) {
+            row = [];
+            rr = reader.utils.encode_row(R);
+            for(C = r.s.c; C <= r.e.c; ++C) {
+                val = sheet[cols[C] + rr];
+                row.push(val !== undefined ? '' + reader.utils.format_cell(val) : "");
+            }
+            out.push(row);
+        }
+        return out;
+    };
+    
+    var randomColors = function (total) {
+        var i = 360 / (total - 1); // distribute the colors evenly on the hue range
+        var r = []; // hold the generated colors
+        for (var x=0; x<total; x++)
+        {
+            r.push(hsvToRgb(i * x, 100, 100)); // you can also alternate the saturation and value for even more contrast between the colors
+        }
+        return r;
     };
     
     return {
@@ -519,5 +632,8 @@ define([
         boundingBox: boundingBox,
         
         updateUrl: updateUrl,
+        
+        sheet_to_array: sheet_to_array,
+        randomColors: randomColors, 
     };
 });

@@ -35,13 +35,15 @@ define([
             opts['annotations'].forEach(function(annotation) {
                 $('.btn-group-annotation').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>');
             });
-            $('.btn-group-annotation').append('<li class="divider"></li>')
-            $('.btn-group-annotation').append('<li><a class="load-annotation" href="#">None</a></li>')
+            $('.btn-group-annotation').append('<li class="divider"></li>');
+            $('.btn-group-annotation').append('<li><a class="load-annotation custom-annotation" href="#">Custom...</a></li>');
+            $('.btn-group-annotation').append('<li class="active"><a class="load-annotation" href="#">None</a></li>');
         }
         $('#btn-group-annotation').append('<li class="divider"></li><li><a id="btn-legend" href="#">Annotation legend</a></li>');
         
         $('.changed-network').hide().removeClass('hidden');
         $('#modal-style').appendTo('body');
+        $("#modal-custom-annotation").appendTo('body');
         $('#contextmenu-container').appendTo('body');
         $('#contextmenu-graph-container').appendTo('body');
         $('#contnodeextmenu-edge-container').appendTo('body');

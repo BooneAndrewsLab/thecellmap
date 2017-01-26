@@ -177,6 +177,76 @@ define([
         }, function() {
             sigInst.unhighlightNodes();
         });
+    };
+    
+    var applyLoadedAnnotation = function(id, data) {
+        var annotations = vizdata['annotations'];
+        var addedAnnot = data;
+        addedAnnot.id = id;
+        
+        var i = 0, n, colors = [];
+        for (n in addedAnnot.terms) {
+            colors.push(addedAnnot.terms[n].color);
+            if (colors[i].indexOf('#' == -1)) colors[i] = '#' + colors[i];
+            
+            addedAnnot.terms[n] = {
+                idx: i++,
+                id: n,
+                name: addedAnnot.terms[n].name,
+                orig_name: addedAnnot.terms[n].name,
+                alias: addedAnnot.terms[n].alias,
+            };
+        }
+        
+        $.extend(addedAnnot.terms, {
+            '-1': {id: -1, idx: i, name: 'Unannotated', orig_name: 'Unannotated', alias: 'Unannotated'},
+            '-2': {id: -2, idx: i+1, name: 'Multi-function', orig_name: 'Multi-function', alias: 'Multi-function'}
+        });
+        
+        addedAnnot['defaultColor'] = data['defaultColor'] || opts['defaultNodeColor'];
+        addedAnnot['multifunctionNodeColor'] = data['multifunctionNodeColor'] || opts['multifunctionNodeColor'];
+        addedAnnot['colorPalette'] = colors.concat([opts['defaultNodeColor'], opts['multifunctionNodeColor']]);
+        
+        annotations.add(new AnnotationModel(addedAnnot));
+        loadRegion(id);
+        rebuildLegend();
+    };
+    
+    var loadCustomAnnotation = function(name, rows) {
+        var terms = [];
+        
+        var annotations = vizdata['annotations'];
+        state.set('annotation', name);
+        
+        if (!annotations.get(name)) {
+            var i, t, o, a, c, annotation = {map: {}, terms: {}, smap: {}};
+            for (i = 1; i < rows.length; i++) {
+                o = rows[i][0], a = rows[i][1];
+                
+                if (!annotation.map.hasOwnProperty(o))
+                    annotation.map[o] = [];
+                annotation.map[o].push(a);
+                
+                if (!annotation.terms.hasOwnProperty(a)) {
+                    annotation.terms[a] = {alias: a, name: a};
+                    terms.push(a);
+                }
+            }
+            
+            c = Utils.randomColors(terms.length);
+            for (i = 0; i < terms.length; i++) {
+                annotation.terms[terms[i]].color = c[i].substring(1);
+            }
+            
+            $('.btn-group-annotation li').removeClass('active');
+            $('.btn-group-annotation li.divider').before('<li class="active"><a class="load-annotation" href="#">' + name + '</a></li>');
+            applyLoadedAnnotation(name, annotation);
+        } else {
+            rebuildLegend();
+            loadRegion(name);
+        }
+        
+        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
     }
     
     var loadAnnotation = function(id) {
@@ -198,36 +268,8 @@ define([
                             },
                             dataType : 'json',
                             success : function(data) {
-                                var addedAnnot = data;
-                                addedAnnot.id = id;
-                                
-                                var i = 0, n, colors = [];
-                                for (n in addedAnnot.terms) {
-                                    colors.push(addedAnnot.terms[n].color);
-                                    if (colors[i].indexOf('#' == -1)) colors[i] = '#' + colors[i];
-                                    
-                                    addedAnnot.terms[n] = {
-                                        idx: i++,
-                                        id: n,
-                                        name: addedAnnot.terms[n].name,
-                                        orig_name: addedAnnot.terms[n].name,
-                                        alias: addedAnnot.terms[n].alias,
-                                    };
-                                }
-                                
-                                $.extend(addedAnnot.terms, {
-                                    '-1': {id: -1, idx: i, name: 'Unannotated', orig_name: 'Unannotated', alias: 'Unannotated'},
-                                    '-2': {id: -2, idx: i+1, name: 'Multi-function', orig_name: 'Multi-function', alias: 'Multi-function'}
-                                });
-                                
-                                addedAnnot['defaultColor'] = data['defaultColor'] || opts['defaultNodeColor'];
-                                addedAnnot['multifunctionNodeColor'] = data['multifunctionNodeColor'] || opts['multifunctionNodeColor'];
-                                addedAnnot['colorPalette'] = colors.concat([opts['defaultNodeColor'], opts['multifunctionNodeColor']]);
-                                
-                                annotations.add(new AnnotationModel(addedAnnot));
-                                loadRegion(id);
-                                rebuildLegend();
-                            },
+                                applyLoadedAnnotation(id, data);
+                            }
                         });
                     }
                 });
@@ -240,10 +282,10 @@ define([
         if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
         
 //        $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
-        $('#btn-group-annotation li').removeClass('active');
-        $('#btn-group-annotation li a').each(function() {
-            if ($(this).html() == id) $(this).parent().addClass('active');
-        });
+//        $('#btn-group-annotation li').removeClass('active');
+//        $('#btn-group-annotation li a').each(function() {
+//            if ($(this).html() == id) $(this).parent().addClass('active');
+//        });
     }
     
     var clearRegions = function() {
@@ -473,6 +515,7 @@ define([
     
     return {
         loadAnnotation: loadAnnotation,
+        loadCustomAnnotation: loadCustomAnnotation,
         applyAnnotationColors: applyAnnotationColors,
         rebuildLegend: rebuildLegend,
         loadRegion: loadRegion,

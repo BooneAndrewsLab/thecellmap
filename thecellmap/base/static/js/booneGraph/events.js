@@ -13,6 +13,8 @@ define([
     'drag',
     'bootstrap.colorpicker',
     'clipboard',
+    'xls',
+    'xlsx',
     
     'jquery.cookie',
     'sigma.rotate',
@@ -194,6 +196,7 @@ define([
                 $('#node-selected-list').tooltip('destroy');
             });
             
+            $('#custom-annot-submit').click(this.loadCustomAnnotation);
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
             $('#contextmenu-graph a').on('click', this.graphContext);
@@ -433,11 +436,38 @@ define([
         },
         
         loadAnnotation: function(e) {
-            $('#btn-group-annotation li').removeClass('active');
-            $(this).parent().addClass('active');
-            Annotation.loadAnnotation(e.target.text);
+            $('.btn-group-annotation li').removeClass('active');
+            $(e.target).parent().addClass('active');
+            
+            if ($(e.target).hasClass('custom-annotation')) {
+                $("#modal-custom-annotation").modal('show');
+            } else {
+                Annotation.loadAnnotation(e.target.text);
+            }
             e.preventDefault();
         },
+
+        loadCustomAnnotation: function(e) {
+            var f = $('#custom-annot-file')[0].files[0], reader = new FileReader(), name = f.name;
+            fileType = name.split('.').pop();
+            
+            if (fileType != 'xls' && fileType != 'xlsx') {
+                console.log('Not an excel file, bailing');
+                return;
+            }
+            
+            setTimeout(function() {
+                reader.onload = function(e) {
+                    var data = e.target.result, rows;
+                    var workbook, xlsreader = fileType == 'xls' ? XLS : XLSX;
+                    workbook = xlsreader.read(data, {type: 'binary'});
+                    rows = Utils.sheet_to_array(xlsreader, workbook.Sheets[workbook.SheetNames[0]]);
+                    Annotation.loadCustomAnnotation(name, rows);
+                };
+                reader.readAsBinaryString(f);
+            }, 500);
+        },
+
         showLegend: function(e) {
             if (state.get('annotation') == 'None') return;
             $('#panel-legend').show();
