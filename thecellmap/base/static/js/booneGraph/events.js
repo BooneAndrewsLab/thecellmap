@@ -469,7 +469,7 @@ define([
                     if (fileType == 'xls') {
                         xls_cb();
                     } else {
-                        require(['xlsx'], xls_cb);
+                        require(['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min.js'], xls_cb);
                     }
                 };
                 reader.readAsBinaryString(f);
