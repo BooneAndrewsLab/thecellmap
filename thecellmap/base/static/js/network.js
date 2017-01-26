@@ -29,7 +29,6 @@ require.config({
         'jszip': 'libs/jszip',
         'load': 'app/load',
         'xls': 'libs/xls.min',
-        'xlsx': 'libs/xlsx.min',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
         'sigma.pinlayout': 'libs/plugins/sigma.pinlayout',
@@ -61,20 +60,19 @@ require.config({
         /* UI */
         'events': 'booneGraph/events',
         'ui': 'booneGraph/ui',
+        
+        /* XLSX hack, must not be optimized so we load it later on */
+        'xlsx': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min',
     },
     shim: {
         'backbone': ['underscore', 'jquery'],
         'bootstrap': ['jquery'],
         
-//        'load': ['jszip'],
+        'load': ['jszip'],
         'jquery.cookie': ['jquery'],
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-        'xlsx': {
-            exports: 'XLSX',
-            deps: ['load']
-        },
         
         'underscore.strings': ['underscore'],
         

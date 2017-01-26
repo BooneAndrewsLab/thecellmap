@@ -14,7 +14,7 @@ define([
     'bootstrap.colorpicker',
     'clipboard',
     'xls',
-    'xlsx',
+    'load',
     
     'jquery.cookie',
     'sigma.rotate',
@@ -459,10 +459,18 @@ define([
             setTimeout(function() {
                 reader.onload = function(e) {
                     var data = e.target.result, rows;
-                    var workbook, xlsreader = fileType == 'xls' ? XLS : XLSX;
-                    workbook = xlsreader.read(data, {type: 'binary'});
-                    rows = Utils.sheet_to_array(xlsreader, workbook.Sheets[workbook.SheetNames[0]]);
-                    Annotation.loadCustomAnnotation(name, rows);
+                    var xls_cb = function() {
+                        var workbook, xlsreader = fileType == 'xls' ? XLS : XLSX;
+                        workbook = xlsreader.read(data, {type: 'binary'});
+                        rows = Utils.sheet_to_array(xlsreader, workbook.Sheets[workbook.SheetNames[0]]);
+                        Annotation.loadCustomAnnotation(name, rows);
+                    };
+                    
+                    if (fileType == 'xls') {
+                        xls_cb();
+                    } else {
+                        require(['xlsx'], xls_cb);
+                    }
                 };
                 reader.readAsBinaryString(f);
             }, 500);
