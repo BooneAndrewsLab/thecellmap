@@ -15,7 +15,7 @@ define([
     'clipboard',
     'xls',
     'load',
-    'xlsx',
+//    'xlsx',
     
     'jquery.cookie',
     'sigma.rotate',
