@@ -14,7 +14,7 @@ define([
     'bootstrap.colorpicker',
     'clipboard',
     'xls',
-//    'xlsx',
+    'load',
     
     'jquery.cookie',
     'sigma.rotate',
@@ -469,9 +469,11 @@ define([
                     if (fileType == 'xls') {
                         xls_cb();
                     } else {
-                        xls_cb();
-//                        require(['async!//maps.googleapis.com/maps/api/js?sensor=true'], callback);
-//                        define(['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min.js'], xls_cb);
+                        $.holdReady( true );
+                        $.getScript( "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min.js", function() {
+                          $.holdReady( false );
+                          xls_cb();
+                        });
                     }
                 };
                 reader.readAsBinaryString(f);

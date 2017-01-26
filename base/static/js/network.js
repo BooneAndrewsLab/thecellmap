@@ -73,7 +73,6 @@ require.config({
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-        'xlsx': ['load'],
         
         'underscore.strings': ['underscore'],
         
