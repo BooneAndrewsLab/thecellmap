@@ -62,7 +62,7 @@
         'ui': 'booneGraph/ui',
         
         /* XLSX hack, must not be optimized so we load it later on */
-        'xlsx': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min',
+        'xlsx': 'empty:',
     },
     shim: {
         'backbone': ['underscore', 'jquery'],
