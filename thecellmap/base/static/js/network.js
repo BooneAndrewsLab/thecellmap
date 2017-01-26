@@ -27,9 +27,9 @@ require.config({
         'clipboard': 'libs/clipboard.min',
         'graham_scan': 'libs/graham_scan.min',
         'jszip': 'libs/jszip',
+        'load': 'app/load',
         'xls': 'libs/xls.min',
         'xlsx': 'libs/xlsx.min',
-        'load': 'app/load',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
         'sigma.pinlayout': 'libs/plugins/sigma.pinlayout',
@@ -66,12 +66,15 @@ require.config({
         'backbone': ['underscore', 'jquery'],
         'bootstrap': ['jquery'],
         
-        'load': ['jszip'],
+//        'load': ['jszip'],
         'jquery.cookie': ['jquery'],
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-        'xlsx': ['jszip', 'load'],
+        'xlsx': {
+            exports: 'XLSX',
+            deps: ['load']
+        },
         
         'underscore.strings': ['underscore'],
         
