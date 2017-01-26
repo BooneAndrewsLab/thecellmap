@@ -3,4 +3,5 @@ define(['jszip'], function(jszip) {
     "use strict";
 
     window.JSZip = jszip;
+    window.P = jszip;
 });
