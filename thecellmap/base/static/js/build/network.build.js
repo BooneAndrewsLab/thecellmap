@@ -62,7 +62,6 @@
         'ui': 'booneGraph/ui',
         
         /* XLSX hack, must not be optimized so we load it later on */
-        'xlsx': 'empty:',
     },
     shim: {
         'backbone': ['underscore', 'jquery'],
@@ -73,7 +72,6 @@
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-        'xlsx': ['load'],
         
         'underscore.strings': ['underscore'],
         
@@ -84,7 +82,6 @@
         'sigma.searchlocator': ['sigma'],
         'sigma.highlight': ['sigma'],
     },
-    exclude: ["xlsx"],
     name: 'network',
     out: 'network-built.js',
 //    optimize: "none",

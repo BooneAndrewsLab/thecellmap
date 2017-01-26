@@ -245,7 +245,6 @@ MANAGERS = ADMINS
 # on all server instances and True only for development.
 
 STATICFILES_STORAGE = 'require.storage.OptimizedCachedStaticFilesStorage'
-STATICFILES_DIRS = ('base/static/', )
 REQUIRE_BUILD_PROFILE = False
 REQUIRE_STANDALONE_MODULES = {
     'annotation': {
@@ -268,14 +267,14 @@ REQUIRE_STANDALONE_MODULES = {
         'out': 'tabular-built.js',
         'build_profile': 'build/tabular.build.js',
     },
-    'threeD': {
-        'out': 'threeD-built.js',
-        'build_profile': 'build/threeD.build.js',
-    },
-    'collaboration': {
-        'out': 'collaboration-built.js',
-        'build_profile': 'build/collaboration.build.js',
-    },
+#     'threeD': {
+#         'out': 'threeD-built.js',
+#         'build_profile': 'build/threeD.build.js',
+#     },
+#     'collaboration': {
+#         'out': 'collaboration-built.js',
+#         'build_profile': 'build/collaboration.build.js',
+#     },
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
