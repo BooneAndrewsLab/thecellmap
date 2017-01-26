@@ -83,6 +83,7 @@
         'sigma.searchlocator': ['sigma'],
         'sigma.highlight': ['sigma'],
     },
+    exclude: ["xlsx"],
     name: 'network',
     out: 'network-built.js',
 //    optimize: "none",
