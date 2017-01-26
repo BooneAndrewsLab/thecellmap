@@ -1,10 +1,10 @@
-/* xlsx.js (C) 2013-2015 SheetJS -- http://sheetjs.com */
+/* xlsx.js (C) 2013-present SheetJS -- http://sheetjs.com */
 /* vim: set ts=2: */
 /*jshint -W041 */
 /*jshint funcscope:true, eqnull:true */
 var XLSX = {};
 (function make_xlsx(XLSX){
-XLSX.version = '0.8.0';
+XLSX.version = '0.8.1';
 var current_codepage = 1200, current_cptable;
 if(typeof module !== "undefined" && typeof require !== 'undefined') {
 	if(typeof cptable === 'undefined') cptable = require('./dist/cpexcel');
@@ -1333,7 +1333,6 @@ function getzipdata(zip, file, safe) {
 
 var _fs, jszip;
 if(typeof JSZip !== 'undefined') jszip = JSZip;
-console.log("1")
 if (typeof exports !== 'undefined') {
 	if (typeof module !== 'undefined' && module.exports) {
 		if(has_buf && typeof jszip === 'undefined') jszip = require('js'+'zip');
