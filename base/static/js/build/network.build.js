@@ -26,6 +26,10 @@
         'intro': 'libs/intro.min',
         'clipboard': 'libs/clipboard.min',
         'graham_scan': 'libs/graham_scan.min',
+        'jszip': 'libs/jszip.min',
+        'xls': 'libs/xls.min',
+        'xlsx': 'libs/xlsx.min',
+        'load': 'app/load',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
         'sigma.pinlayout': 'libs/plugins/sigma.pinlayout',
@@ -66,6 +70,7 @@
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
+        'xlsx': ['jszip', 'load'],
         
         'underscore.strings': ['underscore'],
         
