@@ -14,7 +14,6 @@ define([
     'bootstrap.colorpicker',
     'clipboard',
     'xls',
-    'load',
     'xlsx',
     
     'jquery.cookie',
