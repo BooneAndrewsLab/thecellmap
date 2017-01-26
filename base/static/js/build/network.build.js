@@ -62,7 +62,7 @@
         'ui': 'booneGraph/ui',
         
         /* XLSX hack, must not be optimized so we load it later on */
-//        'xlsx': '//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min',
+        'xlsx': 'empty:',
     },
     shim: {
         'backbone': ['underscore', 'jquery'],
@@ -73,7 +73,6 @@
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-//        'xlsx': ['load'],
         
         'underscore.strings': ['underscore'],
         
