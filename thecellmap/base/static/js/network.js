@@ -62,7 +62,7 @@ require.config({
         'ui': 'booneGraph/ui',
         
         /* XLSX hack, must not be optimized so we load it later on */
-//        'xlsx': '//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min',
+        'xlsx': '//cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.1/xlsx.min',
     },
     shim: {
         'backbone': ['underscore', 'jquery'],
@@ -73,7 +73,7 @@ require.config({
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
         'select2': ['jquery'],
-//        'xlsx': ['load'],
+        'xlsx': ['load'],
         
         'underscore.strings': ['underscore'],
         
