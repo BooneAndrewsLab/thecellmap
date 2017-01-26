@@ -28,7 +28,7 @@ require.config({
         'graham_scan': 'libs/graham_scan.min',
         'jszip': 'libs/jszip',
         'xls': 'libs/xls.min',
-        'xlsx': 'libs/xlsx.full.min',
+        'xlsx': 'libs/xlsx.min',
         'load': 'app/load',
         
         'sigma.forcelayout': 'libs/plugins/sigma.forcelayout',
@@ -66,6 +66,7 @@ require.config({
         'backbone': ['underscore', 'jquery'],
         'bootstrap': ['jquery'],
         
+        'load': ['jszip'],
         'jquery.cookie': ['jquery'],
         'ladda': ['jquery'],
         'noUISlider': ['jquery'],
