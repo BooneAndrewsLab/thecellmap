@@ -245,6 +245,7 @@ MANAGERS = ADMINS
 # on all server instances and True only for development.
 
 STATICFILES_STORAGE = 'require.storage.OptimizedCachedStaticFilesStorage'
+REQUIRE_JS = 'libs/require.min.js'
 REQUIRE_BUILD_PROFILE = False
 REQUIRE_STANDALONE_MODULES = {
     'annotation': {

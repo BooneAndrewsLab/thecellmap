@@ -21,6 +21,7 @@ define([
     'bootstrap',
 ], function($, _, Backbone, 
     Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly, Colorpicker, Clipboard) {
+    var tabularWindow;
     
     var eventsView = Backbone.View.extend({
         initialize: function() {
@@ -248,7 +249,13 @@ define([
             case 'btn-view-tabular':
             case 'view-tabular':
                 if (selected.length > 0)
-                    window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
+                    if (!tabularWindow || tabularWindow.closed) {
+                        tabularWindow = window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
+                    } else {
+                        console.log(tabularWindow);
+                        tabularWindow.show_table(selected);
+                        tabularWindow.focus();
+                    }
                 break;
             case 'download-selected-simple':
             case 'download-selected':
