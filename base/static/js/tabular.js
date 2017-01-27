@@ -25,7 +25,6 @@ require.config({
 require([
     'jquery','spin','ladda','mmenu', 'bootstrap-sortable', 'bootstrap-tabdrop', 'select2','hammer','filedownload'
 ], function($,Spinner,Ladda) {
-    
     //selection node array keeps track of already selected strains, prevents users from selecting duplicates
     var selectionNode = [];
     $('.tab-pane[data-node]').each(function(){selectionNode.push($(this).data('node'))});
@@ -91,6 +90,10 @@ require([
     var newStrain = function(e, stateChange){
             var selected = e.val;
             strain = strainMap[selected];
+            if (selectionNode.indexOf(strain.id) != -1) {
+                return;
+            }
+            
             selectionNode.push(strain.id);
             var strainTitle = strain.verboseName;
             if (strain.verboseName.length > 10){
@@ -184,17 +187,27 @@ require([
     //adds entries to the table up to the cut off value, keeps track of the cut off value for the load more button
     var add_to_table = function(tbody, data, val_idx, node_id) {
       if (data.length == 0) return;
-      var row, ele = tbody.find('.row-more');
+      var i, row, isNeighbor, ele = tbody.find('.row-more');
       var ctf =  data[0][val_idx] < 0 ? -1 : 1;
       var func = data[0][val_idx] < 0 ? Math.max : Math.min;
       data.forEach(function (line) {
           row = '';
-          line.forEach(function(val) {
-              row += '<td data-value="' + val + '">' + val + '</td>';
-          });
+          isNeighbor = nodeNeighbors[node_id].indexOf(line[0]) != -1;
+          for (i = 0; i < line.length; i++) {
+              val = line[i];
+              if (isNeighbor && i == line.length - 1) {
+                  row += '<td data-value="' + val + '">' + val + '<span class="badge pull-right" data-toggle="tooltip" data-placement="top" title="This gene is located immediately adjacent to the selected gene">Neighbor</span></td>';
+              } else {
+                  row += '<td data-value="' + val + '">' + val + '</td>';
+              }
+          }
+          
           ctf = func(line[val_idx], ctf);
-          if (nodeNeighbors[node_id].indexOf(line[0]) != -1) {
-              tbody.append('<tr class="nf">' + row + '</tr>');
+          if (isNeighbor) {
+              row = $('<tr class="nf">' + row + '</tr>');
+              row.find('.badge').tooltip();
+              tbody.append(row);
+              
           } else {
               tbody.append('<tr>' + row + '</tr>');
           }
@@ -227,6 +240,8 @@ require([
         //function applies to strains when they are first loaded
         if (!$.trim(target.html()) && !target.hasClass('data-loading')) {
             var node_id = parseInt(target.data('node'));
+//            var strain = selectionNode.get(node_id);
+            console.log(selectionNode);
             target.addClass('data-loading');
             
             //spinner for when table is loading
@@ -705,6 +720,10 @@ require([
         }
     });
     
+    window.show_table = function(data) {
+        var i;
+        for (i = 0; i < data.length; i++) {
+            newStrain({val:data[i]}, 1);
+        }
+    };
 });
-
-
