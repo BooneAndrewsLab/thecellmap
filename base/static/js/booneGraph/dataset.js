@@ -329,7 +329,9 @@ define([
                 updateEdges(dsid);
                 
                 if (selected.length == 1) {
-                    Layout.circularFunc(selected[0]);
+                    state.set('showCircular', true);
+                    state.set('centerNode', selected[0]);
+//                    Layout.circularFunc(selected[0]);
                 } else {
                     var layoutType = state.get('annotation') != 'None' ? 'gi+' : 'gi';
                     Layout.toggleLayout(layoutType);

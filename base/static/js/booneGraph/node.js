@@ -384,7 +384,9 @@ define([
         Settings.updateLabels();
         Annotation.rebuildLegend();
         
-        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
+        if (state.get('showCircular')) {
+            Layout.circularFunc(state.get('centerNode'));
+        }
         if (state.get('dataset') == 0 && state.get('subnetworks')) applyNeighbourhood(1);
         
         sigInst.draw();
