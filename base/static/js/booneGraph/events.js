@@ -248,14 +248,17 @@ define([
                 break;
             case 'btn-view-tabular':
             case 'view-tabular':
-                if (selected.length > 0)
-                    if (!tabularWindow || tabularWindow.closed) {
-                        tabularWindow = window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
-                    } else {
-                        console.log(tabularWindow);
-                        tabularWindow.show_table(selected);
-                        tabularWindow.focus();
-                    }
+                if (selected.length > 0) {
+                    setTimeout(function(){
+                        if (!tabularWindow || tabularWindow.closed) {
+                            tabularWindow = window.open('tabular/?' + $.param({'n': selected}, true), '_blank');
+                        } else {
+                            tabularWindow.show_table(selected);
+                            tabularWindow.focus();
+                        }
+                    }, 100);
+                    e.target.blur();
+                }
                 break;
             case 'download-selected-simple':
             case 'download-selected':
