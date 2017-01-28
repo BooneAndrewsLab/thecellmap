@@ -108,7 +108,7 @@ define([
                         if (mindeg > 90) mindeg = mindeg - 180;
                         else if (mindeg < -90) mindeg = mindeg + 180;
                         
-                        sigInst.rotateNodes({degrees: mindeg, callback: function(){
+                        sigInst.rotateNodes({degrees: mindeg, runtime: 3, callback: function(){
                             Utils.graphCenter();
                         }});
                         
