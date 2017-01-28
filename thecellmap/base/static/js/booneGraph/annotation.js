@@ -59,6 +59,10 @@ define([
         
         if (!$('#legend-body').is(":visible") || state.get('annotation') == 'None')
             $('#legend-handle button.close').click();
+        
+        if (state.get('showCircular')) {
+            Layout.circularFunc(state.get('centerNode'));
+        }
     }
     
     var applyLegendColor = function(id, color) {
@@ -71,7 +75,7 @@ define([
         $('#style-annotation').empty();
         $('#list-annotation-legend').empty();
         
-        var id = state.get('annotation'), terms = {}, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
+        var id = state.get('annotation'), terms = {}, num, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
         
         $('#style-annotation').append('<table class="annotation-table"><thead><tr>\
               <th style="width: 1%;"></th>\
@@ -90,12 +94,17 @@ define([
                 }
                 
                 if (mapStrain && mapStrain.length == 1) {
-                    terms[mapStrain[0]] = annotation.get('terms')[mapStrain[0]];
+                    if (!terms.hasOwnProperty(mapStrain[0]))
+                        terms[mapStrain[0]] = {term: annotation.get('terms')[mapStrain[0]], num: 0};
+                    terms[mapStrain[0]].num++;
                 }
             });
         }
+        
         if (_.size(terms)) {
             _.each(terms, function(term) {
+                num = term.num;
+                term = term.term;
                 if (Cookies.get(term.name) == undefined) {
                     var color = annotation.get('colorPalette')[term.idx];
                 } else {
@@ -117,9 +126,11 @@ define([
                         </div></td>\
                         <td>' + term.name + '</td></td></tr>');
                 
-                $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>');
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx=' + term.idx + '></div><span title="' + term.name + '">' + name + '</span></li>'); // <span class="pull-right">(' + num + ')</span>
                 $('#list-annotation-legend .box-annotation-color').last().css("background-color", color);
             });
+            $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx="-1"></div><span title="Unannotated">Unannotated</span></li>');
+            $('#list-annotation-legend .box-annotation-color').last().css("background-color", annotation.get('defaultColor'));
         } else {
             $('#list-annotation-legend').append('<li><div class="box-annotation-color" data-idx="-1"></div><span title="No annotations">No annotations for current network</span></li>');
         }
@@ -177,6 +188,7 @@ define([
         }, function() {
             sigInst.unhighlightNodes();
         });
+        
     };
     
     var applyLoadedAnnotation = function(id, data) {
@@ -208,8 +220,8 @@ define([
         addedAnnot['colorPalette'] = colors.concat([opts['defaultNodeColor'], opts['multifunctionNodeColor']]);
         
         annotations.add(new AnnotationModel(addedAnnot));
-        loadRegion(id);
         rebuildLegend();
+        loadRegion(id);
     };
     
     var loadCustomAnnotation = function(name, rows) {
@@ -245,8 +257,6 @@ define([
             rebuildLegend();
             loadRegion(name);
         }
-        
-        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
     }
     
     var loadAnnotation = function(id) {
@@ -278,14 +288,6 @@ define([
             rebuildLegend();
             loadRegion(id);
         }
-        
-        if (state.get('showCircular')) Layout.circularFunc(state.get('centerNode'));
-        
-//        $('input.gene-search-input').select2('val', Utils.getSelectedNodes(), true);
-//        $('#btn-group-annotation li').removeClass('active');
-//        $('#btn-group-annotation li a').each(function() {
-//            if ($(this).html() == id) $(this).parent().addClass('active');
-//        });
     }
     
     var clearRegions = function() {
