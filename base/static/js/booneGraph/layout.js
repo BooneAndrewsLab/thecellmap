@@ -421,6 +421,18 @@ define([
         }
     }
     
+    var selectLayer = function(layers) {
+        var l = 0, i = 1;
+        for (; i < layers.length; i++) {
+            cl = layers[i];
+            pl = layers[l];
+            if ((cl.c / cl.n) > (pl.c / pl.n)) {
+                l = i;
+            }
+        }
+        return l;
+    };
+    
     var circularFunc = function(nid) {
         state.set('showCircular', true);
         state.set('centerNode', nid);
@@ -429,6 +441,7 @@ define([
         
         var node = Utils.getNode(nid), groups = {'-': [], '+': []}, draw = [], addedNode = false;
         var etmp = sigInst._core.graph.edges.filter(function(e) {return !e.source.hidden && !e.target.hidden && !e.hidden;});
+        var chunks = {'-': {}, '+': {}}, g;
         
         if (!Utils.nodeExists('tmp_' + node.id)) sigInst.addNode('tmp_' + node.id, node);
         
@@ -466,6 +479,10 @@ define([
             }
             
             groups[tmpkey].push(outNode);
+            if (!chunks[tmpkey].hasOwnProperty(outNode.color)) {
+                chunks[tmpkey][outNode.color] = [];
+            }
+            chunks[tmpkey][outNode.color].push(outNode);
         });
         
         // sort positive interactions descending
@@ -474,7 +491,11 @@ define([
         // sort the edges for each spoke in order of annotation
         for (var i in groups) {
             groups[i].sort(function(a, b) {
-                var diff = parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
+                var diff = chunks[i][a.color].length - chunks[i][b.color].length;
+                
+                if (diff == 0) {
+                    diff = parseInt(a.color.substring(1), 16) - parseInt(b.color.substring(1), 16);
+                }
                 if (diff == 0) {
                     if (a.label.toLowerCase() < b.label.toLowerCase()) return -1;
                     if (a.label.toLowerCase() > b.label.toLowerCase()) return 1;
@@ -485,27 +506,31 @@ define([
         }
         
         var size = 2;
-        // section the groups into layers
         for (var s in groups) {
             var numNodes = groups[s].length;
-            var pass = true;
-            var layers = [[]], l = 0;
-            
-            // iter nodes in a pos/neg group
-            for (var n in groups[s]) {
-                var count = (l + 2) * 10;
-                layers[l].push(groups[s][n]);
-                
-                if (layers[l].length >= count) {
-                    numNodes -= layers[l].length;
-                    if (pass && numNodes < count /2) {
-                        pass = false;
-                    } else if (pass) {
-                        layers[++l] = [];
-                        size++;
-                    }
+            var numLayers = 0, l = 0, n, i, j;
+            var layerCounts = [];
+            var layers = [];
+            while (numNodes > 0) {
+                n = (2 + l++) * 10;
+                numNodes -= n;
+                numLayers++;
+                if (numNodes < (n / 2)) {
+                    n += numNodes;
+                    numNodes = 0;
                 }
+                
+                layerCounts.push({n: n, c: n});
+                layers.push([]);
+                size++;
             }
+            
+            for (n in groups[s]) {
+                var i = selectLayer(layerCounts);
+                layers[i].push(groups[s][n]);
+                layerCounts[i].c--;
+            }
+            
             groups[s] = layers;
         }
         
