@@ -439,6 +439,11 @@ define([
         sigInst.iterNodes(function(node) {
             if (node.id.indexOf('tmp_') != -1) sigInst.dropNode(node.id);
         });
+        sigInst.iterEdges(function(edge) {
+            if (edge.ds != 0) {
+                edge._hidden = edge.hidden = false;
+            }
+        });
     };
     
     var messageUser = function(text, target, missingNodes) {
