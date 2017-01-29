@@ -413,10 +413,11 @@ define([
                             var edge = data['edges'][e];
                             var edgeId = edge.s + '+' + edge.t, edgeReverseId = edge.t + '+' + edge.s;
                             if (Utils.nodeExists(edge.s) && Utils.nodeExists(edge.t) && !sigInst._core.graph.edgesIndex[edgeId] && !sigInst._core.graph.edgesIndex[edgeReverseId]) {
+                                edge.size = .01;
                                 sigInst.addEdge(edgeId, edge.s, edge.t, edge);
                                 
                                 var addedEdge = Utils.getEdge(edgeId), source = Utils.getNode(edge.s), target = Utils.getNode(edge.t);
-                                addedEdge.absweight = addedEdge.weight = addedEdge.size = Math.abs(edge.w);
+                                addedEdge.absweight = addedEdge.weight = Math.abs(edge.w);
                                 addedEdge.ds = state.get('dataset');
                                 
                                 source.hidden = source._hidden = false;

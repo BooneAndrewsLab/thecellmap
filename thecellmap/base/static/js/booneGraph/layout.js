@@ -442,7 +442,7 @@ define([
 //        });
         
         // split up positive/negative edges to the original and temporary node
-        var tmpkey, outNode;
+        var tmpkey, outNode, newEdgeId;
         etmp.forEach(function(e) {
             tmpkey = '+';
             if (Utils.stripLetters(e.source.id) == node.id) {
@@ -456,9 +456,12 @@ define([
             
             if (e.weight < 0) {
                 tmpkey = '-';
-                if (!sigInst._core.graph.edgesIndex[tmpN.id + '-' + outNode.id]) {
-                    sigInst.addEdge(tmpN.id + '-' + outNode.id, tmpN.id, outNode.id, e);
+                newEdgeId = tmpN.id + '-' + outNode.id
+                if (!sigInst._core.graph.edgesIndex[newEdgeId]) {
+                    sigInst.addEdge(newEdgeId, tmpN.id, outNode.id, e);
                     e._hidden = e.hidden = true; //hide the edges to the original node
+                    sigInst._core.graph.edgesIndex[newEdgeId].ds = e.ds;
+                    sigInst._core.graph.edgesIndex[newEdgeId].absweight = e.size;
                 }
             }
             

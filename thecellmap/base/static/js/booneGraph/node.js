@@ -347,6 +347,7 @@ define([
     
     var applyCutoff = function(cutoff) {
         var isArray = $.isArray(cutoff), selected = Utils.getSelectedNodes(), strain;
+        var showCircular = state.get('showCircular');
         
         if (isArray) {
             state.set('cutoffInteraction', cutoff);
@@ -357,8 +358,6 @@ define([
         sigInst.iterNodes(function(node) {
             node.visibleDegree = node.degree;
         }).iterEdges(function(edge) {
-            var showCircular = state.get('showCircular');
-            
             if (isArray) {
                 if (edge.id.indexOf('tmp') != -1 && showCircular) {
                     edge.hidden = (cutoff[0] < edge.weight && edge.weight < cutoff[1]);
