@@ -278,7 +278,7 @@ define([
                         sigInst.addEdge(edge.id, edge.source, edge.target, edge);
                         numEdges++;
                         sigInst._core.graph.edgesIndex[edge.id].ds = dsid;
-                        sigInst._core.graph.edgesIndex[edge.id].absweight = edge.size;
+                        sigInst._core.graph.edgesIndex[edge.id].absweight = Math.abs(edge.weight);
                     }
                 }
                 
