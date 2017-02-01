@@ -342,6 +342,12 @@ define([
                 
                 if (callback) callback();
             }
+        }).fail(function() {
+            Utils.alertUser(
+                "Error loading gene data",
+                'There was an error loading gene data.<br>\
+                <a href="mailto:m.usaj@utoronto.ca">Please contact our team for support</a>, we\'re sorry for the inconvenience.'
+               );
         });
     }
     

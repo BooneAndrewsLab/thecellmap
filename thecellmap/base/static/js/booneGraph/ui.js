@@ -278,7 +278,13 @@ define([
                                 coor.splice(n, 1);
                             }
                         }
-                    }}).always(function() {
+                    }}).fail(function() {
+                        Utils.alertUser(
+                            "Error loading cirle layout",
+                            'There was an error loading circle layout.<br>\
+                            <a href="mailto:m.usaj@utoronto.ca">Please contact our team for support</a>, we\'re sorry for the inconvenience.'
+                           );
+                    }).always(function() {
                         drawReady = true;
                     });
                     
@@ -426,6 +432,12 @@ define([
                         }
                         
                         sigInst.draw();
+                    }).fail(function() {
+                        Utils.alertUser(
+                                "Error loading dataset",
+                                "There was an error loading additional profile similarities.<br>\
+                                TheCellMap team has been notified, we're sorry for the inconvenience."
+                               );
                     }).always(function() {
                         if (state.get('annotation') == 'SAFE' && state.get('showRegions')) Annotation.loadAnnotation('None');
                         Dataset.updateEdges(0);
