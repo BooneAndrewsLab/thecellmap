@@ -87,7 +87,7 @@ def collect_scores(ds, nodes):
             node_scores.extend(dat)
         
         node_scores = DataFrame.from_records(node_scores, columns=['source', 'target', 'score', 'pval']).sort(['target', 'pval'])
-        node_scores = node_scores.groupby('target').filter(lambda x: len(x) < 2 or not operator.xor(*(x.score < 0))).groupby('target').first().reset_index()
+        node_scores = node_scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0)).groupby('target').first().reset_index()
         
         if scores is None:
             scores = node_scores
@@ -225,7 +225,7 @@ def _collect_data(ds, nodes, callback, defer_data=False):
         correlations = correlations.dropna().sort('correlation', ascending=False)
         
         scores = scores[scores.pval < 0.05].sort(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
-        scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not operator.xor(*(x.score < 0))).groupby('target').first().reset_index()
+        scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0)).groupby('target').first().reset_index()
         
         callback(s, node, correlations, scores)
 
