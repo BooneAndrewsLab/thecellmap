@@ -4,18 +4,22 @@ import pickle
 from base.models import Dataset, Strain, Gene
 from base.utils import CellMapCommand
 from base.utils import print_queries
+from django.core.management.base import CommandError
 
 
 class Command(CellMapCommand):
     help = 'Updates nodes.json and nodes.pickle for the given dataset'
-    args = 'dataset_name'
+    
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('dataset_name')
     
     @print_queries
     def handle(self, *args, **options):
-        if len(args) != 1:
-            print "Specify dataset to update"
+        if 'dataset_name' not in options:
+            raise CommandError("Specify dataset to update")
         
-        ds = Dataset.objects.get(name=args[0])
+        ds = Dataset.objects.get(name=options['dataset_name'])
         strainmap = {s.id: s for s in Strain.objects.select_related('gene')}
         
         nodesjson = json.load(open(ds.static_path('nodes.json')))

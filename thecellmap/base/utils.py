@@ -573,7 +573,7 @@ def open_excel_file(filename, sheet=0, fd=None):
 class BadXlsFile(Exception): pass
 class XlsError(Exception): pass
 
-is_integer = lambda x: not not re.match('\d+', x)
+is_integer = lambda x: not not re.match('^\d+$', x)
 
 class JsonResponse(HttpResponse):
     def __init__(self, obj):
