@@ -279,7 +279,13 @@ define([
                             dataType : 'json',
                             success : function(data) {
                                 applyLoadedAnnotation(id, data);
-                            }
+                            },
+                        }).fail(function() {
+                            Utils.alertUser(
+                                    "Error loading annotation",
+                                    "There was an error loading requested annotation: " + id + ".<br>\
+                                    TheCellMap team has been notified, we're sorry for the inconvenience."
+                                   );
                         });
                     }
                 });
@@ -503,6 +509,12 @@ define([
                             regionGroups.add(new RegionGroupModel(addedGroup));
                             drawRegions();
                         },
+                    }).fail(function() {
+                        Utils.alertUser(
+                                "Error loading regions",
+                                "There was an error loading regions: " + id + ".<br>\
+                                TheCellMap team has been notified, we're sorry for the inconvenience."
+                               );
                     }).always(function() {
                         applyAnnotationColors();
                     });

@@ -114,8 +114,12 @@ define([
                     state.set('isInitializing', false);
                 });
             },
-        }).fail(function(e) { 
-            // TODO: Some meaningful message to user here
+        }).fail(function() {
+            Utils.alertUser(
+                "Error loading layout",
+                'There was an error loading the network layout.<br>\
+                <a href="mailto:m.usaj@utoronto.ca">Please contact our team for support</a>, we\'re sorry for the inconvenience.'
+               );
         });
     }
     
@@ -176,6 +180,12 @@ define([
                 
 //                sigInst.startPinLayout();
             },
+        }).fail(function() {
+            Utils.alertUser(
+                "Error loading custom data",
+                'There was an error loading custom data.<br>\
+                <a href="mailto:m.usaj@utoronto.ca">Please contact our team for support</a>, we\'re sorry for the inconvenience.'
+               );
         });
     }
     
@@ -201,9 +211,13 @@ define([
                 
                 $('input.gene-search-input').select2('val', nodes, true);
                 sigInst.draw();
-                
-//                sigInst.startPinLayout();
-            });
+        }).fail(function() {
+            Utils.alertUser(
+                "Error loading missing nodes",
+                'There was an error loading missing nodes.<br>\
+                TheCellMap team has been notified, we\'re sorry for the inconvenience.'
+               );
+        });
     }
     
     var loadDataset = function(dsid, data, callback) {
@@ -284,15 +298,19 @@ define([
                 
                 console.log("Added", numEdges, "edges");
                 console.log("Network reports", sigInst._core.graph.edges.length, "edges");
+                
+                if (callback) {
+                    callback(edges);
+                } else {
+                    updateEdges(dsid);
+                }
             },
-        }).always(function() {
-            if (callback) {
-                callback(edges);
-            } else {
-                updateEdges(dsid);
-            }
-        }).fail(function(e) {
-            console.log('failed', e);
+        }).fail(function() {
+            Utils.alertUser(
+                "Error loading dataset",
+                'There was an error loading ' + datasetType + ' dataset.<br>\
+                <a href="mailto:m.usaj@utoronto.ca">Please contact our team for support</a>, we\'re sorry for the inconvenience.'
+               );
         });
     }
     
