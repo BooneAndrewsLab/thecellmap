@@ -400,7 +400,7 @@ define([
                                     color = annotation.get('defaultColor');
                                 }
                                 
-                                n.label = strain.get('verboseName');
+                                n.label = strain.get('verboseName').toLowerCase();
                                 n.color = color;
                                 n.size = 2;
                                 n.x = n.y = Math.random() * 100;
