@@ -193,6 +193,40 @@ define([
                     });
                 }
                 
+                if (state.get("annotation") != 'None') {
+                    // Add annotation attraction component
+                    data = vizdata['annotations'].get(state.get("annotation"));
+                    
+                    for (key in groups) {
+                        if (groups[key].keylen == 0) continue; // No edges whatsoever... would make weight=infinity
+                        weight = groups[key].keylen * 0.01 - Math.min(groups[key]['nodes'].length * 0.00001, 0.009);
+                        
+                        annotations = {};
+                        groups[key].nodes.forEach(function(n) {
+                            strain = Utils.getStrain(n.id);
+                            annot = data.get('map')[strain.get('orf')] || [-1];
+                            
+                            annot.forEach(function(a) {
+                                if (!annotations.hasOwnProperty(a)) {
+                                    annotations[a] = [];
+                                }
+                                annotations[a].push(n);
+                            })
+                        });
+                        
+                        for (key in annotations) {
+                            k_combinations(annotations[key], 2).forEach(function(x) {
+                                lopts.edges.push({
+                                    weight: weight * 5,
+                                    absweight: weight * 5,
+                                    source: x[0],
+                                    target: x[1]
+                                })
+                            });
+                        }
+                    }
+                }
+                
                 lopts['groups'] = groups; // for stacking shared groups
                 
                 break;
