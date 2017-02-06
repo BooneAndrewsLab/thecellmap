@@ -351,8 +351,9 @@ define([
                     state.set('centerNode', selected[0]);
 //                    Layout.circularFunc(selected[0]);
                 } else {
-                    var layoutType = state.get('annotation') != 'None' ? 'gi+' : 'gi';
-                    Layout.toggleLayout(layoutType);
+//                    var layoutType = state.get('annotation') != 'None' ? 'gi+' : 'gi';
+                    
+                    Layout.toggleLayout('gi');
                     Settings.updateLabels();
                 }
                 
