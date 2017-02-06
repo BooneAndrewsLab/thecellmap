@@ -632,7 +632,7 @@ define([
             var step = $(e).data('step');
             switch(step) {
             case 2:
-                $('input.gene-search-input').select2('val', [181], true);
+                $('input.gene-search-input').select2('val', [4545], true);
                 break;
             case 3:
                 $('#view-network-simple').click();
@@ -641,7 +641,7 @@ define([
                 $('.cutoff-cor')[0].noUiSlider.set(0.25);
                 break;
             case 5:
-                Annotation.loadAnnotation('SAFE');
+                Annotation.loadAnnotation('SAFE (Costanzo et al, 2016)');
                 break;
             case 6:
                 Dataset.switchCutoffBars(1);
