@@ -4,8 +4,8 @@ define([
     'backbone',
     
     'build',
-    'leapControls',
     'utils',
+    'leapControls',
     'three',
     'stats',
     'mouse',
@@ -26,7 +26,7 @@ define([
     $.extend(window.opts, DEFAULTS);
     window.three = {};
     window.state = {
-        annotation: 'SAFE',
+        annotation: 'SAFE analysis',
         shownTerms: [],
         builtTerms: [],
         selection: [],
@@ -66,6 +66,7 @@ define([
         $.ajax({
             url: opts['urls']['layout'], 
             dataType : 'json', 
+            async: false,
             success: function(data) {
                 _.each(data['nodes'], function(n) {
                     vizdata['nodes'][n.id] = n;
