@@ -242,7 +242,7 @@ def three_demension(request, dataset_id):
     if request.user.is_authenticated() or dataset.is_published:
         return render(request, 'base/3D.html', {
                 'dataset': dataset,
-                'annotations': [Annotation.objects.get(name='SAFE')],
+                'annotations': [Annotation.objects.get(name='SAFE analysis')],
         })
     
     return HttpResponseForbidden()
