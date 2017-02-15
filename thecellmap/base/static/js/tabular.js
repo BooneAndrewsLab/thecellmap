@@ -140,7 +140,15 @@ require([
                                                     <span class="glyphicon glyphicon-download-alt"></span>\
                                                 </span>\
                                                 </button>\
+                                                <button class="btn downloadable btn-warning list-strains ladda-button btn-xs query-link">\
+                                                    <span class="glyphicon glyphicon-link"></span>\
+                                                </button>\
                                             </a>');
+            
+            $('#strain-tabs-large').last().find('.query-link').click(function() {
+                window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.orf, '_blank');
+            });
+            
             //add download ability to strain
             $('#strain-tabs-large .downloadable[data-node="' + strain.id + '"]').click(downloading);
             //add removal ability to strain
@@ -256,9 +264,12 @@ require([
                 $(tableSelect + '.correlations').attr('id',"c" + node_id);
                 $(tableSelect + '.negative').attr('id',"s" + node_id);
                 $(tableSelect + '.positive').attr('id',"q" + node_id);
-                $(tableSelect + '.correlations .panel-title').append(target.data('label') + ': Profile Similarities');
-                $(tableSelect + '.negative .panel-title').append(target.data('label') + ': Negative Interactions');
-                $(tableSelect + '.positive .panel-title').append(target.data('label') + ': Positive Interactions');
+                
+                var link_prefix = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + target.data('label') + '" target="_blank">' + target.data('label') + '</a>: ';
+                
+                $(tableSelect + '.correlations .panel-title').append(link_prefix + 'Profile Similarities');
+                $(tableSelect + '.negative .panel-title').append(link_prefix + 'Negative Interactions');
+                $(tableSelect + '.positive .panel-title').append(link_prefix + 'Positive Interactions');
                 
                 if (!!d.neighbor_effect) {
                     var msg = "Genetic interaction profile may have a modest neighbor effect"; 
@@ -502,7 +513,8 @@ require([
                                                      <span class="ladda-label">\
                                                          <span class="glyphicon glyphicon-download-alt"></span>\
                                                      </span>\
-                                                     </button>');
+                                                     </button>\
+                                                     <a href="#" class="btn btn-default" role="button"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></a>');
         }       
      });
     
@@ -688,7 +700,10 @@ require([
     //set download buttons
     $('#mmenu .downloadable, #strain-tabs-large .downloadable').click(downloading);
     
-
+    $('#strain-tabs-large').last().find('.query-link').click(function() {
+        window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).parent().attr('title'), '_blank');
+    });
+    
     //Hammer swipe functionality for mobile sized screens
     //set touchable areas on page
     var hammerTarget = document.getElementById('tabPage');
