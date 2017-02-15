@@ -20,6 +20,7 @@ require.config({
         'backbone' : ['jquery', 'underscore'],
         'stats' : ['three'],
         'mouse' : ['three'],
+        'leapControls': ['three'],
     }
 });
 
