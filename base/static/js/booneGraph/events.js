@@ -308,14 +308,8 @@ define([
                 });
                 
                 form = $('#yeastmine-post');
-                form.find('input[name=text]').attr('value', Object.keys(orfs).join('\n'));
+                form.find('input[name=externalids]').attr('value', Object.keys(orfs).join(','));
                 setTimeout(function(){form.submit();}, 100);
-                
-                
-// http://yeastmine.yeastgenome.org/yeastmine/buildBag.do
-// type=Gene
-// extraFieldValue=S.+cerevisiae
-// text=
                 
                 break
             }
