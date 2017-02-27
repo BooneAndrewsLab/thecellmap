@@ -277,6 +277,7 @@ define([
                     var moveOn = true, found = false;
                     sigInst.iterNodes(function(node) {
                         if (node.id.indexOf('tmp_') != -1) return;
+                        if (node.degree == 0) return; // do not select standalone nodes
                         if (state.get('showCircular')) var tmpNode = Utils.getNode('tmp_' + node.id);
                         
                         if ($.inArray(node.id + '', selected) >= 0) {
@@ -302,7 +303,7 @@ define([
                     var diff = $(selected).not(state.get('selection')).get(), missingNodes = { labels: [], ids: [] };
                     _.each(diff, function(n) {
                         var node = Utils.getNode(n), strain = Utils.getStrain(n);
-                        if (!node) {
+                        if (!node || node.degree == 0) { // if it's a standalone node, add it to missing nodes list
                             missingNodes['labels'].push(strain['attributes']['verboseName']);
                             missingNodes['ids'].push(strain['attributes']['id'] + '');
                         }
