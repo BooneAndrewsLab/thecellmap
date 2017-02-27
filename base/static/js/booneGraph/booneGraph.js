@@ -106,11 +106,7 @@ define([
              var position = sigInst.position(), m = sigInst.getMouse();
              sigInst._core.mousecaptor.interpolate(m.mouseX, m.mouseY, position.ratio * 2);
          }).bind('upnodes', function(targets) {
-            for (var i in targets.content) {
-                var n = targets.content[i];
-                console.log(n, Utils.getStrain(n).get('label'), Utils.getStrain(n));
-            }
-            
+//            state.set('manualSelection', true);
             if (!clicking.wasDragging) {
                 switch(clicking.modifierKey) {
                 case 'ctrl':
@@ -123,6 +119,7 @@ define([
                     break;
                 }
             }
+//            state.set('manualSelection', false);
             
             Annotation.drawRegions();
             
@@ -140,9 +137,11 @@ define([
             clicking.wasDragging = true;
             state.set('showRegions', false);
         }).bind('selectionStop', function(selection) {
+//            state.set('manualSelection', true);
             if (selection.content.nodeSelect) {
                 $('input.gene-search-input').select2('val', Utils.getSelectedNodes().concat(selection.content.selected), true);
             }
+//            state.set('manualSelection', false);
         }).bind('selectionStart', function() {
         }).bind('downnodes', function(selection) {
             if (sigInst.mouseProperties('allowNodeDrag')) {
