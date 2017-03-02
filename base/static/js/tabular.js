@@ -140,13 +140,13 @@ require([
                                                     <span class="glyphicon glyphicon-download-alt"></span>\
                                                 </span>\
                                                 </button>\
-                                                <button class="btn downloadable btn-warning list-strains ladda-button btn-xs query-link">\
+                                                <button class="btn btn-warning list-strains ladda-button btn-xs query-link">\
                                                     <span class="glyphicon glyphicon-link"></span>\
                                                 </button>\
                                             </a>');
             
             $('#strain-tabs-large').last().find('.query-link').click(function() {
-                window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + strain.orf, '_blank');
+                window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf, '_blank');
             });
             
             //add download ability to strain
@@ -265,7 +265,8 @@ require([
                 $(tableSelect + '.negative').attr('id',"s" + node_id);
                 $(tableSelect + '.positive').attr('id',"q" + node_id);
                 
-                var link_prefix = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + target.data('label') + '" target="_blank">' + target.data('label') + '</a>: ';
+                var strain = strainMap[node_id];
+                var link_prefix = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf + '" target="_blank">' + target.data('label') + '</a>: ';
                 
                 $(tableSelect + '.correlations .panel-title').append(link_prefix + 'Profile Similarities');
                 $(tableSelect + '.negative .panel-title').append(link_prefix + 'Negative Interactions');
@@ -341,7 +342,7 @@ require([
     //provides links on table entries
     var update_links = function() {
         $('.tab-pane.active table tbody tr td:first-child:not([colspan=3]):not([colspan=4])').click(function() {
-            window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).data('value'), '_blank');
+            window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + $(this).data('value'), '_blank');
         });
     }
     var strainMap = {};
@@ -701,7 +702,8 @@ require([
     $('#mmenu .downloadable, #strain-tabs-large .downloadable').click(downloading);
     
     $('#strain-tabs-large').last().find('.query-link').click(function() {
-        window.open('http://www.yeastgenome.org/cgi-bin/locus.fpl?locus=' + $(this).parent().attr('title'), '_blank');
+        var strain = strainMap[$(this).parent().data('node-id')];
+        window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf, '_blank');
     });
     
     //Hammer swipe functionality for mobile sized screens
