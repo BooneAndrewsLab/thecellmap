@@ -46,13 +46,13 @@
         padding-top: 20px;
    }
    
-   .btn.downloadable.list-strains{
+   .btn.downloadable.list-strains, .btn.query-link.list-strains{
         float: right;
         margin-top: -1px;
         margin-right: -11px;
    }
    
-   .btn.downloadable.btn-xs{
+   .btn.downloadable.btn-xs, .btn.query-link.btn-xs {
         float:right;
         margin-left: 11px;
    }
@@ -152,10 +152,10 @@
                     </span>
                 </button>
                 
-            <li>            
+            <li>
             {% for node, strain, label in strains %}
-            <li{% if forloop.first %} class="active mm-selected"{% endif %} id ="strain-tab{{ node }}">
-                <a class="strain-links" href="#tab{{ node }}" data-toggle="tab" title= '{{ strain.label }}'>
+            <li{% if forloop.first %} class="active mm-selected"{% endif %} id ="strain-tab{{ node }}" data-node-id="{{ node }}">
+                <a class="strain-links" href="#tab{{ node }}" data-toggle="tab" title='{{ strain.label }}'>
                     <button class="btn btn-xs btn-danger pull-left" >
                         <span class="glyphicon glyphicon-remove"></span>
                     </button>
@@ -220,7 +220,7 @@
                     </span>
                 </button>
                 {% for node, strain, label in strains %}
-                    <a {% if forloop.first %} class="list-group-item active round"{% endif %} class='list-group-item round' href="#tab{{ node }}" data-toggle="tab" title= '{{ strain.label }}'>
+                    <a {% if forloop.first %} class="list-group-item active round"{% endif %} class='list-group-item round' href="#tab{{ node }}" data-toggle="tab" title= '{{ strain.label }}' data-node-id="{{ node }}">
                         {{ strain.label }}
                         <button class="btn btn-xs btn-danger pull-left" >
                             <span class="glyphicon glyphicon-remove"></span>
@@ -230,7 +230,7 @@
                                 <span class="glyphicon glyphicon-download-alt"></span>
                             </span>
                         </button>
-                        <button class="btn downloadable btn-warning list-strains ladda-button btn-xs query-link">
+                        <button class="btn btn-warning list-strains ladda-button btn-xs query-link">
                             <span class="glyphicon glyphicon-link"></span>
                         </button>
                     </a>
