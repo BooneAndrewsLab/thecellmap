@@ -205,10 +205,10 @@ require([
               val = line[i];
               row += '<td data-value="' + val + '">' + val;
               if (isNeighbor && i == line.length - 1) {
-                  row += '<span class="badge pull-right" data-toggle="tooltip" data-placement="top" title="This gene is located immediately adjacent to the selected gene">Neighbor</span></td>';
+                  row += '<span class="badge pull-right" data-title="This gene is located immediately adjacent to the selected gene">Neighbor</span></td>';
               }
               if (line[1].indexOf('-supp') != -1 && i == line.length - 1) {
-                  row += '<span class="badge pull-right" data-toggle="tooltip" data-placement="top" title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">Carries Suppressor Mutation</a></span></td>';
+                  row += '<span class="badge pull-right" data-title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">Carries Suppressor Mutation</a></span></td>';
               }
               
               row += '</td>';
@@ -217,7 +217,7 @@ require([
           ctf = func(line[val_idx], ctf);
           if (isNeighbor) {
               row = $('<tr class="nf">' + row + '</tr>');
-              row.find('.badge').tooltip();
+//              row.find('.badge').tooltip();
               tbody.append(row);
               
           } else {
@@ -759,4 +759,10 @@ require([
             newStrain({val:data[i]}, 1);
         }
     };
+//    
+    $('body').tooltip({
+        selector: '.badge',
+        placement: 'top',
+        delay: 0,
+      });
 });
