@@ -300,6 +300,10 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 12, 0, 'F', style=STYLE_NEIGHBOR)
         self._write_cell(sheet['sheet'], 12, 1, 'Genes located immediately adjacent to the selected gene')
         
+        self._write_cell(sheet['sheet'], 14, 0, '-supp', style=STYLE_BOLD)
+        self._write_cell(sheet['sheet'], 14, 1, 'This indicates that the strain also carries a secondary suppressor mutation.')
+        self._write_cell(sheet['sheet'], 15, 1, xlwt.Formula('HYPERLINK("http://science.sciencemag.org/content/354/6312/aag0839.long", "See van Leeuwen et al, 2016 for more details.")'))
+        
         sheet['sheet'].col(1).width = 24000
         sheet['sheet'].row(4).height = 4000
         
