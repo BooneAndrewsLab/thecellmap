@@ -203,11 +203,15 @@ require([
           isNeighbor = nodeNeighbors[node_id].indexOf(line[0]) != -1;
           for (i = 0; i < line.length; i++) {
               val = line[i];
+              row += '<td data-value="' + val + '">' + val;
               if (isNeighbor && i == line.length - 1) {
-                  row += '<td data-value="' + val + '">' + val + '<span class="badge pull-right" data-toggle="tooltip" data-placement="top" title="This gene is located immediately adjacent to the selected gene">Neighbor</span></td>';
-              } else {
-                  row += '<td data-value="' + val + '">' + val + '</td>';
+                  row += '<span class="badge pull-right" data-toggle="tooltip" data-placement="top" title="This gene is located immediately adjacent to the selected gene">Neighbor</span></td>';
               }
+              if (line[1].indexOf('-supp') != -1 && i == line.length - 1) {
+                  row += '<span class="badge pull-right" data-toggle="tooltip" data-placement="top" title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">Carries Suppressor Mutation</a></span></td>';
+              }
+              
+              row += '</td>';
           }
           
           ctf = func(line[val_idx], ctf);
@@ -249,7 +253,6 @@ require([
         if (!$.trim(target.html()) && !target.hasClass('data-loading')) {
             var node_id = parseInt(target.data('node'));
 //            var strain = selectionNode.get(node_id);
-            console.log(selectionNode);
             target.addClass('data-loading');
             
             //spinner for when table is loading
@@ -266,6 +269,7 @@ require([
                 $(tableSelect + '.positive').attr('id',"q" + node_id);
                 
                 var strain = strainMap[node_id];
+                console.log(strain, node_id);
                 var link_prefix = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf + '" target="_blank">' + target.data('label') + '</a>: ';
                 
                 $(tableSelect + '.correlations .panel-title').append(link_prefix + 'Profile Similarities');
@@ -273,7 +277,7 @@ require([
                 $(tableSelect + '.positive .panel-title').append(link_prefix + 'Positive Interactions');
                 
                 if (!!d.neighbor_effect) {
-                    var msg = "Genetic interaction profile may have a modest neighbor effect"; 
+                    var msg = "Genetic interaction profile may have a modest neighbor effect."; 
                     $(tableSelect + '.correlations .panel').removeClass('panel-default').addClass('panel-danger');
                     $(tableSelect + '.negative .panel').removeClass('panel-default').addClass('panel-danger');
                     $(tableSelect + '.positive .panel').removeClass('panel-default').addClass('panel-danger');
@@ -281,6 +285,11 @@ require([
                     $(tableSelect + '.correlations .panel-heading').append('<small>' + msg + '</small>');
                     $(tableSelect + '.negative .panel-heading').append('<small>' + msg + '</small>');
                     $(tableSelect + '.positive .panel-heading').append('<small>' + msg + '</small>');
+                }
+                
+                if (strain.label.indexOf('-supp') != -1) {
+                    $(tableSelect + '.correlations .panel-heading').append('<small>This strain also carries a secondary suppressor mutation.</small>');
+                    $(tableSelect + '.correlations .panel-heading').append('<small>See <a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">van Leeuwen et al, 2016</a> for more details.</small>');
                 }
                 
                 nodeNeighbors[node_id] = d.neighbors;
@@ -349,155 +358,160 @@ require([
     
     //search function select2 set up
     var initSelect2 = function() {
-        $.getJSON(opts['nodesUrl'], function(data) {
-            var autocomp = [], strain, tokens;
-            for (i in data.nodes) {
-                strain = data.nodes[i];
-                strain.o = strain.orf.toLowerCase();
-                tokens = [strain.o];
-                strain.n = strain.name && strain.name.toLowerCase();
-                if (!!strain.n) tokens.push(strain.n);
-                strain.a = strain.alel && strain.alel.toLowerCase();
-                if (!!strain.a) tokens.push(strain.a);
-                strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
-                strain.terms = strain.terms || tokens;
-                strainMap[strain.id] = strain;
-                autocomp.push({
-                    value: strain.verboseName,
-                    tokens: strain.terms,
-                    id: strain.id
-                });
-            }
-            //generates searchbox
-            var tokenizing = false;
-            $("input.gene-search-input").select2({
-                multiple: true,
-                minimumInputLength: 2,
-                containerCssClass: 'form-control', 
-                placeholder: 'Search for more genes...',
-                allowClear: true,
-                width: '100%!important',
-                tokenSeparators: [",", " ", "\t", "\n"],
-                initSelection: function (element, callback) {
-                    var id = $(element).val(), strain, result = [];
-                    id.split(",").forEach(function(x) {
-                        if (x !== "") {
-                            strain = strainMap[x];
-                            
-                            result.push({
-                                text: strain.verboseName,
-                                id: strain.id
-                            });
-                        }
+        $.ajax({
+            url: opts['nodesUrl'], 
+            dataType: 'json',
+            async: false,
+            success: function(data) {
+                var autocomp = [], strain, tokens;
+                for (i in data.nodes) {
+                    strain = data.nodes[i];
+                    strain.o = strain.orf.toLowerCase();
+                    tokens = [strain.o];
+                    strain.n = strain.name && strain.name.toLowerCase();
+                    if (!!strain.n) tokens.push(strain.n);
+                    strain.a = strain.alel && strain.alel.toLowerCase();
+                    if (!!strain.a) tokens.push(strain.a);
+                    strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
+                    strain.terms = strain.terms || tokens;
+                    strainMap[strain.id] = strain;
+                    autocomp.push({
+                        value: strain.verboseName,
+                        tokens: strain.terms,
+                        id: strain.id
                     });
-                    callback(result);
-                },
-                tokenizer: function (input, selection, selectCallback, opts) {
-                    var original = input, // store the original so we can compare and know if we need to tell the search to update its text
-                    dupe = false, // check for whether a token we extracted represents a duplicate selected choice
-                    token, // token
-                    index, // position at which the separator was found
-                    i, l, // looping variables
-                    separator; // the matched separator
-                    
-                    if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-                    
-                    tokenizing = true;
-                    while (true) {
-                        index = -1;
-                        for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
-                            separator = opts.tokenSeparators[i];
-                            index = input.indexOf(separator);
-                            if (index >= 0) break;
-                        }
-                        if (index < 0) break; // did not find any token separator in the input string, bail
-                        token = input.substring(0, index);
-                        input = input.substring(index + separator.length);
-                        if (token.length > 0) {
-                            var tokens = opts.createSearchChoice.call(this, token, selection);
-                            if (tokens !== undefined && tokens !== null) {
-                                if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) tokens = [tokens];
-                                tokens.forEach(function(token) {
-                                    if (opts.id(token) !== undefined && opts.id(token) !== null) {
-                                        dupe = false;
-                                        for (i = 0, l = selection.length; i < l; i++) {
-                                            if (opts.id(token) == opts.id(selection[i])) {
-                                                dupe = true; break;
-                                            }
-                                        } 
-                                        if (!dupe) {
-                                            selectCallback(token);
-                                            
-                                        }
-                                    }
+                }
+                console.log("Strain map ready");
+                //generates searchbox
+                var tokenizing = false;
+                $("input.gene-search-input").select2({
+                    multiple: true,
+                    minimumInputLength: 2,
+                    containerCssClass: 'form-control', 
+                    placeholder: 'Search for more genes...',
+                    allowClear: true,
+                    width: '100%!important',
+                    tokenSeparators: [",", " ", "\t", "\n"],
+                    initSelection: function (element, callback) {
+                        var id = $(element).val(), strain, result = [];
+                        id.split(",").forEach(function(x) {
+                            if (x !== "") {
+                                strain = strainMap[x];
+                                
+                                result.push({
+                                    text: strain.verboseName,
+                                    id: strain.id
                                 });
                             }
-                        }
-                    }
-                    tokenizing = false;
-                    if (original!==input) return input;
-                },
-                
-                createSearchChoice: function(term) {
-                    
-                    var wildcard = term.indexOf('*') != -1;
-                    term = term.replace('*', '').toLowerCase();
-                    if (term.length > 0) {
-                        var results = [], seen = {};
-                        autocomp.forEach(function(node) {
-                            
-                            node.tokens.forEach(function(token) {
-                                
-                                if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
-                                    
-                                    results.push({id: node.id, text: node.value });
-                                    seen[node.id] = 0;
-                                    return;
-                                }
-                            });
                         });
-                        if (results.length !== 0) return results;
-                    }
-                },
-                
-                query: function(query) {
-                    if (query.term === undefined) {
-                        query.callback({results: []});
-                        return;
-                    }
-                    var data = {results: []}, term = query.term.replace('*', '').toLowerCase();
-                    autocomp.forEach(function(node) {
-                        if (query.term.length == 0){
-                            
-                            data.results.push({id: node.id, text: node.value });
-                        } else {
-                            for (var x in node.tokens) {
-                                if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
-                                    var duplicate = 0;
-                                    //check if search entry is already a selected strain
-                                    for (var j = 0, k = selectionNode.length; j<k; j++){
-                                        if(node.id == selectionNode[j]){
-                                            duplicate = 1;
+                        callback(result);
+                    },
+                    tokenizer: function (input, selection, selectCallback, opts) {
+                        var original = input, // store the original so we can compare and know if we need to tell the search to update its text
+                        dupe = false, // check for whether a token we extracted represents a duplicate selected choice
+                        token, // token
+                        index, // position at which the separator was found
+                        i, l, // looping variables
+                        separator; // the matched separator
+                        
+                        if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
+                        
+                        tokenizing = true;
+                        while (true) {
+                            index = -1;
+                            for (i = 0, l = opts.tokenSeparators.length; i < l; i++) {
+                                separator = opts.tokenSeparators[i];
+                                index = input.indexOf(separator);
+                                if (index >= 0) break;
+                            }
+                            if (index < 0) break; // did not find any token separator in the input string, bail
+                            token = input.substring(0, index);
+                            input = input.substring(index + separator.length);
+                            if (token.length > 0) {
+                                var tokens = opts.createSearchChoice.call(this, token, selection);
+                                if (tokens !== undefined && tokens !== null) {
+                                    if( Object.prototype.toString.call( tokens ) !== '[object Array]' ) tokens = [tokens];
+                                    tokens.forEach(function(token) {
+                                        if (opts.id(token) !== undefined && opts.id(token) !== null) {
+                                            dupe = false;
+                                            for (i = 0, l = selection.length; i < l; i++) {
+                                                if (opts.id(token) == opts.id(selection[i])) {
+                                                    dupe = true; break;
+                                                }
+                                            } 
+                                            if (!dupe) {
+                                                selectCallback(token);
+                                                
+                                            }
                                         }
-                                    }
-                                    if(!duplicate){
-                                        data.results.push({id: node.id, text: node.value });
-                                        break;
-                                    }
+                                    });
                                 }
                             }
                         }
-                    });
-                    data.results = data.results.slice(0, 6);
-                    query.callback(data);
-                },
-                data: autocomp,
-            //add new strain to each list that contains strains 
-            
-            }).on('select2-selecting', newStrain);
-            //fade in searchbar
-            $(".tab-sfade").fadeTo('1000',1.0);
-
+                        tokenizing = false;
+                        if (original!==input) return input;
+                    },
+                    
+                    createSearchChoice: function(term) {
+                        
+                        var wildcard = term.indexOf('*') != -1;
+                        term = term.replace('*', '').toLowerCase();
+                        if (term.length > 0) {
+                            var results = [], seen = {};
+                            autocomp.forEach(function(node) {
+                                
+                                node.tokens.forEach(function(token) {
+                                    
+                                    if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
+                                        
+                                        results.push({id: node.id, text: node.value });
+                                        seen[node.id] = 0;
+                                        return;
+                                    }
+                                });
+                            });
+                            if (results.length !== 0) return results;
+                        }
+                    },
+                    
+                    query: function(query) {
+                        if (query.term === undefined) {
+                            query.callback({results: []});
+                            return;
+                        }
+                        var data = {results: []}, term = query.term.replace('*', '').toLowerCase();
+                        autocomp.forEach(function(node) {
+                            if (query.term.length == 0){
+                                
+                                data.results.push({id: node.id, text: node.value });
+                            } else {
+                                for (var x in node.tokens) {
+                                    if (node.tokens[x].toLowerCase().indexOf(term) !== -1) {
+                                        var duplicate = 0;
+                                        //check if search entry is already a selected strain
+                                        for (var j = 0, k = selectionNode.length; j<k; j++){
+                                            if(node.id == selectionNode[j]){
+                                                duplicate = 1;
+                                            }
+                                        }
+                                        if(!duplicate){
+                                            data.results.push({id: node.id, text: node.value });
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        data.results = data.results.slice(0, 6);
+                        query.callback(data);
+                    },
+                    data: autocomp,
+                //add new strain to each list that contains strains 
+                
+                }).on('select2-selecting', newStrain);
+                //fade in searchbar
+                $(".tab-sfade").fadeTo('1000',1.0);
+            }
         });
     }
     
@@ -515,7 +529,9 @@ require([
                                                          <span class="glyphicon glyphicon-download-alt"></span>\
                                                      </span>\
                                                      </button>\
-                                                     <a href="#" class="btn btn-default" role="button"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></a>');
+                                                     <button class="btn btn-warning list-strains ladda-button btn-xs query-link">\
+                                                         <span class="glyphicon glyphicon-link"></span>\
+                                                     </button>');
         }       
      });
     
