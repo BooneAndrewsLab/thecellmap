@@ -250,7 +250,7 @@ def nodes_xls(ds, nodes, filename):
             output.write_correlation_row(strainB + (correlation, ), style=style)
         output.add_sheet('%s GI scores' % strain.label(), ['ORF', 'Allele', 'Score', 'p-value', '', 'ORF', 'Allele', 'Score', 'p-value'])
         for strainB, pval, score in scores[(scores.score <= 0) & (scores.pval < 0.05)].sort('score').itertuples(index=False):
-            style = (score < -.16 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None
+            style = (score < -.12 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None
             if strainB[0] in neighbors:
                 style = STYLE_NEIGHBOR
             output.write_score_row_neg(strainB + (score, pval), style=style)

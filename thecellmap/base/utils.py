@@ -263,7 +263,7 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 1, 0, 'Downloaded on', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self._write_cell(sheet['sheet'], 2, 0, 'Content', style=STYLE_BOLD)
-        self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (GI Scores) and similarity of genetic interaction profile similarity (Profile Sim.) for genes %s' % (content, ))
+        self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (GI Scores) and genetic interaction profile similarities (Profile Sim.) for genes %s' % (content, ))
         
         self._write_cell(sheet['sheet'], 3, 0, 'Description', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 4, 1, 'The SGA score measures the extent to which a double mutant colony size deviates from the colony size expected from combining two mutations together. '
@@ -271,7 +271,7 @@ class GenericXlsWriter():
 'The tab labeled "GI Scores" includes negative (putative synthetic sick/lethal) and positive interactions (potential epistatic or suppression interactions) involving the gene(s) of interest. ' 
 'The magnitude of the SGA score is indicative of the strength of interaction. '
 'Based on statistical analysis, we determined default cutoffs for the quantitative genetic interactions. ' 
-'The intermediate cutoff consists of a combination of p-value<0.05 and SGA score >|0.08|. ' 
+'The intermediate cutoff consists of a combination of p-value<0.05 and |SGA score| > 0.08. ' 
 'A more stringent threshold on negative interactions (p-value<0.05 and SGA score <-0.12) and positive interactions (p-value<0.05 and SGA score>0.16) are also indicated. '
 'Note that none of these interactions are confirmed and are likely to include some false positives. ' 
 'Thus, additional tests (e.g. random spore or tetrad analysis for negative interactions) should be performed prior to follow-up experiments. '
