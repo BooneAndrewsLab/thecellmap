@@ -195,20 +195,29 @@ require([
     //adds entries to the table up to the cut off value, keeps track of the cut off value for the load more button
     var add_to_table = function(tbody, data, val_idx, node_id) {
       if (data.length == 0) return;
-      var i, row, isNeighbor, ele = tbody.find('.row-more');
+      
+      var i, row, isNeighbor, gene, ele = tbody.find('.row-more');
       var ctf =  data[0][val_idx] < 0 ? -1 : 1;
       var func = data[0][val_idx] < 0 ? Math.max : Math.min;
+      
       data.forEach(function (line) {
           row = '';
           isNeighbor = nodeNeighbors[node_id].indexOf(line[0]) != -1;
+          gene = geneMap[line[0]];
           for (i = 0; i < line.length; i++) {
               val = line[i];
               row += '<td data-value="' + val + '">' + val;
-              if (isNeighbor && i == line.length - 1) {
-                  row += '<span class="badge pull-right" data-title="This gene is located immediately adjacent to the selected gene">Neighbor</span></td>';
-              }
-              if (line[1].indexOf('-supp') != -1 && i == line.length - 1) {
-                  row += '<span class="badge pull-right" data-title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">Carries Suppressor Mutation</a></span></td>';
+              
+              if (i == line.length - 1) {
+                  if (isNeighbor) {
+                      row += '<span class="badge pull-right" data-title="This gene is located immediately adjacent to the selected gene">Neighbor</span>';
+                  }
+                  if (line[1].indexOf('-supp') != -1) {
+                      row += '<span class="badge pull-right" data-title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">Carries Suppressor Mutation</a></span>';
+                  }
+                  if (gene.dubious) {
+                      row += '<span class="badge pull-right">Dubious</span>';
+                  }
               }
               
               row += '</td>';
@@ -269,7 +278,6 @@ require([
                 $(tableSelect + '.positive').attr('id',"q" + node_id);
                 
                 var strain = strainMap[node_id];
-                console.log(strain, node_id);
                 var link_prefix = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf + '" target="_blank">' + target.data('label') + '</a>: ';
                 
                 $(tableSelect + '.correlations .panel-title').append(link_prefix + 'Profile Similarities');
@@ -354,7 +362,7 @@ require([
             window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + $(this).data('value'), '_blank');
         });
     }
-    var strainMap = {};
+    var strainMap = {}, geneMap = {};
     
     //search function select2 set up
     var initSelect2 = function() {
@@ -375,6 +383,11 @@ require([
                     strain.verboseName = strain.label || strain.alel || strain.name || strain.orf;
                     strain.terms = strain.terms || tokens;
                     strainMap[strain.id] = strain;
+                    geneMap[strain.orf] = {
+                            name: strain.name,
+                            dubious: strain.isdu
+                    }
+                    
                     autocomp.push({
                         value: strain.verboseName,
                         tokens: strain.terms,
@@ -382,6 +395,7 @@ require([
                     });
                 }
                 console.log("Strain map ready");
+                
                 //generates searchbox
                 var tokenizing = false;
                 $("input.gene-search-input").select2({

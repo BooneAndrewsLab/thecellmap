@@ -233,14 +233,14 @@ class GenericXlsWriter():
     
     writerow = write_row
     
-    CORRELATION_FORMATS = (None, None, '0.000')
+    CORRELATION_FORMATS = (None, None, '0.000', None)
     def write_correlation_row(self, values, sheet=None, **kwargs):
         sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
             self._write_cell(sheet['sheet'], sheet['row'], col, val, number_format=self.CORRELATION_FORMATS[col], **kwargs)
         sheet['row'] += 1
     
-    SCORE_FORMATS = (None, None, '0.000', '0.00E+00')
+    SCORE_FORMATS = (None, None, '0.000', '0.00E+00', None)
     def write_score_row(self, values, sheet=None, col_offset=0, **kwargs):
         sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
