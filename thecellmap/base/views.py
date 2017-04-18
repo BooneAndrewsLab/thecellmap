@@ -24,6 +24,8 @@ from django.views.decorators.http import require_POST, require_GET
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
+import pandas as p
+from sga.safe import Safe
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -438,3 +440,38 @@ def publication_citations(request, title):
         pass
     
     return JsonResponse({'cited': citations})
+
+@require_POST
+def safe(request, dataset_id=None):
+    dataset = Dataset.pk_or_default(dataset_id, request.user)
+    
+    nodes = request.POST.get('hit_list').strip().lower().split()
+    if not nodes:
+        raise Http404('Empty query')
+    
+    search_map = {}
+    for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
+        search_map.setdefault(n['label'].lower(), set()).add(n['id'])
+        search_map.setdefault(n['orf'].lower(), set()).add(n['id'])
+        if n['name']: search_map.setdefault(n['name'].lower(), set()).add(n['id'])
+        if n['alel']: search_map.setdefault(n['alel'].lower(), set()).add(n['id'])
+        for a in n['aliases']:
+            search_map.setdefault(a.lower(), set()).add(n['id'])
+    
+    attributes = []
+    seen = set()
+    for n in nodes:
+        for m in search_map.get(n, []):
+            if m in seen: continue
+            
+            attributes.append((m, 1))
+            seen.add(m)
+    attributes = p.DataFrame(attributes, columns=['node', 'hit_list']).set_index('node')
+    
+    safe = Safe(dataset.static_path('safe_layout.csv'), attributes, dataset.static_path('safe_neighbors.csv'))
+    safe.prepare_attributes()
+    
+    enrichments = safe.calculate()
+    enrichments = enrichments[enrichments['hit_list'] > 0]
+    
+    return JsonResponse(enrichments.to_dict()['hit_list'])

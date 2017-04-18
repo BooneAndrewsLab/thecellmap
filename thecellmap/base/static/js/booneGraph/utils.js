@@ -334,6 +334,17 @@ define([
         ).toUpperCase();
     }
     
+    var floatToGrayHex = function(frac) {
+        var rval = parseInt(255 * frac);
+        var gval = parseInt(255 * frac);
+        var bval = parseInt(255 * frac);
+        return '#' + (
+                rval.toString(16) +
+                gval.toString(16) +
+                bval.toString(16)
+        ).toUpperCase();
+    }
+    
     var hexToRgb = function(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -625,6 +636,7 @@ define([
         
         getUnique: getUnique,
         rgbToHex: rgbToHex,
+        floatToGrayHex: floatToGrayHex,
         hexToRgb: hexToRgb,
         hexToStringRgba: hexToStringRgba,
         shadeBlendConvert: shadeBlendConvert,

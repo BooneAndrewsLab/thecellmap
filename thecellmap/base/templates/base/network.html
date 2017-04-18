@@ -122,5 +122,11 @@ TheCellMap.org recommends <a href="https://www.google.com/chrome/browser/">Googl
 </ul>
 {% endblock %}
 
+{% block navbar_menu_items_before %}
+{% if user.is_authenticated %}
+<li><a id="tools-safe" href="#" data-toggle="modal" data-target="#modal-safe" data-simple-step="1">Incorporate My Data</a></li>
+{% endif %}
+{% endblock %}
+
 {% block footer %}
 {% endblock footer %}
