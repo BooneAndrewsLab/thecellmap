@@ -82,4 +82,25 @@
       </div>
     </div>
   </div>
+  
+  <div class="modal fade" id="modal-safe" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Incorporate Custom Data</h4>
+        </div>
+        <div class="modal-body">
+            <p>Drop a list of hits into the textbox below</p>
+            <form id="safe-form" action="{% url 'safe' dataset.id %}" method="post">
+              {% csrf_token %}
+              <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button id="safe-submit" type="button" class="btn btn-default" data-dismiss="modal">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

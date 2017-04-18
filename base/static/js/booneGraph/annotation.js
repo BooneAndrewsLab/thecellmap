@@ -343,11 +343,18 @@ define([
                 ymm = [nodes[0].displayY, nodes[0].displayY];
             
             nodes.push(nodes[0]);
+//            var ctx = $('#canvas-regions')[0].getContext('2d');
+//            ctx.beginPath();
+//            ctx.lineWidth="1";
+//            ctx.strokeStyle="white"; // Green path
+//            ctx.moveTo(nodes[0].displayX,nodes[0].displayY);
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
                 xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
                 ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
+//                ctx.lineTo(n1.displayX,n1.displayY);
             }
+//            ctx.stroke();
             
             regions.push({
                 c: color, 
