@@ -574,48 +574,41 @@ define([
         },
         
         safe: function(e) {
+            Annotation.loadAnnotation(opts.default_annotation);
+            
             $.ajax({
                 type: "post",
                 url: $('#safe-form').attr('action'),
                 data: $('#safe-form').serialize(),
                 success: function(enrichments) {
-                    var ctx = $('#canvas-regions')[0].getContext('2d');
-                    ctx.globalCompositeOperation = 'screen';
+                    $("#sigma_nodes_1").hide();
+                    $("#sigma_hover_1").hide();
                     
                     Utils.iterVisibleEdges(function(edge) {
                         edge.hidden = true;
                     });
                     
-                    state.set('showAnnotColors', false);
-                    Annotation.drawRegions();
-                    
+                    var minEnr = 1;
                     Utils.iterVisibleNodes(function(node) {
                         if (enrichments.hasOwnProperty(node.id)) {
-                            console.log(node);
-                            
-                            var enr = enrichments[node.id];
-                            var r = node.displaySize * 4;
-//                            var r = (node.displaySize * 4) + (enr * 20);
-                            var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
-                            radgrad.addColorStop(0,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(255 * enr) + ',0,1)');
-                            radgrad.addColorStop(0.9, 'rgba(' + parseInt(255 * enr) + ',' + parseInt(235 * enr) + ',0,.8)');
-                            radgrad.addColorStop(1,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(205 * enr) + ',0,0)');
-                            
-                            ctx.fillStyle = radgrad;
-                            ctx.beginPath();
-                            ctx.arc(node.displayX, node.displayY, r, 0, 2*Math.PI);
-                            ctx.fill();
-                            ctx.closePath();
-                            
-                            node.color = Utils.floatToGrayHex(enrichments[node.id]);
-                            node.color = '#000000';
-                            $("#sigma_nodes_1").hide();
-                            $("#sigma_hover_1").hide();
-                        } else {
-                            node.color = '#000000';
-//                            node.color = '#050505';
+                            node.enrichment = enrichments[node.id];
+                            minEnr = Math.min(enrichments[node.id], minEnr);
                         }
                     });
+                    
+                    state.set('myData', true);
+                    state.set('showAnnotColors', false);
+                    state.set('showAnnotLabels', true);
+                    
+                    Annotation.drawRegions();
+                    
+                    $('.middle-right').removeClass('hidden');
+                    $('.middle-right').show();
+                    $('#view-network-simple').hide();
+                    $('.top-right-simple').addClass('hidden');
+                    $('.top-right-simple').hide();
+                    
+                    $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(minEnr);
                     
                     sigInst.draw();
                 }
