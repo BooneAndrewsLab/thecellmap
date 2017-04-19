@@ -411,3 +411,7 @@
 .btn-danger.btn-outline:hover {
     color: #fff;
 }
+
+#tools-safe {
+    margin-left: 60px;
+}

@@ -55,6 +55,12 @@ define([
         $('#panel-alerts').hide();
         
         $(opts['rootElement']).append('<canvas id="canvas-draw" width="' + $('canvas:first').width() + 'px" height="' + $('canvas:first').height() + 'px" style="display: none;"></canvas>');
+        
+        var canvas = $('#canvas-regions');
+        canvas = $('canvas:first').clone();
+        canvas.attr('id', 'canvas-regions');
+        $('#sigma_nodes_1').before(canvas);
+        
         window.addEventListener('resize', function() {
             var w = $('#network-container')[0].offsetWidth, h = $('#network-container')[0].offsetHeight;
             $('#canvas-draw').attr('width', w + 'px');
@@ -381,6 +387,12 @@ define([
             slider.noUiSlider.on('set', function(e) {
                 var val = parseFloat(slider.noUiSlider.get()), preVal = parseFloat(state.get('cutoffCorrelation')), lowVal = parseFloat(state.get('cutoffLow'));
                 if (val == preVal) return;
+                
+                if(state.get('myData')) {
+                    state.set('cutoffEnrichment', val);
+                    Annotation.drawRegions();
+                    return;
+                }
                 
                 var missingNodes = state.get('missingNodes').length > 0;
                 var nodes = missingNodes ? state.get('missingNodes') : sigInst._core.graph.nodes.filter(function(node) {

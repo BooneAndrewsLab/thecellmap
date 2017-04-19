@@ -314,56 +314,82 @@ define([
         var ratio = sigInst.position()['ratio'];
         var canvas = $('#canvas-regions');
         
-        if (!canvas.length) {
-            canvas = $('canvas:first').clone();
-            canvas.attr('id', 'canvas-regions');
-//            $('#sigma_nodes_1').before(canvas);
-            
-//            window.addEventListener('resize', function() {
-//                $('#canvas-regions').attr('width', $('.sigma_edges_canvas').width());
-//                $('#canvas-regions').attr('height', $('.sigma_edges_canvas').height());
-//                drawRegions();
-//            });
-        }
-        
-        $('#sigma_nodes_1').before(canvas);
-//        if (ratio == 1) {
-//            $('#sigma_nodes_1').after(canvas);
-//        } else {
-//            $('#sigma_nodes_1').before(canvas);
-//        }
-        
         var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
         
         for (r in regionGroup.get('regions')) {
-            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r], name = regionGroup.get('names')[r];
+            var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r].slice(), name = regionGroup.get('names')[r];
             var n1, n2,
                 xmm = [nodes[0].displayX, nodes[0].displayX],
                 ymm = [nodes[0].displayY, nodes[0].displayY];
             
             nodes.push(nodes[0]);
-//            var ctx = $('#canvas-regions')[0].getContext('2d');
-//            ctx.beginPath();
-//            ctx.lineWidth="1";
-//            ctx.strokeStyle="white"; // Green path
-//            ctx.moveTo(nodes[0].displayX,nodes[0].displayY);
+            
+            var ctx = $('#canvas-regions')[0].getContext('2d');
+            ctx.beginPath();
+            ctx.lineWidth="1";
+            ctx.lineCap = 'round';
+            ctx.strokeStyle="white"; // Green path
+            ctx.setLineDash([5, 5]);
+            
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
                 xmm[0] = Math.min(n2.displayX, xmm[0]), xmm[1] = Math.max(n2.displayX, xmm[1]);
                 ymm[0] = Math.min(n2.displayY, ymm[0]), ymm[1] = Math.max(n2.displayY, ymm[1]);
-//                ctx.lineTo(n1.displayX,n1.displayY);
             }
-//            ctx.stroke();
             
-            regions.push({
-                c: color, 
-                n: name, 
-                x: xmm[0] + ((xmm[1] - xmm[0]) / 2), 
-                y: ymm[0] + ((ymm[1] - ymm[0]) / 2), 
-                l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0])), 
-                label: regionGroup.get('locations')[r],
-            });
+            var cr = {
+                    c: color, 
+                    n: name, 
+                    x: xmm[0] + ((xmm[1] - xmm[0]) / 2), 
+                    y: ymm[0] + ((ymm[1] - ymm[0]) / 2), 
+                    l: Math.max((xmm[1] - xmm[0]), (ymm[1] - ymm[0])), 
+                    label: regionGroup.get('locations')[r],
+                }
+            
+            regions.push(cr);
+            
+            if (state.get('myData')) {
+                nodes.push(nodes[1]);
+                for (var i = 0; i < nodes.length - 1; i++) {
+                    n1 = nodes[i], n2 = nodes[i + 1];
+                    
+                    n1x = cr.x + (n1.displayX - cr.x) * 1.5;
+                    n1y = cr.y + (n1.displayY - cr.y) * 1.5;
+                    n2x = cr.x + (n2.displayX - cr.x) * 1.5;
+                    n2y = cr.y + (n2.displayY - cr.y) * 1.5;
+                    
+                    var xc = (n1x + n2x) / 2;
+                    var yc = (n1y + n2y) / 2;
+                    
+                    if (i == 0) {
+                        ctx.moveTo(xc, yc);
+                    } else {
+                        ctx.quadraticCurveTo(n1x,n1y, xc, yc);
+                    }
+                }
+                ctx.stroke();
+                
+                var nodeMin, nodeMax;
+                sigInst._core.graph.nodes.filter(function(node) {
+                    if (!nodeMin) {
+                        nodeMin = [node.displayX, node.displayY];
+                        nodeMax = [node.displayX, node.displayY];
+                    }
+                    
+                    nodeMin[0] = Math.min(node.displayX, nodeMin[0]);
+                    nodeMin[1] = Math.min(node.displayY, nodeMin[1]);
+                    nodeMax[0] = Math.max(node.displayX, nodeMax[0]);
+                    nodeMax[1] = Math.max(node.displayY, nodeMax[1]);
+                });
+                
+                var cx = nodeMin[0] + ((nodeMax[0] - nodeMin[0]) / 2);
+                var cy = nodeMin[1] + ((nodeMax[1] - nodeMin[1]) / 2);
+                var semidiameter = nodeMax[0] - cx;
+                ctx.beginPath();
+                ctx.arc(cx,cy,semidiameter,0,2*Math.PI);
+                ctx.stroke();
+            }
         }
         
         /**
@@ -377,11 +403,33 @@ define([
                 var grd = ctx.createRadialGradient(r.x, r.y, r.l / 14, r.x, r.y, r.l*0.7);
                 grd.addColorStop(0, Utils.hexToStringRgba(r.c, ratio == 1 ? 0.5 : 0.6));
                 grd.addColorStop(1, Utils.hexToStringRgba(r.c, 0.01)); //'transparent');
-                console.log()
                 
                 ctx.fillStyle = grd;
                 ctx.beginPath();
                 ctx.arc(r.x, r.y, r.l*0.8, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.closePath();
+            });
+        }
+        
+        if (state.get('myData')) {
+            var ctx = $('#canvas-regions')[0].getContext('2d');
+            ctx.globalCompositeOperation = 'screen';
+            
+            sigInst._core.graph.nodes.filter(function(node) {
+                if (!node.enrichment || node.enrichment < state.get('cutoffEnrichment')) return;
+                
+                var r = node.displaySize * 4;
+                var enr = node.enrichment;
+//              var r = (node.displaySize * 4) + (enr * 20);
+                var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
+                radgrad.addColorStop(0,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(255 * enr) + ',0,1)');
+                radgrad.addColorStop(0.9, 'rgba(' + parseInt(255 * enr) + ',' + parseInt(235 * enr) + ',0,.8)');
+                radgrad.addColorStop(1,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(205 * enr) + ',0,0)');
+                
+                ctx.fillStyle = radgrad;
+                ctx.beginPath();
+                ctx.arc(node.displayX, node.displayY, r, 0, 2*Math.PI);
                 ctx.fill();
                 ctx.closePath();
             });

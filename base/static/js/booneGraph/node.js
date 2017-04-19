@@ -283,6 +283,7 @@ define([
                         if ($.inArray(node.id + '', selected) >= 0) {
                             if (tmpNode) tmpNode.selected = true;
                             node.selected = found = true;
+                            console.log(node.id);
                             
                             if (node.hidden) {
                                 if (!selected.hasOwnProperty(node.id)) {
