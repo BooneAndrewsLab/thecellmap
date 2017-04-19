@@ -54,7 +54,7 @@
   </div>
   
   <div class="top-right-simple clearfix">
-      <div class="hidden" data-simple-step="1" data-simple-keep="true">
+      <div class="hidden clearfix" data-simple-step="1" data-simple-keep="true">
         <div class="dropdown inline-button-grp hidden" data-simple-step="2" data-intro="Annotations can be loaded using this button." data-step="4">
           <button class="btn btn-primary btn-outline dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             Annotate Network
@@ -73,7 +73,8 @@
        </div>
        
        {% if user.is_authenticated %}
-      <button id="tools-safe" type="button" class="btn btn-info btn-outline" data-simple-step="1" data-toggle="modal" data-target="#modal-safe"> Integrate My Data</button>
+      <button id="tools-safe" type="button" class="btn btn-info btn-outline" data-simple-step="1" 
+            data-toggle="modal" data-target="#modal-safe"> Overlay Data</button>
       {% endif %}
   </div>
   

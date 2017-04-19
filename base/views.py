@@ -79,9 +79,8 @@ def login(request, nxt='/'):
             if first_time:
                 request.user.last_login = None
                 request.user.save(update_fields=['last_login'])
-                
-            return HttpResponseRedirect(request.META['PATH_INFO'] + (request.META['QUERY_STRING'] and ('?%s' % request.META['QUERY_STRING']) or ''))
-#             return HttpResponseRedirect(request.GET.get('next', nxt))
+            
+            return HttpResponseRedirect(request.GET.get('next', nxt))
     return render(request, 'base/generic_form.html', {
                 'form': form,
                 'suffix': 'Login'
