@@ -95,14 +95,78 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">Incorporate Custom Data</h4>
+          <h4 class="modal-title" id="myModalLabel">Overlay Data</h4>
         </div>
         <div class="modal-body">
-            <p>Drop a list of hits into the textbox below</p>
-            <form id="safe-form" action="{% url 'safe' dataset.id %}" method="post">
-              {% csrf_token %}
-              <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
-            </form>
+            <div>
+              <!-- Nav tabs -->
+              <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#safe-tab-selected" aria-controls="safe-tab-selected" role="tab" data-toggle="tab">Selected Nodes</a></li>
+                <li role="presentation"><a href="#safe-tab-custom" aria-controls="safe-tab-custom" role="tab" data-toggle="tab">Custom Data</a></li>
+              </ul>
+              
+              <!-- Tab panes -->
+              <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="safe-tab-selected">
+                  <form id="safe-selected-form" action="{% url 'safe' dataset.id %}" method="post" class="form-horizontal">
+                  {% csrf_token %}
+                  <input type="hidden" name="safe-type" value="selected">
+                  <h5>Use genetic interaction from currently selected strains</h5>
+                  
+                  <div class="form-group">
+                    <label for="safe-selected-nodes" class="col-sm-3 control-label">Strain</label>
+                    <div class="col-sm-9">
+                      <select id="safe-selected-nodes" name="node" class="form-control"></select>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Negative GI</label>
+                    <div class="col-sm-9">
+                      <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary">
+                          <input type="radio" name="neg" autocomplete="off" value="unused"> Not Used
+                        </label>
+                        <label class="btn btn-primary active">
+                          <input type="radio" name="neg" autocomplete="off" value="intermediate" checked> Intermediate
+                        </label>
+                        <label class="btn btn-primary">
+                          <input type="radio" name="neg" autocomplete="off" value="stringent"> Stringent
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Positive GI</label>
+                    <div class="col-sm-9">
+                      <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary">
+                          <input type="radio" name="pos" autocomplete="off" value="unused"> Not Used
+                        </label>
+                        <label class="btn btn-primary active">
+                          <input type="radio" name="pos" autocomplete="off" value="intermediate" checked> Intermediate
+                        </label>
+                        <label class="btn btn-primary">
+                          <input type="radio" name="pos" autocomplete="off" value="stringent"> Stringent
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  </form>
+                </div>
+                
+                <div role="tabpanel" class="tab-pane" id="safe-tab-custom">
+                  <form id="safe-custom-form" action="{% url 'safe' dataset.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="safe-type" value="custom">
+                    <h5>Drop a list of hits into the textbox below</h5>
+                    <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
+                  </form>
+                </div>
+              </div>
+            </div>
         </div>
         <div class="modal-footer">
           <button id="safe-submit" type="button" class="btn btn-default" data-dismiss="modal">Submit</button>

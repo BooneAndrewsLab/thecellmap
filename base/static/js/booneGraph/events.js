@@ -574,13 +574,15 @@ define([
         },
         
         safe: function(e) {
-            Annotation.loadAnnotation(opts.default_annotation);
+            var form = $("#modal-safe .tab-pane.active form");
             
             $.ajax({
                 type: "post",
-                url: $('#safe-form').attr('action'),
-                data: $('#safe-form').serialize(),
+                url: form.attr('action'),
+                data: form.serialize(),
                 success: function(enrichments) {
+                    var node, hue;
+                    
                     $("#sigma_nodes_1").hide();
                     $("#sigma_hover_1").hide();
                     
@@ -589,18 +591,32 @@ define([
                     });
                     
                     var minEnr = 1;
-                    Utils.iterVisibleNodes(function(node) {
-                        if (enrichments.hasOwnProperty(node.id)) {
-                            node.enrichment = enrichments[node.id];
-                            minEnr = Math.min(enrichments[node.id], minEnr);
+                    for (var k in enrichments) {
+                        if (!enrichments.hasOwnProperty(k)) continue; 
+                        
+                        if (form.find('input[name="safe-type"]').val() == 'selected') {
+                            if (k == 'positives') {
+                                hue = 48;
+                            } else {
+                                hue = 210;
+                            }
+                        } else {
+                            hue = 120;
                         }
-                    });
+                        
+                        for (var n in enrichments[k]) {
+                            node = Utils.getNode(n);
+                            node.enrichment = enrichments[k][n];
+                            node.enrichment_hue = hue;
+                            minEnr = Math.min(node.enrichment, minEnr);
+                        }
+                    }
                     
                     state.set('myData', true);
                     state.set('showAnnotColors', false);
                     state.set('showAnnotLabels', true);
                     
-                    Annotation.drawRegions();
+                    Annotation.loadAnnotation(opts.default_annotation);
                     
                     $('.middle-right').removeClass('hidden');
                     $('.middle-right').show();

@@ -444,33 +444,76 @@ def publication_citations(request, title):
 def safe(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     
-    nodes = request.POST.get('hit_list').strip().lower().split()
-    if not nodes:
-        raise Http404('Empty query')
-    
-    search_map = {}
-    for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
-        search_map.setdefault(n['label'].lower(), set()).add(n['id'])
-        search_map.setdefault(n['orf'].lower(), set()).add(n['id'])
-        if n['name']: search_map.setdefault(n['name'].lower(), set()).add(n['id'])
-        if n['alel']: search_map.setdefault(n['alel'].lower(), set()).add(n['id'])
-        for a in n['aliases']:
-            search_map.setdefault(a.lower(), set()).add(n['id'])
-    
-    attributes = []
-    seen = set()
-    for n in nodes:
-        for m in search_map.get(n, []):
-            if m in seen: continue
+    if request.POST.get('safe-type') == 'selected':
+        node = int(request.POST.get('node'))
+        data = collect_scores(Dataset.pk_or_default(dataset_id, request.user), [node])
+        neg_thr = request.POST.get('neg')
+        pos_thr = request.POST.get('pos')
+        
+        attributes = []
+        for s, t, w in data.itertuples(index=False):
+            row = [None, 0, 0]
             
-            attributes.append((m, 1))
-            seen.add(m)
-    attributes = p.DataFrame(attributes, columns=['node', 'hit_list']).set_index('node')
-    
-    safe = Safe(dataset.static_path('safe_layout.csv'), attributes, dataset.static_path('safe_neighbors.csv'))
-    safe.prepare_attributes()
-    
-    enrichments = safe.calculate()
-    enrichments = enrichments[enrichments['hit_list'] > 0]
-    
-    return JsonResponse(enrichments.to_dict()['hit_list'])
+            if w < 0:
+                if neg_thr == 'unused':
+                    continue
+                elif neg_thr == 'stringent' and w >= -.12:
+                    continue
+                row[1] = 1
+            else:
+                if pos_thr == 'unused':
+                    continue
+                elif pos_thr == 'stringent' and w <= .16:
+                    continue
+                row[2] = 1
+            
+            if int(s) == node:
+                row[0] = t
+            else:
+                row[0] = s
+            
+            attributes.append(row)
+        
+        attributes = p.DataFrame(attributes, columns=['node', 'negatives', 'positives']).set_index('node')
+        
+        safe = Safe(dataset.static_path('safe_layout.csv'), attributes, dataset.static_path('safe_neighbors.csv'))
+        safe.prepare_attributes()
+        
+        enrichments = safe.calculate()
+        result = {}
+        result['positives'] = enrichments[enrichments['positives'] > 0].astype(float).to_dict()['positives']
+        result['negatives'] = enrichments[enrichments['negatives'] > 0].astype(float).to_dict()['negatives']
+        
+        return JsonResponse(result)
+
+    else:
+        nodes = request.POST.get('hit_list').strip().lower().split()
+        if not nodes:
+            raise Http404('Empty query')
+        
+        search_map = {}
+        for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
+            search_map.setdefault(n['label'].lower(), set()).add(n['id'])
+            search_map.setdefault(n['orf'].lower(), set()).add(n['id'])
+            if n['name']: search_map.setdefault(n['name'].lower(), set()).add(n['id'])
+            if n['alel']: search_map.setdefault(n['alel'].lower(), set()).add(n['id'])
+            for a in n['aliases']:
+                search_map.setdefault(a.lower(), set()).add(n['id'])
+        
+        attributes = []
+        seen = set()
+        for n in nodes:
+            for m in search_map.get(n, []):
+                if m in seen: continue
+                
+                attributes.append((m, 1))
+                seen.add(m)
+        attributes = p.DataFrame(attributes, columns=['node', 'hit_list']).set_index('node')
+        
+        safe = Safe(dataset.static_path('safe_layout.csv'), attributes, dataset.static_path('safe_neighbors.csv'))
+        safe.prepare_attributes()
+        
+        enrichments = safe.calculate()
+        enrichments = enrichments[enrichments['hit_list'] > 0]
+        
+        return JsonResponse(enrichments.to_dict())
