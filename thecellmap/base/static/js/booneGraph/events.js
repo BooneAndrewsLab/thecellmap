@@ -608,7 +608,7 @@ define([
                         for (var n in pairs) {
                             if (!pairs.hasOwnProperty(n)) continue;
                             
-                            node = Utils.getNode(n);
+                            node = Utils.getNode(parseInt(n));
                             node.enrichment = pairs[n];
                             node.enrichment_hue = hue;
                             minEnr = Math.min(node.enrichment, minEnr);
