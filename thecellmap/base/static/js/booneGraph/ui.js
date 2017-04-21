@@ -72,6 +72,16 @@ define([
                 Annotation.drawRegions();
             }
         });
+        
+        $('#modal-safe').on('show.bs.modal', function () {
+            var select = $("#safe-selected-nodes");
+            select.empty();
+            Utils.getSelection().forEach(function(n) {
+                var node = Utils.getNode(n);
+                console.log(node);
+                select.append('<option value="' + n + '">' + node.label + '</option>')
+            });
+        });
     }
     
     function buildDrawUI() {

@@ -423,9 +423,15 @@ define([
                 var enr = node.enrichment;
 //              var r = (node.displaySize * 4) + (enr * 20);
                 var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
-                radgrad.addColorStop(0,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(255 * enr) + ',0,1)');
-                radgrad.addColorStop(0.9, 'rgba(' + parseInt(255 * enr) + ',' + parseInt(235 * enr) + ',0,.8)');
-                radgrad.addColorStop(1,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(205 * enr) + ',0,0)');
+                console.log();
+                
+                radgrad.addColorStop(0,   Utils.hsvToRgba(node.enrichment_hue, 100, enr * 100, 1));
+                radgrad.addColorStop(0.9, Utils.hsvToRgba(node.enrichment_hue, 100, enr * 95, .8));
+                radgrad.addColorStop(1,   Utils.hsvToRgba(node.enrichment_hue, 100, enr * 90, 0));
+                
+//                radgrad.addColorStop(0,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(255 * enr) + ',0,1)');
+//                radgrad.addColorStop(0.9, 'rgba(' + parseInt(255 * enr) + ',' + parseInt(235 * enr) + ',0,.8)');
+//                radgrad.addColorStop(1,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(205 * enr) + ',0,0)');
                 
                 ctx.fillStyle = radgrad;
                 ctx.beginPath();
