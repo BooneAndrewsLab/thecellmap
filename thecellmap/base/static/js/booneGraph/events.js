@@ -604,9 +604,12 @@ define([
                             hue = 120;
                         }
                         
-                        for (var n in enrichments[k]) {
+                        var pairs = enrichments[k];
+                        for (var n in pairs) {
+                            if (!pairs.hasOwnProperty(n)) continue;
+                            
                             node = Utils.getNode(n);
-                            node.enrichment = enrichments[k][n];
+                            node.enrichment = pairs[n];
                             node.enrichment_hue = hue;
                             minEnr = Math.min(node.enrichment, minEnr);
                         }
