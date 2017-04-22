@@ -77,9 +77,8 @@ define([
             var select = $("#safe-selected-nodes");
             select.empty();
             Utils.getSelection().forEach(function(n) {
-                var node = Utils.getNode(n);
-                console.log(node);
-                select.append('<option value="' + n + '">' + node.label + '</option>')
+                var strain = Utils.getStrain(n);
+                select.append('<option value="' + n + '">' + strain.get('label').toLowerCase() + '</option>')
             });
         });
     }

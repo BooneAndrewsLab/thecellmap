@@ -628,6 +628,7 @@ define([
                     $('#view-network-simple').hide();
                     $('.top-right-simple').addClass('hidden');
                     $('.top-right-simple').hide();
+                    $('.alert').alert('close');
                     
                     $('#cutoff-bar-safe')[0].noUiSlider.set(minEnr);
                     
