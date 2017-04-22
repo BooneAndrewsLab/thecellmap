@@ -504,7 +504,7 @@ define([
             });
             
             slider.noUiSlider.on('update', function(values, handle) {
-                $('.cutoff-label-min').html(Math.pow(10, -16 * parseFloat(values[0])).toExponential(1));
+                $('.cutoff-label-min').html(Math.pow(10, -16 * parseFloat(values[0])).toExponential(0));
             });
         });
         
@@ -520,7 +520,10 @@ define([
                 var cutoff = data == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction').slice();
                 
                 if ($.isNumeric(value)) {
-                    value = parseFloat(value).toFixed(2);
+                    value = parseFloat(value);
+                    if (!state.get('myData'))
+                        value = value.toFixed(2);
+                    
                     if (label.attr('id') == 'cutoff-label-min'  || label.attr('id') == 'cutoff-label-min-simple') {
                         if (data == 0) {
                             cutoff = value;
@@ -530,7 +533,14 @@ define([
                     } else {
                         cutoff[1] = value;
                     }
-                    $('.cutoff-bar[data-dataset=\"' + data + '\"], .cutoff-bar-simple[data-dataset=\"' + data + '\"]')[0].noUiSlider.set(cutoff);
+                    
+                    if (state.get('myData')) {
+                        console.log('hide1', cutoff);
+                        console.log('hide2', Math.min(-Math.log10(cutoff), 16.0) / 16.0);
+                        $('.cutoff-safe')[0].noUiSlider.set(Math.min(-Math.log10(cutoff), 16.0) / 16.0);
+                    } else {
+                        $('.cutoff-bar[data-dataset=\"' + data + '\"], .cutoff-bar-simple[data-dataset=\"' + data + '\"]')[0].noUiSlider.set(cutoff);
+                    }
                 }
             }).on('shown.bs.popover', function () {
                 $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keyup(function (e) {
@@ -560,7 +570,13 @@ define([
                         }
                         
                         if (e.which == 13) {
-                            $('.cutoff-bar[data-dataset=\"' + dataset + '\"], .cutoff-bar-simple[data-dataset=\"' + dataset + '\"]')[0].noUiSlider.set(cutoff);
+                            if (state.get('myData')) {
+                                console.log('show1', cutoff);
+                                console.log('show2', Math.min(-Math.log10(cutoff), 16.0) / 16.0);
+                                $('.cutoff-safe')[0].noUiSlider.set(Math.min(-Math.log10(cutoff), 16.0) / 16.0);
+                            } else {
+                                $('.cutoff-bar[data-dataset=\"' + dataset + '\"], .cutoff-bar-simple[data-dataset=\"' + dataset + '\"]')[0].noUiSlider.set(cutoff);
+                            }
                             label.popover('hide');
                         }
                     }
