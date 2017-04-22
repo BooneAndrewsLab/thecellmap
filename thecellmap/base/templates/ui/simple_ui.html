@@ -36,6 +36,8 @@
      data-intro="The cutoff bar controls the minium edge correlation shown on the network." data-step="3" data-position="left"></div>
     <div id="cutoff-bar-int" class="cutoff-bar cutoff-int" data-dataset="1" data-orientation="vertical" style="display: none;"
      data-intro="This cutoff bar controls the edge cutoffs for the genetic interaction network." data-step="6" data-position="left"></div>
+    <div id="cutoff-bar-safe" class="cutoff-bar cutoff-safe" data-dataset="s" data-orientation="vertical" style="display: none;"
+     data-direction='ltr'></div>
     
     <button id="cutoff-label-min" type="button" class="btn btn-default cutoff-label cutoff-label-min"
      data-hint="The cutoff can also be manually inputed." data-position="left"></button>
@@ -99,10 +101,16 @@
         </div>
         <div class="modal-body">
             <div>
+              <p><a href="https://www.ncbi.nlm.nih.gov/pubmed/27237738">SAFE analysis</a> to identify regions of the global similarity
+      network that are significantly enriched for genes exhibiting negative or positive genetic
+      interactions with a gene of interest (see Fig. 9 in <a href="https://www.ncbi.nlm.nih.gov/pubmed/27708008">Costanzo et al 2016</a> for an example). Or,
+      upload a gene list and identify network regions that are significantly enriched for your
+      favourite genes.</p>
+              <hr>
               <!-- Nav tabs -->
               <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#safe-tab-selected" aria-controls="safe-tab-selected" role="tab" data-toggle="tab">Selected Nodes</a></li>
-                <li role="presentation"><a href="#safe-tab-custom" aria-controls="safe-tab-custom" role="tab" data-toggle="tab">Custom Data</a></li>
+                <li role="presentation"><a href="#safe-tab-custom" aria-controls="safe-tab-custom" role="tab" data-toggle="tab">Gene List</a></li>
               </ul>
               
               <!-- Tab panes -->

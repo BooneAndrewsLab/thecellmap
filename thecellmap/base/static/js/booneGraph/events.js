@@ -623,11 +623,13 @@ define([
                     
                     $('.middle-right').removeClass('hidden');
                     $('.middle-right').show();
+                    $('#cutoff-bar-cor').hide();
+                    $('#cutoff-bar-safe').show();
                     $('#view-network-simple').hide();
                     $('.top-right-simple').addClass('hidden');
                     $('.top-right-simple').hide();
                     
-                    $('.cutoff-bar[data-dataset=0]')[0].noUiSlider.set(minEnr);
+                    $('#cutoff-bar-safe')[0].noUiSlider.set(minEnr);
                     
                     sigInst.draw();
                 }
