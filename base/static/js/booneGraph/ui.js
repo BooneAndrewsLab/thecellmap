@@ -398,12 +398,6 @@ define([
                 var val = parseFloat(slider.noUiSlider.get()), preVal = parseFloat(state.get('cutoffCorrelation')), lowVal = parseFloat(state.get('cutoffLow'));
                 if (val == preVal) return;
                 
-                if(state.get('myData')) {
-                    state.set('cutoffEnrichment', val);
-                    Annotation.drawRegions();
-                    return;
-                }
-                
                 var missingNodes = state.get('missingNodes').length > 0;
                 var nodes = missingNodes ? state.get('missingNodes') : sigInst._core.graph.nodes.filter(function(node) {
                     return !(node.hidden);
@@ -486,6 +480,31 @@ define([
             
             slider.noUiSlider.on('update', function(values, handle) {
                 $('.cutoff-label-min').html(values);
+            });
+        });
+        
+        $('.cutoff-safe').each(function() {
+            var orientation = $(this).data('orientation'), direction = $(this).data('direction');
+            
+            var slider = this;
+            nouislider.create(slider, {
+                range: {min: sliderProperties.min, max: sliderProperties.max},
+                step: sliderProperties.step,
+                start: sliderProperties.value,
+                direction: direction,
+                orientation: orientation,
+            });
+            
+            slider.noUiSlider.on('set', function(e) {
+                var val = parseFloat(slider.noUiSlider.get()),  preVal = parseFloat(state.get('cutoffEnrichment'));
+                if (val == preVal) return;
+                
+                state.set('cutoffEnrichment', val);
+                Annotation.drawRegions();
+            });
+            
+            slider.noUiSlider.on('update', function(values, handle) {
+                $('.cutoff-label-min').html(Math.pow(10, -16 * parseFloat(values[0])).toExponential(1));
             });
         });
         
