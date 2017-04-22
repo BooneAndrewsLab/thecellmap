@@ -606,7 +606,7 @@ define([
                         
                         var pairs = enrichments[k];
                         for (var n in pairs) {
-                            if (!pairs.hasOwnProperty(n)) continue;
+                            if (!pairs.hasOwnProperty(n) || isNaN(pairs[n])) continue;
                             
                             node = Utils.getNode(parseInt(n));
                             node.enrichment = pairs[n];
