@@ -334,8 +334,8 @@ define([
                     
                     state.set('selection', actualSelection);
                     
-                    if (!!actualSelection.length && !state.get('isInitializing') && state.get('step') < 1) {
-                        state.set('step', 1);
+                    if (!!actualSelection.length && !state.get('isInitializing') && state.get('step') < 1 && !state.get('myData')) {
+                        state.set('step', 1); 
                     }
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
