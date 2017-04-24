@@ -1786,6 +1786,10 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     
     if (self.p.drawSelectedPin && node['selected']) {
         var rsize = 35;
+        
+        ctx = labelsCtx;
+        ctx.fillStyle = 'red';
+        ctx.strokeStyle = ctx.fillStyle;
         ctx.beginPath();
         
         ctx.moveTo(node.displayX, node.displayY);
