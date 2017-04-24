@@ -83,9 +83,9 @@ define([
         
         if (state.get('myData')) {
             if (state.get('myDataType') == 'selected') {
-                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Positive GI</span></li>');
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Enriched for positive genetic interactions</span></li>');
                 $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(48, 100, 100, 1));
-                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Negative GI</span></li>');
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Enriched for negative genetic interactions</span></li>');
                 $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(210, 100, 100, 1));
             } else {
                 $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Custom List</span></li>');
