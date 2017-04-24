@@ -30,6 +30,7 @@ define([
             showAnnotLabels: true,
             showAnnotColors: true,
             myData: false,
+            myDataType: null,
             step: 0,
             subnetworks: false,
             selectedUi: localStorage.getItem('selectedUi') || 'simple',

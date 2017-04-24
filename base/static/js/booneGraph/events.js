@@ -616,6 +616,7 @@ define([
                     }
                     
                     state.set('myData', true);
+                    state.set('myDataType', form.find('input[name="safe-type"]').val());
                     state.set('showAnnotColors', false);
                     state.set('showAnnotLabels', true);
                     
@@ -631,6 +632,7 @@ define([
                     $('.alert').alert('close');
                     
                     $('#cutoff-bar-safe')[0].noUiSlider.set(minEnr);
+                    $('#panel-legend').toggle(true);
                     
                     sigInst.draw();
                 }
