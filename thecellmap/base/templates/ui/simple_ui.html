@@ -109,8 +109,8 @@
               <hr>
               <!-- Nav tabs -->
               <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#safe-tab-selected" aria-controls="safe-tab-selected" role="tab" data-toggle="tab">Selected Nodes</a></li>
-                <li role="presentation"><a href="#safe-tab-custom" aria-controls="safe-tab-custom" role="tab" data-toggle="tab">Gene List</a></li>
+                <li role="presentation" class="active"><a href="#safe-tab-selected" aria-controls="safe-tab-selected" role="tab" data-toggle="tab">Selected Genes</a></li>
+                <li role="presentation"><a href="#safe-tab-custom" aria-controls="safe-tab-custom" role="tab" data-toggle="tab">Upload a Gene List</a></li>
               </ul>
               
               <!-- Tab panes -->
@@ -119,10 +119,10 @@
                   <form id="safe-selected-form" action="{% url 'safe' dataset.id %}" method="post" class="form-horizontal">
                   {% csrf_token %}
                   <input type="hidden" name="safe-type" value="selected">
-                  <h5>Use genetic interaction from currently selected strains</h5>
+                  <h5>Overlay genetic interactions for selected gene mutant</h5>
                   
                   <div class="form-group">
-                    <label for="safe-selected-nodes" class="col-sm-3 control-label">Strain</label>
+                    <label for="safe-selected-nodes" class="col-sm-3 control-label">Gene mutant</label>
                     <div class="col-sm-9">
                       <select id="safe-selected-nodes" name="node" class="form-control"></select>
                     </div>
@@ -133,7 +133,7 @@
                     <div class="col-sm-9">
                       <div class="btn-group" data-toggle="buttons">
                         <label class="btn btn-primary">
-                          <input type="radio" name="neg" autocomplete="off" value="unused"> Not Used
+                          <input type="radio" name="neg" autocomplete="off" value="unused"> Do not use
                         </label>
                         <label class="btn btn-primary active">
                           <input type="radio" name="neg" autocomplete="off" value="intermediate" checked> Intermediate
@@ -150,7 +150,7 @@
                     <div class="col-sm-9">
                       <div class="btn-group" data-toggle="buttons">
                         <label class="btn btn-primary">
-                          <input type="radio" name="pos" autocomplete="off" value="unused"> Not Used
+                          <input type="radio" name="pos" autocomplete="off" value="unused"> Do not use
                         </label>
                         <label class="btn btn-primary active">
                           <input type="radio" name="pos" autocomplete="off" value="intermediate" checked> Intermediate
@@ -169,7 +169,7 @@
                   <form id="safe-custom-form" action="{% url 'safe' dataset.id %}" method="post">
                     {% csrf_token %}
                     <input type="hidden" name="safe-type" value="custom">
-                    <h5>Drop a list of hits into the textbox below</h5>
+                    <h5>Paste a list of genes into the textbox below</h5>
                     <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
                   </form>
                 </div>
