@@ -43,7 +43,7 @@ define([
                 }
             }).draw();
             
-            $('#panel-legend').toggle(state.get('annotation') != 'None');
+            $('#panel-legend').toggle(state.get('annotation') != 'None' || state.get('myData'));
         } else {
             // We're looking at the global network so we need to show regions and leave default node colors
             sigInst.iterNodes(function(n) {
@@ -53,8 +53,7 @@ define([
                     n.color = opts['defaultNodeColor'];
                 }
             }).draw();
-            
-            $('#panel-legend').hide();
+            $('#panel-legend').toggle(state.get('myData'));
         }
         
         if (!$('#legend-body').is(":visible") || state.get('annotation') == 'None')
@@ -81,6 +80,21 @@ define([
               <th style="width: 1%;"></th>\
               <th>Annotation</th></tr></thead>\
           <tbody id="style-annotation-table"></tbody></table>');
+        
+        if (state.get('myData')) {
+            if (state.get('myDataType') == 'selected') {
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Positive GI</span></li>');
+                $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(48, 100, 100, 1));
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Negative GI</span></li>');
+                $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(210, 100, 100, 1));
+            } else {
+                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Custom List</span></li>');
+                $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(120, 100, 100, 1));
+            }
+            
+            return;
+        }
+        
         sigInst.iterNodes(function(node) {
 //            if (!node.hidden && node.type != 'pin') strains.push(Utils.getStrain(node.id));
             if (!node.hidden) strains.push({strain: Utils.getStrain(node.id), node: node});
@@ -263,7 +277,7 @@ define([
         var annotations = vizdata['annotations'];
         state.set('annotation', id);
         
-        $('#panel-legend').toggle(id != 'None' && !state.get('showRegions'));
+        $('#panel-legend').toggle((id != 'None' && !state.get('showRegions')) || state.get('myData'));
         
         if (!annotations.get(id)) {
             if (id == 'None') {
@@ -421,9 +435,7 @@ define([
                 
                 var r = node.displaySize * 4;
                 var enr = node.enrichment;
-//              var r = (node.displaySize * 4) + (enr * 20);
                 var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
-                console.log();
                 
                 radgrad.addColorStop(0,   Utils.hsvToRgba(node.enrichment_hue, 100, enr * 100, 1));
                 radgrad.addColorStop(0.9, Utils.hsvToRgba(node.enrichment_hue, 100, enr * 95, .8));
