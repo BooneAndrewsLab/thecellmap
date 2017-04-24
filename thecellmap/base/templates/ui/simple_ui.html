@@ -166,11 +166,30 @@
                 </div>
                 
                 <div role="tabpanel" class="tab-pane" id="safe-tab-custom">
-                  <form id="safe-custom-form" action="{% url 'safe' dataset.id %}" method="post">
+                  <form id="safe-custom-form" action="{% url 'safe' dataset.id %}" method="post" class="form-horizontal">
                     {% csrf_token %}
                     <input type="hidden" name="safe-type" value="custom">
                     <h5>Paste a list of genes into the textbox below</h5>
-                    <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
+                    
+                    <div class="form-group">
+                    <label for="safe-custom-name" class="col-sm-3 control-label">Name</label>
+                      <div class="col-sm-9">
+                        <input id="safe-custom-name" name="name" class="form-control" value='Custom List'>
+                      </div>
+                    </div>
+                    
+                    <div class="form-group">
+                      <div class="col-sm-12">
+                        <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
+                      </div>
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="safe-custom-color" class="col-sm-3 control-label">Hue</label>
+                      <div class="col-sm-9">
+                        <input id="safe-custom-color" type="text" value="00FF00" name="custom-list-color" class="form-control">
+                      </div>
+                    </div>
                   </form>
                 </div>
               </div>

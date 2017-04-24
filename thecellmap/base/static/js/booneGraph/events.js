@@ -294,7 +294,7 @@ define([
 //                Annotation.drawRegions();
                 break;
             case 'context-svg':
-                Download.downloadCanvasSvg();
+                Download.downloadCanvasSnapshot();
                 break;
             case 'context-tour':
                 localStorage.setItem('enableIntro', true);
@@ -546,7 +546,7 @@ define([
         },
         
         getSvgScreenshot: function(e) {
-            Download.downloadCanvasSvg();
+            Download.downloadCanvasSnapshot();
             e.preventDefault();
         },
         
@@ -575,6 +575,8 @@ define([
         
         safe: function(e) {
             var form = $("#modal-safe .tab-pane.active form");
+            var custom_hue = $('#safe-custom-color').data('colorpicker').color.value.h * 360;
+            var custom_name = $('#safe-custom-name').val();
             
             $.ajax({
                 type: "post",
@@ -601,7 +603,7 @@ define([
                                 hue = 210;
                             }
                         } else {
-                            hue = 120;
+                            hue = custom_hue;
                         }
                         
                         var pairs = enrichments[k];
@@ -611,6 +613,7 @@ define([
                             node = Utils.getNode(parseInt(n));
                             node.enrichment = pairs[n];
                             node.enrichment_hue = hue;
+                            node.enrichment_name = custom_name;
                             minEnr = Math.min(node.enrichment, minEnr);
                         }
                     }

@@ -16,7 +16,7 @@ define([
     var downloadCanvasSnapshot = function() {
         var canvas = $('canvas:first').clone(), ctx = canvas[0].getContext("2d"), cx;
         
-        $('canvas').each(function(){
+        $('canvas:visible').each(function(){
             if (canvas.height() === 0) {
                 canvas.height($(this).height());
                 canvas.width($(this).width());

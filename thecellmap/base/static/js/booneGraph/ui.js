@@ -11,10 +11,11 @@ define([
     'utils',
     'node',
     
+    'bootstrap.colorpicker',
     'noUISlider',
     'intro',
     'select2'
-], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node, nouislider, introJs
+], function($, _, Backbone, Cookies, Annotation, Dataset, Layout, Utils, Node, Colorpicker, nouislider, introJs
     ) {
     
     var buildUI = function() {
@@ -80,6 +81,17 @@ define([
                 var strain = Utils.getStrain(n);
                 select.append('<option value="' + n + '">' + strain.get('label').toLowerCase() + '</option>')
             });
+        });
+        
+        $("#safe-custom-color").colorpicker({
+            horizontal: true,
+            template: '<div class="colorpicker dropdown-menu">' +
+            '<div class="colorpicker-saturation hidden"><i><b></b></i></div>' +
+            '<div class="colorpicker-hue"><i></i></div>' +
+            '<div class="colorpicker-alpha hidden"><i></i></div>' +
+            '<div class="colorpicker-color"><div /></div>' +
+            '<div class="colorpicker-selectors"></div>' +
+            '</div>',
         });
     }
     

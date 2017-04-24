@@ -88,8 +88,15 @@ define([
                 $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Enriched for negative genetic interactions</span></li>');
                 $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(210, 100, 100, 1));
             } else {
-                $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>Custom List</span></li>');
-                $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(120, 100, 100, 1));
+                var seen = {};
+                sigInst.iterNodes(function(node) {
+                    if (!!node.enrichment_name && !seen.hasOwnProperty(node.enrichment_name)) {
+                        $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>' + node.enrichment_name + '</span></li>');
+                        $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(node.enrichment_hue, 100, 100, 1));
+                    }
+                    seen[node.enrichment_name] = null;
+                });
+                
             }
             
             return;
