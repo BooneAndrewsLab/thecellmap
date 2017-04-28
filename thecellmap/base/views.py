@@ -487,8 +487,21 @@ def safe(request, dataset_id=None):
         return JsonResponse(result)
 
     else:
-        nodes = request.POST.get('hit_list').strip().lower().split()
-        if not nodes:
+        nodes_list = {}
+        
+        i = 1
+        while True:
+            hit_list = request.POST.get('hit_list-%d' % (i, ))
+            
+            if not hit_list: break
+            
+            hit_list = hit_list.strip().lower().split()
+            hit_list_name = request.POST.get('name-%d' % (i, ))
+            
+            nodes_list[hit_list_name] = hit_list
+            i += 1
+        
+        if not nodes_list:
             raise Http404('Empty query')
         
         search_map = {}
@@ -500,20 +513,28 @@ def safe(request, dataset_id=None):
             for a in n['aliases']:
                 search_map.setdefault(a.lower(), set()).add(n['id'])
         
-        attributes = []
-        seen = set()
-        for n in nodes:
-            for m in search_map.get(n, []):
-                if m in seen: continue
-                
-                attributes.append((m, 1))
-                seen.add(m)
-        attributes = p.DataFrame(attributes, columns=['node', 'hit_list']).set_index('node')
+        frames = []
+        for hitname, nodes in nodes_list.iteritems():
+            attributes = []
+            seen = set()
+            for n in nodes:
+                for m in search_map.get(n, []):
+                    if m in seen: continue
+                    
+                    attributes.append((m, 1))
+                    seen.add(m)
+            attributes = p.DataFrame(attributes, columns=['node', hitname]).set_index('node')
+            frames.append(attributes)
+        
+        attributes = p.concat(frames, axis=1).fillna(0)
         
         safe = Safe(dataset.static_path('safe_layout.csv'), attributes, dataset.static_path('safe_neighbors.csv'))
         safe.prepare_attributes()
         
         enrichments = safe.calculate()
-        enrichments = enrichments[enrichments['hit_list'] > 0]
         
-        return JsonResponse(enrichments.to_dict())
+        result = {}
+        for col in enrichments:
+            result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
+        
+        return JsonResponse(result)

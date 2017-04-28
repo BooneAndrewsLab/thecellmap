@@ -131,15 +131,15 @@
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Negative GI</label>
                     <div class="col-sm-9">
-                      <div class="btn-group" data-toggle="buttons">
+                      <div class="btn-group btn-group-justified" data-toggle="buttons">
                         <label class="btn btn-primary">
                           <input type="radio" name="neg" autocomplete="off" value="unused"> Do not use
                         </label>
                         <label class="btn btn-primary active">
-                          <input type="radio" name="neg" autocomplete="off" value="intermediate" checked> Intermediate
+                          <input type="radio" name="neg" autocomplete="off" value="intermediate" checked>Intermediate<br><small>(&lt;-0.08)</small>
                         </label>
                         <label class="btn btn-primary">
-                          <input type="radio" name="neg" autocomplete="off" value="stringent"> Stringent
+                          <input type="radio" name="neg" autocomplete="off" value="stringent">Stringent<br><small>(&lt;-0.12)</small>
                         </label>
                       </div>
                     </div>
@@ -148,15 +148,15 @@
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Positive GI</label>
                     <div class="col-sm-9">
-                      <div class="btn-group" data-toggle="buttons">
+                      <div class="btn-group btn-group-justified" data-toggle="buttons">
                         <label class="btn btn-primary">
                           <input type="radio" name="pos" autocomplete="off" value="unused"> Do not use
                         </label>
                         <label class="btn btn-primary active">
-                          <input type="radio" name="pos" autocomplete="off" value="intermediate" checked> Intermediate
+                          <input type="radio" name="pos" autocomplete="off" value="intermediate" checked>Intermediate<br><small>(&gt;0.08)</small>
                         </label>
                         <label class="btn btn-primary">
-                          <input type="radio" name="pos" autocomplete="off" value="stringent"> Stringent
+                          <input type="radio" name="pos" autocomplete="off" value="stringent">Stringent<br><small>(&gt;0.16)</small>
                         </label>
                       </div>
                     </div>
@@ -166,20 +166,18 @@
                 </div>
                 
                 <div role="tabpanel" class="tab-pane" id="safe-tab-custom">
-                  <form id="safe-custom-form" action="{% url 'safe' dataset.id %}" method="post" class="form-horizontal">
-                    {% csrf_token %}
-                    <input type="hidden" name="safe-type" value="custom">
-                    <h5>Paste a list of genes into the textbox below</h5>
-                    
+                
+                  <div role="tabpanel" class="tab-pane hidden" id="safe-tablist">
                     <div class="form-group">
-                    <label for="safe-custom-name" class="col-sm-3 control-label">Name</label>
+                      <label for="safe-custom-name" class="col-sm-3 control-label">Name</label>
                       <div class="col-sm-9">
-                        <input id="safe-custom-name" name="name" class="form-control" value='Custom List'>
+                        <input id="safe-custom-name" name="name" class="form-control custom-name" value='Custom List'>
                       </div>
                     </div>
                     
                     <div class="form-group">
-                      <div class="col-sm-12">
+                      <label for="safe-hit-list" class="col-sm-3 control-label">Gene List</label>
+                      <div class="col-sm-9">
                         <textarea id="safe-hit-list" name="hit_list" class="form-control" rows="5"></textarea>
                       </div>
                     </div>
@@ -187,7 +185,27 @@
                     <div class="form-group">
                       <label for="safe-custom-color" class="col-sm-3 control-label">Hue</label>
                       <div class="col-sm-9">
-                        <input id="safe-custom-color" type="text" value="00FF00" name="custom-list-color" class="form-control">
+                        <input id="safe-custom-color" class="hidden" name="safe-custom-color">
+                        <div class="safe-custom-color-container">
+                          <div class="safe-custom-color"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <form id="safe-custom-form" action="{% url 'safe' dataset.id %}" method="post" class="form-horizontal">
+                    {% csrf_token %}
+                    <input type="hidden" name="safe-type" value="custom">
+                    <div class="row">
+                      <div class="col-md-9">
+                        <h5>Paste a list of genes into the textbox below</h5>
+                        <div class="tab-content"></div>
+                      </div>
+                      <div class="col-md-3">
+                        <h5>&nbsp;</h5>
+                        <ul class="nav nav-pills nav-stacked" role="tablist">
+                          <li role="presentation" class=""><a id="safe-custom-add" href="#" aria-controls="home" role="tab">Add more...</a></li>
+                         </ul>
                       </div>
                     </div>
                   </form>

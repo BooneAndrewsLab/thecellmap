@@ -228,6 +228,7 @@ define([
             'click #view-network-simple': 'showNetwork',
             
             'click #safe-submit': 'safe',
+            'click #safe-custom-add': 'safe_more',
         },
         
         downloadNetwork: function(e) {
@@ -575,8 +576,10 @@ define([
         
         safe: function(e) {
             var form = $("#modal-safe .tab-pane.active form");
-            var custom_hue = $('#safe-custom-color').data('colorpicker').color.value.h * 360;
-            var custom_name = $('#safe-custom-name').val();
+            var form_data = {};
+            form.find('.tab-pane').each(function() {
+                form_data[$(this).find('.custom-name').val()] = $(this).find('.safe-custom-color').data('colorpicker').color.value.h * 360;
+            });
             
             $.ajax({
                 type: "post",
@@ -603,7 +606,7 @@ define([
                                 hue = 210;
                             }
                         } else {
-                            hue = custom_hue;
+                            hue = form_data[k];
                         }
                         
                         var pairs = enrichments[k];
@@ -613,7 +616,7 @@ define([
                             node = Utils.getNode(parseInt(n));
                             node.enrichment = pairs[n];
                             node.enrichment_hue = hue;
-                            node.enrichment_name = custom_name;
+                            node.enrichment_name = k;
                             minEnr = Math.min(node.enrichment, minEnr);
                         }
                     }
@@ -640,6 +643,52 @@ define([
                     sigInst.draw();
                 }
               });
+        },
+        
+        safe_more: function(e) {
+            var numeles = $('#safe-custom-form .tab-content .tab-pane').length + 1;
+            var newtab = $("#safe-tablist").clone();
+            newtab.attr('id', newtab.attr('id') + '-' + numeles);
+            
+            var tabbutton = $('<li role="presentation"><a href="#' + newtab.attr('id') + '" aria-controls="home" role="tab" data-toggle="tab">Custom list ' + numeles + '</a></li>')
+            
+            var nextcolor = (120 + (60 * (numeles - 1))) % 360;
+            nextcolor = Utils.hsvToRgb(nextcolor, 100, 100);
+            
+            newtab.removeClass('hidden');
+            
+            newtab.find('label').each(function() {
+                $(this).attr('for', $(this).attr('for') + '-' + numeles); 
+            });
+            
+            newtab.find('div.col-sm-9 > *:first-child').each(function() {
+                $(this).attr('id', $(this).attr('id') + '-' + numeles); 
+                $(this).attr('name', $(this).attr('name') + '-' + numeles); 
+            });
+            
+            newtab.find('input:first').val('Custom list ' + numeles).keyup(function() {
+                tabbutton.find('a').text($(this).val());
+            });
+            
+            newtab.find(".safe-custom-color").colorpicker({
+                color: nextcolor,
+                horizontal: true,
+                input: '#' + newtab.find('.safe-custom-color-container').parent().find('input').attr('id'),
+                container: newtab.find('.safe-custom-color-container'),
+                inline: true,
+                template: '<div class="colorpicker dropdown-menu">' +
+                '<div class="colorpicker-saturation hidden"><i><b></b></i></div>' +
+                '<div class="colorpicker-hue"><i></i></div>' +
+                '<div class="colorpicker-alpha hidden"><i></i></div>' +
+                '<div class="colorpicker-color"><div /></div>' +
+                '<div class="colorpicker-selectors"></div>' +
+                '</div>',
+            });
+            
+            newtab.appendTo("#safe-custom-form .tab-content");
+            
+            $("#safe-custom-add").parent().before(tabbutton);
+            tabbutton.find('a').tab('show');
         }
     });
     
