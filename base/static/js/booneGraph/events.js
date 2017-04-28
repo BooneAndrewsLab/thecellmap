@@ -688,7 +688,9 @@ define([
             newtab.appendTo("#safe-custom-form .tab-content");
             
             $("#safe-custom-add").parent().before(tabbutton);
-            tabbutton.find('a').tab('show');
+            tabbutton.find('a').on('shown.bs.tab', function (e) {
+                newtab.find('textarea').focus();
+            }).tab('show');
         }
     });
     
