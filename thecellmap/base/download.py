@@ -7,6 +7,7 @@ import cPickle
 import json
 import operator
 import os
+import io
 
 from django.contrib import messages
 from numpy.ma import corrcoef
@@ -17,6 +18,8 @@ from base.models import StrainData, Strain, Gene
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries, STYLE_NEIGHBOR
 import numpy as np
+from pandas.io.excel import ExcelWriter
+from django.http.response import FileResponse
 
 
 ONLY = (
@@ -284,3 +287,16 @@ def nodes_data(ds, nodes):
     _collect_data(ds, nodes, lambda x, _, y, z: data.setdefault(x, {'correlations': y, 'scores': z}))
     
     return data
+
+def xlsx_response(df, filename, **kwargs):
+    output = io.BytesIO()
+    w = ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(w, **kwargs)
+    w.save()
+    
+    output.seek(0)
+    
+    resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
+    return resp
+
