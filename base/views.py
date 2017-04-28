@@ -21,11 +21,13 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST, require_GET
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations,\
+    xlsx_response
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
 import pandas as p
 from sga.safe import Safe
+from pandas.indexes.multi import MultiIndex
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -480,12 +482,6 @@ def safe(request, dataset_id=None):
         safe.prepare_attributes()
         
         enrichments = safe.calculate()
-        result = {}
-        result['positives'] = enrichments[enrichments['positives'] > 0].astype(float).to_dict()['positives']
-        result['negatives'] = enrichments[enrichments['negatives'] > 0].astype(float).to_dict()['negatives']
-        
-        return JsonResponse(result)
-
     else:
         nodes_list = {}
         
@@ -532,9 +528,27 @@ def safe(request, dataset_id=None):
         safe.prepare_attributes()
         
         enrichments = safe.calculate()
+    
+    if 'dl' in request.POST:
+        node_map = {}
+        for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
+            node_map[n['id']] = n
         
-        result = {}
-        for col in enrichments:
-            result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
+        enrichments = enrichments[enrichments.any(axis=1)]
         
-        return JsonResponse(result)
+        verbose_index= []
+        for n in enrichments.index:
+            n = node_map[n]
+            verbose_index.append((n['orf'], n['name'], n['alel'], n['label'].lower()))
+        
+        enrichments.index = MultiIndex.from_tuples(verbose_index, names=['ORF', 'Name', 'Allele', 'Label'])
+        enrichments = enrichments.reindex(columns=sorted(enrichments.columns))
+        
+        filename = 'tcm-safe-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
+        return xlsx_response(enrichments.reset_index().sort_values(enrichments.columns[0], ascending=False), filename, index=None)
+    
+    result = {}
+    for col in enrichments:
+        result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
+    
+    return JsonResponse(result)

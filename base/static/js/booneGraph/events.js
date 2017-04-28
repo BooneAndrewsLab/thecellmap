@@ -229,6 +229,7 @@ define([
             
             'click #safe-submit': 'safe',
             'click #safe-custom-add': 'safe_more',
+            'click #tools-safe-download': 'safe_download',
         },
         
         downloadNetwork: function(e) {
@@ -633,8 +634,10 @@ define([
                     $('#cutoff-bar-cor').hide();
                     $('#cutoff-bar-safe').show();
                     $('#view-network-simple').hide();
-                    $('.top-right-simple').addClass('hidden');
-                    $('.top-right-simple').hide();
+                    
+                    $('.top-right-simple > :not([data-safe])').addClass('hidden').hide();
+                    $('.top-right-simple > [data-safe]').removeClass('hidden');
+                    
                     $('.alert').alert('close');
                     
                     $('#cutoff-bar-safe')[0].noUiSlider.set(minEnr);
@@ -691,6 +694,14 @@ define([
             tabbutton.find('a').on('shown.bs.tab', function (e) {
                 newtab.find('textarea').focus();
             }).tab('show');
+        },
+        
+        safe_download: function() {
+            var form = $("#modal-safe .tab-pane.active form");
+            var ghost = $('<input type="hidden" name="dl" value="yes">');
+            form.append(ghost);
+            form.submit();
+            ghost.remove();
         }
     });
     
