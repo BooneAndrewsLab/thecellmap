@@ -89,14 +89,19 @@ define([
                 $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(210, 100, 100, 1));
             } else {
                 var seen = {};
+                var keys = [];
                 sigInst.iterNodes(function(node) {
                     if (!!node.enrichment_name && !seen.hasOwnProperty(node.enrichment_name)) {
-                        $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>' + node.enrichment_name + '</span></li>');
-                        $('#list-annotation-legend .box-annotation-color').last().css("background-color", Utils.hsvToRgba(node.enrichment_hue, 100, 100, 1));
+                        keys.push(node.enrichment_name);
+                        seen[node.enrichment_name] = Utils.hsvToRgba(node.enrichment_hue, 100, 100, 1);
                     }
-                    seen[node.enrichment_name] = null;
                 });
                 
+                keys.sort();
+                keys.forEach(function(k) {
+                    $('#list-annotation-legend').append('<li><div class="box-annotation-color"></div><span>' + k + '</span></li>');
+                    $('#list-annotation-legend .box-annotation-color').last().css("background-color", seen[k]);
+                });
             }
             
             return;
