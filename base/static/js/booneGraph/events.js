@@ -615,9 +615,13 @@ define([
                             if (!pairs.hasOwnProperty(n) || isNaN(pairs[n])) continue;
                             
                             node = Utils.getNode(parseInt(n));
-                            node.enrichment = pairs[n];
-                            node.enrichment_hue = hue;
-                            node.enrichment_name = k;
+                            
+                            if (!node.enrichment || node.enrichment < pairs[n]) {
+                                node.enrichment = pairs[n];
+                                node.enrichment_hue = hue;
+                                node.enrichment_name = k;
+                            }
+                            
                             minEnr = Math.min(node.enrichment, minEnr);
                         }
                     }
