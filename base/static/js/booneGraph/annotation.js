@@ -353,9 +353,9 @@ define([
             
             var ctx = $('#canvas-regions')[0].getContext('2d');
             ctx.beginPath();
-            ctx.lineWidth="1";
+            ctx.lineWidth = "1";
             ctx.lineCap = 'round';
-            ctx.strokeStyle="white"; // Green path
+            ctx.strokeStyle = "gray"; // Green path
             ctx.setLineDash([5, 5]);
             
             for (var i = 0; i < nodes.length - 1; i++) {
@@ -412,6 +412,7 @@ define([
                 var cx = nodeMin[0] + ((nodeMax[0] - nodeMin[0]) / 2);
                 var cy = nodeMin[1] + ((nodeMax[1] - nodeMin[1]) / 2);
                 var semidiameter = nodeMax[0] - cx;
+                ctx.setLineDash([10, 10]);
                 ctx.beginPath();
                 ctx.arc(cx,cy,semidiameter,0,2*Math.PI);
                 ctx.stroke();
