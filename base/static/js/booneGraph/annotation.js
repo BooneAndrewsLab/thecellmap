@@ -412,7 +412,8 @@ define([
                 var cx = nodeMin[0] + ((nodeMax[0] - nodeMin[0]) / 2);
                 var cy = nodeMin[1] + ((nodeMax[1] - nodeMin[1]) / 2);
                 var semidiameter = nodeMax[0] - cx;
-                ctx.setLineDash([10, 10]);
+                ctx.strokeStyle = "gray"; // Green path
+                ctx.setLineDash([5, 5]);
                 ctx.beginPath();
                 ctx.arc(cx,cy,semidiameter,0,2*Math.PI);
                 ctx.stroke();
