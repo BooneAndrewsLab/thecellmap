@@ -357,6 +357,31 @@ define([
     }
     
     var buildCutoffBars = function() {
+        $('.cutoff-safe').each(function() {
+            var orientation = $(this).data('orientation'), direction = $(this).data('direction');
+            
+            var slider = this;
+            nouislider.create(slider, {
+                range: {min: sliderProperties.min, max: sliderProperties.max},
+                step: sliderProperties.step,
+                start: sliderProperties.value,
+                direction: direction,
+                orientation: orientation,
+            });
+            
+            slider.noUiSlider.on('set', function(e) {
+                var val = parseFloat(slider.noUiSlider.get()),  preVal = parseFloat(state.get('cutoffEnrichment'));
+                if (val == preVal) return;
+                
+                state.set('cutoffEnrichment', val);
+                Annotation.drawRegions();
+            });
+            
+            slider.noUiSlider.on('update', function(values, handle) {
+                $('.cutoff-label-min').html(Math.pow(10, -16 * parseFloat(values[0])).toExponential(0));
+            });
+        });
+        
         $('.cutoff-int').each(function() {
             var orientation = $(this).data('orientation');
             
@@ -484,31 +509,6 @@ define([
             
             slider.noUiSlider.on('update', function(values, handle) {
                 $('.cutoff-label-min').html(values);
-            });
-        });
-        
-        $('.cutoff-safe').each(function() {
-            var orientation = $(this).data('orientation'), direction = $(this).data('direction');
-            
-            var slider = this;
-            nouislider.create(slider, {
-                range: {min: sliderProperties.min, max: sliderProperties.max},
-                step: sliderProperties.step,
-                start: sliderProperties.value,
-                direction: direction,
-                orientation: orientation,
-            });
-            
-            slider.noUiSlider.on('set', function(e) {
-                var val = parseFloat(slider.noUiSlider.get()),  preVal = parseFloat(state.get('cutoffEnrichment'));
-                if (val == preVal) return;
-                
-                state.set('cutoffEnrichment', val);
-                Annotation.drawRegions();
-            });
-            
-            slider.noUiSlider.on('update', function(values, handle) {
-                $('.cutoff-label-min').html(Math.pow(10, -16 * parseFloat(values[0])).toExponential(0));
             });
         });
         
