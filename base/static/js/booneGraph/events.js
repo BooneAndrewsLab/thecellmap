@@ -596,6 +596,12 @@ define([
                         edge.hidden = true;
                     });
                     
+                    sigInst._core.graph.nodes.filter(function(node) {
+                        if (node.hasOwnProperty('enrichment')) {
+                            delete node['enrichment'];
+                        }
+                    });
+                    
                     var minEnr = 1;
                     for (var k in enrichments) {
                         if (!enrichments.hasOwnProperty(k)) continue; 

@@ -75,16 +75,20 @@ define([
         });
         
         $('#modal-safe').on('show.bs.modal', function () {
-            var select = $("#safe-selected-nodes");
-            select.empty();
-            Utils.getSelection().forEach(function(n) {
-                var strain = Utils.getStrain(n);
-                select.append('<option value="' + n + '">' + strain.get('label').toLowerCase() + '</option>')
-            });
+            if (!state.get('myData')) {
+                var select = $("#safe-selected-nodes");
+                select.empty();
+                Utils.getSelection().forEach(function(n) {
+                    var strain = Utils.getStrain(n);
+                    select.append('<option value="' + n + '">' + strain.get('label').toLowerCase() + '</option>')
+                });
+            }
             
             if ($('#safe-custom-form .tab-content').is(':empty')) {
                 $("#safe-custom-add").click(); // add initial formset
             }
+        }).on('shown.bs.modal', function() {
+            $('#tools-safe').one('focus', function(e){$(this).blur();});
         });
     }
     
