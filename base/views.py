@@ -590,7 +590,7 @@ def safe(request, dataset_id=None):
                             ','.join([node_map[n]['label'] for n in enr_nodes.intersection(term_nodes).intersection(attr_nodes)]),
                         ))
                 
-                colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list', 'Cluster frequency', 'Background frequency', 'Genes']
+                colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency', 'Background frequency', 'Genes']
                 
                 p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col)
         
@@ -598,7 +598,7 @@ def safe(request, dataset_id=None):
         
         output.seek(0)
         
-        filename = 'tcm-safe-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
+        filename = 'tcm-safe_enrichments-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
         resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
         return resp
