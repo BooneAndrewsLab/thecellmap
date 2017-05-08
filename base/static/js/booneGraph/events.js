@@ -599,6 +599,8 @@ define([
                     sigInst._core.graph.nodes.filter(function(node) {
                         if (node.hasOwnProperty('enrichment')) {
                             delete node['enrichment'];
+                            delete node['enrichment_hue'];
+                            delete node['enrichment_name'];
                         }
                     });
                     
