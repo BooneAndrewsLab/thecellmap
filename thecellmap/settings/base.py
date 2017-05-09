@@ -52,6 +52,7 @@ INSTALLED_APPS = (
 
     # Application base, containing global templates.
     'base',
+    'trigenic',
 
     # Local apps, referenced via appname
     'crispy_forms',

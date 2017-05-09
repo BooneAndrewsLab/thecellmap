@@ -13,5 +13,6 @@ def bad(request):
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^bad/$', bad),
+    url(r'^trigenic/', include('trigenic.urls')),
     url(r'', include('base.urls')),
 )
