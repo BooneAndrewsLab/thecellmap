@@ -652,7 +652,7 @@ define([
                     
                     $('.alert').alert('close');
                     
-                    $('#cutoff-bar-safe')[0].noUiSlider.set(minEnr);
+                    $('#cutoff-bar-safe')[0].noUiSlider.set(0.1); // minEnr
                     $('#panel-legend').toggle(true);
                     
                     sigInst.draw();
