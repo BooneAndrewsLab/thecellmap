@@ -448,7 +448,7 @@ define([
                 if (!node.enrichment || node.enrichment < state.get('cutoffEnrichment')) return;
                 
                 var r = node.displaySize * 4;
-                var enr = node.enrichment;
+                var enr = Math.min(node.enrichment * 1.5, 1);
                 var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
                 
                 radgrad.addColorStop(0,   Utils.hsvToRgba(node.enrichment_hue, 100, enr * 100, 1));

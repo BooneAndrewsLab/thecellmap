@@ -89,7 +89,7 @@ def collect_scores(ds, nodes):
             dat = filter(lambda x: ((not np.isnan(x[2])) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals))
             node_scores.extend(dat)
         
-        node_scores = DataFrame.from_records(node_scores, columns=['source', 'target', 'score', 'pval']).sort(['target', 'pval'])
+        node_scores = DataFrame.from_records(node_scores, columns=['source', 'target', 'score', 'pval']).sort_values(['target', 'pval'])
         node_scores = node_scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0)).groupby('target').first().reset_index()
         
         if scores is None:
@@ -97,7 +97,7 @@ def collect_scores(ds, nodes):
         else:
             scores = scores.append(node_scores, ignore_index=True)
         
-    return scores.sort('score').reindex(columns=['source', 'target', 'score'])
+    return scores.sort_values('score').reindex(columns=['source', 'target', 'score'])
 
 @print_queries
 def collect_correlations(ds, nodes, cutoff):
@@ -124,7 +124,7 @@ def collect_correlations(ds, nodes, cutoff):
         correlations = correlations.append(DataFrame({'source': nodes_inv_inv[s], 'target': axis, 'corr': data.correlations}))
     
     correlations = correlations.groupby(('source', 'target')).mean().reset_index()
-    correlations = correlations.dropna().sort('corr', ascending=False)
+    correlations = correlations.dropna().sort_values('corr', ascending=False)
     correlations = correlations[correlations['corr'] > cutoff]
     
     return correlations, correlations['target'].unique()
@@ -225,9 +225,9 @@ def _collect_data(ds, nodes, callback, defer_data=False):
         correlations = correlations.reset_index()
         correlations.columns = ['strainB', 'correlation']
         correlations = correlations.groupby('strainB').mean().reset_index() # .drop((s.gene.orf, s.gene.name, s.allele))
-        correlations = correlations.dropna().sort('correlation', ascending=False)
+        correlations = correlations.dropna().sort_values('correlation', ascending=False)
         
-        scores = scores[scores.pval < 0.05].sort(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
+        scores = scores[scores.pval < 0.05].sort_values(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
         scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0)).groupby('target').first().reset_index()
         
         callback(s, node, correlations, scores)
@@ -265,13 +265,13 @@ def nodes_xls(ds, nodes, filename):
             output.write_correlation_row(strainB + (correlation, get_annotations(strainB[0] in neighbors, *strainB)), style=style)
         
         output.add_sheet('%s GI scores' % strain.label(), ['ORF', 'Allele', 'Score', 'p-value', 'Annotations', '', 'ORF', 'Allele', 'Score', 'p-value', 'Annotations'])
-        for strainB, pval, score in scores[(scores.score <= 0) & (scores.pval < 0.05)].sort('score').itertuples(index=False):
+        for strainB, pval, score in scores[(scores.score <= 0) & (scores.pval < 0.05)].sort_values('score').itertuples(index=False):
             style = (score < -.12 and STYLE_NEG_STRINGENT) or (score < -.08 and STYLE_NEG_SIGNIFICANT) or None
             if strainB[0] in neighbors:
                 style = STYLE_NEIGHBOR
             output.write_score_row_neg(strainB + (score, pval, get_annotations(strainB[0] in neighbors, *strainB)), style=style)
         output.reset_row(1)
-        for strainB, pval, score in scores[(scores.score > 0) & (scores.pval < 0.05)].sort('score', ascending=False).itertuples(index=False):
+        for strainB, pval, score in scores[(scores.score > 0) & (scores.pval < 0.05)].sort_values('score', ascending=False).itertuples(index=False):
             style = (score > .16 and STYLE_POS_STRINGENT) or (score > .08 and STYLE_POS_SIGNIFICANT) or None
             if strainB[0] in neighbors:
                 style = STYLE_NEIGHBOR

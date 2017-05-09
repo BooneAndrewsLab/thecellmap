@@ -28,7 +28,7 @@ from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionG
 from base.utils import print_queries, is_integer, JsonResponse
 import pandas as p
 from sga.safe import Safe
-from pandas.indexes.multi import MultiIndex
+from pandas import MultiIndex
 from scipy.stats import hypergeom
 import io
 
@@ -295,10 +295,10 @@ def tabular_data(request, dataset_id=None, node_id=None):
     for strain, correlation in c.itertuples(index=False):
         response['correlations'].append(strain + ('%.3f' % correlation, ))
     
-    for strain, pval, score in s[s.score < 0].sort('score').itertuples(index=False):
+    for strain, pval, score in s[s.score < 0].sort_values('score').itertuples(index=False):
         response['scores_neg'].append(strain + ('%.3f' % score, '%.2e' % pval, ))
     
-    for strain, pval, score in s[s.score > 0].sort('score', ascending=False).itertuples(index=False):
+    for strain, pval, score in s[s.score > 0].sort_values('score', ascending=False).itertuples(index=False):
         response['scores_pos'].append(strain + ('%.3f' % score, '%.2e' % pval))
     
     return JsonResponse(response)
@@ -310,9 +310,9 @@ def _tabular_more_scores(request, scores):
         return HttpResponseBadRequest('Cutoff is not a number (float)')
     
     if cutoff < 0:
-        scores = scores[(scores.score < 0) & (scores.score > cutoff)].sort('score')
+        scores = scores[(scores.score < 0) & (scores.score > cutoff)].sort_values('score')
     else:
-        scores = scores[(scores.score >= 0) & (scores.score < cutoff)].sort('score', ascending=False)
+        scores = scores[(scores.score >= 0) & (scores.score < cutoff)].sort_values('score', ascending=False)
     
     response = []
     for strain, pval, score in scores.itertuples(index=False):
