@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 
 from base.models import Gene
+import pandas as p
 
 
 class TriStrain(models.Model):
@@ -12,6 +13,47 @@ class TriStrain(models.Model):
     boonelab_id = models.TextField()
     allele = models.TextField()
     genotype = models.TextField()
+    
+    is_double_mutant = models.BooleanField()
+    is_query = models.BooleanField()
+    
+    def to_dict(self):
+        return {
+            'g1': self.gene1_id,
+            'g2': self.gene2_id,
+            'a': self.allele,
+            'g': self.genotype,
+            'sid': self.boonelab_id
+        }
+    
+    def get_single_mutant_gene(self):
+        if self.gene1.orf == 'YDL227C':
+            return self.gene2
+        return self.gene1
+    
+    def _get_scores(self, field, strain_field, **kwargs):
+        data = field.filter(**kwargs).select_related().order_by('score')
+        return p.DataFrame(
+                list(data.values_list(
+                    strain_field, 
+                    'score', 
+                    'pvalue')),
+                columns=['strain', 'score', 'pvalue']
+            )
+    
+    def get_query_scores(self, **kwargs):
+        return self._get_scores(self.query_scores, 'array', **kwargs)
+    
+    def get_array_scores(self, **kwargs):
+        return self._get_scores(self.array_scores, 'query', **kwargs)
+    
+    def __unicode__(self):
+        return self.boonelab_id
+
+class TriStrainSet(models.Model):
+    double_mutant = models.ForeignKey(TriStrain, related_name='double_in_set')
+    single_mutant1 = models.ForeignKey(TriStrain, related_name='single1_in_set')
+    single_mutant2 = models.ForeignKey(TriStrain, related_name='single2_in_set')
 
 class TriScores(models.Model):
     query = models.ForeignKey(TriStrain, related_name='query_scores')

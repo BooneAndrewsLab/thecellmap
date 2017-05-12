@@ -18,7 +18,9 @@ from types import NoneType
 from django.core.files.temp import NamedTemporaryFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseBadRequest
+from django.utils.decorators import available_attrs
+from django.utils.six import wraps
 import openpyxl
 import xlrd
 from xlrd.biffh import XLRDError
@@ -628,11 +630,32 @@ def dump_clean_json(obj, f):
         out.write(json.dumps(obj).replace(' ', ''))
 
 def rollback_on_fail(fun):
-   def wrap(init_self,*args,**kwargs):
-       try:
-           return fun(init_self,*args,**kwargs)
-       except Exception:
-           transaction.rollback()
-           raise
-   
-   return wrap
+    def wrap(init_self,*args,**kwargs):
+        try:
+            return fun(init_self,*args,**kwargs)
+        except Exception:
+            transaction.rollback()
+            raise
+    
+    return wrap
+
+def require_get_params(params):
+    def decorator(func):
+        @wraps(func, assigned=available_attrs(func))
+        def inner(request, *args, **kwargs):
+            if not all((param in request.GET and request.GET[param]) for param in params):
+                return HttpResponseBadRequest()
+            return func(request, *args, **kwargs)
+        return inner
+    return decorator
+
+def add_headers(**params):
+    def decorator(func):
+        @wraps(func, assigned=available_attrs(func))
+        def inner(request, *args, **kwargs):
+            response = func(request, *args, **kwargs)
+            for k, v in params.iteritems():
+                response[k] = v
+            return response
+        return inner
+    return decorator
