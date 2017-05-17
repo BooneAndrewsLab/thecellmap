@@ -31,8 +31,8 @@ class TriStrain(models.Model):
             return self.gene2
         return self.gene1
     
-    def _get_scores(self, field, strain_field, **kwargs):
-        data = field.filter(**kwargs).select_related().order_by('score')
+    def _get_scores(self, field, strain_field, *args, **kwargs):
+        data = field.filter(*args, **kwargs).select_related().order_by('score')
         return p.DataFrame(
                 list(data.values_list(
                     strain_field, 
@@ -41,11 +41,11 @@ class TriStrain(models.Model):
                 columns=['strain', 'score', 'pvalue']
             )
     
-    def get_query_scores(self, **kwargs):
-        return self._get_scores(self.query_scores, 'array', **kwargs)
+    def get_query_scores(self, *args, **kwargs):
+        return self._get_scores(self.query_scores, 'array', *args, **kwargs)
     
-    def get_array_scores(self, **kwargs):
-        return self._get_scores(self.array_scores, 'query', **kwargs)
+    def get_array_scores(self, *args, **kwargs):
+        return self._get_scores(self.array_scores, 'query', *args, **kwargs)
     
     def __unicode__(self):
         return self.boonelab_id

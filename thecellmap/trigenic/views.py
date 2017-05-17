@@ -25,7 +25,7 @@ def scores(request):
         
         strain_set = strain_set.select_related()[0]
         
-        score_dm = strain_set.double_mutant.get_query_scores(pvalue__lt=0.05)
+        score_dm = strain_set.double_mutant.get_query_scores(pvalue__lt=0.05, score__lt=0)
         score_s1 = strain_set.single_mutant1.get_query_scores(pvalue__lt=0.05)
         score_s2 = strain_set.single_mutant2.get_query_scores(pvalue__lt=0.05)
         
@@ -42,7 +42,7 @@ def scores(request):
             return JsonResponse({'error': 'Selected gene was not screened as an array'})
         
         strain = strain[0]
-        scores = strain.get_array_scores(pvalue__lt=0.05)
+        scores = strain.get_array_scores(Q(query__is_double_mutant=True, score__lt=0) | Q(query__is_double_mutant=False), pvalue__lt=0.05)
         
         for g, s, p in scores.itertuples(index=False):
             result.setdefault('a', {'strain': strain.pk, 'scores': []})['scores'].append((g,s,p))
