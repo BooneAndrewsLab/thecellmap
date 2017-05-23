@@ -532,7 +532,7 @@ define([
         
         toggleDataset: function(e) {
             if (opts.runningLayout || Utils.getSelectedNodes() == 0) return false;
-            Dataset.toggleDataset($(e.target).data('dataset'));
+            Dataset.toggleDataset($(e.target).parent().data('dataset'));
             e.preventDefault();
         },
         
