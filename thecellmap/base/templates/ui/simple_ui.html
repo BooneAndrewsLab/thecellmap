@@ -6,10 +6,14 @@
     <div class="btn-group hidden" id="dataset-toggle" data-toggle-name="switch-dataset" data-simple-step="2" data-toggle="buttons"
      data-intro="The type of network can be toggled here." data-step="5">
       <label class="btn btn-primary btn-outline active" data-dataset="0" data-title="Switch to profile similarity network" >
-        <input type="radio" data-dataset="0" name="selectedDataset" autocomplete="off" checked> Profile Similarity Network
+        <input type="radio" data-dataset="0" name="selectedDataset" autocomplete="off" checked> 
+        <span class="visible-xs"> Profile</span>
+        <span class="hidden-xs"> Profile Similarity Network</span>
       </label>
       <label class="btn btn-primary btn-outline" data-dataset="1" data-title="Switch to genetic interaction network">
-        <input type="radio" data-dataset="1" name="selectedDataset" autocomplete="off"> Genetic Interaction Network
+        <input type="radio" data-dataset="1" name="selectedDataset" autocomplete="off"> 
+        <span class="visible-xs"> GI</span>
+        <span class="hidden-xs"> Genetic Interaction Network</span>
       </label>
     </div>
     
@@ -18,7 +22,7 @@
         <input class="gene-search-input form-control" type="hidden">
       </div>
       <div class="visible-xs-block">
-        <button type="button" class="btn btn-default btn-show-search" data-toggle="modal" data-target="#modal-search">
+        <button type="button" class="btn btn-primary btn-outline btn-show-search" data-toggle="modal" data-target="#modal-search">
             <span class="glyphicon glyphicon-search"></span>
         </button>
       </div>
@@ -26,7 +30,10 @@
     
     <button id="view-network-simple" type="button" class="btn btn-primary btn-outline pull-left hidden" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
      data-selection-disabled-title="Please select up to 30 nodes"
-     data-intro="The Extracts Subnetworks button displays the sub-network for the selected nodes." data-simple-step="1" data-step="2"> Extract Subnetwork </button>
+     data-intro="The Extracts Subnetworks button displays the sub-network for the selected nodes." data-simple-step="1" data-step="2">
+      <div class="visible-xs"><span class="glyphicon glyphicon-share-alt"></span></div>
+      <span class="hidden-xs"> Extract Subnetwork</span>
+    </button>
   </div>
   
   <div class="middle-right hidden" data-simple-step="2">
@@ -59,8 +66,8 @@
       <div class="hidden clearfix" data-simple-step="1" data-simple-keep="true">
         <div class="dropdown inline-button-grp hidden" data-simple-step="2" data-intro="Annotations can be loaded using this button." data-step="4">
           <button class="btn btn-primary btn-outline dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            Annotate Network
-            <span class="caret"></span>
+            <div class="visible-xs"><span class="glyphicon glyphicon-font"></span> <span class="caret"></span></div>
+            <span class="hidden-xs"> Annotate Network <span class="caret"></span></span>
           </button>
           <ul class="dropdown-menu btn-group-annotation" aria-labelledby="dropdownMenu1">
           </ul>
@@ -68,16 +75,28 @@
         
         <button id="btn-view-tabular" type="button" class="btn btn-primary btn-outline" data-selection-constraint data-selection-gt="0" data-selection-lt="30" 
          data-selection-disabled-title="Please select up to 30 nodes" data-toggle="tooltip" data-placement="bottom"
-         data-hint="View network as a table" data-hintposition="bottom-middle" data-position="bottom-middle-aligned"> View as Table</button>
+         data-hint="View network as a table" data-hintposition="bottom-middle" data-position="bottom-middle-aligned"> 
+          <div class="visible-xs"><span class="glyphicon glyphicon-th-list"></span></div>
+          <span class="hidden-xs"> View as Table</span>
+        </button>
         <button id="download-selected-simple" type="button" class="btn btn-primary btn-outline" data-selection-constraint data-selection-gt="0" 
          data-selection-lt="30" data-selection-disabled-title="Please select up to 30 nodes" data-toggle="tooltip" data-placement="bottom"
-         data-hint="Download dataset" data-hintposition="bottom-middle" data-position="bottom-right-aligned"> Download</button>
+         data-hint="Download dataset" data-hintposition="bottom-middle" data-position="bottom-right-aligned">
+          <div class="visible-xs"><span class="glyphicon glyphicon-download"></span></div>
+          <span class="hidden-xs"> Download</span>
+         </button>
        </div>
        
        {% if user.is_authenticated %}
       <button id="tools-safe" type="button" class="btn btn-info btn-outline" data-simple-step="1" data-safe
-            data-toggle="modal" data-target="#modal-safe"> Overlay Data</button>
-      <button id="tools-safe-download" type="button" class="btn btn-info btn-outline hidden" data-safe> Download Enrichments</button>
+            data-toggle="modal" data-target="#modal-safe">
+          <div class="visible-xs"><span class="glyphicon glyphicon-object-align-vertical"></span></div>
+          <span class="hidden-xs"> Overlay Data</span>
+      </button>
+      <button id="tools-safe-download" type="button" class="btn btn-info btn-outline hidden" data-safe>
+          <div class="visible-xs"><span class="glyphicon glyphicon-download"></span></div>
+          <span class="hidden-xs"> Download Enrichments</span>
+      </button>
       {% endif %}
   </div>
   
@@ -134,13 +153,19 @@
                     <div class="col-sm-9">
                       <div class="btn-group btn-group-justified" data-toggle="buttons">
                         <label class="btn btn-primary">
-                          <input type="radio" name="neg" autocomplete="off" value="unused"> Do not use
+                          <input type="radio" name="neg" autocomplete="off" value="unused">
+                          <span class="hidden-xs">Do not use</span>
+                          <span class="visible-xs">Unused</span>
                         </label>
                         <label class="btn btn-primary active">
-                          <input type="radio" name="neg" autocomplete="off" value="intermediate" checked>Intermediate<br><small>(&lt;-0.08)</small>
+                          <input type="radio" name="neg" autocomplete="off" value="intermediate" checked>
+                          <span class="hidden-xs">Intermediate<br><small>(&lt; -0.08)</small></span>
+                          <span class="visible-xs">&lt; -0.08</span>
                         </label>
                         <label class="btn btn-primary">
-                          <input type="radio" name="neg" autocomplete="off" value="stringent">Stringent<br><small>(&lt;-0.12)</small>
+                          <input type="radio" name="neg" autocomplete="off" value="stringent">
+                          <span class="hidden-xs">Stringent<br><small>(&lt; -0.12)</small></span>
+                          <span class="visible-xs">&lt; -0.12</span>
                         </label>
                       </div>
                     </div>
@@ -151,13 +176,19 @@
                     <div class="col-sm-9">
                       <div class="btn-group btn-group-justified" data-toggle="buttons">
                         <label class="btn btn-primary">
-                          <input type="radio" name="pos" autocomplete="off" value="unused"> Do not use
+                          <input type="radio" name="pos" autocomplete="off" value="unused">
+                          <span class="hidden-xs">Do not use</span>
+                          <span class="visible-xs">Unused</span>
                         </label>
                         <label class="btn btn-primary active">
-                          <input type="radio" name="pos" autocomplete="off" value="intermediate" checked>Intermediate<br><small>(&gt;0.08)</small>
+                          <input type="radio" name="pos" autocomplete="off" value="intermediate" checked>
+                          <span class="hidden-xs">Intermediate<br><small>(&gt; 0.08)</small></span>
+                          <span class="visible-xs">&gt; 0.08</span>
                         </label>
                         <label class="btn btn-primary">
-                          <input type="radio" name="pos" autocomplete="off" value="stringent">Stringent<br><small>(&gt;0.16)</small>
+                          <input type="radio" name="pos" autocomplete="off" value="stringent">
+                          <span class="hidden-xs">Stringent<br><small>(&gt; 0.16)</small></span>
+                          <span class="visible-xs">&gt; 0.16</span>
                         </label>
                       </div>
                     </div>
@@ -184,7 +215,7 @@
                     </div>
                     
                     <div class="form-group">
-                      <label for="safe-custom-color" class="col-sm-3 control-label">Hue</label>
+                      <label for="safe-custom-color" class="col-sm-3 control-label">Color</label>
                       <div class="col-sm-9">
                         <input id="safe-custom-color" class="hidden" name="safe-custom-color">
                         <div class="safe-custom-color-container">

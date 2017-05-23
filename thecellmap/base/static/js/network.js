@@ -88,7 +88,11 @@ require.config({
 
 require(['booneGraph'], function(booneGraph) {
     $(window).resize(function() {
-        $('.sigma-parent').css('height', $(window).height() - $('.navbar').height() - 30);
+        var footer = 30;
+        if ($(window).width() <= 767) {
+            footer = 0;
+        }
+        $('.sigma-parent').css('height', $(window).height() - $('.navbar').height() - footer);
     }).resize();
     booneGraph.init();
 });

@@ -639,6 +639,9 @@ define([
                     state.set('showAnnotColors', false);
                     state.set('showAnnotLabels', true);
                     
+                    settings.set('disableScroll', true);
+                    sigInst.mouseProperties({mouseEnabled: false});
+                    
                     Annotation.loadAnnotation(opts.default_annotation);
                     
                     $('.middle-right').removeClass('hidden');
