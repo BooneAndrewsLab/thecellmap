@@ -3522,6 +3522,11 @@ function MouseCaptor(dom) {
    * @return {number} The local X value of the mouse.
    */
   function getX(e) {
+      if (e.type.startsWith("touch")) {
+          var rect = e.target.getBoundingClientRect();
+          return e.touches[0].clientX - rect.left;
+      }
+
     return e.offsetX != undefined && e.offsetX ||
            e.layerX != undefined && e.layerX ||
            e.clientX != undefined && e.clientX;
@@ -3534,6 +3539,11 @@ function MouseCaptor(dom) {
    * @return {number} The local Y value of the mouse.
    */
   function getY(e) {
+      if (e.type.startsWith("touch")) {
+          var rect = e.target.getBoundingClientRect();
+          return e.touches[0].clientY - rect.top;
+      }
+     
     return e.offsetY != undefined && e.offsetY ||
            e.layerY != undefined && e.layerY ||
            e.clientY != undefined && e.clientY;
@@ -3625,7 +3635,12 @@ function MouseCaptor(dom) {
   function downHandler(event) {
     if (!self.p.mouseEnabled)
       return;
-
+    
+    if (event.type.startsWith("touch")) {
+        self.mouseX = getX(event);
+        self.mouseY = getY(event);
+    }
+    
     // Detect double-click
     var timeMouseDown = Date.now();
     if (timeMouseDown - oldTimeMouseDown < doubleClickLatency) {
@@ -3716,7 +3731,7 @@ function MouseCaptor(dom) {
     oldStageY = self.stageY;
     self.startX = self.mouseX;
     self.startY = self.mouseY;
-
+    
     lastStageX = self.stageX;
     lastStageX2 = self.stageX;
     lastStageY = self.stageY;
@@ -3906,6 +3921,11 @@ function MouseCaptor(dom) {
   dom.addEventListener('mousewheel', wheelHandler, true);
   dom.addEventListener('mousemove', moveHandler, true);
   dom.addEventListener('mousedown', downHandler, true);
+  
+  dom.addEventListener('touchstart', downHandler, true);
+  dom.addEventListener('touchend', upHandler, true);
+  dom.addEventListener('touchmove', moveHandler, true);
+  
   document.addEventListener('mouseup', upHandler, true);
 
   this.checkBorders = checkBorders;
