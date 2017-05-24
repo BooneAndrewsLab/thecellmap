@@ -592,7 +592,7 @@ def safe(request, dataset_id=None):
                 
                 colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency', 'Background frequency', 'Genes']
                 
-                p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col[:32])
+                p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col[:31])
         
         res_data.save()
         
