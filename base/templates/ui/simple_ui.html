@@ -87,7 +87,6 @@
          </button>
        </div>
        
-       {% if user.is_authenticated %}
       <button id="tools-safe" type="button" class="btn btn-info btn-outline" data-simple-step="1" data-safe
             data-toggle="modal" data-target="#modal-safe">
           <div class="visible-xs"><span class="glyphicon glyphicon-object-align-vertical"></span></div>
@@ -97,7 +96,6 @@
           <div class="visible-xs"><span class="glyphicon glyphicon-download"></span></div>
           <span class="hidden-xs"> Download Enrichments</span>
       </button>
-      {% endif %}
   </div>
   
   <div class="modal fade" id="modal-search" tabindex="-1" role="dialog">
