@@ -213,7 +213,7 @@ require([
                       row += '<span class="badge pull-right" data-title="This gene is located immediately adjacent to the selected gene">Neighbor</span>';
                   }
                   if (line[1].indexOf('-supp') != -1) {
-                      row += '<span class="badge pull-right" data-title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">Carries Suppressor Mutation</a></span>';
+                      row += '<span class="badge pull-right" data-title="This strain also carries a secondary suppressor mutation. See van Leeuwen et al, 2016 for more details by clicking on this label."><a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank"><span class="hidden-xs">Carries Suppressor Mutation</span><span class="visible-xs">Suppressor</span></a></span>';
                   }
                   if (gene.dubious) {
                       row += '<span class="badge pull-right">Dubious</span>';
