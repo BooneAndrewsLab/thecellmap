@@ -2,6 +2,7 @@
 
 import cPickle
 import datetime
+import io
 import json
 import math
 import os
@@ -15,22 +16,19 @@ from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
-from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest,\
+from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest, \
     FileResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_POST, require_GET
+from scipy.stats import hypergeom
+from sga.safe import Safe
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations,\
-    xlsx_response
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
 import pandas as p
-from sga.safe import Safe
-from pandas import MultiIndex
-from scipy.stats import hypergeom
-import io
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
