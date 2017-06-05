@@ -17,13 +17,33 @@ class TriStrain(models.Model):
     is_double_mutant = models.BooleanField()
     is_query = models.BooleanField()
     
+    def verbose_name(self):
+        name = '%s - ' % (self.boonelab_id, )
+        
+        if self.gene1.name:
+            name += self.gene1.name
+        else:
+            name += self.gene1.orf
+        
+        if self.is_double_mutant:
+            name += ' x '
+            
+            if self.gene2.name:
+                name += self.gene2.name
+            else:
+                name += self.gene2.orf
+        
+        return name
+    
     def to_dict(self):
         return {
             'g1': self.gene1_id,
             'g2': self.gene2_id,
             'a': self.allele,
             'g': self.genotype,
-            'sid': self.boonelab_id
+            'sid': self.boonelab_id,
+            'dm': self.is_double_mutant,
+            'q': self.is_query
         }
     
     def get_single_mutant_gene(self):
