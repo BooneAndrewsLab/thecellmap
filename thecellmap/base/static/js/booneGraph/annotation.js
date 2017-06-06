@@ -342,6 +342,7 @@ define([
         
         var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
+        var semidiameter;
         
         for (r in regionGroup.get('regions')) {
             var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r].slice(), name = regionGroup.get('names')[r];
@@ -411,7 +412,7 @@ define([
                 
                 var cx = nodeMin[0] + ((nodeMax[0] - nodeMin[0]) / 2);
                 var cy = nodeMin[1] + ((nodeMax[1] - nodeMin[1]) / 2);
-                var semidiameter = nodeMax[0] - cx;
+                semidiameter = nodeMax[0] - cx;
                 ctx.strokeStyle = "gray"; // Green path
                 ctx.setLineDash([5, 5]);
                 ctx.beginPath();
@@ -447,7 +448,8 @@ define([
             sigInst._core.graph.nodes.filter(function(node) {
                 if (!node.enrichment || node.enrichment < state.get('cutoffEnrichment')) return;
                 
-                var r = node.displaySize * 4;
+//                var r = node.displaySize * 4;
+                var r = semidiameter * .04;
                 var enr = Math.min(node.enrichment * 1.5, 1);
                 var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
                 
@@ -462,6 +464,7 @@ define([
                 ctx.fillStyle = radgrad;
                 ctx.beginPath();
                 ctx.arc(node.displayX, node.displayY, r, 0, 2*Math.PI);
+//                ctx.arc(node.displayX, node.displayY, 10000, 0, 2*Math.PI);
                 ctx.fill();
                 ctx.closePath();
             });
