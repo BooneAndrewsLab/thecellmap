@@ -577,6 +577,11 @@ define([
         
         safe: function(e) {
             var form = $("#modal-safe .tab-pane.active form");
+            
+            if (!$("#modal-safe .tab-pane.active form")[0].checkValidity()) {
+                return false;
+            }
+            
             var form_data = {};
             form.find('.tab-pane').each(function() {
                 form_data[$(this).find('.custom-name').val()] = $(this).find('.safe-custom-color').data('colorpicker').color.value.h * 360;
@@ -661,6 +666,8 @@ define([
                     sigInst.draw();
                 }
               });
+            
+            $("#modal-safe").modal('hide');
         },
         
         safe_more: function(e) {
