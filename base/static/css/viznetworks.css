@@ -420,6 +420,14 @@
     margin-left: 15px;
 }
 
+#safe-selected-form label.btn-outline {
+	color: #2e6da4;
+}
+
+#safe-selected-form label.btn-outline.active, #safe-selected-form label.btn-outline:hover {
+    color: #ffffff;
+}
+
 :required:invalid {
   border-color: red;
   outline: 0;
