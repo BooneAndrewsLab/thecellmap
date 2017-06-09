@@ -600,7 +600,7 @@ def safe(request, dataset_id=None):
         if request.POST.get('safe-type') == 'selected':
             label = node_map[node]['label']
         
-        filename = 'tcm-safe-%s-%s.xls' % (label, datetime.datetime.now().strftime('%y%m%d'))
+        filename = 'tcm-safe-%s-%s.xlsx' % (label, datetime.datetime.now().strftime('%y%m%d'))
 #         filename = 'tcm-safe_enrichments-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
         resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
