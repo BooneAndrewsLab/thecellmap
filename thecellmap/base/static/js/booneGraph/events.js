@@ -229,7 +229,7 @@ define([
             
             'click #safe-submit': 'safe',
             'click #safe-custom-add': 'safe_more',
-            'click #tools-safe-download': 'safe_download',
+            'click #tools-safe-download, .enrich-annotation': 'safe_download',
         },
         
         downloadNetwork: function(e) {
@@ -718,12 +718,24 @@ define([
             }).tab('show');
         },
         
-        safe_download: function() {
+        safe_download: function(e) {
             var form = $("#modal-safe .tab-pane.active form");
             var ghost = $('<input type="hidden" name="dl" value="yes">');
             form.append(ghost);
+            
+            var annotation = $(e.target).data('annotation-id');
+            var annotationGhost;
+            if (!!annotation) {
+                annotationGhost = $('<input type="hidden" name="annotation">');
+                annotationGhost.val(annotation);
+                form.append(annotationGhost);
+            }
+            
             form.submit();
             ghost.remove();
+            if (!!annotation) {
+                annotationGhost.remove();
+            }
         }
     });
     
