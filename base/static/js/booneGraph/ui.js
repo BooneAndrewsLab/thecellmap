@@ -35,6 +35,7 @@ define([
         if (opts['annotations'].length > 0) {
             opts['annotations'].forEach(function(annotation) {
                 $('.btn-group-annotation').append('<li><a class="load-annotation" href="#">' + annotation['name'] + '</a></li>');
+                $('.btn-group-enrichments').append('<li><a class="enrich-annotation" href="#" data-annotation-id="' + annotation['id'] + '">' + annotation['name'] + '</a></li>');
             });
             $('.btn-group-annotation').append('<li class="divider"></li>');
             $('.btn-group-annotation').append('<li><a class="load-annotation custom-annotation" href="#">Custom...</a></li>');

@@ -83,12 +83,20 @@ class Strain(models.Model):
         return self.allele or (self.gene.name and (self.gene.name + suffix)) or (self.gene.orf + suffix)
 
 class Annotation(models.Model):
+    VERSION_GENES = 'G'
+    VERSION_STRAINS = 'S'
+    TYPE_CHOICES = (
+        (VERSION_GENES, 'Using Genes'),
+        (VERSION_STRAINS, 'Using Strains'),
+    )
+    
     name = models.CharField(max_length=64)
     alias = models.CharField(max_length=64, null=True)
     date = models.DateField()
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, null=True, blank=True)
     enabled = models.BooleanField(default=False)
+    version = models.CharField(max_length=1, choices=TYPE_CHOICES, default=VERSION_STRAINS)
     
     def __unicode__(self):
         return u'%s' % self.name

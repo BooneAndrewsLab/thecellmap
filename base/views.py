@@ -21,6 +21,7 @@ from django.http.response import HttpResponseRedirect, Http404, HttpResponseForb
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from scipy.stats import hypergeom
 from sga.safe import Safe
@@ -29,6 +30,7 @@ from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scor
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse
 import pandas as p
+from django.utils.safestring import mark_safe
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -37,14 +39,22 @@ def _serve_dataset(request, dataset=None, override_auth=False):
     dataset = Dataset.pk_or_default(dataset, request.user)
     
     if override_auth or request.user.is_authenticated() or dataset.is_published:
-        response = render(request, 'base/network.html', {
+        context = {
                 'layout': request.GET.get('l', 'layout.json'),
                 'dataset': dataset,
                 'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
                 'regionGroups': RegionGroup.objects.filter(dataset=dataset),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
                 'ui': request.COOKIES.get('selectedUi') or 'simple',
-        })
+        }
+        
+        if request.POST:
+            frmt = request.POST.get('format', 'json')
+            typ = request.POST.get('type', 'safe')
+            if frmt == 'json' and typ == 'safe':
+                context['load_safe'] = mark_safe(json.dumps(json.loads(request.POST.get('data', '[]'))))
+        
+        response = render(request, 'base/network.html', context)
         return response
     else:
         return login(request)
@@ -94,6 +104,7 @@ def logout(request):
     django_logout(request)
     return render(request, 'base/logout.html')
 
+@csrf_exempt
 def home(request):
     return _serve_dataset(request)
 
@@ -534,6 +545,8 @@ def safe(request, dataset_id=None):
         with open(dataset.static_path('nodes_inv.pickle')) as fp:
             nodes_inv = pickle.load(fp)
         
+        annotation = Annotation.objects.get(pk=request.POST.get('annotation', dataset.default_annotation_id))
+        
         nodes_inv_inv = {}
         for nid, sids in nodes_inv.iteritems():
             for sid in sids:
@@ -541,11 +554,18 @@ def safe(request, dataset_id=None):
         
         terms = {}
         all_annotated = 0
-        for term in Term.objects.filter(annotation=dataset.default_annotation_id).prefetch_related('strains'):
+        for term in Term.objects.filter(annotation=annotation).prefetch_related('strains', 'genes__strain_set'):
             term_nodes = set()
-            for strain in term.strains.all():
-                if strain.pk in nodes_inv_inv:
-                    term_nodes.add(nodes_inv_inv[strain.pk])
+            
+            if annotation.version == Annotation.VERSION_STRAINS:
+                for strain in term.strains.all():
+                    if strain.pk in nodes_inv_inv:
+                        term_nodes.add(nodes_inv_inv[strain.pk])
+            else:
+                for gene in term.genes.all():
+                    for strain in gene.strain_set.all():
+                        if strain.pk in nodes_inv_inv:
+                            term_nodes.add(nodes_inv_inv[strain.pk])
             
             terms[term] = term_nodes
             all_annotated += len(term_nodes)
