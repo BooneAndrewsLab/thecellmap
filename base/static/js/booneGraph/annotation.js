@@ -75,6 +75,7 @@ define([
         $('#list-annotation-legend').empty();
         
         var id = state.get('annotation'), terms = {}, num, strains = [], mapStrain = {}, annotation = vizdata['annotations'].get(id);
+        var i, s, smap = annotation.get('smap');
         
         $('#style-annotation').append('<table class="annotation-table"><thead><tr>\
               <th style="width: 1%;"></th>\
@@ -108,15 +109,16 @@ define([
         }
         
         sigInst.iterNodes(function(node) {
-//            if (!node.hidden && node.type != 'pin') strains.push(Utils.getStrain(node.id));
             if (!node.hidden) strains.push({strain: Utils.getStrain(node.id), node: node});
         });
+        
         if (strains.length) {
-            _.each(strains, function(s) {
-                if (Object.keys(annotation.get('smap')).length == 0) {
+            for (i in strains) {
+                s = strains[i];
+                if (Object.keys(smap).length == 0) {
                     mapStrain = annotation.get('map')[s.strain.get('orf')];
                 } else {
-                    mapStrain = annotation.get('smap')[s.node.id];
+                    mapStrain = smap[s.node.id];
                 }
                 
                 if (mapStrain && mapStrain.length == 1) {
@@ -124,9 +126,10 @@ define([
                         terms[mapStrain[0]] = {term: annotation.get('terms')[mapStrain[0]], num: 0};
                     terms[mapStrain[0]].num++;
                 }
-            });
+            }
         }
         
+        console.log(terms);
         if (_.size(terms)) {
             _.each(terms, function(term) {
                 num = term.num;
@@ -342,9 +345,29 @@ define([
         
         var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
-        var semidiameter;
+        var regionList = regionGroup.get('regions');
+        var semidiameter, r, i, node;
         
-        for (r in regionGroup.get('regions')) {
+        var nodeMin, nodeMax;
+        for (i = 0; i < sigInst._core.graph.nodes.length; i++) {
+            node = sigInst._core.graph.nodes[i];
+            
+            if (!nodeMin) {
+                nodeMin = [node.displayX, node.displayY];
+                nodeMax = [node.displayX, node.displayY];
+            }
+            
+            nodeMin[0] = Math.min(node.displayX, nodeMin[0]);
+            nodeMin[1] = Math.min(node.displayY, nodeMin[1]);
+            nodeMax[0] = Math.max(node.displayX, nodeMax[0]);
+            nodeMax[1] = Math.max(node.displayY, nodeMax[1]);
+        }
+        
+        var cx = nodeMin[0] + ((nodeMax[0] - nodeMin[0]) / 2);
+        var cy = nodeMin[1] + ((nodeMax[1] - nodeMin[1]) / 2);
+        semidiameter = nodeMax[0] - cx;
+        
+        for (r = 0; r < regionList.length; r++) {
             var color = regionGroup.get('colorPalette')[r], nodes = regionGroup.get('regions')[r].slice(), name = regionGroup.get('names')[r];
             var n1, n2,
                 xmm = [nodes[0].displayX, nodes[0].displayX],
@@ -397,22 +420,6 @@ define([
                 }
                 ctx.stroke();
                 
-                var nodeMin, nodeMax;
-                sigInst._core.graph.nodes.filter(function(node) {
-                    if (!nodeMin) {
-                        nodeMin = [node.displayX, node.displayY];
-                        nodeMax = [node.displayX, node.displayY];
-                    }
-                    
-                    nodeMin[0] = Math.min(node.displayX, nodeMin[0]);
-                    nodeMin[1] = Math.min(node.displayY, nodeMin[1]);
-                    nodeMax[0] = Math.max(node.displayX, nodeMax[0]);
-                    nodeMax[1] = Math.max(node.displayY, nodeMax[1]);
-                });
-                
-                var cx = nodeMin[0] + ((nodeMax[0] - nodeMin[0]) / 2);
-                var cy = nodeMin[1] + ((nodeMax[1] - nodeMin[1]) / 2);
-                semidiameter = nodeMax[0] - cx;
                 ctx.strokeStyle = "gray"; // Green path
                 ctx.setLineDash([5, 5]);
                 ctx.beginPath();
@@ -445,29 +452,28 @@ define([
             var ctx = $('#canvas-regions')[0].getContext('2d');
             ctx.globalCompositeOperation = 'screen';
             
-            sigInst._core.graph.nodes.filter(function(node) {
-                if (!node.enrichment || node.enrichment < state.get('cutoffEnrichment')) return;
+            for (i = 0; i < sigInst._core.graph.nodes.length; i++) {
+                node = sigInst._core.graph.nodes[i];
+                if (!node.enrichment || node.enrichment < state.get('cutoffEnrichment')) continue;
                 
-//                var r = node.displaySize * 4;
                 var r = semidiameter * .04;
-                var enr = Math.min(node.enrichment * 1.5, 1);
+                var enr = Math.min(node.enrichment * 2.2, 1);
                 var radgrad = ctx.createRadialGradient(node.displayX,node.displayY,0,node.displayX,node.displayY,r);
                 
                 radgrad.addColorStop(0,   Utils.hsvToRgba(node.enrichment_hue, 100, enr * 100, 1));
                 radgrad.addColorStop(0.9, Utils.hsvToRgba(node.enrichment_hue, 100, enr * 95, .8));
                 radgrad.addColorStop(1,   Utils.hsvToRgba(node.enrichment_hue, 100, enr * 90, 0));
-                
-//                radgrad.addColorStop(0,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(255 * enr) + ',0,1)');
-//                radgrad.addColorStop(0.9, 'rgba(' + parseInt(255 * enr) + ',' + parseInt(235 * enr) + ',0,.8)');
-//                radgrad.addColorStop(1,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(205 * enr) + ',0,0)');
+//                
+////                radgrad.addColorStop(0,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(255 * enr) + ',0,1)');
+////                radgrad.addColorStop(0.9, 'rgba(' + parseInt(255 * enr) + ',' + parseInt(235 * enr) + ',0,.8)');
+////                radgrad.addColorStop(1,   'rgba(' + parseInt(255 * enr) + ',' + parseInt(205 * enr) + ',0,0)');
                 
                 ctx.fillStyle = radgrad;
                 ctx.beginPath();
                 ctx.arc(node.displayX, node.displayY, r, 0, 2*Math.PI);
-//                ctx.arc(node.displayX, node.displayY, 10000, 0, 2*Math.PI);
                 ctx.fill();
                 ctx.closePath();
-            });
+            }
         }
         
         /**
@@ -489,48 +495,12 @@ define([
             mouseCtx.textBaseline = "middle";
             mouseCtx.lineWidth = .4;
             
-            var getBbox = function(r) {
-                text_width = 0;
-                for (l in r.n) {
-                    text_width = Math.max(text_width, mouseCtx.measureText(r.n[l]).width);
-                }
-//                text_width = mouseCtx.measureText(r.n).width;
-                
-                res = {
-                    rx: text_width / 2,
-                    ry: th2 * r.n.length,
-                }
-                
-                if (!$.isEmptyObject(r.label)) {
-                    res.fixed = true;
-                    
-                    switch (r.label.align) {
-                    case 'left':
-                        r.x = r.label.anchor.displayX + res.rx;
-                        r.y = r.label.anchor.displayY;
-                        break;
-                    case 'right':
-                        r.x = r.label.anchor.displayX - res.rx;
-                        r.y = r.label.anchor.displayY;
-                        break;
-                    case 'middle':
-                        r.x = r.label.anchor.displayX;
-                        r.y = r.label.anchor.displayY;
-                        break;
-                    }
-                }
-                
-                res.x = r.x;
-                res.y = r.y;
-                return res
-            };
-            
             while (moved && iter++ < 10) { // move names until no collisions, fail-safe kicks in at 10th iteration
                 moved = false;
                 for (i = 0; i < regions.length; i++) {
                     for (j = i + 1; j < regions.length; j++) {
                         r1 = regions[i], r2 = regions[j];
-                        bb1 = getBbox(r1), bb2 = getBbox(r2);
+                        bb1 = Utils.getBbox(r1, mouseCtx, text_height), bb2 = Utils.getBbox(r2, mouseCtx, text_height);
                         
                         Dy = ((bb2.y - bb1.y) - (bb1.ry + bb2.ry));
                         Dx = ((bb2.x - bb1.x) - (bb1.rx + bb2.rx));
@@ -546,7 +516,6 @@ define([
             
             regions.forEach(function(r) {
                 mouseCtx.fillStyle = '#' + r.c;
-//                mouseCtx.strokeStyle = 'white'; //Utils.shadeBlendConvert(-.6, '#' + r.c);
                 mouseCtx.strokeStyle = Utils.shadeBlendConvert(-.6, '#' + r.c);
                 
                 // Multi line label
@@ -560,10 +529,11 @@ define([
     }
     
     var loadRegion = function(id) {
-        var regionGroups = vizdata['regionGroups'], toApply = true;
+        var regionGroups = vizdata['regionGroups'], toApply = true, i, regionGroup;
         clearRegions();
         
-        opts['regionGroups'].forEach(function(regionGroup) {
+        for (i in opts['regionGroups']) {
+            regionGroup = opts['regionGroups'][i];
             if (regionGroup.name === id) {
                 if (!regionGroups.get(id)) {
                     toApply = false;
@@ -613,7 +583,7 @@ define([
                     drawRegions();
                 }
             }
-        });
+        }
         
         if (toApply) applyAnnotationColors();
     }

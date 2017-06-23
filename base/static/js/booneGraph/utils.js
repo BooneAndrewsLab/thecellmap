@@ -640,6 +640,40 @@ define([
         return r;
     };
     
+    var getBbox = function(r, ctx, text_height) {
+        var text_width = 0, l, res;
+        for (l in r.n)
+            text_width = Math.max(text_width, ctx.measureText(r.n[l]).width);
+        
+        res = {
+            rx: text_width / 2,
+            ry: (text_height / 2) * r.n.length,
+        }
+        
+        if (!$.isEmptyObject(r.label)) {
+            res.fixed = true;
+            
+            switch (r.label.align) {
+            case 'left':
+                r.x = r.label.anchor.displayX + res.rx;
+                r.y = r.label.anchor.displayY;
+                break;
+            case 'right':
+                r.x = r.label.anchor.displayX - res.rx;
+                r.y = r.label.anchor.displayY;
+                break;
+            case 'middle':
+                r.x = r.label.anchor.displayX;
+                r.y = r.label.anchor.displayY;
+                break;
+            }
+        }
+        
+        res.x = r.x;
+        res.y = r.y;
+        return res
+    };
+    
     return {
         iterVisibleNodes: iterVisibleNodes,
         iterVisibleEdges: iterVisibleEdges,
@@ -678,5 +712,7 @@ define([
         
         sheet_to_array: sheet_to_array,
         randomColors: randomColors, 
+        
+        getBbox: getBbox,
     };
 });
