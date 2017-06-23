@@ -80,6 +80,7 @@ layouts in an intuitive and interactive manner.{% else %}{{ dataset.public_descr
         {% endif %}
         {% if dataset.directed %} arrows: true, {% endif %}
         {% if dataset.type == 'I'%} dataset: 1, {% endif %}
+        {% if load_safe %} safe: {{ load_safe }}{% endif %}
     }
   </script>
   {% endcompress %}
