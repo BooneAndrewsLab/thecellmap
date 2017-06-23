@@ -28,9 +28,11 @@ from sga.safe import Safe
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
-from base.utils import print_queries, is_integer, JsonResponse
+from base.utils import print_queries, is_integer, JsonResponse,\
+    safe_excel_sheetname
 import pandas as p
 from django.utils.safestring import mark_safe
+import re
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -457,9 +459,11 @@ def publication_citations(request, title):
 @require_POST
 def safe(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
+    result = {}
     
     if request.POST.get('safe-type') == 'selected':
         node = int(request.POST.get('node'))
+        result['_selected_node'] = node
         data = collect_scores(Dataset.pk_or_default(dataset_id, request.user), [node])
         neg_thr = request.POST.get('neg')
         pos_thr = request.POST.get('pos')
@@ -579,6 +583,8 @@ def safe(request, dataset_id=None):
         output = io.BytesIO()
         res_data = p.ExcelWriter(output, engine='xlsxwriter')
         
+        gene_lists = []
+        
         for col in enrichments:
             attr_nodes = safe.attributes[col]
             attr_nodes = set(attr_nodes[attr_nodes.astype(bool)].index)
@@ -593,10 +599,10 @@ def safe(request, dataset_id=None):
                 N1 = len(term_nodes.intersection(attr_nodes))
                 
                 if k1:
-#                     hit_ratio1 = k1 * 100. / n1
-#                     function_ratio1 = N1 * 100. / all_annotated
-#                     fold1 = hit_ratio1 / function_ratio1
                     fold1 = (k1 * all_annotated) / float(n1 * len(term_nodes)) # N1
+                    
+                    gene_lists.append(((col, term, enr_nodes.intersection(term_nodes).intersection(attr_nodes))))
+#                     ','.join([node_map[n]['label'] for n in enr_nodes.intersection(term_nodes).intersection(attr_nodes)])
                     
                     data2.append((
                             term.alias, 
@@ -605,12 +611,27 @@ def safe(request, dataset_id=None):
                             '%d / %d, %.1f%%' % (n1, len(attr_nodes), n1 * 100. / len(attr_nodes)),
                             '%d / %d, %.1f%%' % (k1, n1, k1 * 100. / n1),
                             '%d / %d, %.1f%%' % (len(term_nodes), all_annotated, len(term_nodes) * 100. / all_annotated),
-                            ','.join([node_map[n]['label'] for n in enr_nodes.intersection(term_nodes).intersection(attr_nodes)]),
                         ))
                 
-                colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency', 'Background frequency', 'Genes']
-                
-                p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col[:31])
+            colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency', 'Background frequency']
+            
+            p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col[:31])
+            res_data.sheets[col[:31]].write(len(data2) + 2, 0, 'Please see spreadsheets to the right for gene lists')
+        
+        bold = res_data.book.add_format({'bold': True})
+        
+        for col, term, nodes in gene_lists:
+            ct_data = [(node_map[n]['orf'], node_map[n]['name'], node_map[n]['label'].lower(), node_map[n]['isdu'] and 'Dubious' or '') for n in nodes]
+            
+            sheetname = safe_excel_sheetname('%s; %s' % (col, term.alias))[:31]
+            
+            p.DataFrame(
+                    ct_data, columns=['ORF', 'Name', 'Allele', 'Feature Qualifier']
+                ).sort_values('ORF'
+                ).to_excel(res_data, index=None, sheet_name=sheetname, startrow=2)
+            
+            sheet = res_data.sheets[sheetname]
+            sheet.write(0, 0, term.name, bold)
         
         res_data.save()
         
@@ -626,7 +647,6 @@ def safe(request, dataset_id=None):
         resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
         return resp
     
-    result = {}
     for col in enrichments:
         result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
     

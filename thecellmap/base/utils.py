@@ -659,3 +659,6 @@ def add_headers(**params):
             return response
         return inner
     return decorator
+
+def safe_excel_sheetname(n):
+    return re.sub('[\[\]:*?/\\\\]', ' ', n)

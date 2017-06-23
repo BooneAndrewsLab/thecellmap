@@ -607,7 +607,14 @@ define([
                             delete node['enrichment_hue'];
                             delete node['enrichment_name'];
                         }
+                        if (node.hasOwnProperty('safe_overlay')) {
+                            delete node['safe_overlay'];
+                        }
                     });
+                    
+                    if (!!enrichments._selected_node) {
+                        Utils.getNode(enrichments._selected_node)['safe_overlay'] = true;
+                    }
                     
                     var minEnr = 1;
                     for (var k in enrichments) {
@@ -660,8 +667,10 @@ define([
                     
                     $('.alert').alert('close');
                     
-                    $('#cutoff-bar-safe')[0].noUiSlider.set(0.1); // minEnr
+                    $('#cutoff-bar-safe')[0].noUiSlider.set(0.05); // minEnr
                     $('#panel-legend').toggle(true);
+                    
+                    sigInst.drawingProperties({drawSafePin: true});
                     
                     sigInst.draw();
                 }

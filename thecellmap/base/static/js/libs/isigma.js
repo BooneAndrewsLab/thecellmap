@@ -1557,6 +1557,7 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     defaultNodeBorderColor: '#fff',
     
     drawSelectedPin: true,
+    drawSafePin: false,
     
     // --------
     // PROCESS:
@@ -1784,11 +1785,11 @@ function Plotter(nodesCtx, edgesCtx, labelsCtx, edgelabelsCtx, hoverCtx, edgehov
     if (node['dubious']) ctx.stroke();
     else ctx.fill();
     
-    if (self.p.drawSelectedPin && node['selected']) {
+    if ((self.p.drawSafePin && node['safe_overlay']) || (!self.p.drawSafePin && self.p.drawSelectedPin && node['selected'])) {
         var rsize = 35;
         
         ctx = labelsCtx;
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = node['safe_overlay'] ? 'blue' : 'red';
         ctx.strokeStyle = ctx.fillStyle;
         ctx.beginPath();
         
