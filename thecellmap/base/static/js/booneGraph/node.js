@@ -245,6 +245,14 @@ define([
                             return (r.id + '').indexOf('action') == -1 && currentSel.indexOf(r.id + '') == -1;
                         });
                         
+                        data.results.sort(function(a, b) {
+                            diff = a.text.length - b.text.length;
+                            if (diff == 0) {
+                                return b.text < a.text; 
+                            }
+                            return diff;
+                        });
+                        
                         data.results = data.results.slice(0, 6);
                         
                         if (data.results.length > 1) {
