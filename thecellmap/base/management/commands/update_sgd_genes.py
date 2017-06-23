@@ -110,8 +110,10 @@ class Command(CellMapCommand):
             features = self.get_fd(options['local_file'])
         else:
             features = urllib2.urlopen('http://downloads.yeastgenome.org/curation/chromosomal_feature/SGD_features.tab')
-            
+        
+        i = 0
         for l in features:
+            i += 1
             bits = l.strip('\n').split('\t')
             sgdid = bits[0]
             if bits[1] not in TYPES: continue # feature type
@@ -132,6 +134,7 @@ class Command(CellMapCommand):
                 
                 continue
             
+            print i, gargs
             for k, v in list(gargs.iteritems()):
                 curval = getattr(gene, k)
                 if v == '' and (curval == None or curval == []):
@@ -149,7 +152,7 @@ class Command(CellMapCommand):
                     elif k == 'name':
                         print 'STANDARD NAME CHANGE', sgdid, gene.name, v
                 
-                Gene.objects.filter(pk=gene.pk).update(**gargs)
+#                 Gene.objects.filter(pk=gene.pk).update(**gargs)
         features.close()
         
 #         features = urllib2.urlopen('http://downloads.yeastgenome.org/curation/chromosomal_feature/deleted_merged_features.tab')

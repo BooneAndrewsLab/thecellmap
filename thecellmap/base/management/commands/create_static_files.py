@@ -33,8 +33,8 @@ class Command(CellMapCommand):
             raise CommandError('Must provide arguments: ' + self.args)
         
         dataset = Dataset.objects.get(name__iexact=args[0])
-        outpath = dataset.static_path()
-#         outpath = '/home/matej/teststatic/'
+#         outpath = dataset.static_path()
+        outpath = '/home/matej/teststatic/'
         
         if os.path.exists(outpath):
             raise CommandError('Files already exist')
@@ -45,7 +45,7 @@ class Command(CellMapCommand):
         nodes = {}
         nodes_map = {}
         nodes_inverse_map = {}
-        for id, orf, name, aliases, featurequal, allele, strain_id in Strain.objects.filter(
+        for id, orf, name, aliases, featurequal, neighbor_effect, allele, strain_id in Strain.objects.filter(
                     Q(as_query=dataset) |
                     Q(as_array=dataset) |
                     Q(as_correlation=dataset)).distinct(
@@ -55,6 +55,7 @@ class Command(CellMapCommand):
                     'gene__name',
                     'gene__aliases',
                     'gene__feature_qualifier',
+                    'gene__neighbor_effect',
                     'allele',
                     'boonelab_id',
                 ):
@@ -69,7 +70,8 @@ class Command(CellMapCommand):
                         'alel': allele,
                         'label': label,
                         'aliases': aliases,
-                        'isdu': featurequal == 'Dubious'
+                        'isdu': featurequal == 'Dubious',
+                        'isnf': neighbor_effect
                     }
             
             nodes_map[id] = nodes[label]['id']
