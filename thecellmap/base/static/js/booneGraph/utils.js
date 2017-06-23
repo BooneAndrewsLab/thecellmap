@@ -21,11 +21,7 @@ define([
     var nodeExists = function(id) {
         return !!sigInst._core.graph.nodesIndex[id];
     }
-    
-    var edgeExists = function(id) {
-        return !!sigInst._core.graph.edgesIndex[id];
-    }
-    
+
     var countVisibleNodes = function() {
         return sigInst._core.graph.nodes.filter(function(node) {
             return !node.hidden;
@@ -81,25 +77,7 @@ define([
             state.set("selection", []);
         }
     }
-    
-    var clearSelectionCanvas = function() {
-        $('.sigma_mouse_canvas')[0].getContext('2d').clearRect(0, 0, $(document).width(), $(document).height());
-    }
-    
-    var graphSelectedNodes = function(direct) {
-        if (state.get('showCircular')) return;
-        
-        var nodes = sigInst._core.graph.nodes.filter(function(node) {
-            return node.selected;
-        });
-        
-        if (!direct) {
-            sigInst.locateSearchedNodes({nodes: nodes, runtime: 0});
-        } else {
-            sigInst.drawSearchedNodesDirect({nodes: nodes, context: direct});
-        }
-    }
-    
+
     var getSelectedNodes = function(getHidden, getPrevious) {
         if (state.get('isInitializing')) return;
         
@@ -310,34 +288,11 @@ define([
         });
     }
     
-    var getUnique = function(array){
-        var u = {}, a = [];
-        for(var i = 0, l = array.length; i < l; ++i){
-           if(u.hasOwnProperty(array[i])) {
-              continue;
-           }
-           a.push(array[i]);
-           u[array[i]] = 1;
-        }
-        return a;
-    }
-    
     var rgbToHex = function(rgb) {
         var rgbvals = /rgb\((.+),(.+),(.+)\)/i.exec(rgb);
         var rval = parseInt(rgbvals[1]);
         var gval = parseInt(rgbvals[2]);
         var bval = parseInt(rgbvals[3]);
-        return '#' + (
-                rval.toString(16) +
-                gval.toString(16) +
-                bval.toString(16)
-        ).toUpperCase();
-    }
-    
-    var floatToGrayHex = function(frac) {
-        var rval = parseInt(255 * frac);
-        var gval = parseInt(255 * frac);
-        var bval = parseInt(255 * frac);
         return '#' + (
                 rval.toString(16) +
                 gval.toString(16) +
@@ -689,7 +644,6 @@ define([
         iterVisibleNodes: iterVisibleNodes,
         iterVisibleEdges: iterVisibleEdges,
         nodeExists: nodeExists,
-        edgeExists: edgeExists,
         onGraphContext: onGraphContext,
         onNodesContext: onNodesContext,
         onNodeDblClick: onNodeDblClick,
@@ -701,16 +655,12 @@ define([
         getSelection: getSelection,
         
         clearSelection: clearSelection,
-        clearSelectionCanvas: clearSelectionCanvas,
-        graphSelectedNodes: graphSelectedNodes,
         getSelectedNodes: getSelectedNodes,
         
         stackNetworks: stackNetworks,
         graphCenter: graphCenter,
         
-        getUnique: getUnique,
         rgbToHex: rgbToHex,
-        floatToGrayHex: floatToGrayHex,
         hexToRgb: hexToRgb,
         hexToStringRgba: hexToStringRgba,
         hsvToRgb: hsvToRgb,

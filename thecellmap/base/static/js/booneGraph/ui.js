@@ -360,7 +360,6 @@ define([
             $('#ui').fadeIn(1000);
         });
     }
-    
     var buildCutoffBars = function() {
         $('.cutoff-safe').each(function() {
             var orientation = $(this).data('orientation'), direction = $(this).data('direction');
