@@ -52,3 +52,7 @@ django-oauth2-provider
 django-guardian
 django-rest-swagger
 scipy
+django-require
+django-htmlmin
+git+git://github.com/usajusaj/sga_utils
+
