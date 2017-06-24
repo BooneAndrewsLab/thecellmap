@@ -83,9 +83,12 @@ def download(request):
         
         output = io.BytesIO()
         w = p.ExcelWriter(output, engine='xlsxwriter')
-
+        
+        filebits = []
+        
         for k in scores:
             df = list_to_df(scores[k]['scores'], strains, short=True)
+            filebits.append(strains[scores[k]['strain']].verbose_name_short())
             df.to_excel(
                 w, 
                 sheet_name=strains[scores[k]['strain']].verbose_name(), 
@@ -96,7 +99,7 @@ def download(request):
         output.seek(0)
         
         resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        resp['Content-Disposition'] = 'attachment; filename="%s"' % ('kuzmin2017_trigenic_scores.xlsx', )
+        resp['Content-Disposition'] = 'attachment; filename="kuzmin2017_scores_%s.xlsx"' % (','.join(filebits), )
         return resp
     else:
         strains = {s.pk: s for s in TriStrain.objects.filter(pk__in=[g for g,_,_ in scores['a']['scores']] + [scores['a']['strain']]).select_related('gene1', 'gene2')}
@@ -104,7 +107,7 @@ def download(request):
         
         return xlsx_response(
             df, 
-            'kuzmin2017_trigenic_scores.xlsx', 
+            'kuzmin2017_scores_%s.xlsx' % (strains[scores['a']['strain']].verbose_name_short(), ), 
             sheet_name=strains[scores['a']['strain']].verbose_name(),
             columns=['Score', 'p-value'],
         )
