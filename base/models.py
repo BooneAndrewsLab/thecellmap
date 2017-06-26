@@ -2,13 +2,14 @@
 
 import os
 
-import dbarray
+# import dbarray
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http.response import Http404
 
 from thecellmap import settings
+from django.contrib.postgres.fields import ArrayField
 
 
 class Gene(models.Model):
@@ -16,8 +17,10 @@ class Gene(models.Model):
     feature_qualifier = models.CharField(max_length=32, help_text='Feature qualifier')
     orf = models.CharField(max_length=16, help_text='Feature name', unique=True, db_index=True)
     name = models.CharField(max_length=16, blank=True, null=True, help_text='Standard gene name', unique=True, db_index=True)
-    aliases = dbarray.CharArrayField(max_length=152, blank=True, null=True, help_text='Alias')
-    secondary_sgdid = dbarray.CharArrayField(max_length=10, blank=True, null=True, help_text='Secondary SGDID')
+#     aliases = dbarray.CharArrayField(max_length=152, blank=True, null=True, help_text='Alias')
+#     secondary_sgdid = dbarray.CharArrayField(max_length=10, blank=True, null=True, help_text='Secondary SGDID')
+    aliases = ArrayField(models.CharField(max_length=152), blank=True, null=True, help_text='Alias')
+    secondary_sgdid = ArrayField(models.CharField(max_length=10), blank=True, null=True, help_text='Secondary SGDID')
     chromosome = models.SmallIntegerField(help_text='Chromosome')
     start = models.IntegerField(help_text='Start coordinate')
     stop = models.IntegerField(help_text='Stop coordinate')
@@ -187,9 +190,12 @@ class StrainData(models.Model):
     dataset = models.ForeignKey(Dataset, related_name='data')
     strain = models.ForeignKey(Strain)
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_QUERY)
-    scores = dbarray.FloatArrayField()
-    pvalues = dbarray.FloatArrayField()
-    correlations = dbarray.FloatArrayField(null=True)
+#     scores = dbarray.FloatArrayField()
+#     pvalues = dbarray.FloatArrayField()
+#     correlations = dbarray.FloatArrayField(null=True)
+    scores = ArrayField(models.FloatField())
+    pvalues = ArrayField(models.FloatField())
+    correlations = ArrayField(models.FloatField(),null=True)
     
     def __unicode__(self):
         return '%s @ %s' % (self.strain, self.dataset)
