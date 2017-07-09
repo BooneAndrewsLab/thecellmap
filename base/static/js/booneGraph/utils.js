@@ -565,8 +565,10 @@ define([
         });
         
         if (!selStr.length) selStr = 'null';
+        if (selStr.length > 1900) {
+            selStr = 'null';
+        }
         
-//        var urlNew = opts.url + '?q=' + selStr + '&' + 'a=' + state.get('annotation');
         var urlNew = opts.url + '?q=' + selStr;
         window.history.pushState({}, 'TheCellMap', encodeURI(urlNew));
     };
