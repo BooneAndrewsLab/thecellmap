@@ -13,6 +13,7 @@ from .models import TriStrainSet, TriStrain
 
 def _get_scores(request):
     gene = request.GET['gene']
+    strain = request.GET['strain']
     typ = request.GET['score_type']
     
     result = {}
@@ -20,10 +21,17 @@ def _get_scores(request):
     if typ == 'query':
         strain_set = TriStrainSet.objects.filter(Q(double_mutant__gene1=gene) | Q(double_mutant__gene2=gene))
         
+        if strain:
+            strain_set = strain_set.filter(pk=strain)
+        
         if strain_set.count() == 0:
             return {'error': 'Selected gene was not screened as a query'}
         elif strain_set.count() > 1:
-            return {'error': 'Selected gene returned more than one double mutant'}
+            return {'error': 'Selected gene returned more than one double mutant',
+                    'strains': [
+                            s.pk for s in strain_set
+                        ]
+                }
         
         strain_set = strain_set.select_related()[0]
         
