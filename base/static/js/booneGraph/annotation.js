@@ -129,7 +129,6 @@ define([
             }
         }
         
-        console.log(terms);
         if (_.size(terms)) {
             _.each(terms, function(term) {
                 num = term.num;

@@ -264,7 +264,7 @@ define([
                     data: autocomp,
                 }).on('change', function(evt, a, b, c) {
                     if (tokenizing) return;
-//                    console.log('change');
+                    
                     var selected = Utils.getSelectedNodes(true), selection = Utils.getSelection();
                     var reselect, numVisibleSelected = 0, strain, actualSelection;
                     preSelectSize = 2;
@@ -291,7 +291,6 @@ define([
                         if ($.inArray(node.id + '', selected) >= 0) {
                             if (tmpNode) tmpNode.selected = true;
                             node.selected = found = true;
-                            console.log(node.id);
                             
                             if (node.hidden) {
                                 if (!selected.hasOwnProperty(node.id)) {
@@ -348,6 +347,8 @@ define([
                     
                     var maxHeight = Math.min($('.search-bar .select2-choices li').length / 4, 3);
                     $('.search-bar .select2-choices').css('max-height', Math.max(Math.round(maxHeight), 1) * 34 + 'px');
+                    
+                    state.set('selecting', true);
                 });
                 
                 if (callback) callback();
