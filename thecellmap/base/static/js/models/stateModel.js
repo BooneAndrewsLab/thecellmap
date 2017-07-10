@@ -21,6 +21,7 @@ define([
             layoutRepulsion: 1,
             missingNodes: [],
             manualSelection: false,
+            selecting: false,
             nodeSize: 2,
             preselect: [],
             selection: [],

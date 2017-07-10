@@ -30,6 +30,10 @@ define([
                 $('.contextmenu').contextmenu(function() { return false; });
             }
             
+            state.on('change:selecting', function() {
+                $('#download-selected-simple').removeClass('hidden');
+            });
+            
             state.on('change:selection', function() {
                 var enabled, cls, size = Utils.getSelectedNodes().length;
                 
@@ -46,7 +50,8 @@ define([
                         enabled &= size < $(this).data('selection-lt');
                     }
                     
-                    $(this).prop(cls, !enabled);
+                    if (cls == 'disabled') $(this).prop(cls, !enabled);
+                    else $(this).toggleClass(cls, !enabled);
                     
                     if (!enabled) {
                         $(this).attr('title', $(this).data('selection-disabled-title'));
@@ -613,7 +618,8 @@ define([
                     });
                     
                     if (!!enrichments._selected_node) {
-                        Utils.getNode(enrichments._selected_node)['safe_overlay'] = true;
+                        node = Utils.getNode(enrichments._selected_node);
+                        if (!!node) node['safe_overlay'] = true;
                     }
                     
                     var minEnr = 1;
