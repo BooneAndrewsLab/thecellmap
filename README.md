@@ -3,7 +3,7 @@
 
 ## About ##
 
-Describe your project here.
+Interactive network for browsing genetic interactions in yeast.
 
 ## Prerequisites ##
 
