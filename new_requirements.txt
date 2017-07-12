@@ -9,7 +9,7 @@ chardet==3.0.4
 coreapi==2.3.1
 coreschema==0.0.4
 cycler==0.10.0
-Django==1.10
+Django==1.11
 django-appconf==1.0.2
 django-compressor==2.1.1
 django-crispy-forms==1.6.1
@@ -50,7 +50,7 @@ rcssmin==1.0.6
 requests==2.18.1
 rjsmin==1.0.12
 scipy==0.19.1
-sga==0.1.0
+git+git://github.com/usajusaj/sga_utils
 simplejson==3.11.1
 six==1.10.0
 snowballstemmer==1.2.1
