@@ -5,18 +5,15 @@
 Django>=1.6
 
 # Templates
-django_compressor
 
 # Security
-bleach
 #cef
 
 # Logging
 #raven
 
 # Celery: Message queue
-celery
-django-celery
+
 
 # L10n/i18n
 #Babel
@@ -32,10 +29,8 @@ django-debug-toolbar
 #django-waffle
 
 # Custom stuff
-https://github.com/ecometrica/django-dbarray/archive/master.zip
 pandas
 django-crispy-forms
-django-contact-form
 openpyxl
 xlwt
 xlrd
@@ -43,13 +38,7 @@ beautifulsoup4
 
 # REST stuff
 djangorestframework
-markdown
 django-filter
-defusedxml
-django-oauth-plus
-oauth2
-django-oauth2-provider
-django-guardian
 django-rest-swagger
 scipy
 django-require

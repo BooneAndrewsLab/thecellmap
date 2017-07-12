@@ -2,9 +2,8 @@
 
 import os
 
-# import dbarray
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.http.response import Http404
 
@@ -17,8 +16,6 @@ class Gene(models.Model):
     feature_qualifier = models.CharField(max_length=32, help_text='Feature qualifier')
     orf = models.CharField(max_length=16, help_text='Feature name', unique=True, db_index=True)
     name = models.CharField(max_length=16, blank=True, null=True, help_text='Standard gene name', unique=True, db_index=True)
-#     aliases = dbarray.CharArrayField(max_length=152, blank=True, null=True, help_text='Alias')
-#     secondary_sgdid = dbarray.CharArrayField(max_length=10, blank=True, null=True, help_text='Secondary SGDID')
     aliases = ArrayField(models.CharField(max_length=152), blank=True, null=True, help_text='Alias')
     secondary_sgdid = ArrayField(models.CharField(max_length=10), blank=True, null=True, help_text='Secondary SGDID')
     chromosome = models.SmallIntegerField(help_text='Chromosome')
@@ -149,7 +146,7 @@ class Dataset(models.Model):
         return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
     
     def has_permission(self, request):
-        return self.is_published or request.user.is_authenticated() and request.user.is_active
+        return self.is_published or request.user.is_authenticated and request.user.is_active
     
     @staticmethod
     def pk_or_default(pk=None, user=None):
@@ -164,7 +161,7 @@ class Dataset(models.Model):
     @staticmethod
     def _get_default(user=None):
         datasets = list(Dataset.objects.order_by('-pk'))
-        if user.is_authenticated():
+        if user.is_authenticated:
             ds = filter(lambda x: x.is_default and not x.is_published, datasets)
             if ds: return ds[0]
         
@@ -190,9 +187,6 @@ class StrainData(models.Model):
     dataset = models.ForeignKey(Dataset, related_name='data')
     strain = models.ForeignKey(Strain)
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_QUERY)
-#     scores = dbarray.FloatArrayField()
-#     pvalues = dbarray.FloatArrayField()
-#     correlations = dbarray.FloatArrayField(null=True)
     scores = ArrayField(models.FloatField())
     pvalues = ArrayField(models.FloatField())
     correlations = ArrayField(models.FloatField(),null=True)

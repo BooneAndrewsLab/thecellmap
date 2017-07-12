@@ -4,22 +4,12 @@
 -r production.txt
 
 # Deployment
-Fabric
 
 # Documentation
 Sphinx
 
 # Testing
 nose
-mock
 django-nose
-coverage
-pep8
-pylint
-ipython
 django-extensions
 matplotlib
-pyzmq
-tornado
-jsonschema
-python-Levenshtein
