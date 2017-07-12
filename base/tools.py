@@ -6,7 +6,7 @@ from time import time
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.forms.fields import CharField, BooleanField
 from django.forms.forms import Form
 from django.forms.models import ModelChoiceField, ModelForm
@@ -124,7 +124,7 @@ def custom(request):
                 except:
                     return HttpResponseBadRequest("dataset does not exist")
                 
-                if not request.user.is_authenticated() or overlay.is_published:
+                if not request.user.is_authenticated or overlay.is_published:
                     return HttpResponseForbidden('Permission Required')
                 
                 scores = collect_score_matrix(overlay, nodes, dataset)
@@ -141,7 +141,7 @@ def custom(request):
                 name = hash
             
             custom, _created = Custom.objects.get_or_create(
-                    user=request.user.is_authenticated() and request.user or None, 
+                    user=request.user.is_authenticated and request.user or None, 
                     hash=hash, 
                     private=private,
                     name=name,
@@ -172,11 +172,11 @@ def custom(request):
     datasets = []
     
     for data in Dataset.objects.all():
-        if request.user.is_authenticated() or data.is_published:
+        if request.user.is_authenticated or data.is_published:
             datasets.append(data)
     
     f = '';
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).extra(where=["CHAR_LENGTH(name) <= 32"]).order_by("name"))
     
     return render(request, 'base/custom.html', {

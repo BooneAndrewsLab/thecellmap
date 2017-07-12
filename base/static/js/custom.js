@@ -8,7 +8,7 @@ require.config({
         'jquery.cookie': 'libs/js.cookie',
         'underscore.strings': 'libs/underscore.string.min',
         
-        'jszip': 'libs/jszip.min',
+        'jszip': 'libs/jszip',
         'xls': 'libs/xls.min',
         'xlsx': 'libs/xlsx.min',
         

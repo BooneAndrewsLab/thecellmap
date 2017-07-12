@@ -40,7 +40,7 @@ USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27
 def _serve_dataset(request, dataset=None, override_auth=False):
     dataset = Dataset.pk_or_default(dataset, request.user)
     
-    if override_auth or request.user.is_authenticated() or dataset.is_published:
+    if override_auth or request.user.is_authenticated or dataset.is_published:
         context = {
                 'layout': request.GET.get('l', 'layout.json'),
                 'dataset': dataset,
@@ -132,7 +132,7 @@ def custom_dataset(request, custom_hash):
         return HttpResponseForbidden("Sorry the network you're trying to access is private")
     
     if custom.dataset:
-        if request.user.is_authenticated() or custom.dataset.is_published:
+        if request.user.is_authenticated or custom.dataset.is_published:
             return render(request, 'base/network.html', {
                     'dataset': custom.dataset,
                     'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
@@ -243,7 +243,7 @@ def tabular(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     nodes = filter(is_integer, request.GET.getlist('n'))
     
-    if request.user.is_authenticated() or dataset.is_published:
+    if request.user.is_authenticated or dataset.is_published:
         strains = list(strains_for_nodes(request, dataset, nodes))
         
         return render(request, 'base/tabular.html', {
@@ -256,7 +256,7 @@ def tabular(request, dataset_id=None):
 
 def three_demension(request, dataset_id):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
-    if request.user.is_authenticated() or dataset.is_published:
+    if request.user.is_authenticated or dataset.is_published:
         return render(request, 'base/3D.html', {
                 'dataset': dataset,
                 'annotations': [Annotation.objects.get(name='SAFE analysis')],
