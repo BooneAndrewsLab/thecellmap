@@ -51,11 +51,11 @@ class Gene(models.Model):
                 distance = max(0, a1 - b2);
             
             agg.append((distance, g))
-        
-        print(sorted(agg)[:2])
-        return [g for _, g in sorted(agg)[:2]]
+            
+        print(sorted(agg, key=lambda x: x[0])[:2])
+        return [g for _, g in sorted(agg, key=lambda x: x[0])[:2]]
     
-    def __unicode__(self):
+    def __str__(self):
         return ('%s (%s)' % (self.orf, self.name or '')).replace(' ()', '')
     
     class Meta:
@@ -69,7 +69,7 @@ class Strain(models.Model):
     mating_type = models.CharField(max_length=8)
     description = models.TextField(blank=True)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.full_id()
     
     def full_id(self):
@@ -98,7 +98,7 @@ class Annotation(models.Model):
     enabled = models.BooleanField(default=False)
     version = models.CharField(max_length=1, choices=TYPE_CHOICES, default=VERSION_STRAINS)
     
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % self.name
     
     class Meta:
@@ -114,7 +114,7 @@ class Term(models.Model):
     genes = models.ManyToManyField(Gene)
     strains = models.ManyToManyField(Strain)
     
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % self.name
     
     class Meta:
@@ -133,7 +133,7 @@ class Dataset(models.Model):
     public_description = models.TextField()
     default_annotation = models.ForeignKey(Annotation)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
     
     def static_path(self, *args):
@@ -162,10 +162,9 @@ class Dataset(models.Model):
     def _get_default(user=None):
         datasets = list(Dataset.objects.order_by('-pk'))
         if user.is_authenticated:
-            ds = filter(lambda x: x.is_default and not x.is_published, datasets)
+            ds = list(filter(lambda x: x.is_default and not x.is_published, datasets))
             if ds: return ds[0]
-        
-        ds = filter(lambda x: x.is_default and x.is_published, datasets)
+        ds = list(filter(lambda x: x.is_default and x.is_published, datasets))
         if ds: return ds[0]
         if datasets: return datasets[0]
         raise Dataset.DoesNotExist()
@@ -191,7 +190,7 @@ class StrainData(models.Model):
     pvalues = ArrayField(models.FloatField())
     correlations = ArrayField(models.FloatField(),null=True)
     
-    def __unicode__(self):
+    def __str__(self):
         return '%s @ %s' % (self.strain, self.dataset)
 
 class Custom(models.Model):
@@ -235,7 +234,7 @@ class RegionGroup(models.Model):
     description = models.TextField(blank=True)
     dataset = models.ForeignKey(Dataset)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 class Region(models.Model):

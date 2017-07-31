@@ -85,7 +85,7 @@ class TriStrain(models.Model):
     def get_array_scores(self, *args, **kwargs):
         return self._get_scores(self.array_scores, 'query', *args, **kwargs)
     
-    def __unicode__(self):
+    def __str__(self):
         return self.boonelab_id
 
 class TriStrainSet(models.Model):

@@ -55,18 +55,18 @@ class TEST_url_to_view(TestCase):
         self.assertEqual(resolver.view_name, 'tabular_fetch')
 
 
-class TEST_POST(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username='myra', email='myra.masinas@utoronto.ca', password='November.26')
-    
-    def test_login(self):
-        self.assertTrue(self.user.is_authenticated())
-
-    def test_login(self):
-#         login = self.client.login(username='myra',password='November.26')
-#         self.assertTrue(login)
-        response = self.client.post('/login/', {'username': 'myra', 'password': 'November.26'}, follow=True)
-        self.assertRedirects(response,'/',200)
+# class TEST_POST(TestCase):
+#     def setUp(self):
+#         self.user = User.objects.create_user(username='myra', email='myra.masinas@utoronto.ca', password='November.26')
+#     
+#     def test_login(self):
+#         self.assertTrue(self.user.is_authenticated())
+# 
+#     def test_login(self):
+# #         login = self.client.login(username='myra',password='November.26')
+# #         self.assertTrue(login)
+#         response = self.client.post('/login/', {'username': 'myra', 'password': 'November.26'}, follow=True)
+#         self.assertRedirects(response,'/',200)
 #         self.assertTrue(response)
 #         response = self.client.get('/')
 #         self.assertEqual(response.status_code, 200)

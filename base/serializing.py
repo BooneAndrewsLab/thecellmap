@@ -19,7 +19,7 @@ class CharArrayField(WritableField):
         if value in validators.EMPTY_VALUES:
             return None
         
-        print value
+        print(value)
         
         try:
             return str(value)
@@ -42,7 +42,7 @@ class FloatArrayField(WritableField):
         if value in validators.EMPTY_VALUES:
             return None
         
-        print value
+        print(value)
         
         try:
             return float(value)

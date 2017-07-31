@@ -1,0 +1,13 @@
+ERROR Internal Server Error: /tools/custom/
+Traceback (most recent call last):
+  File "/home/myra/dev/virtualenv/thecellmap_p3/lib/python3.5/site-packages/django/core/handlers/exception.py", line 41, in inner
+    response = get_response(request)
+  File "/home/myra/dev/virtualenv/thecellmap_p3/lib/python3.5/site-packages/django/core/handlers/base.py", line 249, in _legacy_get_response
+    response = self._get_response(request)
+  File "/home/myra/dev/virtualenv/thecellmap_p3/lib/python3.5/site-packages/django/core/handlers/base.py", line 187, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/home/myra/dev/virtualenv/thecellmap_p3/lib/python3.5/site-packages/django/core/handlers/base.py", line 185, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/myra/git/thecellmap/base/tools.py", line 140, in custom
+    hash.update(str(time()) + nodes.encode('utf-8') + layout.encode('utf-8') + dataset.encode('utf-8'))
+TypeError: Can't convert 'bytes' object to str implicitly
