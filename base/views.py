@@ -1,14 +1,14 @@
 """ Views for the base application """
 
-import cPickle
+import _pickle as cPickle
 import datetime
 import io
 import json
 import math
 import os
 import pickle
-from urllib import urlencode
-import urllib2
+from urllib.parse import urlencode
+import urllib.request
 
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -170,7 +170,6 @@ def interactions(request, dataset_id=None):
         raise Http404('No nodes requested')
     
     response = []
-    
     data = collect_scores(Dataset.pk_or_default(dataset_id, request.user), nodes)
     for s, t, w in data.itertuples(index=False):
         response.append({
@@ -206,22 +205,21 @@ def correlations(request, dataset_id=None):
             't': int(t),
             'w': float(w)
          })
-    
-    return JsonResponse({'dataset': 'Correlations', 'edges': response, 'node': list(new_nodes)})
+    return JsonResponse({'dataset': 'Correlations', 'edges': response, 'node': new_nodes.tolist()})
 
 @print_queries
 def nodes_download(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
-    nodes = filter(is_integer, request.GET.getlist('n'))
-
+    nodes = list(filter(is_integer, request.GET.getlist('n')))
+    
     if not nodes:
         return HttpResponseRedirect(dataset.static_url('dataset.txt'))
-    
+    print("len(nodes)",len(nodes))
     if len(nodes) > 20:
         return HttpResponseForbidden('Trying to download too many nodes')
     
-    nodes_idx = set(map(int, nodes))
-    
+    nodes_idx = set(list(map(int, nodes)))
+
     labels = []
     for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
         if n['id'] in nodes_idx:
@@ -245,7 +243,6 @@ def tabular(request, dataset_id=None):
     
     if request.user.is_authenticated or dataset.is_published:
         strains = list(strains_for_nodes(request, dataset, nodes))
-        
         return render(request, 'base/tabular.html', {
             'dataset': dataset,
             'strains': strains,
@@ -276,7 +273,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
     if not node_id: raise Http404('Node ID is required')
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     
-    with open(dataset.static_path('nodes_inv.pickle')) as fp:
+    with open(dataset.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
     
     gene = Gene.objects.distinct().get(strain__in=nodes_inv[int(node_id)])
@@ -290,7 +287,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
         'neighbor_effect': gene.neighbor_effect, 
         'neighbors': [n.orf for n in neighbors]
     }
-    data = data[data.keys()[0]]
+    data = data[list(data)[0]]
     c = data['correlations']
     s = data['scores']
     s = s[s.pval < 0.05]
@@ -356,11 +353,11 @@ def annotation(request, annotation_id):
     
     if 'ds' in request.GET and request.GET.get('ds'):
         dataset = Dataset.objects.get(pk=request.GET.get('ds'))
-        with open(dataset.static_path('nodes_inv.pickle')) as fp:
+        with open(dataset.static_path('nodes_inv.pickle'),'rb') as fp:
             nodes_inv = pickle.load(fp)
         
         nodes_inv_inv = {}
-        for nid, sids in nodes_inv.iteritems():
+        for nid, sids in nodes_inv.items():
             for sid in sids:
                 nodes_inv_inv[sid] = nid
         
@@ -400,11 +397,11 @@ def region_group(request, dataset_id, region_group_id):
     if regionGroup.dataset.id != int(dataset_id):
         return JsonResponse(response)
     
-    with open(regionGroup.dataset.static_path('nodes_inv.pickle')) as fp:
+    with open(regionGroup.dataset.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = pickle.load(fp)
     
     nodes_inv_inv = {}
-    for nid, sids in nodes_inv.iteritems():
+    for nid, sids in nodes_inv.items():
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
@@ -442,8 +439,8 @@ def publication_citations(request, title):
     citations = None
     
     try:
-        req = urllib2.Request(url, headers={'User-Agent': USER_AGENT})
-        data = urllib2.urlopen(req)
+        req = urllib.request(url, headers={'User-Agent': USER_AGENT})
+        data = urllib.request.urlopen(req)
         data = data.read()
         
         soup = BeautifulSoup(data)
@@ -526,7 +523,7 @@ def safe(request, dataset_id=None):
                 search_map.setdefault(a.lower(), set()).add(n['id'])
         
         frames = []
-        for hitname, nodes in nodes_list.iteritems():
+        for hitname, nodes in nodes_list.items():
             attributes = []
             seen = set()
             for n in nodes:
@@ -546,13 +543,13 @@ def safe(request, dataset_id=None):
         enrichments = safe.calculate()
     
     if 'dl' in request.POST:
-        with open(dataset.static_path('nodes_inv.pickle')) as fp:
+        with open(dataset.static_path('nodes_inv.pickle'),'rb') as fp:
             nodes_inv = pickle.load(fp)
         
         annotation = Annotation.objects.get(pk=request.POST.get('annotation', dataset.default_annotation_id))
         
         nodes_inv_inv = {}
-        for nid, sids in nodes_inv.iteritems():
+        for nid, sids in nodes_inv.items():
             for sid in sids:
                 nodes_inv_inv[sid] = nid
         
@@ -592,7 +589,7 @@ def safe(request, dataset_id=None):
             
             data2 = []
             
-            for term, term_nodes in terms.iteritems():
+            for term, term_nodes in terms.items():
                 k1 = len(enr_nodes.intersection(term_nodes).intersection(attr_nodes))
                 M1 = all_annotated
                 n1 = len(enr_nodes.intersection(attr_nodes))
@@ -649,5 +646,7 @@ def safe(request, dataset_id=None):
     
     for col in enrichments:
         result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
-    
+        for k in result[col].keys():
+            (result[col])[int(k)] = result[col].pop(k)
+
     return JsonResponse(result)

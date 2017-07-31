@@ -3,7 +3,7 @@ Created on Jan 13, 2014
 
 @author: matej
 '''
-import cPickle
+import _pickle as cPickle
 import json
 import operator
 import os
@@ -13,6 +13,7 @@ from django.contrib import messages
 from numpy.ma import corrcoef
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
+from functools import reduce
 
 from base.models import StrainData, Strain, Gene
 from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFICANT, STYLE_POS_STRINGENT, \
@@ -39,13 +40,11 @@ def format_allele_col(orf, name, strainid, allele):
     
     if suffix:
         allele_col = '%s%s' % (allele_col, suffix)
-    
     return allele_col
 
 def strains_for_nodes(request, ds, nodes):
-    with open(ds.static_path('nodes_inv.pickle')) as fp:
+    with open(ds.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
-    
     msg = []
     for node in nodes:
         if not node.isdigit():
@@ -60,11 +59,11 @@ def strains_for_nodes(request, ds, nodes):
 
 @print_queries
 def collect_scores(ds, nodes):
-    with open(ds.static_path('nodes_inv.pickle')) as fp:
+    with open(ds.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
     
     nodes_inv_inv = {}
-    for nid, sids in nodes_inv.iteritems():
+    for nid, sids in nodes_inv.items():
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
@@ -80,15 +79,15 @@ def collect_scores(ds, nodes):
         strains = nodes_inv[node]
         
         node_scores = []
+
         for typ, scrs, pvals in ds.data.filter(strain__in=strains).values_list('type', 'scores', 'pvalues'):
             if typ == StrainData.TYPE_QUERY:
                 scores_axis = arrays
             elif typ == StrainData.TYPE_ARRAY:
                 scores_axis = queries
             
-            dat = filter(lambda x: ((not np.isnan(x[2])) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals))
+            dat = list(filter(lambda x: ((not np.isnan(x[2])) and np.abs(x[2]) >= .08 and x[3] < .05), zip([node]*len(scores_axis), scores_axis, scrs, pvals)))
             node_scores.extend(dat)
-        
         node_scores = DataFrame.from_records(node_scores, columns=['source', 'target', 'score', 'pval']).sort_values(['target', 'pval'])
         node_scores = node_scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0)).groupby('target').first().reset_index()
         
@@ -103,11 +102,11 @@ def collect_scores(ds, nodes):
 def collect_correlations(ds, nodes, cutoff):
     nodes = map(int, nodes)
     
-    with open(ds.static_path('nodes_inv.pickle')) as fp:
+    with open(ds.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
     
     nodes_inv_inv = {}
-    for nid, sids in nodes_inv.iteritems():
+    for nid, sids in nodes_inv.items():
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
@@ -143,11 +142,11 @@ def collect_score_matrix(ds, nodes, data):
         smap[s.gene.orf] = s
         smap[s.gene.name] = s
     
-    with open(ds.static_path('nodes_inv.pickle')) as fp:
+    with open(ds.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
     
     nodes_inv_inv = {}
-    for nid, sids in nodes_inv.iteritems():
+    for nid, sids in nodes_inv.items():
         for sid in sids:
             nodes_inv_inv[sid] = nid
     
@@ -186,21 +185,21 @@ def collect_score_matrix(ds, nodes, data):
         
         if corr < 0:
             continue
-    
-    print sorted(fubar, reverse=True)[:5]
+        
+    print(sorted(fubar, reverse=True)[:5])
     
 #     for w,x,s,ss in sorted(fubar, reverse=True):
 #         print '\t'.join(map(str, (w,x.gene, x.allele, x.boonelab_id,s,ss)))
-    
     return results
 
 def _collect_data(ds, nodes, callback, defer_data=False):
-    with open(ds.static_path('nodes_inv.pickle')) as fp:
+    with open(ds.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
-    
+
     correlation_axis = [(strain[0], format_allele_col(*strain)) for strain in ds.correlation_axis.through.objects.filter(dataset=ds).order_by('id').values_list(*ONLY)]
     arrays = [(strain[0], format_allele_col(*strain)) for strain in ds.arrays.through.objects.filter(dataset=ds).order_by('id').values_list(*ONLY)]
     queries = [(strain[0], format_allele_col(*strain)) for strain in ds.queries.through.objects.filter(dataset=ds).order_by('id').values_list(*ONLY)]
+    
     
     for node in nodes:
         strains = nodes_inv[int(node)]

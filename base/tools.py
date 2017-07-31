@@ -61,7 +61,7 @@ def annotations(request):
         form = AnnotationsForm(request.POST)
         
         if form.is_valid():
-            print form.cleaned_data['autoRemove']
+            print(form.cleaned_data['autoRemove'])
             genes = form.cleaned_data['genes'].splitlines()
             annotation = form.cleaned_data['annotation']
             response = write_excel_file('annotated_genes_%s.%s' % ((datetime.now().strftime('%Y%m%d-%H%M%S')), form.cleaned_data['downloadType']), override_ext=True)
@@ -91,7 +91,7 @@ def annotations(request):
                     response.write_row(row)
             
             return response.as_response()
-    print form
+    print(form)
     
     return render(request, 'base/annotations.html', {
             'form': form,

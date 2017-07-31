@@ -218,7 +218,7 @@ if ENABLED_DEBUG_TOOLBAR:
 #AUTH_USER_MODEL = 'accounts.MyUser'
 # AUTH_PROFILE_MODULE = 'base.UserProfile'
 
-FILE_UPLOAD_PERMISSIONS = 0664
+FILE_UPLOAD_PERMISSIONS = 0o664
 
 # The WSGI Application to use for runserver
 WSGI_APPLICATION = 'thecellmap.wsgi.application'

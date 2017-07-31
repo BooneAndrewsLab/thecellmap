@@ -3,17 +3,16 @@ Created on Dec 13, 2013
 
 @author: matej
 '''
-from StringIO import StringIO
+from io import StringIO
 import csv
 import datetime
 import fileinput
-import hotshot
+import cProfile
 import json
 import os
 import re
 import tempfile
 import time
-from types import NoneType
 
 from django.core.files.temp import NamedTemporaryFile
 from django.core.management.base import BaseCommand, CommandError
@@ -31,6 +30,7 @@ from base.models import Gene
 import numpy as np
 from thecellmap import settings
 
+NoneType = type(None)
 
 RE_ORF = re.compile("^Y[A-P][LR]\d{3}[CW](\-[A-Z])?$")
 
@@ -140,16 +140,16 @@ def print_queries(func, filter=None):
                 numshown += 1
                 querystr = colored('\n[%ss] ' % query['time'], 'yellow')
                 querystr += colored(query['sql'], 'blue')
-                print querystr
+                print(querystr)
         numqueries = len(connection.queries) - initqueries
         numhidden = numqueries - numshown
         runtime = round(time.time() - starttime, 3)
         proctime = round(runtime - sqltime, 3)
-        print colored("------", 'blue')
-        print colored('Total Time:  %ss' % runtime, 'yellow')
-        print colored('Proc Time:   %ss' % proctime, 'yellow')
-        print colored('Query Time:  %ss (longest: %ss)' % (sqltime, longest), 'yellow')
-        print colored('Num Queries: %s (%s hidden)\n' % (numqueries, numhidden), 'yellow')
+        print(colored("------", 'blue'))
+        print(colored('Total Time:  %ss' % runtime, 'yellow'))
+        print(colored('Proc Time:   %ss' % proctime, 'yellow'))
+        print(colored('Query Time:  %ss (longest: %ss)' % (sqltime, longest), 'yellow'))
+        print(colored('Num Queries: %s (%s hidden)\n' % (numqueries, numhidden), 'yellow'))
         return result
     
     """ Use this only in debug mode (aka non production mode) """
@@ -420,7 +420,7 @@ class CsvWriter(GenericXlsWriter):
         return response
 
 def write_excel_file(fd=None, type='xls', override_ext=False):
-    if isinstance(fd, (str, unicode)) and override_ext:
+    if isinstance(fd, (bytes, str)) and override_ext:
         type = os.path.splitext(fd)[1].strip('.')
     elif fd == None:
         fd = StringIO()
@@ -557,7 +557,7 @@ class Csv(GenericXls):
     def _get_value(self, cell): return cell
 
 def open_excel_file(filename, sheet=0, fd=None):
-    if fd and not isinstance(fd, (str, unicode)):
+    if fd and not isinstance(fd, (bytes, str)):
         # This is stupid... oh well
         tmp = NamedTemporaryFile(delete=True)
         tmp.write(fd.read())
@@ -593,7 +593,7 @@ except:
 def profile(log_file):
     """Profile some callable.
 
-    This decorator uses the hotshot profiler to profile some callable (like
+    This decorator uses the cProfile (previously hotshot) profiler to profile some callable (like
     a view function or method) and dumps the profile data somewhere sensible
     for later processing and examination.
 
@@ -615,7 +615,7 @@ def profile(log_file):
             base = base + "-" + time.strftime("%Y%m%dT%H%M%S", time.gmtime())
             final_log_file = base + ext
 
-            prof = hotshot.Profile(final_log_file)
+            prof = cProfile.Profile(final_log_file)
             try:
                 ret = prof.runcall(f, *args, **kwargs)
             finally:
