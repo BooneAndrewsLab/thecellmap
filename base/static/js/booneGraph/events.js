@@ -297,8 +297,8 @@ define([
                 Annotation.drawRegions();
                 break;
             case 'context-toggle-acolor':
-//                state.set('showAnnotColors', !state.get('showAnnotColors'));
-//                Annotation.drawRegions();
+                state.set('showAnnotColors', !state.get('showAnnotColors'));
+                Annotation.drawRegions();
                 break;
             case 'context-svg':
                 Download.downloadCanvasSnapshot();
