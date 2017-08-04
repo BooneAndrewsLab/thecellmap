@@ -552,6 +552,7 @@ define([
                 }
             }).on('shown.bs.popover', function () {
                 $('.cutoff-label-input[data-for-cutoff=' + label.attr('id') + ']').val(label.html()).keyup(function (e) {
+                    
                     var dataset = state.get('dataset'), hasError = true, val = parseFloat($(this).val());
                     var cutoff = dataset == 0 ? state.get('cutoffCorrelation') : state.get('cutoffInteraction').slice();
                     
@@ -563,6 +564,10 @@ define([
                         } else {
                             if (val <= 1 && val > 0) hasError = false;
                         }
+                    }
+                    if (e.keyCode == 8 || e.which == 8) {
+                        e.preventDefault();
+                        return false;
                     }
                     $(this).parent().toggleClass('has-error', !$.isNumeric($(this).val()) || hasError);
                     
@@ -592,7 +597,6 @@ define([
             });
         });
     }
-    
     var buildSliders = function() {
         var styleSliders = {
             nsize: {
