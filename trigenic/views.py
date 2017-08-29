@@ -40,11 +40,11 @@ def _get_scores(request):
         score_s2 = strain_set.single_mutant2.get_query_scores(pvalue__lt=0.05)
         
         for g, s, p in score_dm.itertuples(index=False):
-            result.setdefault('dm', {'strain': strain_set.double_mutant_id, 'scores': []})['scores'].append((g,s,p))
+            result.setdefault('dm', {'strain': strain_set.double_mutant_id, 'scores': []})['scores'].append((int(g),float(s),float(p)))
         for g, s, p in score_s1.itertuples(index=False):
-            result.setdefault('s1', {'strain': strain_set.single_mutant1_id, 'scores': []})['scores'].append((g,s,p))
+            result.setdefault('s1', {'strain': strain_set.single_mutant1_id, 'scores': []})['scores'].append((int(g),float(s),float(p)))
         for g, s, p in score_s2.itertuples(index=False):
-            result.setdefault('s2', {'strain': strain_set.single_mutant2_id, 'scores': []})['scores'].append((g,s,p))
+            result.setdefault('s2', {'strain': strain_set.single_mutant2_id, 'scores': []})['scores'].append((int(g),float(s),float(p)))
     else:
         strain = TriStrain.objects.filter((Q(gene1=gene) | Q(gene2=gene)), is_query=False)
         

@@ -654,7 +654,7 @@ def add_headers(**params):
         @wraps(func, assigned=available_attrs(func))
         def inner(request, *args, **kwargs):
             response = func(request, *args, **kwargs)
-            for k, v in params.iteritems():
+            for k, v in params.items():
                 response[k] = v
             return response
         return inner
