@@ -55,7 +55,7 @@ def _get_scores(request):
         scores = strain.get_array_scores(Q(query__is_double_mutant=True, score__lt=0) | Q(query__is_double_mutant=False), pvalue__lt=0.05)
         
         for g, s, p in scores.itertuples(index=False):
-            result.setdefault('a', {'strain': strain.pk, 'scores': []})['scores'].append((g,s,p))
+            result.setdefault('a', {'strain': strain.pk, 'scores': []})['scores'].append(((int(g),float(s),float(p))))
     
     return result
 
