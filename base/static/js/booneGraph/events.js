@@ -301,7 +301,12 @@ define([
                 Annotation.drawRegions();
                 break;
             case 'context-svg':
-                Download.downloadCanvasSnapshot();
+                if (settings.get("saveAsSvg") == false){
+                    Download.downloadCanvasSnapshot();
+                }
+                else {
+                    Download.downloadCanvasSvg();
+                }
                 break;
             case 'context-tour':
                 localStorage.setItem('enableIntro', true);
@@ -553,7 +558,12 @@ define([
         },
         
         getSvgScreenshot: function(e) {
-            Download.downloadCanvasSnapshot();
+            if (settings.get("saveAsSvg") == false){
+                Download.downloadCanvasSnapshot();
+            }
+            else {
+                Download.downloadCanvasSvg();
+            }
             e.preventDefault();
         },
         

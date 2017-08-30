@@ -16,7 +16,7 @@ define([
             showBgSvg: localStorage.getItem('showBgSvg') ? parseBool(localStorage.getItem('showBgSvg')) : true,
             showLegendSvg: localStorage.getItem('showLegendSvg') ? parseBool(localStorage.getItem('showLegendSvg')) : true,
             disableScroll: localStorage.getItem('disableScroll') ? parseBool(localStorage.getItem('disableScroll')) : false,
-            
+            saveAsSvg: localStorage.getItem('saveAsSvg') ? parseBool(localStorage.getItem('saveAsSvg')) : false,
             isPrivate: localStorage.getItem('isPrivate') ? parseBool(localStorage.getItem('isPrivate')) : false,
             
             autoRemove: localStorage.getItem('autoRemove') ? parseBool(localStorage.getItem('autoRemove')) : false,
