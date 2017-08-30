@@ -340,8 +340,7 @@ define([
         if (!state.get('showRegions') || !vizdata['regionGroups'].get(state.get('annotation'))) return;
         
         var ratio = sigInst.position()['ratio'];
-        var canvas = $('#canvas-regions');
-        
+        var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
         var regions = [];
         var regionGroup = vizdata['regionGroups'].get(state.get('annotation'));
         var regionList = regionGroup.get('regions');
@@ -373,13 +372,12 @@ define([
                 ymm = [nodes[0].displayY, nodes[0].displayY];
             
             nodes.push(nodes[0]);
-            
-            var ctx = $('#canvas-regions')[0].getContext('2d');
+
             ctx.beginPath();
             ctx.lineWidth = "1";
             ctx.lineCap = 'round';
             ctx.strokeStyle = "gray"; // Green path
-            ctx.setLineDash([5, 5]);
+            ctx.setLineDash([5,5]);
             
             for (var i = 0; i < nodes.length - 1; i++) {
                 n1 = nodes[i], n2 = nodes[i + 1];
@@ -420,7 +418,7 @@ define([
                 ctx.stroke();
                 
                 ctx.strokeStyle = "gray"; // Green path
-                ctx.setLineDash([5, 5]);
+                ctx.setLineDash([5,5]);
                 ctx.beginPath();
                 ctx.arc(cx,cy,semidiameter,0,2*Math.PI);
                 ctx.stroke();
@@ -431,7 +429,7 @@ define([
          * Draw clouds
          */
         if ((!direct || (!!direct && step == 1)) && state.get('showAnnotColors')) {
-            var ctx = !!direct ? direct : $('#canvas-regions')[0].getContext('2d');
+            
             ctx.globalCompositeOperation = 'screen';
             
             regions.forEach(function(r){
@@ -448,7 +446,7 @@ define([
         }
         
         if (state.get('myData')) {
-            var ctx = $('#canvas-regions')[0].getContext('2d');
+            
             ctx.globalCompositeOperation = 'screen';
             
             for (i = 0; i < sigInst._core.graph.nodes.length; i++) {

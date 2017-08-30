@@ -43,11 +43,20 @@ define([
 //        canvas.fillRect(0, 0, settings['showLegendSvg'] ? width * 1.25 : width, height);
         
         sigInst._core.plotter.switchCxt(canvas);
-        if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas, 1);
-        sigInst.draw(0,2,0,0);
-        sigInst.draw(2,0,0,0);
-        sigInst.draw(0,0,2,0);
-        if (state.get('showRegions') && state.get('annotations') != 'None') Annotation.drawRegions(canvas, 2);
+        
+        if( $('#tools-safe-download').is('.hidden') ){
+            Annotation.drawRegions(canvas, 1);
+            sigInst.draw(0,2,0,0); 
+            sigInst.draw(2,0,0,0); 
+            sigInst.draw(0,0,2,0); 
+            Annotation.drawRegions(canvas, 2);
+        }
+        else {
+          Annotation.drawRegions(canvas, 2);
+          sigInst.draw(0,0,2,0);
+        }
+        
+
         
         sigInst._core.plotter.restoreCxt();
         sigInst.draw();
