@@ -642,6 +642,7 @@ def safe(request, dataset_id=None):
 #         filename = 'tcm-safe_enrichments-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         response['Content-Disposition'] = 'attachment; filename=%s' % (filename, )
+        output.seek(0)
         response.write(output.read())
         return response
     
