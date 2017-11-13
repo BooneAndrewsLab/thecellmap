@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest, \
-    FileResponse
+    FileResponse, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -640,9 +640,10 @@ def safe(request, dataset_id=None):
         
         filename = 'tcm-safe-%s-%s.xlsx' % (label, datetime.datetime.now().strftime('%y%m%d'))
 #         filename = 'tcm-safe_enrichments-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
-        resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
-        return resp
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = 'attachment; filename=%s' % (filename, )
+        response.write(output.read())
+        return response
     
     for col in enrichments:
         result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
