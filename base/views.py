@@ -554,6 +554,7 @@ def safe(request, dataset_id=None):
                 nodes_inv_inv[sid] = nid
         
         terms = {}
+        node_in_terms = {}
         all_annotated = 0
         for term in Term.objects.filter(annotation=annotation).prefetch_related('strains', 'genes__strain_set'):
             term_nodes = set()
@@ -570,12 +571,15 @@ def safe(request, dataset_id=None):
             
             terms[term] = term_nodes
             all_annotated += len(term_nodes)
+            
+            for n in term_nodes:
+                node_in_terms.setdefault(n, []).append(term)
         
         node_map = {}
         for n in json.load(open(dataset.static_path('nodes.json')))['nodes']:
             node_map[n['id']] = n
         
-        enrichments = enrichments[enrichments.any(axis=1)]
+        enrichments = enrichments.loc[enrichments.any(axis=1)]
         
         output = io.BytesIO()
         res_data = p.ExcelWriter(output, engine='xlsxwriter')
@@ -616,6 +620,17 @@ def safe(request, dataset_id=None):
             res_data.sheets[col[:31]].write(len(data2) + 2, 0, 'Please see spreadsheets to the right for gene lists')
         
         bold = res_data.book.add_format({'bold': True})
+        
+        enrichments.loc[:,'ORF'] = [node_map[i]['orf'] for i in enrichments.index]
+        enrichments.loc[:,'Name'] = [node_map[i]['name'] for i in enrichments.index]
+        enrichments.loc[:,'Allele'] = [node_map[i]['label'] for i in enrichments.index]
+        enrichments.loc[:,'Feature Qualifier'] = [(node_map[i]['isdu'] and 'Dubious' or '') for i in enrichments.index]
+        enrichments.loc[:,'Annotations'] = [','.join([t.alias for t in node_in_terms.get(i, [])]) for i in enrichments.index]
+        
+        enrichments = enrichments.reindex(columns=list(enrichments.columns[-5:]) + list(enrichments.columns[:-5]))
+        enrichments = enrichments.sort_values(enrichments.columns[5])
+        
+        enrichments.to_excel(res_data, index=None, sheet_name='SAFE enrichment scores')
         
         for col, term, nodes in gene_lists:
             ct_data = [(node_map[n]['orf'], node_map[n]['name'], node_map[n]['label'].lower(), node_map[n]['isdu'] and 'Dubious' or '') for n in nodes]
