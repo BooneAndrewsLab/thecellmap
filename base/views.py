@@ -628,7 +628,7 @@ def safe(request, dataset_id=None):
         enrichments.loc[:,'Annotations'] = [','.join([t.alias for t in node_in_terms.get(i, [])]) for i in enrichments.index]
         
         enrichments = enrichments.reindex(columns=list(enrichments.columns[-5:]) + list(enrichments.columns[:-5]))
-        enrichments = enrichments.sort_values(enrichments.columns[5])
+        enrichments = enrichments.sort_values(enrichments.columns[5], ascending=False)
         
         enrichments.to_excel(res_data, index=None, sheet_name='SAFE enrichment scores')
         
