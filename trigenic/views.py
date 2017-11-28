@@ -65,6 +65,12 @@ def list_to_df(scores, strains, short=False):
     index = []
     for g in df['g']:
         s = strains[g]
+        allele = s.allele
+        if allele=='' or allele==None:
+            if s.gene1.name:
+                allele= s.gene1.name + 'Δ'
+            else:
+                allele = s.gene1.orf + 'Δ'
         row = [s.gene1.orf, s.gene1.name, '', '', s.allele, s.boonelab_id, s.is_double_mutant and 'Trigenic' or 'Digenic']
         if s.is_double_mutant:
             row[2] = s.gene2.orf
