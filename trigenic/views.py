@@ -105,9 +105,10 @@ def download(request):
         w.save()
         output.seek(0)
         print('OUTPUT',output)
-#         resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        resp = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        resp['Content-Disposition'] = 'attachment; filename="kuzmin2017_scores_%s.xlsx"' % (','.join(filebits), )
+        
+        resp = FileResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+#         resp = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+#         resp['Content-Disposition'] = 'attachment; filename="kuzmin2017_scores_%s.xlsx"' % (','.join(filebits), )
         resp.write(output.read())
         return resp
 
