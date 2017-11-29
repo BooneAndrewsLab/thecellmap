@@ -20,7 +20,7 @@ from base.utils import write_excel_file, STYLE_NEG_STRINGENT, STYLE_NEG_SIGNIFIC
     STYLE_POS_SIGNIFICANT, STYLE_COR_SIGNIFICANT, print_queries, STYLE_NEIGHBOR
 import numpy as np
 from pandas.io.excel import ExcelWriter
-from django.http.response import FileResponse, HttpResponse
+from django.http.response import HttpResponse
 
 
 ONLY = (
@@ -294,7 +294,6 @@ def xlsx_response(df, filename, **kwargs):
     w.save()
     
     output.seek(0)
-    
 #     resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     resp = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
