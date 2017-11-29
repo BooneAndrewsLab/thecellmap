@@ -76,7 +76,7 @@ def list_to_df(scores, strains, short=False):
                 if s.gene2.name=='' or s.gene2.name==None:
                     allele += s.gene2.orf.lower() + 'Δ'
                 else:
-                    allele = s.gene2.name.lower() + 'Δ'
+                    allele += s.gene2.name.lower() + 'Δ'
         row = [s.gene1.orf, s.gene1.name, '', '', allele, s.boonelab_id, s.is_double_mutant and 'Trigenic' or 'Digenic']
         if s.is_double_mutant:
             row[2] = s.gene2.orf
