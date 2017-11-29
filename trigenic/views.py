@@ -1,7 +1,7 @@
 import io
 
 from django.db.models import Q
-from django.http.response import JsonResponse, FileResponse
+from django.http.response import JsonResponse, FileResponse, HttpResponse
 from django.views.decorators.http import require_GET
 
 from base.download import xlsx_response
