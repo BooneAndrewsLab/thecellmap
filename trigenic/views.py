@@ -103,12 +103,14 @@ def download(request):
                 columns=['Score', 'p-value'],)
         
         w.save()
-        
         output.seek(0)
-        
-        resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        print('OUTPUT',output)
+#         resp = FileResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        resp = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         resp['Content-Disposition'] = 'attachment; filename="kuzmin2017_scores_%s.xlsx"' % (','.join(filebits), )
+        resp.write(output.read())
         return resp
+
     else:
         strains = {s.pk: s for s in TriStrain.objects.filter(pk__in=[g for g,_,_ in scores['a']['scores']] + [scores['a']['strain']]).select_related('gene1', 'gene2')}
         df = list_to_df(scores['a']['scores'], strains)
