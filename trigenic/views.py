@@ -67,12 +67,20 @@ def list_to_df(scores, strains, short=False):
         s = strains[g]
         allele = s.allele
         if allele=='':
-            allele = (s.gene1.name or s.gene1.orf).lower() + 'Δ'
+            if s.gene1.name=='' or s.gene1.name==None:
+                allele = s.gene1.orf.lower() + 'Δ'
+            else:
+                allele = s.gene1.name.lower() + 'Δ'
+                
+            if s.is_double_mutant:
+                if s.gene2.name=='' or s.gene2.name==None:
+                    allele += s.gene2.orf.lower() + 'Δ'
+                else:
+                    allele = s.gene2.name.lower() + 'Δ'
+        row = [s.gene1.orf, s.gene1.name, '', '', allele, s.boonelab_id, s.is_double_mutant and 'Trigenic' or 'Digenic']
         if s.is_double_mutant:
             row[2] = s.gene2.orf
             row[3] = s.gene2.name
-            allele += ' ' + (s.gene2.name or s.gene2.orf).lower() + 'Δ'
-        row = [s.gene1.orf, s.gene1.name, '', '', allele, s.boonelab_id, s.is_double_mutant and 'Trigenic' or 'Digenic']
         index.append(row)
     
     idx = p.MultiIndex.from_tuples(index, names=['ORF 1', 'Gene 1', 'ORF 2', 'Gene 2', 'Allele', 'Strain ID', 'Interaction Type'])
