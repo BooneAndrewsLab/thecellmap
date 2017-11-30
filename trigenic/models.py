@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 
 from django.db import models
-
+from django.db.models import F
 from base.models import Gene
 import pandas as p
+from django.db.models.expressions import Case, When, Value
 
 
 class TriStrain(models.Model):
@@ -69,8 +70,18 @@ class TriStrain(models.Model):
             return self.gene2
         return self.gene1
     
-    def _get_scores(self, field, strain_field, *args, **kwargs):
-        data = field.filter(*args, **kwargs).select_related().order_by('score')
+    def _get_scores(self, field, strain_field,*args, **kwargs):
+        if strain_field=='array':
+            is_dm = kwargs['dm']
+            if is_dm==False:
+                data = field.annotate(abs=Case(
+                                      When(score__gte=0, then=F('score')),
+                                      When(score__lt=0, then=0-F('score')),
+                                      )).filter(pvalue__lt=0.05,abs__gt=0.08).select_related().order_by('score')
+            else:
+                data = field.filter(pvalue__lt=0.05,score__lt=-0.08).select_related().order_by('score')
+        else:
+            data = field.filter(*args,**kwargs).select_related().order_by('score')
         return p.DataFrame(
                 list(data.values_list(
                     strain_field, 
