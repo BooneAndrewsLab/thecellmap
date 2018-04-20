@@ -10,7 +10,6 @@ import pandas as p
 
 from .models import TriStrainSet, TriStrain
 
-
 def _get_scores(request):
     gene = request.GET['gene']
     strain = request.GET['strain']
@@ -55,16 +54,18 @@ def _get_scores(request):
             result.setdefault('s2', {'strain': strain_set.single_mutant2_id, 'scores': []})['scores'].append((int(g),float(s),float(p)))
     else:
         strain = TriStrain.objects.filter((Q(gene1=gene) | Q(gene2=gene)), is_query=False)
-        print('strain',strain)
+        print('Strain',strain)
         if strain.count() == 0:
             return {'error': 'Selected gene was not screened as an array'}
         
         strain = strain[0]
 #         scores = strain.get_array_scores(Q(query__is_double_mutant=True, score__lt=0) | Q(query__is_double_mutant=False), pvalue__lt=0.05)
         scores = strain.get_array_scores()
-        if scores.empty:
-            return {'error': 'Selected gene has no significant array score'}
         print('scores',scores)
+        if scores.empty:
+            print('score is empty')
+            return {'error': 'Selected gene has no significant array score'}
+        
         for g, s, p in scores.itertuples(index=False):
             result.setdefault('a', {'strain': strain.pk, 'scores': []})['scores'].append(((int(g),float(s),float(p))))
         
@@ -103,9 +104,12 @@ def list_to_df(scores, strains, short=False):
     return df
 
 def download(request):
+    print('request',request)
     scores = _get_scores(request)
+    print('scores',scores)
     if request.GET.get('score_type') == 'query':
         strains = [scores[k]['strain'] for k in scores]
+        print('strains',strains)
         for k in scores:
             strains += [g for g, _, _ in scores[k]['scores']]
         strains = {s.pk: s for s in TriStrain.objects.filter(pk__in=strains).select_related('gene1', 'gene2')}
@@ -147,5 +151,6 @@ def download(request):
 @require_get_params(params=['gene', 'score_type'])
 def scores(request):
     if 'download' in request.GET:
+        print('download in request.GET')
         return download(request)
     return JsonResponse(_get_scores(request))
