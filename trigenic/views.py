@@ -29,14 +29,11 @@ def _get_scores(request):
         elif strain_set.count() > 1:
             return {'error': 'Selected gene returned more than one double mutant',
                     'strains': [
-                            s.double_mutant_id for s in strain_set
-                        ],
+                            s.double_mutant_id for s in strain_set],
                     'strains_pk': [
-                            s.pk for s in strain_set
-                        ],
+                            s.pk for s in strain_set],
                     'strains_gene2': [
-                            s.double_mutant.gene2.id for s in strain_set
-                        ]
+                            s.double_mutant.gene2.id for s in strain_set]
                 }
         
         strain_set = strain_set.select_related()[0]
