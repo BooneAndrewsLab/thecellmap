@@ -29,11 +29,11 @@ def _get_scores(request):
         elif strain_set.count() > 1:
             return {'error': 'Selected gene returned more than one double mutant',
                     'strains': [
-                            s.double_mutant_id for s in strain_set
-                        ],
+                            s.double_mutant_id for s in strain_set],
                     'strains_pk': [
-                            s.pk for s in strain_set
-                        ]
+                            s.pk for s in strain_set],
+                    'strains_gene2': [
+                            s.double_mutant.gene2.id for s in strain_set]
                 }
         
         strain_set = strain_set.select_related()[0]
@@ -54,16 +54,13 @@ def _get_scores(request):
             result.setdefault('s2', {'strain': strain_set.single_mutant2_id, 'scores': []})['scores'].append((int(g),float(s),float(p)))
     else:
         strain = TriStrain.objects.filter((Q(gene1=gene) | Q(gene2=gene)), is_query=False)
-        print('Strain',strain)
         if strain.count() == 0:
             return {'error': 'Selected gene was not screened as an array'}
         
         strain = strain[0]
 #         scores = strain.get_array_scores(Q(query__is_double_mutant=True, score__lt=0) | Q(query__is_double_mutant=False), pvalue__lt=0.05)
         scores = strain.get_array_scores()
-        print('scores',scores)
         if scores.empty:
-            print('score is empty')
             return {'error': 'Selected gene has no significant array score'}
         
         for g, s, p in scores.itertuples(index=False):
@@ -104,12 +101,9 @@ def list_to_df(scores, strains, short=False):
     return df
 
 def download(request):
-    print('request',request)
     scores = _get_scores(request)
-    print('scores',scores)
     if request.GET.get('score_type') == 'query':
         strains = [scores[k]['strain'] for k in scores]
-        print('strains',strains)
         for k in scores:
             strains += [g for g, _, _ in scores[k]['scores']]
         strains = {s.pk: s for s in TriStrain.objects.filter(pk__in=strains).select_related('gene1', 'gene2')}
@@ -151,6 +145,5 @@ def download(request):
 @require_get_params(params=['gene', 'score_type'])
 def scores(request):
     if 'download' in request.GET:
-        print('download in request.GET')
         return download(request)
     return JsonResponse(_get_scores(request))
