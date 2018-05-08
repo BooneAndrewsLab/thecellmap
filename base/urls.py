@@ -9,6 +9,7 @@ from django.views.generic.base import RedirectView
 
 from base.models import Dataset
 from base import views, tools
+from base.views import EnrichmentView, EnrichmentResultView
 
 class StaticViewSitemap(Sitemap):
     priority = 0.5
@@ -59,6 +60,9 @@ urlpatterns = [
     # region urls
     url(r'^region_group/(?P<dataset_id>\d+)/(?P<region_group_id>\d+)/$', views.region_group, name='region_group'),
     url(r'^genes/$', views.genes, name='genes'),
+    
+    url(r'^enrichment/$', EnrichmentView.as_view(), name='enrichment_form'),
+    url(r'^enrichment/result/$', EnrichmentResultView.as_view(), name='enrichment_result'),
     # contact
 #     url(r'^contact/', include('contact_form.urls')),
     url(r'^circlepack/$', views.circle_pack, name='circle_pack'),

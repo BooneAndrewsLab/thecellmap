@@ -98,6 +98,12 @@ class Annotation(models.Model):
     enabled = models.BooleanField(default=False)
     version = models.CharField(max_length=1, choices=TYPE_CHOICES, default=VERSION_STRAINS)
     
+    def get_annotations(self):
+        annotations = {}
+        for term in self.term_set.prefetch_related('genes'):
+            annotations[(term.name, term.alias, term.source)] = [g.orf for g in term.genes.all()]
+        return annotations
+    
     def __str__(self):
         return u'%s' % self.name
     

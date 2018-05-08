@@ -1,6 +1,5 @@
 """ Views for the base application """
 
-import _pickle as cPickle
 import datetime
 import io
 import json
@@ -11,28 +10,32 @@ from urllib.parse import urlencode
 import urllib.request
 
 from bs4 import BeautifulSoup
+from django import forms
 from django.conf import settings
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest, \
-    FileResponse, HttpResponse
+    HttpResponse
 from django.shortcuts import render
+from django.urls.base import reverse_lazy
+from django.utils.safestring import mark_safe
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
+from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 from scipy.stats import hypergeom
 from sga.safe import Safe
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
-from base.utils import print_queries, is_integer, JsonResponse,\
+from base.utils import print_queries, is_integer, JsonResponse, \
     safe_excel_sheetname
 import pandas as p
-from django.utils.safestring import mark_safe
-import re
+from crispy_forms.layout import Column
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -274,7 +277,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     
     with open(dataset.static_path('nodes_inv.pickle'),'rb') as fp:
-        nodes_inv = cPickle.load(fp)
+        nodes_inv = pickle.load(fp)
     
     gene = Gene.objects.distinct().get(strain__in=nodes_inv[int(node_id)])
     neighbors = gene.closest_neighbors(dataset)
@@ -666,3 +669,58 @@ def safe(request, dataset_id=None):
             (result[col])[int(k)] = result[col].pop(k)
 
     return JsonResponse(result)
+
+
+class EnrichmentForm(forms.Form):
+    genes = forms.CharField(widget=forms.Textarea)
+    background = forms.CharField(widget=forms.Textarea)
+    annotation = forms.ModelChoiceField(Annotation.objects)
+    
+    def clean_genes(self):
+        return [g for g in self.cleaned_data['genes'].split() if g]
+
+    def clean_background(self):
+        return [g for g in self.cleaned_data['background'].split() if g]
+
+
+class EnrichmentView(FormView):
+    template_name = 'base/generic_form.html'
+    form_class = EnrichmentForm
+    success_url = reverse_lazy('enrichment_result')
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        data['annotation'] = data['annotation'].pk
+        
+        self.request.session['enrichment'] = form.cleaned_data
+        return super(EnrichmentView, self).form_valid(form)
+
+
+class EnrichmentResultView(TemplateView):
+    template_name = 'base/enrichment.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(EnrichmentResultView, self).get_context_data(**kwargs)
+        
+        data = self.request.session['enrichment']
+        annotation = Annotation.objects.get(pk=data['annotation']).get_annotations()
+        query = set(data['genes'])
+        background = set(data['background'])
+        
+        M = len(background)
+        N = len(query)
+        
+        vals = []
+        for term, term_genes in annotation.items():
+            category = background.intersection(term_genes)
+            n = len(category)
+            hits = query.intersection(category)
+            x = len(hits)
+            
+            vals.append(term + (hypergeom.sf(x-1, M, n, N), x, n))
+        
+        df = p.DataFrame(vals, columns=['GO Name', 'GO ID', 'GO source', 'pval', '# hits in category', 'category size'])
+        df = df.sort_values('pval')
+        print(df)
+        
+        return context
