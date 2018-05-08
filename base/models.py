@@ -15,7 +15,7 @@ class Gene(models.Model):
     primary_sgdid = models.CharField(max_length=10, help_text='Primary SGDID', unique=True, db_index=True)
     feature_qualifier = models.CharField(max_length=32, help_text='Feature qualifier')
     orf = models.CharField(max_length=16, help_text='Feature name', unique=True, db_index=True)
-    name = models.CharField(max_length=16, blank=True, null=True, help_text='Standard gene name', unique=True, db_index=True)
+    name = models.CharField(max_length=16, blank=True, null=True, help_text='Standard gene name', db_index=True)
     aliases = ArrayField(models.CharField(max_length=152), blank=True, null=True, help_text='Alias')
     secondary_sgdid = ArrayField(models.CharField(max_length=10), blank=True, null=True, help_text='Secondary SGDID')
     chromosome = models.SmallIntegerField(help_text='Chromosome')
@@ -106,7 +106,7 @@ class Annotation(models.Model):
 
 class Term(models.Model):
     annotation = models.ForeignKey(Annotation)
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=256)
     alias = models.CharField(max_length=128)
     source = models.CharField(max_length=32)
     color = models.CharField(max_length=6)
