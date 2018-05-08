@@ -10,7 +10,6 @@ import pandas as p
 
 from .models import TriStrainSet, TriStrain
 
-
 def _get_scores(request):
     gene = request.GET['gene']
     strain = request.GET['strain']
@@ -25,12 +24,16 @@ def _get_scores(request):
             strain_set = strain_set.filter(pk=strain)
         
         if strain_set.count() == 0:
-            return {'error': 'Selected gene was not screened as a query'}
+            return {'error': 'Selected gene was not screened as a query',
+                    'strains':[]}
         elif strain_set.count() > 1:
             return {'error': 'Selected gene returned more than one double mutant',
                     'strains': [
-                            s.pk for s in strain_set
-                        ]
+                            s.double_mutant_id for s in strain_set],
+                    'strains_pk': [
+                            s.pk for s in strain_set],
+                    'strains_gene2': [
+                            s.double_mutant.gene2.id for s in strain_set]
                 }
         
         strain_set = strain_set.select_related()[0]
@@ -51,16 +54,18 @@ def _get_scores(request):
             result.setdefault('s2', {'strain': strain_set.single_mutant2_id, 'scores': []})['scores'].append((int(g),float(s),float(p)))
     else:
         strain = TriStrain.objects.filter((Q(gene1=gene) | Q(gene2=gene)), is_query=False)
-        
         if strain.count() == 0:
             return {'error': 'Selected gene was not screened as an array'}
         
         strain = strain[0]
 #         scores = strain.get_array_scores(Q(query__is_double_mutant=True, score__lt=0) | Q(query__is_double_mutant=False), pvalue__lt=0.05)
         scores = strain.get_array_scores()
+        if scores.empty:
+            return {'error': 'Selected gene has no significant array score'}
+        
         for g, s, p in scores.itertuples(index=False):
             result.setdefault('a', {'strain': strain.pk, 'scores': []})['scores'].append(((int(g),float(s),float(p))))
-    
+        
     return result
 
 def list_to_df(scores, strains, short=False):
