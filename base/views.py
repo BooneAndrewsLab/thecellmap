@@ -20,6 +20,7 @@ from django.http.response import HttpResponseRedirect, Http404, HttpResponseForb
     HttpResponse
 from django.shortcuts import render
 from django.urls.base import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.utils.safestring import mark_safe
 from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -27,6 +28,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
+from django_tables2 import tables, SingleTableView, SingleTableMixin, columns
 from scipy.stats import hypergeom
 from sga.safe import Safe
 
@@ -683,6 +685,20 @@ class EnrichmentForm(forms.Form):
         return [g for g in self.cleaned_data['background'].split() if g]
 
 
+def float_column(float_format='%.3f', verbose_name=None):
+    class InnerFloatColumn(columns.Column):
+        def __init__(self, *args, **kwargs):
+            super(InnerFloatColumn, self).__init__(*args, **kwargs)
+
+            if verbose_name:
+                self.verbose_name = verbose_name
+
+        def render(self, value):
+            return float_format % value
+
+    return InnerFloatColumn
+
+
 class EnrichmentView(FormView):
     template_name = 'base/generic_form.html'
     form_class = EnrichmentForm
@@ -696,31 +712,47 @@ class EnrichmentView(FormView):
         return super(EnrichmentView, self).form_valid(form)
 
 
-class EnrichmentResultView(TemplateView):
+class EnrichmentResultTable(tables.Table):
+    go_id = tables.columns.Column()
+    go_name = tables.columns.Column()
+    pval = float_column('%.2e')()
+    hits_in_term = tables.columns.Column()
+    term_size = tables.columns.Column()
+    bonferroni = float_column('%.2e')()
+    all_hits = tables.columns.Column()
+    all_background = tables.columns.Column()
+    fold_enrichment = float_column('%.3f')()
+
+    class Meta:
+        template = 'includes/table.html'
+
+
+@method_decorator(never_cache, name='dispatch')
+class EnrichmentResultView(SingleTableMixin, TemplateView):
     template_name = 'base/enrichment.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super(EnrichmentResultView, self).get_context_data(**kwargs)
-        
+    table_class = EnrichmentResultTable
+
+    def get_table_data(self):
         data = self.request.session['enrichment']
         annotation = Annotation.objects.get(pk=data['annotation']).get_annotations()
         query = set(data['genes'])
         background = set(data['background'])
-        
+
         M = len(background)
         N = len(query)
-        
+
         vals = []
         for term, term_genes in annotation.items():
             category = background.intersection(term_genes)
             n = len(category)
             hits = query.intersection(category)
             x = len(hits)
-            
-            vals.append(term + (hypergeom.sf(x-1, M, n, N), x, n))
-        
-        df = p.DataFrame(vals, columns=['GO Name', 'GO ID', 'GO source', 'pval', '# hits in category', 'category size'])
+
+            vals.append(term + (hypergeom.sf(x - 1, M, n, N), x, n, N, M))
+
+        df = p.DataFrame(vals, columns=['go_id', 'go_name', 'pval', 'hits_in_term', 'term_size', 'all_hits', 'all_background'])
         df = df.sort_values('pval')
-        print(df)
-        
-        return context
+        df.loc[:, 'bonferroni'] = df.pval * df.shape[0]
+        df.loc[:, 'fold_enrichment'] = (df.hits_in_term / df.all_hits) / (df.term_size / df.all_background)
+
+        return df.to_dict('records')

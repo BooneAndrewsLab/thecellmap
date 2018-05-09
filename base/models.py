@@ -101,7 +101,7 @@ class Annotation(models.Model):
     def get_annotations(self):
         annotations = {}
         for term in self.term_set.prefetch_related('genes'):
-            annotations[(term.name, term.alias, term.source)] = [g.orf for g in term.genes.all()]
+            annotations[(term.alias, term.name)] = [g.orf for g in term.genes.all()]
         return annotations
     
     def __str__(self):

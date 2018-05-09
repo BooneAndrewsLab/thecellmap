@@ -52,6 +52,7 @@ static/*
 .settings/
 .project
 .pydevproject
+.idea
 
 # Files
 thecellmap/settings/local.py

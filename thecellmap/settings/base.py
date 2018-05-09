@@ -44,6 +44,8 @@ INSTALLED_APPS = (
 #     'django.contrib.syndication',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'django_tables2',
+    'bootstrap_pagination',
     
     # Third-party apps, patches, fixes
 #     'djcelery',
