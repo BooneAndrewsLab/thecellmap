@@ -28,16 +28,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-from django_tables2 import tables, SingleTableView, SingleTableMixin, columns
+from django_tables2 import tables, SingleTableMixin, columns
 from scipy.stats import hypergeom
 from sga.safe import Safe
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse, \
-    safe_excel_sheetname
+    safe_excel_sheetname, float_column, CharListArea
 import pandas as p
-from crispy_forms.layout import Column
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -674,29 +673,9 @@ def safe(request, dataset_id=None):
 
 
 class EnrichmentForm(forms.Form):
-    genes = forms.CharField(widget=forms.Textarea)
-    background = forms.CharField(widget=forms.Textarea)
+    genes = CharListArea()
+    background = CharListArea()
     annotation = forms.ModelChoiceField(Annotation.objects)
-    
-    def clean_genes(self):
-        return [g for g in self.cleaned_data['genes'].split() if g]
-
-    def clean_background(self):
-        return [g for g in self.cleaned_data['background'].split() if g]
-
-
-def float_column(float_format='%.3f', verbose_name=None):
-    class InnerFloatColumn(columns.Column):
-        def __init__(self, *args, **kwargs):
-            super(InnerFloatColumn, self).__init__(*args, **kwargs)
-
-            if verbose_name:
-                self.verbose_name = verbose_name
-
-        def render(self, value):
-            return float_format % value
-
-    return InnerFloatColumn
 
 
 class EnrichmentView(FormView):
@@ -707,20 +686,20 @@ class EnrichmentView(FormView):
     def form_valid(self, form):
         data = form.cleaned_data
         data['annotation'] = data['annotation'].pk
+        self.request.session['enrichment'] = data
         
-        self.request.session['enrichment'] = form.cleaned_data
         return super(EnrichmentView, self).form_valid(form)
 
 
 class EnrichmentResultTable(tables.Table):
-    go_id = tables.columns.Column()
-    go_name = tables.columns.Column()
+    go_id = columns.Column()
+    go_name = columns.Column()
     pval = float_column('%.2e')()
-    hits_in_term = tables.columns.Column()
-    term_size = tables.columns.Column()
+    hits_in_term = columns.Column()
+    term_size = columns.Column()
     bonferroni = float_column('%.2e')()
-    all_hits = tables.columns.Column()
-    all_background = tables.columns.Column()
+    all_hits = columns.Column()
+    all_background = columns.Column()
     fold_enrichment = float_column('%.3f')()
 
     class Meta:
@@ -731,6 +710,15 @@ class EnrichmentResultTable(tables.Table):
 class EnrichmentResultView(SingleTableMixin, TemplateView):
     template_name = 'base/enrichment.html'
     table_class = EnrichmentResultTable
+
+    def get(self, request, *args, **kwargs):
+        if 'download_' in request.GET:
+            return self.download(**kwargs)
+
+        return super(EnrichmentResultView, self).get(request, *args, **kwargs)
+
+    def download(self, **kwargs):
+        context = self.get_context_data(**kwargs)
 
     def get_table_data(self):
         data = self.request.session['enrichment']

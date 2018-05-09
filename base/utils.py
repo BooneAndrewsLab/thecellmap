@@ -29,6 +29,8 @@ import xlwt
 from base.models import Gene
 import numpy as np
 from thecellmap import settings
+from django.forms.fields import CharField
+from django import forms
 
 NoneType = type(None)
 
@@ -662,3 +664,25 @@ def add_headers(**params):
 
 def safe_excel_sheetname(n):
     return re.sub('[\[\]:*?/\\\\]', ' ', n)
+
+def float_column(float_format='%.3f', verbose_name=None):
+    from django_tables2 import columns
+    class InnerFloatColumn(columns.Column):
+        def __init__(self, *args, **kwargs):
+            super(InnerFloatColumn, self).__init__(*args, **kwargs)
+
+            if verbose_name:
+                self.verbose_name = verbose_name
+
+        def render(self, value):
+            return float_format % value
+
+    return InnerFloatColumn
+
+
+class CharListArea(CharField):
+    widget=forms.Textarea
+    
+    def clean(self, value):
+        value = super(CharListArea, self).clean(value)
+        return [g for g in value.split() if g]
