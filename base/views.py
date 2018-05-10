@@ -26,7 +26,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, ContextMixin
 from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
 from scipy.stats import hypergeom
@@ -683,11 +683,40 @@ class EnrichmentView(FormView):
     form_class = EnrichmentForm
     success_url = reverse_lazy('enrichment_result')
 
+    def get_context_data(self, **kwargs):
+        ctx = super(EnrichmentView, self).get_context_data(**kwargs)
+        ctx['title'] = 'Functional enrichment'
+        return ctx
+
     def form_valid(self, form):
         data = form.cleaned_data
-        data['annotation'] = data['annotation'].pk
-        self.request.session['enrichment'] = data
-        
+
+        annot = data['annotation'].get_annotations()
+        query = set(data['genes'])
+        background = set(data['background'])
+
+        m = len(background)
+        nn = len(query)
+
+        vals = []
+        for term, term_genes in annot.items():
+            category = background.intersection(term_genes)
+            n = len(category)
+            hits = query.intersection(category)
+            x = len(hits)
+
+            vals.append(term + (hypergeom.sf(x - 1, m, n, nn), x, n, nn, m))
+
+        df = p.DataFrame(vals, columns=['go_id', 'go_name', 'pval', 'hits_in_term', 'term_size', 'all_hits',
+                                        'all_background'])
+        df = df.sort_values('pval')
+        df.loc[:, 'bonferroni'] = df.pval * df.shape[0]
+        df.loc[:, 'fold_enrichment'] = (df.hits_in_term / df.all_hits) / (df.term_size / df.all_background)
+
+        df = df.loc[df.hits_in_term > 0]
+
+        self.request.session['enrichment'] = df.to_dict('records')
+
         return super(EnrichmentView, self).form_valid(form)
 
 
@@ -710,6 +739,7 @@ class EnrichmentResultTable(tables.Table):
 class EnrichmentResultView(SingleTableMixin, TemplateView):
     template_name = 'base/enrichment.html'
     table_class = EnrichmentResultTable
+    table_pagination = False
 
     def get(self, request, *args, **kwargs):
         if 'download_' in request.GET:
@@ -720,27 +750,7 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
     def download(self, **kwargs):
         context = self.get_context_data(**kwargs)
 
+        print(context['table'])
+
     def get_table_data(self):
-        data = self.request.session['enrichment']
-        annotation = Annotation.objects.get(pk=data['annotation']).get_annotations()
-        query = set(data['genes'])
-        background = set(data['background'])
-
-        M = len(background)
-        N = len(query)
-
-        vals = []
-        for term, term_genes in annotation.items():
-            category = background.intersection(term_genes)
-            n = len(category)
-            hits = query.intersection(category)
-            x = len(hits)
-
-            vals.append(term + (hypergeom.sf(x - 1, M, n, N), x, n, N, M))
-
-        df = p.DataFrame(vals, columns=['go_id', 'go_name', 'pval', 'hits_in_term', 'term_size', 'all_hits', 'all_background'])
-        df = df.sort_values('pval')
-        df.loc[:, 'bonferroni'] = df.pval * df.shape[0]
-        df.loc[:, 'fold_enrichment'] = (df.hits_in_term / df.all_hits) / (df.term_size / df.all_background)
-
-        return df.to_dict('records')
+        return self.request.session['enrichment']

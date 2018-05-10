@@ -686,3 +686,12 @@ class CharListArea(CharField):
     def clean(self, value):
         value = super(CharListArea, self).clean(value)
         return [g for g in value.split() if g]
+
+
+class ContextMixin:
+    context = {}
+
+    def get_context_data(self, **kwargs):
+        ctx = super(ContextMixin, self).get_context_data(**kwargs)
+        ctx.update(self.context)
+        return ctx
