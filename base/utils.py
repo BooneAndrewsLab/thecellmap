@@ -3,34 +3,35 @@ Created on Dec 13, 2013
 
 @author: matej
 '''
-from io import StringIO
+import cProfile
 import csv
 import datetime
 import fileinput
-import cProfile
 import json
 import os
 import re
 import tempfile
 import time
+from io import StringIO, BytesIO
 
+import numpy as np
+import openpyxl
+import pandas as p
+import xlrd
+import xlwt
+from django import forms
 from django.core.files.temp import NamedTemporaryFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.forms.fields import CharField
 from django.http.response import HttpResponse, HttpResponseBadRequest
 from django.utils.decorators import available_attrs
 from django.utils.six import wraps
-import openpyxl
-import xlrd
 from xlrd.biffh import XLRDError
 from xlwt import Style
-import xlwt
 
 from base.models import Gene
-import numpy as np
 from thecellmap import settings
-from django.forms.fields import CharField
-from django import forms
 
 NoneType = type(None)
 
@@ -681,17 +682,39 @@ def float_column(float_format='%.3f', verbose_name=None):
 
 
 class CharListArea(CharField):
-    widget=forms.Textarea
+    widget = forms.Textarea
     
     def clean(self, value):
         value = super(CharListArea, self).clean(value)
         return [g for g in value.split() if g]
 
 
-class ContextMixin:
-    context = {}
+# noinspection PyUnresolvedReferences
+class TableDataFrameMixin:
+    def get_data_frame(self, verbose_columns=True):
+        df = p.DataFrame(list(self.data))
+        df = df.reindex(columns=[c.name for c in self.columns])
+        if verbose_columns:
+            df.columns = [c.header for c in self.columns]
 
-    def get_context_data(self, **kwargs):
-        ctx = super(ContextMixin, self).get_context_data(**kwargs)
-        ctx.update(self.context)
-        return ctx
+        return df
+
+    def to_excel_response(self, filename, **kwargs):
+        if not filename.endswith('xlsx'):
+            filename += '.xlsx'
+
+        df = self.get_data_frame(**kwargs)
+
+        sio = BytesIO()
+        # noinspection PyTypeChecker
+        writer = p.ExcelWriter(sio, engine='xlsxwriter')
+        df.to_excel(writer, index=False)
+        writer.save()
+
+        sio.seek(0)
+
+        response = HttpResponse(sio.getvalue(),
+                                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+        return response

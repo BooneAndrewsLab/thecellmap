@@ -4,16 +4,24 @@
 {% load django_tables2 %}
 
 {% block js %}
-{{ block.super }}
-{% require_module 'base' %}
+	{{ block.super }}
+	{% require_module 'base' %}
 {% endblock js %}
 
 {% block page_title_suffix %}{% if suffix %} - {{ suffix }}{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        {% render_table table %}
-    </div>
-</div>
+	<div class="container">
+		<h3>Functional enrichment result</h3>
+		<div class="row">
+			<div class="col-md-2">
+				<form method="get">
+					<button type="submit" class="btn btn-primary btn-lg btn-block" name="download_">Download</button>
+				</form>
+			</div>
+			<div class="col-md-10">
+				{% render_table table %}
+			</div>
+		</div>
+	</div>
 {% endblock %}

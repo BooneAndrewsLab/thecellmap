@@ -29,13 +29,14 @@ from django.views.decorators.http import require_POST, require_GET
 from django.views.generic.base import TemplateView, ContextMixin
 from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
+from io import BytesIO
 from scipy.stats import hypergeom
 from sga.safe import Safe
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse, \
-    safe_excel_sheetname, float_column, CharListArea
+    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin
 import pandas as p
 
 
@@ -695,8 +696,8 @@ class EnrichmentView(FormView):
         query = set(data['genes'])
         background = set(data['background'])
 
-        m = len(background)
-        nn = len(query)
+        m = len(background)  # M
+        nn = len(query)  # N
 
         vals = []
         for term, term_genes in annot.items():
@@ -705,12 +706,17 @@ class EnrichmentView(FormView):
             hits = query.intersection(category)
             x = len(hits)
 
+            if 0 in (n, x):
+                # either no genes in this term or no hits in this term
+                continue
+
             vals.append(term + (hypergeom.sf(x - 1, m, n, nn), x, n, nn, m))
 
         df = p.DataFrame(vals, columns=['go_id', 'go_name', 'pval', 'hits_in_term', 'term_size', 'all_hits',
                                         'all_background'])
         df = df.sort_values('pval')
         df.loc[:, 'bonferroni'] = df.pval * df.shape[0]
+        df.loc[:, 'bonferroni'] = df.loc[:, 'bonferroni'].clip(upper=1)
         df.loc[:, 'fold_enrichment'] = (df.hits_in_term / df.all_hits) / (df.term_size / df.all_background)
 
         df = df.loc[df.hits_in_term > 0]
@@ -720,13 +726,13 @@ class EnrichmentView(FormView):
         return super(EnrichmentView, self).form_valid(form)
 
 
-class EnrichmentResultTable(tables.Table):
-    go_id = columns.Column()
-    go_name = columns.Column()
-    pval = float_column('%.2e')()
+class EnrichmentResultTable(TableDataFrameMixin, tables.Table):
+    go_id = columns.Column(verbose_name='GO ID')
+    go_name = columns.Column(verbose_name='Ontology')
+    bonferroni = float_column('%.2e')(verbose_name='P-value (Bonferroni)')
+    pval = float_column('%.2e')(verbose_name='P-value')
     hits_in_term = columns.Column()
     term_size = columns.Column()
-    bonferroni = float_column('%.2e')()
     all_hits = columns.Column()
     all_background = columns.Column()
     fold_enrichment = float_column('%.3f')()
@@ -743,14 +749,9 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if 'download_' in request.GET:
-            return self.download(**kwargs)
+            return self.get_table().to_excel_response('tcm_enrichment_result')
 
         return super(EnrichmentResultView, self).get(request, *args, **kwargs)
-
-    def download(self, **kwargs):
-        context = self.get_context_data(**kwargs)
-
-        print(context['table'])
 
     def get_table_data(self):
         return self.request.session['enrichment']
