@@ -8,6 +8,8 @@ import os
 import pickle
 from urllib.parse import urlencode
 import urllib.request
+import numpy as np
+import pandas as p
 
 from bs4 import BeautifulSoup
 from django import forms
@@ -30,6 +32,8 @@ from django.views.generic.base import TemplateView, ContextMixin
 from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
 from io import BytesIO
+
+from scipy import stats
 from scipy.stats import hypergeom
 from sga.safe import Safe
 
@@ -37,7 +41,7 @@ from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scor
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse, \
     safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin
-import pandas as p
+
 
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -590,26 +594,28 @@ def safe(request, dataset_id=None):
         res_data = p.ExcelWriter(output, engine='xlsxwriter')
         
         gene_lists = []
-        
+
+        Fj = safe.attributes.sum().to_dict() # Number of nodes in the network given any attribute
+        M1 = all_annotated
+
         for col in enrichments:
             attr_nodes = safe.attributes[col]
             attr_nodes = set(attr_nodes[attr_nodes.astype(bool)].index)
-            enr_nodes = set((enrichments[col][enrichments[col] > 0]).index)
-            
+            enr_nodes = set((enrichments[col][enrichments[col] > -np.log10(0.05/len(Fj))/16.0]).index)
+            n1 = len(enr_nodes.intersection(attr_nodes))
             data2 = []
-            
+
             for term, term_nodes in terms.items():
                 k1 = len(enr_nodes.intersection(term_nodes).intersection(attr_nodes))
-                M1 = all_annotated
-                n1 = len(enr_nodes.intersection(attr_nodes))
                 N1 = len(term_nodes.intersection(attr_nodes))
-                
+
                 if k1:
                     fold1 = (k1 * all_annotated) / float(n1 * len(term_nodes)) # N1
                     
                     gene_lists.append(((col, term, enr_nodes.intersection(term_nodes).intersection(attr_nodes))))
-#                     ','.join([node_map[n]['label'] for n in enr_nodes.intersection(term_nodes).intersection(attr_nodes)])
-                    
+                    # ','.join([node_map[n]['label'] for n in enr_nodes.intersection(term_nodes)
+                    # .intersection(attr_nodes)])
+
                     data2.append((
                             term.alias, 
                             hypergeom.pmf(k1, M1, n1, N1), 
@@ -618,7 +624,7 @@ def safe(request, dataset_id=None):
                             '%d / %d, %.1f%%' % (k1, n1, k1 * 100. / n1),
                             '%d / %d, %.1f%%' % (len(term_nodes), all_annotated, len(term_nodes) * 100. / all_annotated),
                         ))
-                
+
             colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency', 'Background frequency']
             
             p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col[:31])
