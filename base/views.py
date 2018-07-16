@@ -46,6 +46,7 @@ from base.utils import print_queries, is_integer, JsonResponse, \
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
 
+@print_queries
 def _serve_dataset(request, dataset=None, override_auth=False):
     dataset = Dataset.pk_or_default(dataset, request.user)
     
@@ -53,8 +54,8 @@ def _serve_dataset(request, dataset=None, override_auth=False):
         context = {
                 'layout': request.GET.get('l', 'layout.json'),
                 'dataset': dataset,
-                'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
-                'regionGroups': RegionGroup.objects.filter(dataset=dataset),
+                'annotations': Annotation.objects.filter(enabled=True).order_by('name').values_list('id','name'),
+                'regionGroups': RegionGroup.objects.filter(dataset=dataset).values_list('id','name'),
                 'can_bulk_download': os.path.isfile(dataset.static_path('dataset.txt')),
                 'ui': request.COOKIES.get('selectedUi') or 'simple',
         }

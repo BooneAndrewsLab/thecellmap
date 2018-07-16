@@ -158,7 +158,7 @@ class Dataset(models.Model):
     def pk_or_default(pk=None, user=None):
         if pk:
             try:
-                return Dataset.objects.get(pk=pk)
+                return Dataset.objects.select_related('default_annotation').get(pk=pk)
             except Dataset.DoesNotExist:
                 raise Http404
         
@@ -166,7 +166,7 @@ class Dataset(models.Model):
     
     @staticmethod
     def _get_default(user=None):
-        datasets = list(Dataset.objects.order_by('-pk'))
+        datasets = list(Dataset.objects.select_related('default_annotation').order_by('-pk'))
         if user.is_authenticated:
             ds = list(filter(lambda x: x.is_default and not x.is_published, datasets))
             if ds: return ds[0]
