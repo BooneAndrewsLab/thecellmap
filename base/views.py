@@ -490,6 +490,7 @@ def publication_citations(request, title):
 
 
 @require_POST
+@csrf_exempt
 def safe(request, dataset_id=None):
     dataset = Dataset.pk_or_default(dataset_id, request.user)
     result = {}
