@@ -775,11 +775,17 @@ class EnrichmentResultTable(TableDataFrameMixin, tables.Table):
         template = 'includes/table.html'
 
 
-@method_decorator(never_cache, name='dispatch')
 class EnrichmentResultView(SingleTableMixin, TemplateView):
     template_name = 'base/enrichment.html'
     table_class = EnrichmentResultTable
     table_pagination = False
+
+    @never_cache
+    def dispatch(self, request, *args, **kwargs):
+        if 'enrichment' not in self.request.session:
+            return HttpResponseBadRequest("Bad request, no enrichment results to show")
+
+        return super(EnrichmentResultView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         if 'download_' in request.GET:
