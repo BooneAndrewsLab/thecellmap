@@ -37,7 +37,7 @@ from sga.safe import Safe
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, JsonResponse, \
-    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin
+    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
 
@@ -48,12 +48,12 @@ def _serve_dataset(request, ds=None, override_auth=False):
 
     if override_auth or request.user.is_authenticated or ds.is_published:
         context = {
-                'layout': request.GET.get('l', 'layout.json'),
-                'dataset': ds,
-                'annotations': Annotation.objects.filter(enabled=True).order_by('name').values_list('id', 'name'),
-                'regionGroups': RegionGroup.objects.filter(dataset=ds).values_list('id', 'name'),
-                'can_bulk_download': os.path.isfile(ds.static_path('dataset.txt')),
-                'ui': request.COOKIES.get('selectedUi') or 'simple',
+            'layout': request.GET.get('l', 'layout.json'),
+            'dataset': ds,
+            'annotations': Annotation.objects.filter(enabled=True).order_by('name').values_list('id', 'name'),
+            'regionGroups': RegionGroup.objects.filter(dataset=ds).values_list('id', 'name'),
+            'can_bulk_download': os.path.isfile(ds.static_path('dataset.txt')),
+            'ui': request.COOKIES.get('selectedUi') or 'simple',
         }
 
         if request.POST:
@@ -87,9 +87,9 @@ def password_change(request):
             request.user.save(update_fields=['last_login'])
             return HttpResponseRedirect(request.GET.get('next', '/'))
     return render(request, 'base/generic_form.html', {
-                'form': form,
-                'suffix': 'Change password'
-        })
+        'form': form,
+        'suffix': 'Change password'
+    })
 
 
 def login(request, nxt='/'):
@@ -106,9 +106,9 @@ def login(request, nxt='/'):
 
             return HttpResponseRedirect(request.GET.get('next', nxt))
     return render(request, 'base/generic_form.html', {
-                'form': form,
-                'suffix': 'Login'
-        })
+        'form': form,
+        'suffix': 'Login'
+    })
 
 
 @never_cache
@@ -152,34 +152,34 @@ def custom_dataset(request, custom_hash):
     if custom.dataset:
         if request.user.is_authenticated or custom.dataset.is_published:
             return render(request, 'base/network.html', {
-                    'dataset': custom.dataset,
-                    'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
-                    'can_bulk_download': False,
-                    'extra': {
-                        'id': custom_hash,
-                        'static_url': custom.static_url(),
-                        'name': custom_hash,
-                        'type': custom.type,
-                        'directed': custom.network_type == Custom.NET_DIRECTED,
-                    },
-                    'regionGroups': RegionGroup.objects.filter(dataset=custom.dataset),
-                    'ui': request.COOKIES.get('selectedUi') or 'simple',
-              })
-        else:
-            return HttpResponseForbidden("Permission Required")
-    else:
-        return render(request, 'base/network.html', {
-                'dataset': {
+                'dataset': custom.dataset,
+                'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
+                'can_bulk_download': False,
+                'extra': {
                     'id': custom_hash,
                     'static_url': custom.static_url(),
                     'name': custom_hash,
                     'type': custom.type,
                     'directed': custom.network_type == Custom.NET_DIRECTED,
                 },
-                'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
-                'can_bulk_download': False,
+                'regionGroups': RegionGroup.objects.filter(dataset=custom.dataset),
                 'ui': request.COOKIES.get('selectedUi') or 'simple',
-          })
+            })
+        else:
+            return HttpResponseForbidden("Permission Required")
+    else:
+        return render(request, 'base/network.html', {
+            'dataset': {
+                'id': custom_hash,
+                'static_url': custom.static_url(),
+                'name': custom_hash,
+                'type': custom.type,
+                'directed': custom.network_type == Custom.NET_DIRECTED,
+            },
+            'annotations': Annotation.objects.filter(enabled=True).order_by('name'),
+            'can_bulk_download': False,
+            'ui': request.COOKIES.get('selectedUi') or 'simple',
+        })
 
 
 @require_POST
@@ -196,7 +196,7 @@ def interactions(request, dataset_id=None):
             's': int(s),
             't': int(t),
             'w': float(w)
-         })
+        })
 
     return JsonResponse({'dataset': 'Interactions', 'edges': response})
 
@@ -224,7 +224,7 @@ def correlations(request, dataset_id=None):
             's': int(s),
             't': int(t),
             'w': float(w)
-         })
+        })
     return JsonResponse({'dataset': 'Correlations', 'edges': response, 'node': new_nodes.tolist()})
 
 
@@ -245,14 +245,14 @@ def nodes_download(request, dataset_id=None):
         if n['id'] in nodes_idx:
             labels.append(n['label'])
 
-    filename = 'tcm-%s-%s.xls' % ('_'.join(labels)[:(255-18)], datetime.datetime.now().strftime('%y%m%d'))
+    filename = 'tcm-%s-%s.xls' % ('_'.join(labels)[:(255 - 18)], datetime.datetime.now().strftime('%y%m%d'))
     response = nodes_xls(
-                 ds,
-                 nodes,
-                 filename
-        ).as_response()
+        ds,
+        nodes,
+        filename
+    ).as_response()
     if len(labels) == 1:
-        response.set_cookie('_'.join(labels)[:(255-18)], "true")
+        response.set_cookie('_'.join(labels)[:(255 - 18)], "true")
     else:
         response.set_cookie('fileDownload', "true")
     return response
@@ -268,17 +268,17 @@ def tabular(request, dataset_id=None):
             'dataset': ds,
             'strains': strains,
             'nodes_url': ds.static_url('nodes.json'),
-            })
+        })
     else:
-        return login(request, "?"+request.META['QUERY_STRING'])
+        return login(request, "?" + request.META['QUERY_STRING'])
 
 
 def three_demension(request, dataset_id):
     ds = Dataset.pk_or_default(dataset_id, request.user)
     if request.user.is_authenticated or ds.is_published:
         return render(request, 'base/3D.html', {
-                'dataset': ds,
-                'annotations': [Annotation.objects.get(name='SAFE analysis')],
+            'dataset': ds,
+            'annotations': [Annotation.objects.get(name='SAFE analysis')],
         })
 
     return HttpResponseForbidden()
@@ -287,8 +287,8 @@ def three_demension(request, dataset_id):
 @xframe_options_exempt
 def ccbr_collaboration(request):
     return render(request, 'base/collaboration.html', {
-                'root': settings.STATIC_URL,
-                'nohead': 'nohead' in request.GET
+        'root': settings.STATIC_URL,
+        'nohead': 'nohead' in request.GET
     })
 
 
@@ -326,10 +326,10 @@ def tabular_data(request, dataset_id=None, node_id=None):
     s = s[s.score.abs() > 0.08]
 
     for strain, correlation in c.itertuples(index=False):
-        response['correlations'].append(strain + ('%.3f' % correlation, ))
+        response['correlations'].append(strain + ('%.3f' % correlation,))
 
     for strain, pval, score in s[s.score < 0].sort_values('score').itertuples(index=False):
-        response['scores_neg'].append(strain + ('%.3f' % score, '%.2e' % pval, ))
+        response['scores_neg'].append(strain + ('%.3f' % score, '%.2e' % pval,))
 
     for strain, pval, score in s[s.score > 0].sort_values('score', ascending=False).itertuples(index=False):
         response['scores_pos'].append(strain + ('%.3f' % score, '%.2e' % pval))
@@ -350,7 +350,7 @@ def _tabular_more_scores(request, scores):
 
     response = []
     for strain, pval, score in scores.itertuples(index=False):
-        response.append(strain + ('%.3f' % score, '%.2e' % pval, ))
+        response.append(strain + ('%.3f' % score, '%.2e' % pval,))
 
     return JsonResponse(response)
 
@@ -365,7 +365,7 @@ def _tabular_more_correlations(request, corr):
 
     response = []
     for strain, correlation in corr.itertuples(index=False):
-        response.append(strain + ('%.3f' % correlation, ))
+        response.append(strain + ('%.3f' % correlation,))
 
     return JsonResponse(response)
 
@@ -441,14 +441,14 @@ def region_group(request, dataset_id, region_group_id):
 
     for strain, degree, region, alias, color, anchor, align in Region.vertices.through.objects.filter(
             region__region_group=region_group_id
-                ).values_list(
-                    'strain',
-                    'degree',
-                    'region',
-                    'region__alias',
-                    'region__color',
-                    'region__label_anchor',
-                    'region__label_align'):
+    ).values_list(
+        'strain',
+        'degree',
+        'region',
+        'region__alias',
+        'region__color',
+        'region__label_anchor',
+        'region__label_align'):
         response.setdefault(region, {})
         response[region][degree] = nodes_inv_inv[strain]
         response[region]['color'] = color
@@ -537,12 +537,12 @@ def safe(request, dataset_id=None):
 
         i = 1
         while True:
-            hit_list = request.POST.get('hit_list-%d' % (i, ))
+            hit_list = request.POST.get('hit_list-%d' % (i,))
 
             if not hit_list: break
 
             hit_list = hit_list.strip().lower().split()
-            hit_list_name = request.POST.get('name-%d' % (i, ))
+            hit_list_name = request.POST.get('name-%d' % (i,))
 
             nodes_list[hit_list_name] = hit_list
             i += 1
@@ -580,7 +580,7 @@ def safe(request, dataset_id=None):
         enrichments = safe.calculate()
 
     if 'dl' in request.POST:
-        with open(dataset.static_path('nodes_inv.pickle'),'rb') as fp:
+        with open(dataset.static_path('nodes_inv.pickle'), 'rb') as fp:
             nodes_inv = pickle.load(fp)
 
         annotation = Annotation.objects.get(pk=request.POST.get('annotation', dataset.default_annotation_id))
@@ -623,13 +623,13 @@ def safe(request, dataset_id=None):
 
         gene_lists = []
 
-        Fj = safe.attributes.sum().to_dict() # Number of nodes in the network given any attribute
+        Fj = safe.attributes.sum().to_dict()  # Number of nodes in the network given any attribute
         M1 = all_annotated
 
         for col in enrichments:
             attr_nodes = safe.attributes[col]
             attr_nodes = set(attr_nodes[attr_nodes.astype(bool)].index)
-            enr_nodes = set((enrichments[col][enrichments[col] > -np.log10(0.05/len(Fj))/16.0]).index)
+            enr_nodes = set((enrichments[col][enrichments[col] > -np.log10(0.05 / len(Fj)) / 16.0]).index)
             n1 = len(enr_nodes.intersection(attr_nodes))
             data2 = []
 
@@ -638,33 +638,37 @@ def safe(request, dataset_id=None):
                 N1 = len(term_nodes.intersection(attr_nodes))
 
                 if k1:
-                    fold1 = (k1 * all_annotated) / float(n1 * len(term_nodes)) # N1
+                    fold1 = (k1 * all_annotated) / float(n1 * len(term_nodes))  # N1
 
                     gene_lists.append(((col, term, enr_nodes.intersection(term_nodes).intersection(attr_nodes))))
                     # ','.join([node_map[n]['label'] for n in enr_nodes.intersection(term_nodes)
                     # .intersection(attr_nodes)])
 
                     data2.append((
-                            term.alias,
-                            hypergeom.pmf(k1, M1, n1, N1),
-                            fold1,
-                            '%d / %d, %.1f%%' % (n1, len(attr_nodes), n1 * 100. / len(attr_nodes)),
-                            '%d / %d, %.1f%%' % (k1, n1, k1 * 100. / n1),
-                            '%d / %d, %.1f%%' % (len(term_nodes), all_annotated, len(term_nodes) * 100. / all_annotated),
-                        ))
+                        term.alias,
+                        hypergeom.pmf(k1, M1, n1, N1),
+                        fold1,
+                        '%d / %d, %.1f%%' % (n1, len(attr_nodes), n1 * 100. / len(attr_nodes)),
+                        '%d / %d, %.1f%%' % (k1, n1, k1 * 100. / n1),
+                        '%d / %d, %.1f%%' % (len(term_nodes), all_annotated, len(term_nodes) * 100. / all_annotated),
+                    ))
 
-            colnames = ['Term', 'p-value', 'fold change', 'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency', 'Background frequency']
+            colnames = ['Term', 'p-value', 'fold change',
+                        'Fraction of input gene list annotated to a bioprocess cluster', 'Cluster frequency',
+                        'Background frequency']
 
-            p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None, sheet_name=col[:31])
+            p.DataFrame(data2, columns=colnames).sort_values('p-value').to_excel(res_data, index=None,
+                                                                                 sheet_name=col[:31])
             res_data.sheets[col[:31]].write(len(data2) + 2, 0, 'Please see spreadsheets to the right for gene lists')
 
         bold = res_data.book.add_format({'bold': True})
 
-        enrichments.loc[:,'ORF'] = [node_map[i]['orf'] for i in enrichments.index]
-        enrichments.loc[:,'Name'] = [node_map[i]['name'] for i in enrichments.index]
-        enrichments.loc[:,'Allele'] = [node_map[i]['label'] for i in enrichments.index]
-        enrichments.loc[:,'Feature Qualifier'] = [(node_map[i]['isdu'] and 'Dubious' or '') for i in enrichments.index]
-        enrichments.loc[:,'Annotations'] = [','.join([t.alias for t in node_in_terms.get(i, [])]) for i in enrichments.index]
+        enrichments.loc[:, 'ORF'] = [node_map[i]['orf'] for i in enrichments.index]
+        enrichments.loc[:, 'Name'] = [node_map[i]['name'] for i in enrichments.index]
+        enrichments.loc[:, 'Allele'] = [node_map[i]['label'] for i in enrichments.index]
+        enrichments.loc[:, 'Feature Qualifier'] = [(node_map[i]['isdu'] and 'Dubious' or '') for i in enrichments.index]
+        enrichments.loc[:, 'Annotations'] = [','.join([t.alias for t in node_in_terms.get(i, [])]) for i in
+                                             enrichments.index]
 
         enrichments = enrichments.reindex(columns=list(enrichments.columns[-5:]) + list(enrichments.columns[:-5]))
         enrichments = enrichments.sort_values(enrichments.columns[5], ascending=False)
@@ -672,14 +676,15 @@ def safe(request, dataset_id=None):
         enrichments.to_excel(res_data, index=None, sheet_name='SAFE enrichment scores')
 
         for col, term, nodes in gene_lists:
-            ct_data = [(node_map[n]['orf'], node_map[n]['name'], node_map[n]['label'].lower(), node_map[n]['isdu'] and 'Dubious' or '') for n in nodes]
+            ct_data = [(node_map[n]['orf'], node_map[n]['name'], node_map[n]['label'].lower(),
+                        node_map[n]['isdu'] and 'Dubious' or '') for n in nodes]
 
             sheetname = safe_excel_sheetname('%s; %s' % (col, term.alias))[:31]
 
             p.DataFrame(
-                    ct_data, columns=['ORF', 'Name', 'Allele', 'Feature Qualifier']
-                ).sort_values('ORF'
-                ).to_excel(res_data, index=None, sheet_name=sheetname, startrow=2)
+                ct_data, columns=['ORF', 'Name', 'Allele', 'Feature Qualifier']
+            ).sort_values('ORF'
+                          ).to_excel(res_data, index=None, sheet_name=sheetname, startrow=2)
 
             sheet = res_data.sheets[sheetname]
             sheet.write(0, 0, term.name, bold)
@@ -693,9 +698,9 @@ def safe(request, dataset_id=None):
             label = node_map[node]['label']
 
         filename = 'tcm-safe-%s-%s.xlsx' % (label, datetime.datetime.now().strftime('%y%m%d'))
-#         filename = 'tcm-safe_enrichments-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
+        #         filename = 'tcm-safe_enrichments-%s.xlsx' % (datetime.datetime.now().strftime('%y%m%d'), )
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        response['Content-Disposition'] = 'attachment; filename=%s' % (filename, )
+        response['Content-Disposition'] = 'attachment; filename=%s' % (filename,)
         response.write(output.read())
         return response
 
@@ -734,20 +739,22 @@ class EnrichmentView(FormView):
         nn = len(query)  # N
 
         vals = []
+        max_hits = 0
         for term, term_genes in annot.items():
             category = background.intersection(term_genes)
             n = len(category)
             hits = query.intersection(category)
             x = len(hits)
+            max_hits = max(max_hits, x)
 
             if 0 in (n, x):
                 # either no genes in this term or no hits in this term
                 continue
 
-            vals.append(term + (hypergeom.sf(x - 1, m, n, nn), x, n, nn, m))
+            vals.append(term + (hypergeom.sf(x - 1, m, n, nn), x, n, nn, m, ','.join(hits)))
 
         df = p.DataFrame(vals, columns=['go_id', 'go_name', 'pval', 'hits_in_term', 'term_size', 'all_hits',
-                                        'all_background'])
+                                        'all_background', 'genes'])
         df = df.sort_values('pval')
         df.loc[:, 'bonferroni'] = df.pval * df.shape[0]
         df.loc[:, 'bonferroni'] = df.loc[:, 'bonferroni'].clip(upper=1)
@@ -756,6 +763,7 @@ class EnrichmentView(FormView):
         df = df.loc[df.hits_in_term > 0]
 
         self.request.session['enrichment'] = df.to_dict('records')
+        self.request.session['max_hits'] = max_hits
 
         return super(EnrichmentView, self).form_valid(form)
 
@@ -770,6 +778,7 @@ class EnrichmentResultTable(TableDataFrameMixin, tables.Table):
     all_hits = columns.Column()
     all_background = columns.Column()
     fold_enrichment = float_column('%.3f')()
+    genes = columns.Column()
 
     class Meta:
         template = 'includes/table.html'
@@ -789,7 +798,16 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         if 'download_' in request.GET:
-            return self.get_table().to_excel_response('tcm_enrichment_result')
+            df = self.get_table().get_data_frame()
+            filename = 'tcm_enrichment_result'
+
+            genes_df = p.DataFrame(index=range(self.request.session['max_hits']), columns=df.Ontology)
+
+            for _, row in df.iterrows():
+                hits = row.Genes.split(',')
+                genes_df.loc[range(len(hits)), row.Ontology] = hits
+
+            return dataframe_to_response([('Enrichments', df), ('Genes in terms', genes_df)], filename, index=False)
 
         return super(EnrichmentResultView, self).get(request, *args, **kwargs)
 

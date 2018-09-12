@@ -681,6 +681,30 @@ def float_column(float_format='%.3f', verbose_name=None):
     return InnerFloatColumn
 
 
+def dataframe_to_response(df, filename, **kwargs):
+    if not filename.endswith('xlsx'):
+        filename += '.xlsx'
+
+    sio = BytesIO()
+    # noinspection PyTypeChecker
+    writer = p.ExcelWriter(sio, engine='xlsxwriter')
+
+    if isinstance(df, list):
+        for sheetname, sheetdata in df:
+            sheetdata.to_excel(writer, sheet_name=sheetname, **kwargs)
+    else:
+        df.to_excel(writer, **kwargs)
+    writer.save()
+
+    sio.seek(0)
+
+    response = HttpResponse(sio.getvalue(),
+                            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+    return response
+
+
 class CharListArea(CharField):
     widget = forms.Textarea
     
@@ -700,21 +724,4 @@ class TableDataFrameMixin:
         return df
 
     def to_excel_response(self, filename, **kwargs):
-        if not filename.endswith('xlsx'):
-            filename += '.xlsx'
-
-        df = self.get_data_frame(**kwargs)
-
-        sio = BytesIO()
-        # noinspection PyTypeChecker
-        writer = p.ExcelWriter(sio, engine='xlsxwriter')
-        df.to_excel(writer, index=False)
-        writer.save()
-
-        sio.seek(0)
-
-        response = HttpResponse(sio.getvalue(),
-                                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=%s' % filename
-
-        return response
+        return dataframe_to_response(self.get_data_frame(**kwargs), filename, index=False)
