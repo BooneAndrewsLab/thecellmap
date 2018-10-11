@@ -42,7 +42,7 @@ from base.utils import print_queries, is_integer, JsonResponse, \
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
 
 
-@cache_page(3600)
+# @cache_page(3600)
 def _serve_dataset(request, ds=None, override_auth=False):
     ds = Dataset.pk_or_default(ds, request.user)
 
