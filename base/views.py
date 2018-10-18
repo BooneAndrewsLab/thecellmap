@@ -183,6 +183,7 @@ def custom_dataset(request, custom_hash):
 
 
 @require_POST
+@csrf_exempt
 def interactions(request, dataset_id=None):
     nodes = request.POST.getlist('nodes[]')
     if not nodes:
@@ -202,6 +203,7 @@ def interactions(request, dataset_id=None):
 
 
 @require_POST
+@csrf_exempt
 def correlations(request, dataset_id=None):
     nodes = request.POST.getlist('nodes[]')
     if not nodes:
