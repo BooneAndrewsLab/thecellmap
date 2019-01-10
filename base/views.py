@@ -18,6 +18,7 @@ from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
 from django.db.models.aggregates import Max
+from django.http import JsonResponse
 from django.http.response import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponseBadRequest, \
     HttpResponse
 from django.shortcuts import render
@@ -32,11 +33,11 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
 from scipy.stats import hypergeom
-from sga.safe import Safe
+from safe.safe import Safe
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
-from base.utils import print_queries, is_integer, JsonResponse, \
+from base.utils import print_queries, is_integer, \
     safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response
 
 USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
@@ -708,7 +709,7 @@ def safe(request, dataset_id=None):
 
     for col in enrichments:
         result[col] = enrichments[enrichments[col] > 0].astype(float).to_dict()[col]
-        for k in result[col].keys():
+        for k in list(result[col].keys()):
             (result[col])[int(k)] = result[col].pop(k)
 
     return JsonResponse(result)

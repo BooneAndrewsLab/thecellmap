@@ -584,10 +584,6 @@ class XlsError(Exception): pass
 
 is_integer = lambda x: not not re.match('^\d+$', x)
 
-class JsonResponse(HttpResponse):
-    def __init__(self, obj):
-        super(JsonResponse, self).__init__(json.dumps(obj), content_type="application/json")
-
 try:
     PROFILE_LOG_BASE = settings.PROFILE_LOG_BASE  # @UndefinedVariable
 except:

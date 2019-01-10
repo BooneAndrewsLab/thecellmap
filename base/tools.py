@@ -6,6 +6,7 @@ from time import time
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 from django.urls import reverse
 from django.forms.fields import CharField, BooleanField
 from django.forms.forms import Form
@@ -18,7 +19,7 @@ from django.shortcuts import render
 from base.download import collect_score_matrix
 from base.filter import CustomFilter
 from base.models import Annotation, Term, Custom, Strain, Gene, Dataset
-from base.utils import gene_map, write_excel_file, JsonResponse
+from base.utils import gene_map, write_excel_file
 
 
 ### FORMS ###
@@ -175,7 +176,7 @@ def custom(request):
         if request.user.is_authenticated or data.is_published:
             datasets.append(data)
     
-    f = '';
+    f = ''
     if request.user.is_authenticated:
         f = CustomFilter(request.GET, queryset=Custom.objects.filter(user=request.user).extra(where=["CHAR_LENGTH(name) <= 32"]).order_by("name"))
     
