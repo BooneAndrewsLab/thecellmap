@@ -370,7 +370,7 @@ def _tabular_more_correlations(request, corr):
     for strain, correlation in corr.itertuples(index=False):
         response.append(strain + ('%.3f' % correlation,))
 
-    return JsonResponse(response)
+    return JsonResponse(response, safe=False)
 
 
 @print_queries
