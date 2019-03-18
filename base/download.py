@@ -192,7 +192,7 @@ def collect_score_matrix(ds, nodes, data):
 #         print '\t'.join(map(str, (w,x.gene, x.allele, x.boonelab_id,s,ss)))
     return results
 
-def _collect_data(ds, nodes, callback, defer_data=False):
+def _collect_data(ds, nodes, callback, defer_data=False, pval_thr=0.05):
     with open(ds.static_path('nodes_inv.pickle'),'rb') as fp:
         nodes_inv = cPickle.load(fp)
 
@@ -226,7 +226,7 @@ def _collect_data(ds, nodes, callback, defer_data=False):
         correlations = correlations.groupby('strainB').mean().reset_index() # .drop((s.gene.orf, s.gene.name, s.allele))
         correlations = correlations.dropna().sort_values('correlation', ascending=False)
         
-        scores = scores[scores.pval < 0.05].sort_values(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
+        scores = scores[scores.pval < pval_thr].sort_values(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
         scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0)).groupby('target').first().reset_index()
         
         callback(s, node, correlations, scores)
@@ -281,9 +281,9 @@ def nodes_xls(ds, nodes, filename):
     output.write_instructions(', '.join(instructions_content))
     return output
 
-def nodes_data(ds, nodes):
+def nodes_data(ds, nodes, pval_thr=0.05):
     data = {}
-    _collect_data(ds, nodes, lambda x, _, y, z: data.setdefault(x, {'correlations': y, 'scores': z}))
+    _collect_data(ds, nodes, lambda x, _, y, z: data.setdefault(x, {'correlations': y, 'scores': z}), pval_thr=pval_thr)
     
     return data
 

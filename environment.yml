@@ -1,0 +1,28 @@
+name: root
+channels:
+- defaults
+dependencies:
+- numpy
+- scipy
+- python=3.6
+- Django<2
+- psycopg2
+- pandas
+- openpyxl
+- xlrd
+- xlwt
+- beautifulsoup4
+- scipy
+- bcrypt
+- notebook
+- pip:
+  - django-tables2
+  - django-bootstrap-pagination
+  - django-compressor
+  - django-crispy-forms
+  - django-require
+  - django-nose
+  - django-extensions
+  - django-filter
+  - django-htmlmin
+  - sga-safe

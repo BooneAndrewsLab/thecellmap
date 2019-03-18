@@ -1,3 +1,21 @@
-# This file is here because many Platforms as a Service look for
-# requirements.txt in the root directory of a project.
--r requirements/production.txt
+python=3.6
+Django<2
+psycopg2
+pandas
+openpyxl
+xlrd
+xlwt
+beautifulsoup4
+scipy
+
+django-tables2
+django-bootstrap-pagination
+django-compressor
+django-crispy-forms
+django-require
+django-nose
+django-extensions
+django-filter
+django-htmlmin
+
+sga-safe

@@ -82,6 +82,32 @@ require([
                                          </div>');
             }
         }
+
+        //download heatmap
+        if ($(this).hasClass('heatmap') || $(this).hasClass('mmenu-heatmap')){
+            var l = Ladda.create(this);
+            if (selectionNode.length == 1){
+                $(".col-xs-12").prepend('<div class="alert alert-warning fade in">\
+                                             <button class="close pull-left" aria-hidden="true" data-dismiss="alert" type="button">x</button>\
+                                             You need at least 2 strains selected to generate a heatmap.\
+                                         </div>');
+            } else if (selectionNode.length <= 20){
+                l.start();
+                $.fileDownload('../heatmap/' + window.location.search, {
+                    successCallback: function(url) {
+                        l.stop();
+                    },
+                    failCallback: function(responseHtml, url) {
+                    },
+                    cookieName: 'heatmapDownload'
+                });
+            } else {
+                $(".col-xs-12").prepend('<div class="alert alert-warning fade in">\
+                                             <button class="close pull-left" aria-hidden="true" data-dismiss="alert" type="button">x</button>\
+                                             Too many strains to selected.  "Download All" is limited to a maximum of 20 strains.\
+                                         </div>');
+            }
+        }
         e.stopPropagation();
         e.preventDefault();
     };
@@ -601,7 +627,7 @@ require([
     });
     
     //set download all button
-    $(document).on("click", ".list-group#strain-tabs-large .btn.dlall, #mmenu #download-all .btn", downloading);
+    $(document).on("click", ".list-group#strain-tabs-large .btn.heatmap, .list-group#strain-tabs-large .btn.dlall, #mmenu #download-all .btn", downloading);
     
     //loads deafualt strain or warning message when page first loaded
     if (selectionNode.length!==0){

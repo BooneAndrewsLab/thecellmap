@@ -29,7 +29,7 @@ from django.views.decorators.cache import never_cache, cache_page
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
 from scipy.stats import hypergeom
@@ -816,3 +816,47 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
 
     def get_table_data(self):
         return self.request.session['enrichment']
+
+
+class HeatmapDownload(View):
+    def get(self, request, dataset_id=None):
+        ds = Dataset.pk_or_default(dataset_id, request.user)
+
+        nodes = list(filter(is_integer, request.GET.getlist('n')))
+
+        if not nodes:
+            return HttpResponseForbidden('Too few nodes requested')
+
+        if len(nodes) > 20:
+            return HttpResponseForbidden('Trying to download too many nodes')
+
+        nodes_idx = set(list(map(int, nodes)))
+
+        labels = []
+        for n in json.load(open(ds.static_path('nodes.json')))['nodes']:
+            if n['id'] in nodes_idx:
+                labels.append(n['label'])
+
+        filename = 'tcm-heatmap-%s-%s.xls' % ('_'.join(labels)[:(255 - 18)], datetime.datetime.now().strftime('%y%m%d'))
+
+        data = nodes_data(ds, nodes)
+        scores = []
+        names = []
+        index = set()
+        for k, v in data.items():
+            names.append(k)
+            v = v['scores'].set_index('target')
+            v = v.loc[:, 'score']
+            v.name = k.basic_id()
+            scores.append(v)
+            index.update(v.index)
+
+        pickle.dump(scores, open('/home/matej/test.pkl', 'wb'))
+
+        merged = p.concat([s.reindex(index) for s in scores], axis=1, sort=False)
+        merged[merged.abs() < .1] = np.nan
+        merged.index = [' - '.join(i) for i in merged.index]
+
+        merged.to_csv('/home/matej/pbrtest.csv')
+
+        print(merged)

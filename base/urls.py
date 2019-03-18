@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^network/(?P<dataset_id>\d+)/interactions/$', views.interactions, name='interactions'),
     url(r'^network/(?P<dataset_id>\d+)/correlations/$', views.correlations, name='correlations'),
     url(r'^network/(?P<dataset_id>\d+)/dl/$', views.nodes_download, name='nodes_download'),
+    url(r'^network/(?P<dataset_id>\d+)/heatmap/$', views.HeatmapDownload.as_view(), name='heatmap_download'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/$', views.tabular, name='tabular'),
     url(r'^network/(?P<dataset_id>\d+)/tabular/(?P<node_id>\d+)/$', views.tabular_data, name='tabular_fetch'),
     url(r'^network/(?P<dataset_id>\d+)/safe/$', views.safe, name='safe'),
@@ -53,6 +54,7 @@ urlpatterns = [
     url(r'^interactions/$', views.interactions, name='interactions_default'),
     url(r'^correlations/$', views.correlations, name='correlations_default'),
     url(r'^dl/$', views.nodes_download, name='nodes_download_default'),
+    url(r'^heatmap/$', views.HeatmapDownload.as_view(), name='nodes_heatmap_default'),
     url(r'^tabular/$', views.tabular, name='tabular_default'),
     url(r'^tabular/(?P<node_id>\d+)/$', views.tabular_data, name='tabular_fetch_default'),
     # annotation urls
