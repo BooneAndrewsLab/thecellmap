@@ -12,7 +12,6 @@ from . import base
 INSTALLED_APPS = base.INSTALLED_APPS + (
             'django_nose',
             'django_extensions',
-            
         )
 
 DATABASES = {
@@ -23,13 +22,7 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
-        #'OPTIONS': {
-        #    'init_command': 'SET storage_engine=InnoDB',
-        #    'charset' : 'utf8',
-        #    'use_unicode' : True,
-        #},
-        #'TEST_CHARSET': 'utf8',
-        #'TEST_COLLATION': 'utf8_general_ci',
+        'CONN_MAX_AGE': 600,
     },
     # 'slave': {
     #     ...
@@ -41,8 +34,6 @@ ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
 MANAGERS = ADMINS
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 CACHES = {
     'default': {
@@ -61,7 +52,7 @@ DEV = True
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['.thecellmap.org.']
+ALLOWED_HOSTS = []
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Hardcoded values can leak through source control. Consider loading
@@ -129,7 +120,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
-    
+
     'PAGINATE_BY_PARAM': 'page_size',
 }
 
@@ -139,3 +130,8 @@ COMPRESS_ENABLED=True
 
 REQUIRE_ENVIRONMENT = 'base.nodejs.NodeJSEnvironment'
 REQUIRE_DEBUG = False
+
+NOTEBOOK_ARGUMENTS = [
+    '--notebook-dir', 'notebooks',
+    '--ip', '0.0.0.0',
+]
