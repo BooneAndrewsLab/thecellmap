@@ -9,17 +9,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         is_sync = True
         name = []
-        
+
         for labUser in User.objects.using('boonelab'):
             try:
-                siteUser = User.objects.all().get(username=labUser.username)
+                User.objects.all().get(username=labUser.username)
             except User.DoesNotExist:
                 is_sync = False
                 name.append(labUser.username)
-            
-#             if labUser.password != siteUser.password:
-#                 is_sync = False
-#                 name.append(labUser.username)
-        
+
         if not is_sync:
-            mail_admins('Account sync error', 'Synchronization error between boonelab_management and thecellmap accounts. \n' + '\n'.join(name))
+            mail_admins('Account sync error',
+                        'Synchronization error between boonelab_management and thecellmap accounts. \n' + '\n'.join(
+                            name))
