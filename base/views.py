@@ -271,6 +271,7 @@ def tabular(request, dataset_id=None):
             'dataset': ds,
             'strains': strains,
             'nodes_url': ds.static_url('nodes.json'),
+            'supp_url': ds.static_url('suppressors.json')
         })
     else:
         return login(request, "?" + request.META['QUERY_STRING'])
@@ -355,7 +356,7 @@ def _tabular_more_scores(request, scores):
     for strain, pval, score in scores.itertuples(index=False):
         response.append(strain + ('%.3f' % score, '%.2e' % pval,))
 
-    return JsonResponse(response)
+    return JsonResponse(response, safe=False)
 
 
 def _tabular_more_correlations(request, corr):

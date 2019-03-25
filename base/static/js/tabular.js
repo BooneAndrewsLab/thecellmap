@@ -37,12 +37,12 @@ require([
             var l = Ladda.create(this);
             var id = $(this).parent('a').attr('title')
             $.fileDownload('../dl/?n=' + $(this).data('node'), {
-                prepareCallback: function (url) { 
+                prepareCallback: function (url) {
                     l.start();
                 },
                 successCallback: function(url) {
                     l.stop();
-                    
+
                 },
                 failCallback: function(responseHtml, url) {
                 },
@@ -111,7 +111,7 @@ require([
         e.stopPropagation();
         e.preventDefault();
     };
-    
+
     //add strain function;
     var newStrain = function(e, stateChange){
             var selected = e.val;
@@ -119,7 +119,7 @@ require([
             if (selectionNode.indexOf(strain.id) != -1) {
                 return;
             }
-            
+
             selectionNode.push(strain.id);
             var strainTitle = strain.verboseName;
             if (strain.verboseName.length > 10){
@@ -170,17 +170,17 @@ require([
                                                     <span class="glyphicon glyphicon-link"></span>\
                                                 </button>\
                                             </a>');
-            
+
             $('#strain-tabs-large').last().find('.query-link').click(function() {
                 window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf, '_blank');
             });
-            
+
             //add download ability to strain
             $('#strain-tabs-large .downloadable[data-node="' + strain.id + '"]').click(downloading);
             //add removal ability to strain
             $('.list-group#strain-tabs-large .downloadable[data-node="' + strain.id + '"]').prev('.btn-danger').click(function(e){
                 var removalID = $(this).next('.downloadable').data('node');
-                
+
                 if ($(this).parent().hasClass('active') && $(this).parent().next('.list-group-item.round').length !== 0){
                     $(this).parent().next('.list-group-item.round').click();
                 }
@@ -194,7 +194,7 @@ require([
                 }
                 $("#mmenu li#strain-tab"+removalID).remove();
                 $(this).parent().remove();
-                
+
                 changeUrl();
                 e.stopPropagation();
                 e.preventDefault();
@@ -221,19 +221,20 @@ require([
     //adds entries to the table up to the cut off value, keeps track of the cut off value for the load more button
     var add_to_table = function(tbody, data, val_idx, node_id) {
       if (data.length == 0) return;
-      
+
       var i, row, isNeighbor, gene, ele = tbody.find('.row-more');
       var ctf =  data[0][val_idx] < 0 ? -1 : 1;
       var func = data[0][val_idx] < 0 ? Math.max : Math.min;
-      
+
       data.forEach(function (line) {
+          console.log(line);
           row = '';
           isNeighbor = nodeNeighbors[node_id].indexOf(line[0]) != -1;
           gene = geneMap[line[0]];
           for (i = 0; i < line.length; i++) {
               val = line[i];
               row += '<td data-value="' + val + '">' + val;
-              
+
               if (i == line.length - 1) {
                   if (isNeighbor) {
                       row += '<span class="badge pull-right" data-title="This gene is located immediately adjacent to the selected gene">Neighbor</span>';
@@ -245,16 +246,16 @@ require([
                       row += '<span class="badge pull-right">Dubious</span>';
                   }
               }
-              
+
               row += '</td>';
           }
-          
+
           ctf = func(line[val_idx], ctf);
           if (isNeighbor) {
               row = $('<tr class="nf">' + row + '</tr>');
 //              row.find('.badge').tooltip();
               tbody.append(row);
-              
+
           } else {
               tbody.append('<tr>' + row + '</tr>');
           }
@@ -262,7 +263,7 @@ require([
       var location = tbody.parent().parent()
       location.find('.load-more').data('cutoff', ctf);
     }
-    
+
     //url changing function
     var changeUrl = function(){
         var url = '?n=' + selectionNode[0]
@@ -273,15 +274,15 @@ require([
             url = '?';
             $('.alert').removeClass('hidden');
             $('.removeable').addClass('hidden');
-            
+
             hammerSwitch = 0;
         }
         history.pushState({},'',url);
     }
-    
+
     //turn on touch responsive elements
     var hammerSwitch = 1;
-    
+
     //generate strain tables
     var load_strain = function(target) {
         //function applies to strains when they are first loaded
@@ -289,11 +290,11 @@ require([
             var node_id = parseInt(target.data('node'));
 //            var strain = selectionNode.get(node_id);
             target.addClass('data-loading');
-            
+
             //spinner for when table is loading
             var spinner = new Spinner({top: '30px',position: 'relative'}).spin()
             target.append(spinner.el)
-            
+
             $.get(node_id + '/', function(d) {
                 //generate all three tables for the strain upon loading (tables contain no entries at this point)
                 // set up table for current strain by editing the html
@@ -302,32 +303,32 @@ require([
                 $(tableSelect + '.correlations').attr('id',"c" + node_id);
                 $(tableSelect + '.negative').attr('id',"s" + node_id);
                 $(tableSelect + '.positive').attr('id',"q" + node_id);
-                
+
                 var strain = strainMap[node_id];
                 var link_prefix = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf + '" target="_blank">' + target.data('label') + '</a>: ';
-                
+
                 $(tableSelect + '.correlations .panel-title').append(link_prefix + 'Profile Similarities');
                 $(tableSelect + '.negative .panel-title').append(link_prefix + 'Negative Interactions');
                 $(tableSelect + '.positive .panel-title').append(link_prefix + 'Positive Interactions');
-                
+
                 if (!!d.neighbor_effect) {
-                    var msg = "Genetic interaction profile may have a modest neighbor effect."; 
+                    var msg = "Genetic interaction profile may have a modest neighbor effect.";
                     $(tableSelect + '.correlations .panel').removeClass('panel-default').addClass('panel-danger');
                     $(tableSelect + '.negative .panel').removeClass('panel-default').addClass('panel-danger');
                     $(tableSelect + '.positive .panel').removeClass('panel-default').addClass('panel-danger');
-                    
+
                     $(tableSelect + '.correlations .panel-heading').append('<small>' + msg + '</small>');
                     $(tableSelect + '.negative .panel-heading').append('<small>' + msg + '</small>');
                     $(tableSelect + '.positive .panel-heading').append('<small>' + msg + '</small>');
                 }
-                
+
                 if (strain.label.indexOf('-supp') != -1) {
                     $(tableSelect + '.correlations .panel-heading').append('<small>This strain also carries a secondary suppressor mutation.</small>');
                     $(tableSelect + '.correlations .panel-heading').append('<small>See <a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">van Leeuwen et al, 2016</a> for more details.</small>');
                 }
-                
+
                 nodeNeighbors[node_id] = d.neighbors;
-                
+
                 //fill tabels with entries up to cut off point
                 add_to_table($('#c' + node_id + ' tbody'), d.correlations, 2, node_id);
                 add_to_table($('#q' + node_id + ' .score-pos tbody'), d.scores_pos, 2, node_id);
@@ -366,7 +367,7 @@ require([
             });
         }
     };
-    
+
     //following two click events ensure table selector is consistent between mobile and desktop
     //in list group table selector transfer same selection to mmenuT and load the selected table
     $(".right.list-group a").click(function(){
@@ -381,19 +382,23 @@ require([
     $("#mmenuT a").click(function(){
         $(".right.list-group a[data-target='" +$(this).data('target')+ "']").click();
     });
-    
+
     //provides links on table entries
     var update_links = function() {
         $('.tab-pane.active table tbody tr td:first-child:not([colspan=3]):not([colspan=4])').click(function() {
             window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + $(this).data('value'), '_blank');
         });
     }
-    var strainMap = {}, geneMap = {};
-    
+    var strainMap = {}, geneMap = {}, suppressorMap = {};
+
     //search function select2 set up
     var initSelect2 = function() {
+        $.getJSON(opts['suppressorUrl'], function (json) {
+            suppressorMap = json;
+        });
+
         $.ajax({
-            url: opts['nodesUrl'], 
+            url: opts['nodesUrl'],
             dataType: 'json',
             async: false,
             success: function(data) {
@@ -413,7 +418,7 @@ require([
                             name: strain.name,
                             dubious: strain.isdu
                     }
-                    
+
                     autocomp.push({
                         value: strain.verboseName,
                         tokens: strain.terms,
@@ -421,13 +426,13 @@ require([
                     });
                 }
                 console.log("Strain map ready");
-                
+
                 //generates searchbox
                 var tokenizing = false;
                 $("input.gene-search-input").select2({
                     multiple: true,
                     minimumInputLength: 2,
-                    containerCssClass: 'form-control', 
+                    containerCssClass: 'form-control',
                     placeholder: 'Search for more genes...',
                     allowClear: true,
                     width: '100%!important',
@@ -437,7 +442,7 @@ require([
                         id.split(",").forEach(function(x) {
                             if (x !== "") {
                                 strain = strainMap[x];
-                                
+
                                 result.push({
                                     text: strain.verboseName,
                                     id: strain.id
@@ -453,9 +458,9 @@ require([
                         index, // position at which the separator was found
                         i, l, // looping variables
                         separator; // the matched separator
-                        
+
                         if (!opts.createSearchChoice || !opts.tokenSeparators || opts.tokenSeparators.length < 1) return undefined;
-                        
+
                         tokenizing = true;
                         while (true) {
                             index = -1;
@@ -478,10 +483,10 @@ require([
                                                 if (opts.id(token) == opts.id(selection[i])) {
                                                     dupe = true; break;
                                                 }
-                                            } 
+                                            }
                                             if (!dupe) {
                                                 selectCallback(token);
-                                                
+
                                             }
                                         }
                                     });
@@ -491,19 +496,19 @@ require([
                         tokenizing = false;
                         if (original!==input) return input;
                     },
-                    
+
                     createSearchChoice: function(term) {
-                        
+
                         var wildcard = term.indexOf('*') != -1;
                         term = term.replace('*', '').toLowerCase();
                         if (term.length > 0) {
                             var results = [], seen = {};
                             autocomp.forEach(function(node) {
-                                
+
                                 node.tokens.forEach(function(token) {
-                                    
+
                                     if (!seen.hasOwnProperty(node.id) && ((wildcard && token.toLowerCase().startsWith(term)) || token.toLowerCase() === term)) {
-                                        
+
                                         results.push({id: node.id, text: node.value });
                                         seen[node.id] = 0;
                                         return;
@@ -513,7 +518,7 @@ require([
                             if (results.length !== 0) return results;
                         }
                     },
-                    
+
                     query: function(query) {
                         if (query.term === undefined) {
                             query.callback({results: []});
@@ -522,7 +527,7 @@ require([
                         var data = {results: []}, term = query.term.replace('*', '').toLowerCase();
                         autocomp.forEach(function(node) {
                             if (query.term.length == 0){
-                                
+
                                 data.results.push({id: node.id, text: node.value });
                             } else {
                                 for (var x in node.tokens) {
@@ -546,15 +551,15 @@ require([
                         query.callback(data);
                     },
                     data: autocomp,
-                //add new strain to each list that contains strains 
-                
+                //add new strain to each list that contains strains
+
                 }).on('select2-selecting', newStrain);
                 //fade in searchbar
                 $(".tab-sfade").fadeTo('1000',1.0);
             }
         });
     }
-    
+
     //shorten strain names in tabs if needed
     $('.list-group-item.round').each(function(){
         if ($(this).text().trim().length > 10){
@@ -572,9 +577,9 @@ require([
                                                      <button class="btn btn-warning list-strains ladda-button btn-xs query-link">\
                                                          <span class="glyphicon glyphicon-link"></span>\
                                                      </button>');
-        }       
+        }
      });
-    
+
     //initalize searchbar
     initSelect2();
     //following two click event functions link the strain tabs for list group and mmenu
@@ -595,7 +600,7 @@ require([
         $('#mmenu li#strain-tab'+id).addClass('active mm-selected')
         e.preventDefault();
     });
-    
+
     //set remove strain button
     $('.list-group#strain-tabs-large .btn-danger').click(function(e){
             var removalID = $(this).next('.downloadable').data('node');
@@ -625,10 +630,10 @@ require([
             e.stopPropagation();
             e.preventDefault();
     });
-    
+
     //set download all button
     $(document).on("click", ".list-group#strain-tabs-large .btn.heatmap, .list-group#strain-tabs-large .btn.dlall, #mmenu #download-all .btn", downloading);
-    
+
     //loads deafualt strain or warning message when page first loaded
     if (selectionNode.length!==0){
         load_strain($('.container .tab-pane.active'));
@@ -640,7 +645,7 @@ require([
         hammerSwitch = 0;
     }
     $(".tab-fade").fadeTo('1000',1.0);
-    
+
     //update page based on web history
     window.onpopstate = function(){
         //if url is empty remove strains
@@ -655,7 +660,7 @@ require([
             $(tab.parent().attr('href')).remove();
             selectionNode = []
             $("#mmenu li.active").remove();
-            tab.parent().remove(); 
+            tab.parent().remove();
             $('.alert').removeClass('hidden');
             $('.removeable').addClass('hidden');
             hammerSwitch = 0;
@@ -698,7 +703,7 @@ require([
                             var id = selectionNode[i];
                             var tab = $('a.list-group-item.round[href="#tab'+id+'"] .btn-danger')
                             var removalID = tab.next('.downloadable').data('node');
-                            
+
                             if (tab.parent().hasClass('active') && tab.parent().next('.list-group-item.round').length !== 0){
                                 tab.parent().next('.list-group-item.round').click();
                             }
@@ -712,7 +717,7 @@ require([
                             }
                             $("#mmenu li#strain-tab"+removalID).remove();
                             tab.parent().remove();
-                            
+
                     }
                 }
             }
@@ -753,15 +758,15 @@ require([
         API2.close();
     });
     $(".tabs-hidden").removeClass('hidden');
-    
+
     //set download buttons
     $('#mmenu .downloadable, #strain-tabs-large .downloadable').click(downloading);
-    
+
     $('#strain-tabs-large').last().find('.query-link').click(function() {
         var strain = strainMap[$(this).parent().data('node-id')];
         window.open('http://www.yeastgenome.org/search?is_quick=true&q=' + strain.orf, '_blank');
     });
-    
+
     //Hammer swipe functionality for mobile sized screens
     //set touchable areas on page
     var hammerTarget = document.getElementById('tabPage');
@@ -770,7 +775,7 @@ require([
     var mc = new Hammer(hammerTarget);
     var mcMmenu = new Hammer(hammerMmenu);
     var mcMmenuT = new Hammer(hammerMmenuT);
-    
+
     // listen to events...
     mc.on("swipeleft swiperight", function(ev) {
         if (($(".hidden-xs").is(':hidden')) &&hammerSwitch==1){
@@ -785,21 +790,21 @@ require([
             mpanel = 0;
             API.close();
         }
-    });   
+    });
     mcMmenuT.on("swiperight", function(ev) {
         if (ev.type == 'swiperight' && hammerSwitch==1){
             mpanel = 0;
             API2.close();
         }
     });
-    
+
     window.show_table = function(data) {
         var i;
         for (i = 0; i < data.length; i++) {
             newStrain({val:data[i]}, 1);
         }
     };
-//    
+//
     $('body').tooltip({
         selector: '.badge',
         placement: 'top',

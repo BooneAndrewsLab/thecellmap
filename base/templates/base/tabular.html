@@ -166,6 +166,7 @@
         window.opts = {
             nodesUrl: '{{ nodes_url }}',
             numStrains: {{ strains|length }},
+            suppressorUrl: '{{ supp_url }}'
         }
     </script>
     {% require_module 'tabular' %}
@@ -252,7 +253,7 @@
                     <a class="list-group-item nav-header disabled"><strong>Selected Genes</strong></a>
                     <button class="removeable btn dlall btn-warning ladda-button list-group-item hidden"
                             data-style="slide-down" data-spinner-color="#222">
-                    
+
                     <span class='ladda-label'>
                         <span class="dlAllIconL glyphicon glyphicon-download-alt"></span>
                         Download All
