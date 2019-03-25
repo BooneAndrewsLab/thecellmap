@@ -4,6 +4,7 @@ These settings overrides what's in settings/base.py
 """
 
 from . import base
+import os
 
 
 # To extend any settings from settings/base.py here's an example.
@@ -135,3 +136,5 @@ NOTEBOOK_ARGUMENTS = [
     '--notebook-dir', 'notebooks',
     '--ip', '0.0.0.0',
 ]
+
+DATASET_PATH = os.path.join(base.PROJECT_ROOT, 'base/static/visualization')

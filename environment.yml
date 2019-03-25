@@ -26,3 +26,4 @@ dependencies:
   - django-filter
   - django-htmlmin
   - sga-safe
+  - intermine
