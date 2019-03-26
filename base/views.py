@@ -305,10 +305,13 @@ def tabular_data(request, dataset_id=None, node_id=None):
     with open(ds.static_path('nodes_inv.pickle'), 'rb') as fp:
         nodes_inv = pickle.load(fp)
 
+    with open(ds.static_path('suppressors.json'), 'r') as fp:
+        suppressors = {int(k): v for k, v in json.load(fp).items()}
+
     gene = Gene.objects.distinct().get(strain__in=nodes_inv[int(node_id)])
     neighbors = gene.closest_neighbors(ds)
 
-    data = nodes_data(ds, [node_id])
+    data = nodes_data(ds, [node_id], include_strain_id=True)
     response = {
         'correlations': [],
         'scores_pos': [],
@@ -330,13 +333,25 @@ def tabular_data(request, dataset_id=None, node_id=None):
     s = s[s.score.abs() > 0.08]
 
     for strain, correlation in c.itertuples(index=False):
-        response['correlations'].append(strain + ('%.3f' % correlation,))
+        if strain[0] in suppressors:
+            supps = suppressors[strain[0]]
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+
+        response['correlations'].append(strain[1:] + ('%.3f' % correlation,))
 
     for strain, pval, score in s[s.score < 0].sort_values('score').itertuples(index=False):
-        response['scores_neg'].append(strain + ('%.3f' % score, '%.2e' % pval,))
+        if strain[0] in suppressors:
+            supps = suppressors[strain[0]]
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+
+        response['scores_neg'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
     for strain, pval, score in s[s.score > 0].sort_values('score', ascending=False).itertuples(index=False):
-        response['scores_pos'].append(strain + ('%.3f' % score, '%.2e' % pval))
+        if strain[0] in suppressors:
+            supps = suppressors[strain[0]]
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+
+        response['scores_pos'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval))
 
     return JsonResponse(response)
 

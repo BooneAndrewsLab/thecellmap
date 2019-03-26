@@ -1,6 +1,7 @@
 python=3.6
 Django<2
 psycopg2
+numpy
 pandas
 openpyxl
 xlrd

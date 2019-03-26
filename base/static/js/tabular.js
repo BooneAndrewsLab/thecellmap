@@ -227,7 +227,6 @@ require([
       var func = data[0][val_idx] < 0 ? Math.max : Math.min;
 
       data.forEach(function (line) {
-          console.log(line);
           row = '';
           isNeighbor = nodeNeighbors[node_id].indexOf(line[0]) != -1;
           gene = geneMap[line[0]];

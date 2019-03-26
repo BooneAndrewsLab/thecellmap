@@ -24,40 +24,39 @@ class Gene(models.Model):
     sorting_value = models.IntegerField()
     description = models.TextField()
     neighbor_effect = models.BooleanField(default=False)
-    
+
     CHROMOSOME_CODE = {
         '2-micron': -2
     }
     MAGIC = '$DOTA2$'
-    
+
     CCODE_INV = {v: k for k, v in CHROMOSOME_CODE.items()}
-    
+
     def as_object(self):
         return {'id':self.id, 'orf': self.orf, 'name': self.name, 'aliases': self.aliases}
-    
+
     def aliases_encoded(self, replacement=MAGIC):
         return [a.replace(' ', replacement) for a in self.aliases]
-    
+
     def closest_neighbors(self, dataset):
         genes = Gene.objects.filter(chromosome=self.chromosome, strain__as_correlation=dataset).exclude(pk=self.pk).distinct()
         agg = []
-        
+
         a1, a2 = sorted((self.start, self.stop))
         for g in genes:
             b1, b2 = sorted((g.start, g.stop))
             if a1 < b1:
-                distance = max(0, b1 - a2);
+                distance = max(0, b1 - a2)
             else:
-                distance = max(0, a1 - b2);
-            
+                distance = max(0, a1 - b2)
+
             agg.append((distance, g))
-            
-        print(sorted(agg, key=lambda x: x[0])[:2])
+
         return [g for _, g in sorted(agg, key=lambda x: x[0])[:2]]
-    
+
     def __str__(self):
         return ('%s (%s)' % (self.orf, self.name or '')).replace(' ()', '')
-    
+
     class Meta:
         ordering = ('sorting_value', )
 
@@ -68,16 +67,16 @@ class Strain(models.Model):
     genotype = models.CharField(max_length=512)
     mating_type = models.CharField(max_length=8)
     description = models.TextField(blank=True)
-    
+
     def __str__(self):
         return self.full_id()
-    
+
     def full_id(self):
         return '%s%s - %s' % (self.gene, self.allele and ' - %s' % self.allele or '', self.boonelab_id)
-    
+
     def basic_id(self):
         return '%s%s' % (self.gene, self.allele and ' - %s' % self.allele or '')
-    
+
     def label(self):
         suffix = 'damp' in self.boonelab_id.lower() and '_damp' or ''
         return self.allele or (self.gene.name and (self.gene.name + suffix)) or (self.gene.orf + suffix)
@@ -89,7 +88,7 @@ class Annotation(models.Model):
         (VERSION_GENES, 'Using Genes'),
         (VERSION_STRAINS, 'Using Strains'),
     )
-    
+
     name = models.CharField(max_length=64)
     alias = models.CharField(max_length=64, null=True)
     date = models.DateField()
@@ -97,16 +96,16 @@ class Annotation(models.Model):
     user = models.ForeignKey(User, null=True, blank=True)
     enabled = models.BooleanField(default=False)
     version = models.CharField(max_length=1, choices=TYPE_CHOICES, default=VERSION_STRAINS)
-    
+
     def get_annotations(self):
         annotations = {}
         for term in self.term_set.prefetch_related('genes'):
             annotations[(term.alias, term.name)] = [g.orf for g in term.genes.all()]
         return annotations
-    
+
     def __str__(self):
         return u'%s' % self.name
-    
+
     class Meta:
         unique_together = (('name', 'date'), )
 
@@ -116,13 +115,13 @@ class Term(models.Model):
     alias = models.CharField(max_length=128)
     source = models.CharField(max_length=32)
     color = models.CharField(max_length=6)
-    
+
     genes = models.ManyToManyField(Gene)
     strains = models.ManyToManyField(Strain)
-    
+
     def __str__(self):
         return u'%s' % self.name
-    
+
     class Meta:
         unique_together = (('annotation', 'name', 'source'), )
 
@@ -138,22 +137,22 @@ class Dataset(models.Model):
     verbose_name = models.CharField(max_length=64)
     public_description = models.TextField()
     default_annotation = models.ForeignKey(Annotation)
-    
+
     def __str__(self):
         return self.name
-    
+
     def static_path(self, *args):
         return os.path.join(settings.STATIC_ROOT, 'visualization', self.name, *args)
-    
+
     def static_url(self, *args):
         return os.path.join(settings.STATIC_URL, 'visualization', self.name, *args)
-    
+
     def correlation_axis_qs(self):
         return self.correlation_axis.through.objects.order_by('id').select_related('strain__gene')
-    
+
     def has_permission(self, request):
         return self.is_published or request.user.is_authenticated and request.user.is_active
-    
+
     @staticmethod
     def pk_or_default(pk=None, user=None):
         if pk:
@@ -161,9 +160,9 @@ class Dataset(models.Model):
                 return Dataset.objects.select_related('default_annotation').get(pk=pk)
             except Dataset.DoesNotExist:
                 raise Http404
-        
+
         return Dataset._get_default(user)
-    
+
     @staticmethod
     def _get_default(user=None):
         datasets = list(Dataset.objects.select_related('default_annotation').order_by('-pk'))
@@ -174,10 +173,10 @@ class Dataset(models.Model):
         if ds: return ds[0]
         if datasets: return datasets[0]
         raise Dataset.DoesNotExist()
-    
+
     def get_absolute_url(self):
         return reverse('dataset', kwargs={'dataset_id': self.pk})
-    
+
     class Meta:
         ordering = ("date", )
 
@@ -188,14 +187,14 @@ class StrainData(models.Model):
         (TYPE_QUERY, 'Query'),
         (TYPE_ARRAY, 'Array'),
     )
-    
+
     dataset = models.ForeignKey(Dataset, related_name='data')
     strain = models.ForeignKey(Strain)
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_QUERY)
     scores = ArrayField(models.FloatField())
     pvalues = ArrayField(models.FloatField())
     correlations = ArrayField(models.FloatField(),null=True)
-    
+
     def __str__(self):
         return '%s @ %s' % (self.strain, self.dataset)
 
@@ -206,14 +205,14 @@ class Custom(models.Model):
         (TYPE_INTERACTION, 'Interaction'),
         (TYPE_CORRELATION, 'Correlation'),
     )
-    
+
     NET_UNDIRECTED = 'U'
     NET_DIRECTED = 'D'
     NET_CHOICES = (
         (NET_UNDIRECTED, 'Undirected'),
         (NET_DIRECTED, 'Directed'),
     )
-    
+
     user = models.ForeignKey(User, null=True)
     hash = models.CharField(max_length=40, unique=True)
     private = models.BooleanField(default=False)
@@ -223,13 +222,13 @@ class Custom(models.Model):
     dataset = models.ForeignKey(Dataset, null=True, related_name='customs')
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default=TYPE_CORRELATION)
     network_type = models.CharField(max_length=1, choices=NET_CHOICES, default=NET_UNDIRECTED)
-    
+
     def path(self, *args):
         return os.path.join(settings.STATIC_ROOT, 'upload', 'custom', self.hash, *args)
-    
+
     def static_url(self, *args):
         return os.path.join(settings.STATIC_URL, 'upload', 'custom', self.hash, *args)
-    
+
     class Meta:
         unique_together = (('name', 'user'), )
 
@@ -239,7 +238,7 @@ class RegionGroup(models.Model):
     date = models.DateField()
     description = models.TextField(blank=True)
     dataset = models.ForeignKey(Dataset)
-    
+
     def __str__(self):
         return self.name
 
@@ -248,18 +247,18 @@ class Region(models.Model):
     alias = models.CharField(max_length=64, null=True)
     region_group = models.ForeignKey(RegionGroup, related_name='regions')
     color = models.CharField(max_length=6)
-    
+
     # label
     label_anchor = models.IntegerField(null=True, blank=True, help_text='Strain id to use as an anchor for this regions\' label')
     label_align = models.CharField(blank=True, max_length=12, help_text='Alignment of this label')
-    
+
     vertices = models.ManyToManyField(Strain, through='Vertex')
 
 class Vertex(models.Model):
     region = models.ForeignKey(Region)
     strain = models.ForeignKey(Strain)
     degree = models.SmallIntegerField()
-    
+
     class Meta:
         unique_together = (('region', 'degree'), ('region', 'strain'), )
         ordering = ('region', 'degree', )
