@@ -309,9 +309,9 @@ def tabular_data(request, dataset_id=None, node_id=None):
     s = s[s.pval < 0.05]
 
     if 's' in request.GET:
-        return _tabular_more_scores(request, s)
+        return _tabular_more_scores(request, s, suppressors)
     elif 'c' in request.GET:
-        return _tabular_more_correlations(request, c)
+        return _tabular_more_correlations(request, c, suppressors)
 
     c = c[c.correlation > .2]
     s = s[s.score.abs() > 0.08]
@@ -340,7 +340,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
     return JsonResponse(response)
 
 
-def _tabular_more_scores(request, scores):
+def _tabular_more_scores(request, scores, suppressors):
     try:
         cutoff = float(request.GET['s'])
     except ValueError:
@@ -353,12 +353,16 @@ def _tabular_more_scores(request, scores):
 
     response = []
     for strain, pval, score in scores.itertuples(index=False):
-        response.append(strain + ('%.3f' % score, '%.2e' % pval,))
+        if strain[0] in suppressors:
+            supps = suppressors[strain[0]]
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+
+        response.append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
     return JsonResponse(response, safe=False)
 
 
-def _tabular_more_correlations(request, corr):
+def _tabular_more_correlations(request, corr, suppressors):
     try:
         cutoff = float(request.GET['c'])
     except ValueError:
@@ -368,7 +372,11 @@ def _tabular_more_correlations(request, corr):
 
     response = []
     for strain, correlation in corr.itertuples(index=False):
-        response.append(strain + ('%.3f' % correlation,))
+        if strain[0] in suppressors:
+            supps = suppressors[strain[0]]
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+
+        response.append(strain[1:] + ('%.3f' % correlation,))
 
     return JsonResponse(response, safe=False)
 
