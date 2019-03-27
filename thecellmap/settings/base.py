@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     'django.contrib.sitemaps',
     'django_tables2',
     'bootstrap_pagination',
-    
+
     # Third-party apps, patches, fixes
 #     'djcelery',
 #     'debug_toolbar',
@@ -61,7 +61,7 @@ INSTALLED_APPS = (
 #     'contact_form',
 #     'rest_framework',
 #     'rest_framework_swagger',
-    
+
     'require'
 )
 
@@ -186,11 +186,11 @@ TEMPLATES = [{
 
 ENABLED_DEBUG_TOOLBAR = False
 
-if ENABLED_DEBUG_TOOLBAR: 
+if ENABLED_DEBUG_TOOLBAR:
     def custom_show_toolbar(request):
         """ Only show the debug toolbar to users with the superuser flag. """
         return request.user.is_superuser
-     
+
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
         'SHOW_TOOLBAR_CALLBACK': 'thecellmap.settings.base.custom_show_toolbar',
@@ -199,7 +199,7 @@ if ENABLED_DEBUG_TOOLBAR:
         'SHOW_TEMPLATE_CONTEXT': True,
         'ENABLE_STACKTRACES': True,
     }
-     
+
     DEBUG_TOOLBAR_PANELS = (
         'debug_toolbar_user_panel.panels.UserPanel',
         'debug_toolbar.panels.version.VersionDebugPanel',
@@ -212,7 +212,7 @@ if ENABLED_DEBUG_TOOLBAR:
         'debug_toolbar.panels.signals.SignalDebugPanel',
         'debug_toolbar.panels.logger.LoggingPanel',
     )
-    
+
     MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 
@@ -271,14 +271,6 @@ REQUIRE_STANDALONE_MODULES = {
         'out': 'tabular-built.js',
         'build_profile': 'build/tabular.build.js',
     },
-#     'threeD': {
-#         'out': 'threeD-built.js',
-#         'build_profile': 'build/threeD.build.js',
-#     },
-#     'collaboration': {
-#         'out': 'collaboration-built.js',
-#         'build_profile': 'build/collaboration.build.js',
-#     },
 }
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False

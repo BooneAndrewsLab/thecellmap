@@ -3,17 +3,12 @@
 import datetime
 import io
 import json
-import math
 import os
 import pickle
-import urllib.request
-from urllib.parse import urlencode
 
 import numpy as np
 import pandas as p
-from bs4 import BeautifulSoup
 from django import forms
-from django.conf import settings
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, AuthenticationForm
@@ -23,24 +18,21 @@ from django.http.response import HttpResponseRedirect, Http404, HttpResponseForb
     HttpResponse
 from django.shortcuts import render
 from django.urls.base import reverse_lazy
-from django.utils.decorators import method_decorator
 from django.utils.safestring import mark_safe
 from django.views.decorators.cache import never_cache, cache_page
-from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
-from scipy.stats import hypergeom
+# noinspection PyPackageRequirements
 from safe.safe import Safe
+from scipy.stats import hypergeom
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, \
     safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response
-
-USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0'
 
 
 @cache_page(3600)
@@ -288,14 +280,6 @@ def three_demension(request, dataset_id):
     return HttpResponseForbidden()
 
 
-@xframe_options_exempt
-def ccbr_collaboration(request):
-    return render(request, 'base/collaboration.html', {
-        'root': settings.STATIC_URL,
-        'nohead': 'nohead' in request.GET
-    })
-
-
 @print_queries
 def tabular_data(request, dataset_id=None, node_id=None):
     if not node_id:
@@ -424,24 +408,6 @@ def annotation(request, annotation_id):
     return JsonResponse(response)
 
 
-@require_GET
-def circle_pack(request):
-    try:
-        node_num = int(request.GET['num'])
-    except ValueError:
-        return HttpResponseBadRequest('Input number of nodes')
-
-    range_str = os.path.join('packomania', '%i-%i' % (int(math.floor(node_num / 1000.0)) * 1000 + 1,
-                                                      (int(math.floor(node_num / 1000.0)) + 1) * 1000),
-                             '%i-%i' % (int(math.floor(node_num / 100.0)) * 100 + 1,
-                                        (int(math.floor(node_num / 100.0)) + 1) * 100), str(node_num) + '.json')
-
-    if os.path.exists(os.path.join(settings.STATIC_ROOT, range_str)):
-        return HttpResponseRedirect(os.path.join(settings.STATIC_URL, range_str))
-    else:
-        return JsonResponse([])
-
-
 @print_queries
 def region_group(request, dataset_id, region_group_id):
     response = {}
@@ -476,36 +442,6 @@ def region_group(request, dataset_id, region_group_id):
             response[region]['label'] = {'anchor': nodes_inv_inv[anchor], 'align': align}
 
     return JsonResponse(response)
-
-
-def publication_citations(request, title):
-    params = {
-        'as_epq': title,
-        'as_q': '',
-        'as_occt': 'any',
-        'as_sdt': '0,5',
-        'as_vis': '0',
-        'hl': 'en',
-        'num': '1'
-    }
-    url = 'http://scholar.google.com/scholar?' + urlencode(params)
-
-    citations = None
-
-    try:
-        req = urllib.request(url, headers={'User-Agent': USER_AGENT})
-        data = urllib.request.urlopen(req)
-        data = data.read()
-
-        soup = BeautifulSoup(data)
-        for tag in soup.findAll('a'):
-            if tag.get('href', '').startswith('/scholar?cites'):
-                if hasattr(tag, 'string') and tag.string.startswith('Cited by'):
-                    citations = int(tag.string.replace('Cited by ', ''))
-    except:
-        pass
-
-    return JsonResponse({'cited': citations})
 
 
 @require_POST

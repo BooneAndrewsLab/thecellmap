@@ -28,11 +28,11 @@ sitemaps = {
 
 urlpatterns = [
     url(r'^favicon[.]ico$', RedirectView.as_view(url='/static/favicon.ico')),
-    
+
     url(r'^tools/annotations/', tools.annotations, name='tools_annotations'),
     url(r'^tools/custom/', tools.custom, name='tools_custom'),
     url(r'^tools/edit/(?P<id>[0-9]+)/$', tools.edit_dataset, name="tools_edit_dataset"),
-    
+
 #     url(r'^api/', include('base.api.v1.urls')),
 
     url(r'^$', views.home, name='home'),
@@ -62,20 +62,16 @@ urlpatterns = [
     # region urls
     url(r'^region_group/(?P<dataset_id>\d+)/(?P<region_group_id>\d+)/$', views.region_group, name='region_group'),
     url(r'^genes/$', views.genes, name='genes'),
-    
+
     url(r'^enrichment/$', EnrichmentView.as_view(), name='enrichment_form'),
     url(r'^enrichment/result/$', EnrichmentResultView.as_view(), name='enrichment_result'),
     # contact
-#     url(r'^contact/', include('contact_form.urls')),
-    url(r'^circlepack/$', views.circle_pack, name='circle_pack'),
     url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),
     url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui'),
     url(r'^ui/draw/$', TemplateView.as_view(template_name='ui/draw_ui.html'), name='draw_ui'),
     url(r'^ui/base/$', TemplateView.as_view(template_name='ui/base_ui.html'), name='base_ui'),
-    
+
     url(r'^3D/(?P<dataset_id>\d+)/$', views.three_demension, name='three_demension'),
-    url(r'^ccbr_collaboration/$', views.ccbr_collaboration, name='ccbr_collaboration'),
-    url(r'^ccbr_collaboration/citations/(?P<title>.+)/$', views.publication_citations, name='publication_citations'),
 
     url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
