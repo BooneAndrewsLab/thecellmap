@@ -32,14 +32,17 @@ ONLY = (
 
 def format_allele_col(orf, name, strainid, allele):
     strainid = strainid.lower()
-    suffix = 'damp' in strainid and '_damp' or ''
+    suffix = '_damp' if 'damp' in strainid else ''
     allele_col = (allele or name or orf).lower()
 
-    if 'ts' not in strainid and 'damp' not in strainid:
+    if not suffix and 'ts' not in strainid and 'damp' not in strainid:
         suffix = u'\u0394'
-
-    if suffix:
+        name_bits = allele_col.split('-')
+        name_bits[0] += suffix
+        allele_col = '-'.join(name_bits)
+    elif suffix:
         allele_col = '%s%s' % (allele_col, suffix)
+
     return allele_col
 
 
