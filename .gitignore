@@ -43,7 +43,6 @@ Thumbs.db
 # Virtual environment #
 #######################
 venv/
-*.ipynb
 .ipynb_checkpoints
 static/*
 
