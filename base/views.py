@@ -828,8 +828,6 @@ class HeatmapDownload(View):
         merged[merged.abs() < .1] = np.nan
         merged.index = [' - '.join(i) for i in merged.index]
 
-        merged.to_csv('/home/matej/pbrtest.csv')
-
         merged = merged.dropna(thresh=2)
 
         denmat = merged.fillna(0)
