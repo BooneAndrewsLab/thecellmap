@@ -788,6 +788,8 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
 
 class HeatmapDownload(View):
     def get(self, request, dataset_id=None):
+        import matplotlib
+        matplotlib.use('Agg')
         from matplotlib import rcParams
         from matplotlib import pyplot as plt
 
