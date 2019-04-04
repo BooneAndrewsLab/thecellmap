@@ -7,10 +7,8 @@ import os
 import pickle
 from io import BytesIO
 
-import PIL
 import numpy as np
 import pandas as p
-import pylab
 from django import forms
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
