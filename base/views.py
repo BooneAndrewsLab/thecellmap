@@ -5,9 +5,12 @@ import io
 import json
 import os
 import pickle
+from io import BytesIO
 
+import PIL
 import numpy as np
 import pandas as p
+import pylab
 from django import forms
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.contrib.auth.decorators import login_required
@@ -27,12 +30,14 @@ from django.views.generic.edit import FormView
 from django_tables2 import tables, SingleTableMixin, columns
 # noinspection PyPackageRequirements
 from safe.safe import Safe
+from scipy.cluster.hierarchy import dendrogram, average
+from scipy.spatial.distance import pdist
 from scipy.stats import hypergeom
 
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, \
-    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response, sgd_query
+    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response, sgd_query, CMAP
 
 
 @cache_page(3600)
@@ -319,21 +324,24 @@ def tabular_data(request, dataset_id=None, node_id=None):
     for strain, correlation in c.itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
+            strain = strain[:2] + (
+            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response['correlations'].append(strain[1:] + ('%.3f' % correlation,))
 
     for strain, pval, score in s[s.score < 0].sort_values('score').itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
+            strain = strain[:2] + (
+            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response['scores_neg'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
     for strain, pval, score in s[s.score > 0].sort_values('score', ascending=False).itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
+            strain = strain[:2] + (
+            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response['scores_pos'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval))
 
@@ -355,7 +363,8 @@ def _tabular_more_scores(request, scores, suppressors):
     for strain, pval, score in scores.itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
+            strain = strain[:2] + (
+            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response.append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
@@ -374,7 +383,8 @@ def _tabular_more_correlations(request, corr, suppressors):
     for strain, correlation in corr.itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
+            strain = strain[:2] + (
+            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response.append(strain[1:] + ('%.3f' % correlation,))
 
@@ -780,6 +790,11 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
 
 class HeatmapDownload(View):
     def get(self, request, dataset_id=None):
+        from matplotlib import rcParams
+        from matplotlib import pyplot as plt
+
+        rcParams.update({'font.size': 6})
+
         ds = Dataset.pk_or_default(dataset_id, request.user)
 
         nodes = list(filter(is_integer, request.GET.getlist('n')))
@@ -797,8 +812,6 @@ class HeatmapDownload(View):
             if n['id'] in nodes_idx:
                 labels.append(n['label'])
 
-        filename = 'tcm-heatmap-%s-%s.xls' % ('_'.join(labels)[:(255 - 18)], datetime.datetime.now().strftime('%y%m%d'))
-
         data = nodes_data(ds, nodes)
         scores = []
         names = []
@@ -811,12 +824,29 @@ class HeatmapDownload(View):
             scores.append(v)
             index.update(v.index)
 
-        pickle.dump(scores, open('/home/matej/test.pkl', 'wb'))
-
         merged = p.concat([s.reindex(index) for s in scores], axis=1, sort=False)
         merged[merged.abs() < .1] = np.nan
         merged.index = [' - '.join(i) for i in merged.index]
 
         merged.to_csv('/home/matej/pbrtest.csv')
 
-        print(merged)
+        merged = merged.dropna(thresh=2)
+
+        denmat = merged.fillna(0)
+        array_den = dendrogram(average(pdist(denmat, metric='correlation')), no_plot=True)
+        query_den = dendrogram(average(pdist(denmat.T, metric='correlation')), no_plot=True)
+
+        df = merged.iloc[array_den['leaves'], query_den['leaves']]
+        plt.imshow(df, vmin=-.5, vmax=.5, interpolation='nearest', cmap=CMAP)
+        plt.gcf().set_size_inches((5, (df.shape[0] / 10) + 2))
+        _ = plt.yticks(np.arange(df.shape[0]), df.index)
+        _ = plt.xticks(np.arange(df.shape[1]), df.columns, rotation='vertical')
+        plt.tick_params(axis='x', labeltop=True, labelbottom=True, top=True, bottom=True)
+
+        filename = 'tcm-heatmap-%s-%s.pdf' % ('_'.join(labels)[:(255 - 18)], datetime.datetime.now().strftime('%y%m%d'))
+
+        buffer = BytesIO()
+        plt.savefig(buffer, format='pdf', dpi=100, bbox_inches='tight')
+        response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+        response['Content-Disposition'] = 'attachment; filename=%s' % (filename,)
+        return response

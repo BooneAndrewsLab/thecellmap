@@ -27,6 +27,7 @@ from django.forms.fields import CharField
 from django.http.response import HttpResponse, HttpResponseBadRequest
 from django.utils.decorators import available_attrs
 from django.utils.six import wraps
+from matplotlib.colors import LinearSegmentedColormap
 from xlrd.biffh import XLRDError
 from xlwt import Style
 
@@ -78,6 +79,22 @@ STYLES[STYLE_BOLD] = (xlwt.easyxf("font: bold on;"), STYLE_BOLD)
 STYLES[STYLE_WRAP] = (xlwt.easyxf("align: wrap on, vert centre;"), STYLE_WRAP)
 
 INSTRUCTIONS = 'instructions'
+
+
+def heat_color():
+    return {'red': ((0.0, 0.0, 0.0),
+                    (0.5, 0.0, 0.0),
+                    (1.0, 1.0, 1.0)),
+            'green': ((0.0, 0.0, 0.0),
+                      (0.5, 0.0, 0.0),
+                      (1.0, 1.0, 1.0)),
+            'blue': ((0.0, 1.0, 1.0),
+                     (0.5, 0.0, 0.0),
+                     (1.0, 0.0, 0.0))}
+
+
+CMAP = LinearSegmentedColormap('my_colormap', heat_color(), 256)
+
 
 class CellMapCommand(BaseCommand):
     def get_path(self, filepath, required=True):
