@@ -32,7 +32,7 @@ from scipy.stats import hypergeom
 from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, \
-    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response
+    safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response, sgd_query
 
 
 @cache_page(3600)
@@ -319,21 +319,21 @@ def tabular_data(request, dataset_id=None, node_id=None):
     for strain, correlation in c.itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
 
         response['correlations'].append(strain[1:] + ('%.3f' % correlation,))
 
     for strain, pval, score in s[s.score < 0].sort_values('score').itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
 
         response['scores_neg'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
     for strain, pval, score in s[s.score > 0].sort_values('score', ascending=False).itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
 
         response['scores_pos'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval))
 
@@ -355,7 +355,7 @@ def _tabular_more_scores(request, scores, suppressors):
     for strain, pval, score in scores.itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
 
         response.append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
@@ -374,7 +374,7 @@ def _tabular_more_correlations(request, corr, suppressors):
     for strain, correlation in corr.itertuples(index=False):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
-            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([(s['n'] or s['o']) for s in supps])), )
+            strain = strain[:2] + ('%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])), )
 
         response.append(strain[1:] + ('%.3f' % correlation,))
 

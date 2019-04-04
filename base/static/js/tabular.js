@@ -232,7 +232,7 @@ require([
           gene = geneMap[line[0]];
           for (i = 0; i < line.length; i++) {
               val = line[i];
-              row += '<td data-value="' + val + '">' + val;
+              row += '<td data-value="' + val.split(" ")[0] + '">' + val;
 
               if (i == line.length - 1) {
                   if (isNeighbor) {

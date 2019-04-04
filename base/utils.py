@@ -85,19 +85,19 @@ class CellMapCommand(BaseCommand):
             return None
         if filepath is None:
             raise CommandError('File argument is required')
-        
+
         if '~' in filepath:
             filepath = os.path.expanduser(filepath)
-        
+
         return os.path.abspath(filepath)
-        
+
     def get_fd(self, filepath, mode='r', required=True):
         filepath = self.get_path(filepath, required)
         if not filepath: return None
-        
+
         if mode == 'r' and not os.path.isfile(filepath):
             raise CommandError('%s is not a file' % filepath)
-        
+
         if filepath.endswith('.gz'):
             return fileinput.hook_compressed(filepath, mode)
         return open(filepath, mode)
@@ -154,7 +154,7 @@ def print_queries(func, filter=None):
         print(colored('Query Time:  %ss (longest: %ss)' % (sqltime, longest), 'yellow'))
         print(colored('Num Queries: %s (%s hidden)\n' % (numqueries, numhidden), 'yellow'))
         return result
-    
+
     """ Use this only in debug mode (aka non production mode) """
     if settings.DEBUG:
         return wrapper1
@@ -176,91 +176,91 @@ class GenericXlsWriter():
         self.sheets = {}
         self.sheet_ord = []
         self.active_sheet = None
-    
+
     def _format_sheet_name(self, name):
         return name and name.replace(':', '-')[:31] or None
-    
+
     def set_cur_sheet(self, sheet):
         self.active_sheet = sheet
     def get_cur_sheet(self):
         return self.active_sheet
     cur_sheet = property(get_cur_sheet, set_cur_sheet)
-    
+
     def reset_row(self, row=0, sheet=None):
         self._write_get_sheet(sheet)['row'] = row
-    
+
     def add_sheet(self, name, headers=None):
         name = self._format_sheet_name(name)
-        
+
         if name in self.sheets:
             raise Exception('Sheet %s exists' % name)
-        
+
         # TODO: name length fix and give warning as return value
         self.sheets[name] = {'sheet': self._add_sheet(name), 'row': 0}
         self.sheet_ord.append(name)
         self.active_sheet = name
-        
+
         if headers:
             self.write_row(headers, sheet=name, style=STYLE_BOLD)
-    
+
     def write(self, row, col, value, sheet=None, **kwargs):
         sheet = self._format_sheet_name(sheet)
-        
+
         if isinstance(sheet, (int, )):
             sheet = self.sheets.keys()[sheet]
         elif isinstance(sheet, (NoneType, )):
             sheet = self.active_sheet
-        
+
         if sheet not in self.sheets:
             raise Exception('Sheet %s not in existing sheets' % sheet)
-        
+
         sheet = self.sheets[sheet]
         self._write_cell(sheet['sheet'], row, col, value, **kwargs)
-    
+
     def _write_get_sheet(self, sheet):
         sheet = self._format_sheet_name(sheet)
-        
+
         if isinstance(sheet, (int, )):
             sheet = self.sheets.keys()[sheet]
         elif isinstance(sheet, (NoneType, )):
             sheet = self.active_sheet
-        
+
         if sheet not in self.sheets:
             raise Exception('Sheet %s not in existing sheets' % sheet)
-        
+
         return self.sheets[sheet]
-    
+
     def write_row(self, values, sheet=None, **kwargs):
         sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
             self._write_cell(sheet['sheet'], sheet['row'], col, val, **kwargs)
         sheet['row'] += 1
-    
+
     writerow = write_row
-    
+
     CORRELATION_FORMATS = (None, None, '0.000', None)
     def write_correlation_row(self, values, sheet=None, **kwargs):
         sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
             self._write_cell(sheet['sheet'], sheet['row'], col, val, number_format=self.CORRELATION_FORMATS[col], **kwargs)
         sheet['row'] += 1
-    
+
     SCORE_FORMATS = (None, None, '0.000', '0.00E+00', None)
     def write_score_row(self, values, sheet=None, col_offset=0, **kwargs):
         sheet = self._write_get_sheet(sheet)
         for col, val in enumerate(values):
             self._write_cell(sheet['sheet'], sheet['row'], col + col_offset, val, number_format=self.SCORE_FORMATS[col], **kwargs)
         sheet['row'] += 1
-    
+
     def write_score_row_neg(self, values, sheet=None, **kwargs):
         self.write_score_row(values, sheet, col_offset=0, **kwargs)
-    
+
     def write_score_row_pos(self, values, sheet=None, **kwargs):
         self.write_score_row(values, sheet, col_offset=len(self.SCORE_FORMATS) + 1, **kwargs)
-    
+
     def add_instructions_sheet(self):
         self.add_sheet('Instructions')
-    
+
     def write_instructions(self, content):
         sheet = self._write_get_sheet('Instructions')
         self._write_cell(sheet['sheet'], 0, 0, 'Source', style=STYLE_BOLD)
@@ -269,7 +269,7 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 1, 1, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         self._write_cell(sheet['sheet'], 2, 0, 'Content', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 2, 1, 'Genetic interactions scores (GI Scores) and genetic interaction profile similarities (Profile Sim.) for genes %s' % (content, ))
-        
+
         self._write_cell(sheet['sheet'], 3, 0, 'Description', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 4, 1, 'The SGA score measures the extent to which a double mutant colony size deviates from the colony size expected from combining two mutations together. '
 'The SGA score measures the extent to which a double mutant colony size deviates from the colony size expected from combining two mutations together. '
@@ -289,9 +289,9 @@ class GenericXlsWriter():
 #         self._write_cell(sheet['sheet'], 3, 2, 'Provides a ranked list of genes whose genetic interaction profile most closely resembles the genetic interaction profile of the gene(s) of interest.')
 #         self._write_cell(sheet['sheet'], 4, 1, 'GI scores', style=STYLE_BOLD)
 #         self._write_cell(sheet['sheet'], 4, 2, 'Lists the direct negative and positive interactions for the gene(s) of interest.')
-#         
+#
         self._write_cell(sheet['sheet'], 6, 0, 'Legend:', style=STYLE_BOLD)
-        
+
         self._write_cell(sheet['sheet'], 7, 0, 'A', style=STYLE_COR_SIGNIFICANT)
         self._write_cell(sheet['sheet'], 7, 1, 'Genetic Interaction Profiles similar to gene of interest (Pearson Correlation Coefficient > 0.2)')
         self._write_cell(sheet['sheet'], 8, 0, 'B', style=STYLE_NEG_STRINGENT)
@@ -304,36 +304,36 @@ class GenericXlsWriter():
         self._write_cell(sheet['sheet'], 11, 1, 'Significant positive genetic interactions (intermediate cutoff: score > 0.08, p-value < 0.05)')
         self._write_cell(sheet['sheet'], 12, 0, 'F', style=STYLE_NEIGHBOR)
         self._write_cell(sheet['sheet'], 12, 1, 'Genes located immediately adjacent to the selected gene')
-        
+
         self._write_cell(sheet['sheet'], 14, 0, '-supp', style=STYLE_BOLD)
         self._write_cell(sheet['sheet'], 14, 1, 'This indicates that the strain also carries a secondary suppressor mutation.')
         self._write_cell(sheet['sheet'], 15, 1, xlwt.Formula('HYPERLINK("http://science.sciencemag.org/content/354/6312/aag0839.long", "See van Leeuwen et al, 2016 for more details.")'))
-        
+
         sheet['sheet'].col(1).width = 24000
         sheet['sheet'].row(4).height = 4000
-        
+
 #         self._write_cell(sheet['sheet'], 11, 0, 'Notes:', style=STYLE_BOLD)
 #         self._write_cell(sheet['sheet'], 12, 0, 'These are unpublished data. Please contact Michael Costanzo (michael.costanzo@utoronto.ca) for questions regarding citation policy.')
-    
+
     def save(self, seek=None):
         self._save()
         if isinstance(seek, (int, )):
             self.fd.seek(seek)
         return self.fd
-    
+
     def as_response(self):
         response = HttpResponse(content_type=self.mime)
         response['Content-Disposition'] = 'attachment; filename=%s' % (self.fd, )
         self.fd = response
         self.save()
         return response
-    
+
     def sheets(self):
         return self.sheet_ord
 
 class XlsWriter(GenericXlsWriter):
     mime = 'application/vnd.ms-excel'
-    
+
     def _create_wb(self):
         wb = xlwt.Workbook()
         wb.set_colour_RGB(0x21, 0, 101, 204)
@@ -343,79 +343,79 @@ class XlsWriter(GenericXlsWriter):
         wb.set_colour_RGB(0x25, 255, 204, 153)
         wb.set_colour_RGB(0x26, 176, 176, 176)
         return wb
-    
+
     def _add_sheet(self, name):
-        ws = self.workbook.add_sheet(name) 
+        ws = self.workbook.add_sheet(name)
         ws.paper_size_code = 1 # US Letter
         return ws
-    
+
     def _write_cell(self, sheet, row, col, value, style=None, number_format=None):
         style = style and STYLES[style][0] or Style.default_style
         if number_format:
             style.num_format_str = number_format
-        
+
         sheet.write(row, col, value, style)
-    
+
     def _save(self):
         self.workbook.save(self.fd)
 
 class XlsxWriter(GenericXlsWriter):
     mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    
+
     def _create_wb(self):
         wb = openpyxl.workbook.Workbook()
         wb.remove_sheet(wb.get_active_sheet())
         return wb
-    
+
     def _add_sheet(self, name):
         ws = self.workbook.create_sheet()
-        ws.set_printer_settings(ws.PAPERSIZE_LETTER, ws.ORIENTATION_PORTRAIT) # leave this here just in case... 
+        ws.set_printer_settings(ws.PAPERSIZE_LETTER, ws.ORIENTATION_PORTRAIT) # leave this here just in case...
         ws.page_setup.paperSize = ws.PAPERSIZE_LETTER # this actually sets the size
         ws.title = name
         return ws
-    
+
     def _write_cell(self, sheet, row, col, value, style=None, number_format=None):
         cell = sheet.cell(row=row+1, column=col+1)
         cell.value = value
-        
+
 #         if style == STYLE_BOLD:
 #             cell.style.font.bold = True
 #         elif style:
 #             cell.style.fill.fill_type = Fill.FILL_SOLID
 #             cell.style.fill.start_color.index = STYLES[style][1]
-    
+
     def _save(self):
         self.workbook.save(self.fd)
 
 class CsvWriter(GenericXlsWriter):
     mime = 'text/csv'
-    
+
     def __init__(self, fd, delimiter):
         self.file_name = ''
         self.delimiter = delimiter
         GenericXlsWriter.__init__(self, fd)
         if delimiter == '\t':
             self.mime = 'text/tab-separated-values'
-    
+
     def _create_wb(self):
         if not hasattr(self.fd, 'write'):
             self.file_name = self.fd
             self.fd = StringIO()
-            
+
         return csv.writer(self.fd, delimiter=self.delimiter,
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    
+
     def _add_sheet(self, name):
         return self.workbook
-    
+
     def write_row(self, values, sheet=None, **kwarg):
         sheet = self._write_get_sheet(sheet)
         sheet['sheet'].writerow(values)
-    
+
     def as_response(self):
         if not self.file_name:
             raise Exception()
-        
+
         response = HttpResponse(content_type=self.mime)
         response['Content-Disposition'] = 'attachment; filename=%s' % (self.file_name, )
         self.fd.seek(0)
@@ -427,9 +427,9 @@ def write_excel_file(fd=None, type='xls', override_ext=False):
         type = os.path.splitext(fd)[1].strip('.')
     elif fd == None:
         fd = StringIO()
-    
+
     type = type.lower()
-    
+
     if type == 'xls':
         return XlsWriter(fd)
     elif type == 'xlsx':
@@ -438,7 +438,7 @@ def write_excel_file(fd=None, type='xls', override_ext=False):
         return CsvWriter(fd, ',')
     elif type == 'tsv':
         return CsvWriter(fd, '\t')
-    
+
     raise BadXlsFile()
 
 class GenericXls():
@@ -447,50 +447,50 @@ class GenericXls():
         self.filename = filename
         self.workbook = self._open_workbook(filename)
         self.open_sheet(sheet)
-    
+
     def _open_workbook(self, filename): raise NotImplementedError()
     def _open_sheet(self, name): raise NotImplementedError()
     def _get_row(self, row): raise NotImplementedError()
     def _get_value(self, cell): raise NotImplementedError()
-    
+
     def open_sheet(self, sheet):
         if isinstance(sheet, int): sheet = self.sheets()[sheet]
         self.sheet = self._open_sheet(sheet)
         self.row = 0
-    
+
     def skiplines(self, skip=1):
         self.row += skip
-    
+
     def reset(self):
         self.row = 0
-    
+
     def readline(self, min_columns=0, exact_columns=None):
         if self.row >= self.rows(): return None
         l = [self._get_value(c) for c in self._get_row(self.row)]
         while len(l) < min_columns:
             l.append(None)
-        
+
         if exact_columns and len(l) != exact_columns:
             raise XlsError("Error on line %s: Wrong number of columns, expected %s, got %s instead" % (self.row, exact_columns, len(l)))
-        
+
         self.row += 1
         return l
-    
+
     def readlines(self, start=None, min_columns=None, exact_columns=None):
         if start:
             self.row = start
-        
+
         while self.row < self.rows():
             yield self.readline(min_columns, exact_columns)
-    
+
     def __iter__(self):
         for l in self.readlines():
             yield l
-    
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             self.row = index.start
-            
+
             acc = []
             for l in self.readlines():
                 if self.row >= index.stop:
@@ -500,46 +500,46 @@ class GenericXls():
         else:
             self.row = index
             return self.readline()
-    
+
 class Xls(GenericXls):
     def _open_workbook(self, filename):
         return xlrd.open_workbook(filename=filename)
-    
+
     def _open_sheet(self, name):
         return self.workbook.sheet_by_name(name)
-    
+
     def _get_row(self, row):
         return self.sheet.row(row)
-    
+
     def rows(self):
         return self.sheet.nrows
-    
+
     def sheets(self):
         return [s.name for s in self.workbook.sheets() if s.name.lower() != INSTRUCTIONS]
-    
+
     def _get_value(self, cell):
         if cell.ctype == 3: # date
             return datetime.datetime(*xlrd.xldate_as_tuple(cell.value, self.workbook.datemode)).strftime('%Y-%m-%d')
         if cell.ctype == 5: # error
             return np.nan
         return cell.value
-    
+
 class Xlsx(GenericXls):
     def _open_workbook(self, filename):
         return openpyxl.reader.excel.load_workbook(filename)
-    
+
     def _open_sheet(self, name):
         return self.workbook.get_sheet_by_name(name)
-    
+
     def _get_row(self, row):
         return self.sheet.rows[row]
 
     def rows(self):
         return self.sheet.get_highest_row()
-    
+
     def sheets(self):
         return [s for s in self.workbook.get_sheet_names() if s.lower() != INSTRUCTIONS]
-    
+
     def _get_value(self, cell):
         return cell.value
 
@@ -550,9 +550,9 @@ class Csv(GenericXls):
             self.dialect = sniffer.sniff(f.readline())
             f.seek(0)
             self.numlines = len(f.readlines())
-        
+
         return csv.reader(open(filename, 'rbU'), self.dialect)
-    
+
     def _open_sheet(self, name): pass
     def _get_row(self, row): return self.workbook.next()
     def rows(self): return self.numlines
@@ -566,7 +566,7 @@ def open_excel_file(filename, sheet=0, fd=None):
         tmp.write(fd.read())
         tmp.seek(0)
         fd = tmp.name
-    
+
     if filename.lower().endswith('xlsx'):
         return Xlsx(fd or filename, sheet=sheet, name=filename)
     elif filename.lower().endswith('xls'):
@@ -576,7 +576,7 @@ def open_excel_file(filename, sheet=0, fd=None):
             pass
     elif filename.lower().endswith('csv'):
         return Csv(fd or filename, sheet=sheet, name=filename)
-    
+
     raise BadXlsFile()
 
 class BadXlsFile(Exception): pass
@@ -597,10 +597,10 @@ def profile(log_file):
     for later processing and examination.
 
     It takes one argument, the profile log name. If it's a relative path, it
-    places it under the PROFILE_LOG_BASE. It also inserts a time stamp into the 
-    file name, such that 'my_view.prof' become 'my_view-20100211T170321.prof', 
-    where the time stamp is in UTC. This makes it easy to run and compare 
-    multiple trials.     
+    places it under the PROFILE_LOG_BASE. It also inserts a time stamp into the
+    file name, such that 'my_view.prof' become 'my_view-20100211T170321.prof',
+    where the time stamp is in UTC. This makes it easy to run and compare
+    multiple trials.
     """
 
     if not os.path.isabs(log_file):
@@ -635,7 +635,7 @@ def rollback_on_fail(fun):
         except Exception:
             transaction.rollback()
             raise
-    
+
     return wrap
 
 def require_get_params(params):
@@ -703,7 +703,7 @@ def dataframe_to_response(df, filename, **kwargs):
 
 class CharListArea(CharField):
     widget = forms.Textarea
-    
+
     def clean(self, value):
         value = super(CharListArea, self).clean(value)
         return [g for g in value.split() if g]
@@ -721,3 +721,12 @@ class TableDataFrameMixin:
 
     def to_excel_response(self, filename, **kwargs):
         return dataframe_to_response(self.get_data_frame(**kwargs), filename, index=False)
+
+
+def sgd_query(q, as_link=False):
+    url = 'http://www.yeastgenome.org/search?is_quick=true&q=%s' % q
+
+    if as_link:
+        url = '<a href="%s" target="_blank">%s</a>' % (url, q)
+
+    return url
