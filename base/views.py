@@ -543,7 +543,7 @@ def safe(request, dataset_id=None):
             attributes = p.DataFrame(attributes, columns=['node', hitname]).set_index('node')
             frames.append(attributes)
 
-        attributes = p.concat(frames, axis=1).fillna(0)
+        attributes = p.concat(frames, axis=1).fillna(0).astype(np.int64)
 
         safe = Safe(dataset.static_path('safe_layout.csv'), attributes, dataset.static_path('safe_neighbors.csv'))
         safe.prepare_attributes()
