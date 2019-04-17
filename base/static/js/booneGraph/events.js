@@ -2,71 +2,71 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    
+
     'node',
     'annotation',
     'layout',
     'download',
     'dataset',
     'utils',
-    
+
     'drag',
     'bootstrap.colorpicker',
     'clipboard',
     'xls',
     'load',
-    
+
     'jquery.cookie',
     'sigma.rotate',
     'bootstrap',
-], function($, _, Backbone, 
+], function($, _, Backbone,
     Node, Annotation, Layout, Download, Dataset, Utils, Draggabilly, Colorpicker, Clipboard) {
     var tabularWindow;
-    
+
     var eventsView = Backbone.View.extend({
         initialize: function() {
             if (!opts.debug) {
                 $('#network-container').contextmenu(function() { return false; });
                 $('.contextmenu').contextmenu(function() { return false; });
             }
-            
+
             state.on('change:selecting', function() {
                 $('#download-selected-simple').removeClass('hidden');
             });
-            
+
             state.on('change:selection', function() {
                 var enabled, cls, size = Utils.getSelectedNodes().length;
-                
+
                 $('#dataset-toggle label').attr('disabled', size == 0);
-                
+
                 $('[data-selection-constraint]').each(function() {
                     enabled = true;
                     cls = $(this).data('selection-class') || 'disabled';
-                    
+
                     if ($(this).data('selection-gt') != undefined) {
                         enabled &= size > $(this).data('selection-gt');
                     }
                     if ($(this).data('selection-lt') != undefined) {
                         enabled &= size < $(this).data('selection-lt');
                     }
-                    
+
                     if (cls == 'disabled') $(this).prop(cls, !enabled);
                     else $(this).toggleClass(cls, !enabled);
-                    
+
                     if (!enabled) {
                         $(this).attr('title', $(this).data('selection-disabled-title'));
                     } else {
                         $(this).removeAttr('title');
                     }
                 });
-                
+
                 Utils.updateUrl();
             });
-            
+
             state.on('change:annotation', function() {
                 Utils.updateUrl();
             });
-            
+
             state.on('change:annotation change:dataset', function() {
                 $('[data-annotation-constraint], [data-dataset-constraint]').each(function() {
                     var enabled = true;
@@ -79,14 +79,14 @@ define([
                     $(this).toggleClass('disabled', !enabled);
                 })
             })
-            
+
             state.on('change:showRegions', function() {
                 if (state.get('showRegions') == false) {
                     Annotation.clearRegions();
                     Annotation.applyAnnotationColors();
                 }
             });
-            
+
             state.on('change:showCircular', function() {
                 if (state.get('showCircular') == false) {
                     Utils.cleanUpNodes();
@@ -95,7 +95,7 @@ define([
                     $(this).toggleClass('disabled', state.get('showCircular'));
                 });
             });
-            
+
             state.on('change:missingNodes', function() {
                 var nodes = state.get('missingNodes');
                 if (nodes.length) {
@@ -106,10 +106,10 @@ define([
                     state.set('missingNodes', []);
                 }
             });
-            
+
             state.on('change:isInitializing', function() {
                 var a = window.location.search.substr(1).split('&');
-                
+
                 if (a == '') return;
                 var b = {};
                 for (var i = 0; i < a.length; ++i) {
@@ -120,21 +120,21 @@ define([
                         b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, ' ')).split(',');
                     }
                 }
-                
+
                 if (b['q']) {
                     if (b['q'].length == 1) b['q'].push('');
                     $('input.gene-search-input').select2('search', b['q'], true);
                 }
             });
-            
+
             state.on('change:step', function() {
                 if (state.get('step') > 1) {
                     sigInst.mouseProperties({allowNodeDrag: true});
                 }
-                
+
                 $('[data-simple-step]').each(function() {
                     var action = $(this).data('simple-action') || 'hidden';
-                    
+
                     if (action == 'hidden') {
                         if ($(this).data('simple-step') == state.get('step')) {
                             $(this).removeClass('hidden');
@@ -152,12 +152,12 @@ define([
                     }
                 });
             });
-            
+
             var draggable = new Draggabilly('#panel-legend', {
                 containment: '.vizualization-ui',
                 handle: '#legend-handle'
             });
-            
+
             var clipboard = new Clipboard('.btn-clipboard');
             clipboard.on('success', function(e) {
                 $('#node-selected-list').tooltip({title: 'Copied!', trigger: 'manual', placement: 'bottom'});
@@ -168,27 +168,27 @@ define([
                 $('#node-selected-list').tooltip({title: 'Copy failed, press Ctrl+c', trigger: 'manual', placement: 'bottom'});
                 $('#node-selected-list').tooltip('show');
             });
-            
+
             $('.refresh-network').on('click', this.refreshNetwork);
-            
+
             $('.bs-colorpicker').colorpicker();
-            
+
             $('#canvas-background-color').parent().on('changeColor', this.updateBackgroundColor);
             $('#style-label-color').parent().on('changeColor', this.updateLabelColor);
-            
+
             $('#modal-rotationDrag #rotate-confirm').on('click', this.rotateConfirm);
             $('#modal-edit-node').modal({show: false});
-            
+
             $('#modal-search').modal({show: false}).on('hide.bs.modal', function() {
                 $('.search-bar').appendTo('.select2-div').addClass('hidden-xs');
             }).on('show.bs.modal', function() {
                 $('.search-bar').appendTo('#modal-search .modal-body').removeClass('hidden-xs');
             });
-            
+
             $('#modal-copy').on('show.bs.modal', function() {
                 var selection = Utils.getSelection()
                 if (selection.length <= 0) return;
-                
+
                 var str = '';
                 for (var s in selection) {
                     if (s != 0) str += ', ';
@@ -201,12 +201,12 @@ define([
                 $('#modal-copy input').val('');
                 $('#node-selected-list').tooltip('destroy');
             });
-            
+
             $('#custom-annot-submit').click(this.loadCustomAnnotation);
             $('#modal-edit-node #edit-node-confrim').click(function() { Node.editNode(); });
             $('#contextmenu a').on('click', this.nodeContext);
             $('#contextmenu-graph a').on('click', this.graphContext);
-            
+
             $('.contextmenu').mouseleave(function() { $(this).delay(500).fadeOut(500); }).mouseenter(function() { $(this).stop(true); });
             $('body').keydown(this.graphNodes);
             $('body').keyup(function(e){
@@ -227,16 +227,16 @@ define([
             'click .btn-zoom-in': 'graphZoomIn',
             'click .btn-zoom-out': 'graphZoomOut',
             'click #dataset-toggle': 'toggleDataset',
-            
+
             'click #screenshot-link': 'getSvgScreenshot',
-            
+
             'click #view-network-simple': 'showNetwork',
-            
+
             'click #safe-submit': 'safe',
             'click #safe-custom-add': 'safe_more',
             'click #tools-safe-download, .enrich-annotation': 'safe_download',
         },
-        
+
         downloadNetwork: function(e) {
             var selected = Utils.getSelection();
             switch ($(e.currentTarget).attr('id')) {
@@ -281,7 +281,7 @@ define([
             }
             e.preventDefault();
         },
-        
+
         graphContext: function(e) {
             switch ($(e.target).attr('id')) {
             case 'context-copy':
@@ -320,15 +320,15 @@ define([
                     strain = Utils.getStrain(n.id);
                     orfs[strain.get('orf')] = null;
                 });
-                
+
                 form = $('#yeastmine-post');
                 form.find('input[name=externalids]').attr('value', Object.keys(orfs).join(','));
                 setTimeout(function(){form.submit();}, 100);
-                
+
                 break
             }
         },
-        
+
         nodeContext: function(e) {
             var targets = state.get('hoveredTargets'), node = Utils.getNode(targets[0]);
             switch ($(e.target).attr('id')) {
@@ -380,21 +380,21 @@ define([
                 $('#modal-copy').modal('show');
                 break;
             }
-            
+
             $('#contextmenu-container').hide();
             e.preventDefault();
         },
-        
+
         applyNeighbourhood: function(e) {
             Node.applyNeighbourhood($(e.target).data('level'));
             e.preventDefault();
         },
-        
+
         toggleLayout: function(e) {
             Layout.toggleLayout($(e.target).data('layout-type'));
             e.preventDefault();
         },
-        
+
         showRotateModal: function(e) {
             $('#modal-rotation').modal('show');
             $('#modal-rotation').on('shown.bs.modal', function() {
@@ -405,7 +405,7 @@ define([
         rotateConfirm: function(e) {
             var angle = $('.rotation-input').val(), onlySelected = $('.rotation-select').is(':checked');
             var nodes = Utils.getSelectedNodes(), selected = [];
-            
+
             if (onlySelected) {
                 for (var i = 0; i < nodes.length; i++) {
                     selected.push(Node.getNode(nodes[i]));
@@ -413,18 +413,18 @@ define([
             } else {true
                 selected = sigInst._core.graph.nodes;
             }
-            
+
             if ($.isNumeric(angle)) {
                 angle = parseInt(angle);
-                
+
                 if (angle < 361 && angle > -361) {
                     angle = parseInt(angle);
                     Annotation.clearRegions();
                     sigInst.rotateNodes({
                         callback: function() {
-                            Annotation.drawRegions(); 
-                        }, 
-                        degrees: angle, 
+                            Annotation.drawRegions();
+                        },
+                        degrees: angle,
                         nodes: selected
                     });
                     $('#modal-rotation').modal('hide');
@@ -434,29 +434,29 @@ define([
             } else {
                 Utils.messageUser('Please enter a valid angle.', 'alerts-panel-rotate');
             }
-            
+
             e.preventDefault();
         },
-        
+
         stackNetworks: function(e) {
             Utils.stackNetworks();
             e.preventDefault();
         },
-        
+
         showDrawUI: function(e) {
             if (state.get('selection').length < 3) return;
-            
+
             $('.vizualization-ui').hide();
             $('#draw-ui').fadeIn(1000);
             $('#canvas-draw').fadeIn(1000);
             true
             e.preventDefault();
         },
-        
+
         loadAnnotation: function(e) {
             $('.btn-group-annotation li').removeClass('active');
             $(e.target).parent().addClass('active');
-            
+
             if ($(e.target).hasClass('custom-annotation')) {
                 $("#modal-custom-annotation").modal('show');
             } else {
@@ -468,12 +468,12 @@ define([
         loadCustomAnnotation: function(e) {
             var f = $('#custom-annot-file')[0].files[0], reader = new FileReader(), name = f.name;
             fileType = name.split('.').pop();
-            
+
             if (fileType != 'xls' && fileType != 'xlsx') {
                 console.log('Not an excel file, bailing');
                 return;
             }
-            
+
             setTimeout(function() {
                 reader.onload = function(e) {
                     var data = e.target.result, rows;
@@ -483,7 +483,7 @@ define([
                         rows = Utils.sheet_to_array(xlsreader, workbook.Sheets[workbook.SheetNames[0]]);
                         Annotation.loadCustomAnnotation(name, rows);
                     };
-                    
+
                     if (fileType == 'xls') {
                         xls_cb();
                     } else {
@@ -513,7 +513,7 @@ define([
             }
             e.preventDefault();
         },
-        
+
         graphCenter: function(e) {
             Utils.graphCenter();
             e.preventDefault();
@@ -539,13 +539,13 @@ define([
                 e.preventDefault();
             }
         },
-        
+
         toggleDataset: function(e) {
             if (opts.runningLayout || Utils.getSelectedNodes() == 0) return false;
             Dataset.toggleDataset($(e.target).parent().data('dataset'));
             e.preventDefault();
         },
-        
+
         updateBackgroundColor: function(e) {
             state.set('background', e.color.toHex());
             $(opts['rootElement']).css('background-color', e.color.toHex());
@@ -556,7 +556,7 @@ define([
             sigInst.drawingProperties({defaultLabelColor: e.color.toHex()}).draw(-1, -1, 1);
             e.preventDefault();
         },
-        
+
         getSvgScreenshot: function(e) {
             if (settings.get("saveAsSvg") == false){
                 Download.downloadCanvasSnapshot();
@@ -566,56 +566,56 @@ define([
             }
             e.preventDefault();
         },
-        
+
         showNetwork: function(e) {
             if (Utils.getSelectedNodes().length < 0) return;
             if (state.get('showRegions')) Annotation.loadAnnotation('None'); // state.get('annotation')
                                                                                 // ==
                                                                                 // 'SAFE'
                                                                                 // &&
-            
+
             sigInst.graphProperties({maxEdgeSize: 1});
 //            state.set('edgeWidth', 4);
-            
+
             Node.applyNeighbourhood(1);
             $(e.target).addClass('hidden');
         },
-        
+
         refreshNetwork: function(e) {
             window.location.href = opts['urls']['home'];
             e.preventDefault();
         },
-        
+
         smallDeviceSearch: function(e) {
             $('#modal-search').modal('show');
         },
-        
+
         safe: function(e) {
             var form = $("#modal-safe .tab-pane.active form");
-            
+
             if (!$("#modal-safe .tab-pane.active form")[0].checkValidity()) {
                 return false;
             }
-            
+
             var form_data = {};
             form.find('.tab-pane').each(function() {
                 form_data[$(this).find('.custom-name').val()] = $(this).find('.safe-custom-color').data('colorpicker').color.value.h * 360;
             });
-            
+
             $.ajax({
                 type: "post",
                 url: form.attr('action'),
                 data: form.serialize(),
                 success: function(enrichments) {
                     var node, hue;
-                    
+
                     $("#sigma_nodes_1").hide();
                     $("#sigma_hover_1").hide();
-                    
+
                     Utils.iterVisibleEdges(function(edge) {
                         edge.hidden = true;
                     });
-                    
+
                     sigInst._core.graph.nodes.filter(function(node) {
                         if (node.hasOwnProperty('enrichment')) {
                             delete node['enrichment'];
@@ -626,16 +626,16 @@ define([
                             delete node['safe_overlay'];
                         }
                     });
-                    
+
                     if (!!enrichments._selected_node) {
                         node = Utils.getNode(enrichments._selected_node);
                         if (!!node) node['safe_overlay'] = true;
                     }
-                    
+
                     var minEnr = 1;
                     for (var k in enrichments) {
-                        if (!enrichments.hasOwnProperty(k)) continue; 
-                        
+                        if (!enrichments.hasOwnProperty(k)) continue;
+
                         if (form.find('input[name="safe-type"]').val() == 'selected') {
                             if (k == 'positives') {
                                 hue = 48;
@@ -645,81 +645,81 @@ define([
                         } else {
                             hue = form_data[k];
                         }
-                        
+
                         var pairs = enrichments[k];
                         for (var n in pairs) {
                             if (!pairs.hasOwnProperty(n) || isNaN(pairs[n])) continue;
-                            
+
                             node = Utils.getNode(parseInt(n));
-                            
+
                             if (!node.enrichment || node.enrichment < pairs[n]) {
                                 node.enrichment = pairs[n];
                                 node.enrichment_hue = hue;
                                 node.enrichment_name = k;
                             }
-                            
+
                             minEnr = Math.min(node.enrichment, minEnr);
                         }
                     }
-                    
+
                     state.set('myData', true);
                     state.set('myDataType', form.find('input[name="safe-type"]').val());
-                    state.set('showAnnotColors', false);
-                    state.set('showAnnotLabels', true);
-                    
+                    // state.set('showAnnotColors', false);
+                    // state.set('showAnnotLabels', true);
+
                     settings.set('disableScroll', true);
                     sigInst.mouseProperties({mouseEnabled: false});
-                    
+
                     Annotation.loadAnnotation(opts.default_annotation);
-                    
+
                     $('.middle-right').removeClass('hidden');
                     $('.middle-right').show();
                     $('#cutoff-bar-cor').hide();
                     $('#cutoff-bar-safe').show();
                     $('#view-network-simple').hide();
-                    
+
                     $('.top-right-simple > :not([data-safe])').addClass('hidden').hide();
                     $('.top-right-simple > [data-safe]').removeClass('hidden');
-                    
+
                     $('.alert').alert('close');
-                    
+
                     $('#cutoff-bar-safe')[0].noUiSlider.set(0.05); // minEnr
                     $('#panel-legend').toggle(true);
-                    
+
                     sigInst.drawingProperties({drawSafePin: true});
-                    
+
                     sigInst.draw();
                 }
               });
-            
+
             $("#modal-safe").modal('hide');
         },
-        
+
         safe_more: function(e) {
             var numeles = $('#safe-custom-form .tab-content .tab-pane').length + 1;
             var newtab = $("#safe-tablist").clone();
             newtab.attr('id', newtab.attr('id') + '-' + numeles);
-            
+
             var tabbutton = $('<li role="presentation"><a href="#' + newtab.attr('id') + '" aria-controls="home" role="tab" data-toggle="tab">Custom list ' + numeles + '</a></li>')
-            
+
             var nextcolor = (120 + (60 * (numeles - 1))) % 360;
             nextcolor = Utils.hsvToRgb(nextcolor, 100, 100);
-            
+
             newtab.removeClass('hidden');
-            
+
             newtab.find('label').each(function() {
-                $(this).attr('for', $(this).attr('for') + '-' + numeles); 
+                $(this).attr('for', $(this).attr('for') + '-' + numeles);
             });
-            
+
             newtab.find('div.col-sm-9 > *:first-child').each(function() {
-                $(this).attr('id', $(this).attr('id') + '-' + numeles); 
-                $(this).attr('name', $(this).attr('name') + '-' + numeles); 
+                $(this).attr('id', $(this).attr('id') + '-' + numeles);
+                $(this).attr('name', $(this).attr('name') + '-' + numeles);
             });
-            
+
             newtab.find('input:first').val('Custom list ' + numeles).keyup(function() {
                 tabbutton.find('a').text($(this).val());
             });
-            
+
             newtab.find(".safe-custom-color").colorpicker({
                 color: nextcolor,
                 horizontal: true,
@@ -734,20 +734,20 @@ define([
                 '<div class="colorpicker-selectors"></div>' +
                 '</div>',
             });
-            
+
             newtab.appendTo("#safe-custom-form .tab-content");
-            
+
             $("#safe-custom-add").parent().before(tabbutton);
             tabbutton.find('a').on('shown.bs.tab', function (e) {
                 newtab.find('textarea').focus();
             }).tab('show');
         },
-        
+
         safe_download: function(e) {
             var form = $("#modal-safe .tab-pane.active form");
             var ghost = $('<input type="hidden" name="dl" value="yes">');
             form.append(ghost);
-            
+
             var annotation = $(e.target).data('annotation-id');
             var annotationGhost;
             if (!!annotation) {
@@ -755,7 +755,7 @@ define([
                 annotationGhost.val(annotation);
                 form.append(annotationGhost);
             }
-            
+
             form.submit();
             ghost.remove();
             if (!!annotation) {
@@ -763,6 +763,6 @@ define([
             }
         }
     });
-    
+
     return eventsView;
 });
