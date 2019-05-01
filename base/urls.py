@@ -30,8 +30,6 @@ urlpatterns = [
     url(r'^favicon[.]ico$', RedirectView.as_view(url='/static/favicon.ico')),
 
     url(r'^tools/annotations/', tools.annotations, name='tools_annotations'),
-    url(r'^tools/custom/', tools.custom, name='tools_custom'),
-    url(r'^tools/edit/(?P<id>[0-9]+)/$', tools.edit_dataset, name="tools_edit_dataset"),
 
 #     url(r'^api/', include('base.api.v1.urls')),
 
