@@ -37,7 +37,7 @@
   <header>
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container-fluid">
-            
+
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
             <span class="sr-only">Toggle navigation</span>
@@ -45,15 +45,15 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          
+
           <a class="navbar-brand" href="{% url 'home' %}">TheCellMap</a>
-           
+
         </div>
-        
-        
-        
+
+
+
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          
+
           {% block navbar_items %}{% endblock %}
           <ul class="nav navbar-nav navbar-right">
           {% block navbar_menu_items_before %}{% endblock %}
@@ -76,9 +76,6 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Advanced<b class="caret"></b></a>
             <ul class="dropdown-menu">
-<!--               <li><a href="{% url 'tools_annotations' %}">Annotations</a></li> -->
-<!--               <li><a href="{% url 'tools_custom' %}">Custom Uploads</a> -->
-<!--               <li class="divider"></li> -->
               <li class='disabled'><a href="#" id="tools-settings">Settings</a></li>
               <li><a href="#" data-toggle="modal" data-target="#modal-style">Style</a></li>
               <li class="divider"></li>
@@ -104,11 +101,11 @@
     {% block header %}{% endblock %}
   </header>
   {% endif %}
-  
+
   <div class="content" role="main">
     {% block content %}{% endblock %}
   </div>
-  
+
   <footer>
     {% block footer %}
     <div class="container">
@@ -117,7 +114,7 @@
     </div>
     {% endblock footer %}
   </footer>
-  
+
   {% block js %}
       {% if not debug %}{% compress js %}
       <!-- Asynchronous Google Analytics snippet. -->
@@ -132,9 +129,9 @@
       </script>
       {% endcompress %}{% endif %}
   {% endblock js %}
-  
+
   <!-- end scripts -->
-  
+
   {% include "includes/settings.html" %}
 {% endblock %}
 </body>

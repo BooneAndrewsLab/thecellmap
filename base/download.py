@@ -183,8 +183,15 @@ def _collect_data(ds, nodes, callback, pval_thr=0.05, include_strain_id=False):
 
         scores = scores[scores.pval < pval_thr]
         scores = scores.sort_values(['target', 'pval']).reindex(columns=['target', 'pval', 'score'])
-        scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0))
-        scores = scores.groupby('target').first().reset_index()
+
+        if include_strain_id:  # merging array-query is different when we include strainid
+            scores.loc[:, 'groupvalue'] = scores.target.apply(lambda x: x[1:])
+            scores = scores.groupby('groupvalue').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0))
+            scores = scores.groupby('groupvalue').first().reset_index()
+            scores = scores.drop(columns="groupvalue")
+        else:
+            scores = scores.groupby('target').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0))
+            scores = scores.groupby('target').first().reset_index()
 
         callback(s, node, correlations, scores)
 
