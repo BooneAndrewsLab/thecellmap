@@ -664,8 +664,8 @@ define([
 
                     state.set('myData', true);
                     state.set('myDataType', form.find('input[name="safe-type"]').val());
-                    // state.set('showAnnotColors', false);
-                    // state.set('showAnnotLabels', true);
+                    state.set('showAnnotColors', false);
+                    state.set('showAnnotLabels', true);
 
                     settings.set('disableScroll', true);
                     sigInst.mouseProperties({mouseEnabled: false});
@@ -677,6 +677,10 @@ define([
                     $('#cutoff-bar-cor').hide();
                     $('#cutoff-bar-safe').show();
                     $('#view-network-simple').hide();
+                    $('#sigma_mouse_1').contextmenu(function() {
+                        Utils.onGraphContext();
+                        return false;
+                    });
 
                     $('.top-right-simple > :not([data-safe])').addClass('hidden').hide();
                     $('.top-right-simple > [data-safe]').removeClass('hidden');
