@@ -186,6 +186,7 @@ def _collect_data(ds, nodes, callback, pval_thr=0.05, include_strain_id=False):
 
         if include_strain_id:  # merging array-query is different when we include strainid
             scores.loc[:, 'groupvalue'] = scores.target.apply(lambda x: x[1:])
+            scores = scores.sort_values(['groupvalue', 'pval'])
             scores = scores.groupby('groupvalue').filter(lambda x: len(x) < 2 or not reduce(operator.xor, x.score < 0))
             scores = scores.groupby('groupvalue').first().reset_index()
             scores = scores.drop(columns="groupvalue")
