@@ -21,3 +21,4 @@ django-htmlmin
 
 sga-safe
 intermine
+matplotlib

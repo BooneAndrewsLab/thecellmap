@@ -5,17 +5,13 @@ Created on Jan 13, 2014
 """
 import pickle
 import io
-import json
 import operator
-import os
 from functools import reduce
 
 import numpy as np
 from django.contrib import messages
 from django.http.response import HttpResponse
-from numpy.ma import corrcoef
 from pandas.core.frame import DataFrame
-from pandas.core.series import Series
 from pandas.io.excel import ExcelWriter
 
 from base.models import StrainData, Strain, Gene
@@ -268,6 +264,17 @@ def xlsx_response(df, filename, **kwargs):
 
     output.seek(0)
     resp = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
+    resp.write(output.read())
+    return resp
+
+
+def csv_response(df, filename, **kwargs):
+    output = io.StringIO()
+    df.to_csv(output, **kwargs)
+    output.seek(0)
+
+    resp = HttpResponse(content_type="text/csv")
     resp['Content-Disposition'] = 'attachment; filename="%s"' % (filename, )
     resp.write(output.read())
     return resp

@@ -32,7 +32,7 @@ from scipy.cluster.hierarchy import dendrogram, average
 from scipy.spatial.distance import pdist
 from scipy.stats import hypergeom
 
-from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations
+from base.download import nodes_xls, strains_for_nodes, nodes_data, collect_scores, collect_correlations, csv_response
 from base.models import Dataset, Annotation, Term, Gene, Custom, Strain, RegionGroup, Region
 from base.utils import print_queries, is_integer, \
     safe_excel_sheetname, float_column, CharListArea, TableDataFrameMixin, dataframe_to_response, sgd_query, CMAP
@@ -323,7 +323,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
             strain = strain[:2] + (
-            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
+                '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response['correlations'].append(strain[1:] + ('%.3f' % correlation,))
 
@@ -331,7 +331,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
             strain = strain[:2] + (
-            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
+                '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response['scores_neg'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
@@ -339,7 +339,7 @@ def tabular_data(request, dataset_id=None, node_id=None):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
             strain = strain[:2] + (
-            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
+                '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response['scores_pos'].append(strain[1:] + ('%.3f' % score, '%.2e' % pval))
 
@@ -362,7 +362,7 @@ def _tabular_more_scores(request, scores, suppressors):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
             strain = strain[:2] + (
-            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
+                '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response.append(strain[1:] + ('%.3f' % score, '%.2e' % pval,))
 
@@ -382,7 +382,7 @@ def _tabular_more_correlations(request, corr, suppressors):
         if strain[0] in suppressors:
             supps = suppressors[strain[0]]
             strain = strain[:2] + (
-            '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
+                '%s (%s)' % (strain[2], ','.join([sgd_query(s['n'] or s['o'], True) for s in supps])),)
 
         response.append(strain[1:] + ('%.3f' % correlation,))
 
@@ -787,6 +787,7 @@ class EnrichmentResultView(SingleTableMixin, TemplateView):
 
 
 class HeatmapDownload(View):
+    # noinspection PyMethodMayBeStatic
     def get(self, request, dataset_id=None):
         import matplotlib
         matplotlib.use('Agg')
@@ -848,3 +849,86 @@ class HeatmapDownload(View):
         response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
         response['Content-Disposition'] = 'attachment; filename=%s' % (filename,)
         return response
+
+
+class ExtractInteractionsForm(forms.Form):
+    queries = CharListArea()
+    arrays = CharListArea()
+
+
+class ExtractInteractionsView(FormView):
+    template_name = 'base/generic_form.html'
+    form_class = ExtractInteractionsForm
+    success_url = reverse_lazy('extract_form')
+
+    def get_context_data(self, **kwargs):
+        ctx = super(ExtractInteractionsView, self).get_context_data(**kwargs)
+        ctx['title'] = 'Extract interactions'
+        return ctx
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+
+        ds = Dataset.pk_or_default(user=self.request.user)
+
+        with open(ds.static_path('nodes_inv.pickle'), 'rb') as fp:
+            nodes_inv = pickle.load(fp)
+
+        nodes_inv_inv = {}
+        for nid, sids in nodes_inv.items():
+            for sid in sids:
+                nodes_inv_inv[sid] = nid
+
+        strains = {}
+
+        for s in Strain.objects.select_related('gene'):
+            if s.allele:
+                strains[s.allele.lower()] = s
+            strains[s.gene.orf.lower()] = s
+            if s.gene.name:
+                strains[s.gene.name.lower()] = s
+
+        queries = data['queries']
+        arrays = data['arrays']
+
+        query_nodes = []
+        for q in queries:
+            s = strains.get(q.lower())
+            if s:
+                n = nodes_inv_inv[s.pk]
+                if n not in query_nodes:
+                    query_nodes.append(n)
+
+        array_nodes = []
+        for a in arrays:
+            s = strains.get(a.lower())
+            if s:
+                n = nodes_inv_inv[s.pk]
+                if n not in array_nodes:
+                    array_nodes.append(n)
+
+        data = nodes_data(ds, query_nodes, include_strain_id=True, pval_thr=1)
+
+        scores = []
+        names = []
+        index = set()
+        for k, v in data.items():
+            names.append(k)
+            v = v['scores'].set_index('target')
+            v = v.loc[:, 'score']
+
+            index_keep = []
+            for sid, orf, label in v.index:
+                if nodes_inv_inv[sid] in array_nodes:
+                    index_keep.append((sid, orf, label))
+
+            v = v.loc[index_keep]
+            v.index = [' - '.join(x[1:]) for x in v.index]
+
+            v.name = k.basic_id()
+            scores.append(v)
+            index.update(v.index)
+
+        merged = p.concat([s.reindex(index) for s in scores], axis=1, sort=False)
+
+        return csv_response(merged, 'extracted_from_thecellmap.csv', sep='\t')

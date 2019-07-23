@@ -9,7 +9,8 @@ from django.views.generic.base import RedirectView
 
 from base.models import Dataset
 from base import views, tools
-from base.views import EnrichmentView, EnrichmentResultView
+from base.views import EnrichmentView, EnrichmentResultView, ExtractInteractionsView
+
 
 class StaticViewSitemap(Sitemap):
     priority = 0.5
@@ -63,6 +64,9 @@ urlpatterns = [
 
     url(r'^enrichment/$', EnrichmentView.as_view(), name='enrichment_form'),
     url(r'^enrichment/result/$', EnrichmentResultView.as_view(), name='enrichment_result'),
+
+    url(r'^extract/$', ExtractInteractionsView.as_view(), name='extract_form'),
+
     # contact
     url(r'^ui/advance/$', TemplateView.as_view(template_name='ui/ui.html'), name='advance_ui'),
     url(r'^ui/simple/$', TemplateView.as_view(template_name='ui/simple_ui.html'), name='simple_ui'),
