@@ -314,6 +314,9 @@ define([
             case 'context-styles':
                 $('#modal-style').modal('show');
                 break;
+            case 'context-download-visible':
+                Download.downloadShownData();
+                break;
             case 'context-yeastmine':
                 var orfs = {}, strain, form;
                 Utils.iterVisibleNodes(function(n) {
