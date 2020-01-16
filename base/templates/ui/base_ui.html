@@ -1,13 +1,13 @@
 <div class="vizualization-ui" id="ui" style="display: none;">
   {% block uiElements %}
   {% endblock %}
-  
+
   <div class="bottom-right hidden-xs" >
     <a id="screenshot-link" href="#" class="btn btn-primary btn-outline"><span id="screenshot-icon" class="glyphicon glyphicon-camera"></span></a>
   </div>
-  
+
   <div class="panel panel-default" id="panel-alerts"></div>
-  
+
   <div class="panel panel-primary hidden-xs" id="panel-legend">
     <div class="panel-heading" id="legend-handle">
       <h3 class="panel-title">Legend</h3>
@@ -18,7 +18,7 @@
       </ul>
     </div>
   </div>
-  
+
   <div class="modal fade" id="modal-style" tabindex="-1" role="dialog" aria-labelledby="modal-style-label"
     aria-hidden="true">
     <div class="modal-dialog">
@@ -63,7 +63,7 @@
             </div>
             <div class="tab-pane fade" id="style-general">
               <ul class="list-group">
-                <li class="list-group-item">Background Color: 
+                <li class="list-group-item">Background Color:
                     <div class="input-group bs-colorpicker">
                         <input id="canvas-background-color" type="hidden" name="background-color" value="#000000" class="form-control" />
                         <span class="input-group-addon"><i></i></span>
@@ -82,7 +82,7 @@
       </div> <!-- /.modal-content -->
     </div> <!-- /.modal-dialog -->
   </div> <!-- /.modal -->
-  
+
   <div id="contextmenu-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
       <li class="disabled" data-simple-step="2" data-simple-action="disabled"><a id="context-view-network" tabindex="-1" href="#"><span class="glyphicon glyphicon-pushpin"></span> View Network</a></li>
@@ -92,13 +92,13 @@
       <li class="divider"></li>
       <li><a id="context-edit-node" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Edit Node Attributes...</a></li>
       <li><a id="context-hide" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Delete Node</a></li>
-      
+
 <!--       <li><a id="context-label-toggle" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-close"></span> Toggle label</a></li> -->
 <!--       <li class="divider"></li> -->
 <!--       <li class="disabled" data-annotation-constraint><a id="context-node-gi" tabindex="-1" href="#"><span class="glyphicon glyphicon-eye-open"></span> Show genetic interactions for this node </a></li> -->
     </ul>
   </div>
-  
+
   <div id="contextmenu-graph-container" class="dropdown clearfix contextmenu" style="display: none;">
     <ul id="contextmenu-graph" class="dropdown-menu" role="menu" style="display: block; position: static; margin-bottom: 5px;">
       <li><a id="context-copy" tabindex="-1" href="#"><span class="glyphicons glyphicons-more-items"></span> Copy Selected Nodes</a></li>
@@ -113,7 +113,7 @@
       <li><a id="context-styles" tabindex="-1" href="#"><span class="glyphicon glyphicon-edit"></span> Style Options</a></li>
     </ul>
   </div>
-  
+
   <div class="modal fade" id="modal-edit-node" tabindex="-1" role="dialog" aria-labelledby="edit-node-modal-label"
     aria-hidden="true">
     <div class="modal-dialog">
@@ -123,7 +123,7 @@
           <h4 class="modal-title" id="edit-node-modal-label">&nbsp;</h4>
         </div>
         <div class="modal-body">
-          
+
           <form class="form-horizontal">
             <input type="hidden" id="edit-node-id">
             <div class="form-group">
@@ -150,7 +150,7 @@
 <!--                 <span id="node-sgd" class="form-info"></span> -->
 <!--               </div> -->
 <!--             </div> -->
-            
+
             <div class="form-group">
               <label for="edit-node-label" class="col-sm-2 control-label">Label</label>
               <div class="col-sm-10">
@@ -213,7 +213,7 @@
       </div>
     </div>
   </div>
-  
+
   <div class="modal fade" id="modal-rotation" tabindex="-1" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -241,7 +241,7 @@
       </div>
     </div>
   </div>
-  
+
   <div class="modal fade" id="modal-copy" tabindex="-1" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -261,7 +261,7 @@
       </div>
     </div>
   </div>
-  
+
   <div class="modal fade" id="modal-custom-annotation" tabindex="-1" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -282,7 +282,7 @@
             <dt>ORF</dt><dd>Gene's systematic name (ie: YNL271C).</dd>
             <dt>Annotation</dt><dd>Annotation text.</dd>
           </dl>
-        
+
           <div class="form-group">
             <label class="btn btn-default btn-file">
                 Browse <input type="file" class="form-control" id="custom-annot-file" style="display: none;">
@@ -296,7 +296,7 @@
       </div>
     </div>
   </div>
-  
+
 </div>
 
 <div class="vizualization-ui" id="draw-ui" style="display: none;">
@@ -334,7 +334,7 @@
       </label>
     </div>
   </div>
-  
+
   <div class="draw-bottom-right">
     <div class="btn-group">
       <button type="button" class="btn btn-primary" id="draw-confirm"> Confirm</button>
@@ -343,7 +343,7 @@
   </div>
 </div>
 
-<form id="yeastmine-post" action="http://yeastmine.yeastgenome.org/yeastmine/portal.do" method="post" target="_blank">
+<form id="yeastmine-post" action="https://yeastmine.yeastgenome.org/yeastmine/portal.do" method="post" target="_blank">
     <input type="hidden" name="class" value="Gene">
 <!--     <input type="hidden" name="extraValue" value="S. cerevisiae"> -->
     <input type="hidden" name="externalids">
