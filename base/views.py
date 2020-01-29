@@ -684,8 +684,8 @@ def safe(request, dataset_id=None):
 
 
 class EnrichmentForm(forms.Form):
-    genes = CharListArea()
-    background = CharListArea()
+    genes = CharListArea(help_text="Only ORFs are supported")
+    background = CharListArea(help_text="Only ORFs are supported")
     annotation = forms.ModelChoiceField(Annotation.objects)
 
 
