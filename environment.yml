@@ -1,6 +1,7 @@
-name: root
+name: thecellmap
 channels:
 - defaults
+- conda-forge
 dependencies:
 - numpy
 - scipy
@@ -11,10 +12,18 @@ dependencies:
 - openpyxl
 - xlrd
 - xlwt
+- xlsxwriter
 - beautifulsoup4
 - scipy
 - bcrypt
 - notebook
+- gsl
+- uwsgi
+- matplotlib
+- cython
+- nose
+- python-memcached
+- libiconv
 - pip:
   - django-tables2
   - django-bootstrap-pagination
