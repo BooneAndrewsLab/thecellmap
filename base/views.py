@@ -752,7 +752,7 @@ class EnrichmentResultTable(TableDataFrameMixin, tables.Table):
     genes = columns.Column()
 
     class Meta:
-        template = 'includes/table.html'
+        template_name = 'includes/table.html'
 
 
 class EnrichmentResultView(SingleTableMixin, TemplateView):
