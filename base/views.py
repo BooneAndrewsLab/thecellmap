@@ -848,6 +848,7 @@ class HeatmapDownload(View):
         plt.savefig(buffer, format='pdf', dpi=100, bbox_inches='tight')
         response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
         response['Content-Disposition'] = 'attachment; filename=%s' % (filename,)
+        response.set_cookie('heatmapDownload', "true")
         return response
 
 
