@@ -298,11 +298,21 @@ def tabular_data(request, dataset_id=None, node_id=None):
     gene = Gene.objects.distinct().get(strain__in=nodes_inv[int(node_id)])
     neighbors = gene.closest_neighbors(ds)
 
+    query_suppressors = []
+    seen_suppressors = set()
+    for k, v in suppressors.items():
+        if k in nodes_inv[int(node_id)]:
+            for vs in v:
+                if vs['o'] not in seen_suppressors:
+                    query_suppressors.append(vs)
+                    seen_suppressors.add(vs['o'])
+
     data = nodes_data(ds, [node_id], include_strain_id=True)
     response = {
         'correlations': [],
         'scores_pos': [],
         'scores_neg': [],
+        'suppressors': query_suppressors,
         'neighbor_effect': gene.neighbor_effect,
         'neighbors': [n.orf for n in neighbors]
     }

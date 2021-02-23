@@ -322,8 +322,18 @@ require([
                 }
 
                 if (strain.label.indexOf('-supp') != -1) {
-                    $(tableSelect + '.correlations .panel-heading').append('<small>This strain also carries a secondary suppressor mutation.</small>');
-                    $(tableSelect + '.correlations .panel-heading').append('<small>See <a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">van Leeuwen et al, 2016</a> for more details.</small>');
+                    var sel = tableSelect + '.correlations .panel-heading';
+                    $(sel).append('<small>This strain also carries a secondary suppressor mutation.</small>');
+                    $(sel).append('<small>See <a href="http://science.sciencemag.org/content/354/6312/aag0839.long" target="_blank">van Leeuwen et al, 2016</a> for more details.</small>');
+
+                    $(sel).append('<small>Suppressors:</small>');
+
+                    var suppressorList = '<ul>';
+                    d.suppressors.forEach(function(suppressor) {
+                        var suppLink = '<a href="http://www.yeastgenome.org/search?is_quick=true&q=' + suppressor.o + '" target="_blank">' + suppressor.n + '</a>: ';
+                        suppressorList += '<li><small>' + suppLink + suppressor.s + '</small></li>';
+                    });
+                    $(sel).append(suppressorList + '</ul>');
                 }
 
                 nodeNeighbors[node_id] = d.neighbors;
