@@ -1,7 +1,10 @@
+import os
+
 import numpy as np
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 
+import base
 from base import strain_removal
 from base.models import Dataset, Strain, StrainData
 
@@ -9,13 +12,14 @@ from base.models import Dataset, Strain, StrainData
 class Command(BaseCommand):
     help = ('Remove strains from a dataset: query/array/correlation-axis membership, their StrainData rows, '
             'the matching score/p-value/correlation columns of all other rows, and the static visualization '
-            'files. Strain rows themselves are kept. Dry run unless --apply is given.')
+            'files in the git source copy (base/static/visualization/<dataset>); the collected STATIC_ROOT copy '
+            'is left to collectstatic. Strain rows themselves are kept. Dry run unless --apply is given.')
 
     def add_arguments(self, parser):
         parser.add_argument('dataset', help='Dataset name, e.g. Living')
         parser.add_argument('boonelab_ids', nargs='+', help='Boonelab strain ids, e.g. tsq2250')
         parser.add_argument('--apply', action='store_true', help='Actually modify the database and static files')
-        parser.add_argument('--static-dir', help='Override the dataset static directory (for testing on a copy)')
+        parser.add_argument('--static-dir', help='Override the directory to edit (default: base/static/visualization/<dataset> in the source tree)')
         parser.add_argument('--skip-db', action='store_true', help='Only process the static files')
         parser.add_argument('--skip-static', action='store_true', help='Only process the database')
 
@@ -33,7 +37,11 @@ class Command(BaseCommand):
         if not options['skip_db']:
             self._db(ds, ids, apply_)
         if not options['skip_static']:
-            static_dir = options['static_dir'] or ds.static_path()
+            static_dir = options['static_dir'] or os.path.join(
+                os.path.dirname(os.path.abspath(base.__file__)), 'static', 'visualization', ds.name)
+            if not os.path.isdir(static_dir):
+                raise CommandError('Static directory not found: %s' % static_dir)
+            self.stdout.write('Static directory: %s' % static_dir)
             strain_removal.apply(static_dir, ids, dry_run=not apply_, log=self.stdout.write)
 
     def _db(self, ds, ids, apply_):

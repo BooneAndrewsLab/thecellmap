@@ -6,6 +6,7 @@ import csv
 import json
 import os
 import pickle
+import shutil
 import tempfile
 
 
@@ -14,6 +15,8 @@ def _write_atomic(path, writer, mode='w'):
     try:
         with os.fdopen(fd, mode) as fp:
             writer(fp)
+        # mkstemp creates files as 0600; keep the original's permissions so the web server can still read it
+        shutil.copymode(path, tmp)
         os.replace(tmp, path)
     except BaseException:
         if os.path.exists(tmp):
