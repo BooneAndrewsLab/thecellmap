@@ -1,7 +1,6 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db.transaction import commit_on_success
 
 from base.models import Annotation
 from base.utils import CellMapCommand
@@ -26,7 +25,6 @@ class Command(CellMapCommand):
             help='Format of the input data, one of: [%s]' % (','.join(FORMAT_CHOICES))),
         )
     
-    @commit_on_success
     def handle(self, *args, **options):
         if len(args) != 1:
             raise CommandError('Must provide arguments: ' + self.args)
@@ -34,7 +32,7 @@ class Command(CellMapCommand):
         annotation, = args
         annotation = Annotation.objects.get(name=annotation)
         
-        print '\t'.join(('Complex', 'ORF'))
+        print('\t'.join(('Complex', 'ORF')))
         for term in annotation.term_set.prefetch_related('genes'):
             for gene in term.genes.all():
-                print '\t'.join((term.name, gene.orf))
+                print('\t'.join((term.name, gene.orf)))

@@ -1,6 +1,10 @@
 
 # The Thecellmap Project #
 
+## News - 2026-03-13 ##
+
+This repository contains the [TheCellMap for genetic interactions in yeast](https://academic.oup.com/g3journal/article/7/5/1539/6028278). The human genetic interaction version will be available in the [new repository](https://github.com/BooneAndrewsLab/thecellmap_human) upon publication.
+
 ## About ##
 
 Interactive network for browsing genetic interactions in yeast.
